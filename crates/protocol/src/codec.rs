@@ -180,9 +180,6 @@ impl<'a> Decoder<'a> {
                     if key.is_empty() {
                         self.invalid(ErrorCode::InvalidValue, "Empty Map field");
                     }
-                    if key.len() > self.limits.value.max_key_bytes {
-                        self.invalid(ErrorCode::LimitExceeded, "Map field exceeds byte limit");
-                    }
                     let item = self.value(depth)?;
                     if fields.insert(key, item).is_some() {
                         self.invalid(ErrorCode::InvalidValue, "Duplicate Map field");
@@ -230,9 +227,11 @@ impl<'a> Decoder<'a> {
             return Err(DecodeError::protocol("Expected argument List"));
         };
         // Protocol envelopes do not count against business Value depth.
-        for argument in &arguments {
-            if let Err(e) = argument.validate(self.limits.value) {
-                self.semantic.get_or_insert(e);
+        for (index, argument) in arguments.iter().enumerate() {
+            if linger_types::is_value_argument(&command.to_ascii_uppercase(), index) {
+                if let Err(e) = argument.validate(self.limits.value) {
+                    self.semantic.get_or_insert(e);
+                }
             }
         }
         Ok(Request {
@@ -452,12 +451,6 @@ impl Encoder {
                     if key.is_empty() {
                         return Err(DbError::new(ErrorCode::InvalidValue, "Empty Map field"));
                     }
-                    if key.len() > limits.value.max_key_bytes {
-                        return Err(DbError::new(
-                            ErrorCode::LimitExceeded,
-                            "Map field exceeds byte limit",
-                        ));
-                    }
                     self.string(key)?;
                     self.value(item, depth, limits)?;
                 }
@@ -486,8 +479,10 @@ impl Encoder {
         self.string(&request.command.to_ascii_uppercase())?;
         self.push(&[7])?;
         self.count(request.arguments.len())?;
-        for argument in &request.arguments {
-            argument.validate(limits.value)?;
+        for (index, argument) in request.arguments.iter().enumerate() {
+            if linger_types::is_value_argument(&request.command, index) {
+                argument.validate(limits.value)?;
+            }
             self.value(argument, 1, limits)?;
         }
         Ok(())

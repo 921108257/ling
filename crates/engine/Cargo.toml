@@ -1,0 +1,14 @@
+# 单分片数据引擎，不依赖网络或 SDK。
+# Single-shard data engine, independent of networking and SDKs.
+[package]
+name = "linger-engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+linger-types.workspace = true
+rand.workspace = true
+
+[lints]
+workspace = true

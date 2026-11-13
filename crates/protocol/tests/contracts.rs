@@ -261,6 +261,49 @@ fn batch_business_error_is_isolated_but_truncated_tail_rejects_all() {
     assert!(decode_frame(&wire, Limits::default()).unwrap_err().fatal);
 }
 
+/// 协议封套字段和名称不使用业务值限制，实际写入值仍逐项校验。
+/// Envelope fields and names bypass business limits while stored values remain checked.
+#[test]
+fn business_limits_do_not_restrict_keys_or_response_envelopes() {
+    let limits = Limits {
+        value: linger_types::ValueLimits {
+            max_bytes: 1,
+            max_depth: 1,
+            max_key_bytes: 1,
+        },
+        ..Limits::default()
+    };
+    let request = Frame {
+        request_id: 1,
+        body: Body::Request(Request::new(
+            "SET",
+            vec![Value::String("long-key".into()), Value::Null],
+        )),
+    };
+    let wire = encode_frame(&request, limits).unwrap();
+    assert_eq!(decode_frame(&wire, limits).unwrap(), request);
+    let response = Frame {
+        request_id: 1,
+        body: Body::Response(Ok(Value::Map(BTreeMap::from([(
+            "protocol".into(),
+            Value::UInt(1),
+        )])))),
+    };
+    let wire = encode_frame(&response, limits).unwrap();
+    assert_eq!(decode_frame(&wire, limits).unwrap(), response);
+    let request = Frame {
+        request_id: 2,
+        body: Body::Request(Request::new(
+            "SET",
+            vec![Value::String("k".into()), Value::UInt(1)],
+        )),
+    };
+    assert_eq!(
+        encode_frame(&request, limits).unwrap_err().code,
+        "ERR_LIMIT_EXCEEDED"
+    );
+}
+
 #[tokio::test]
 async fn fragmented_and_coalesced_frames_and_truncated_eof() {
     use tokio::io::AsyncWriteExt;
