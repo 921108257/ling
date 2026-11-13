@@ -1,6 +1,10 @@
 # CLI 与官方 SDK
 
-> 状态：v0.3 设计草案，尚未实现。本文定义客户端职责和验收边界，不代表已有可安装 SDK。
+> 状态：Rust SDK 已有阶段 1 实现；本文其余部分定义 v1.0 的完整职责与验收边界，不表示已经发布或完整支持。
+
+当前 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求；不提供连接池、并行多路复用、自动重连、Batch 执行或订阅。TLS、Java / Go 留在后续阶段。
+
+`Options` 的连接和请求超时必须大于零。`Error::Server` 保留服务端错误码；`Error::Local` 区分连接、超时、协议、本地参数和关闭错误，`outcome_unknown()` 表达发送后的不确定性。超时、断线或取消网络等待会关闭该连接；默认不重放请求。成功认证和 SELECT 逐次等待响应，业务请求不越过连接屏障。已发送 ID 不复用，旧 ID 响应丢弃，0 或未发送 ID 的普通响应使连接失步并关闭。
 
 ## 范围与职责
 
