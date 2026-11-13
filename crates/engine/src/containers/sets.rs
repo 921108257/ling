@@ -5,19 +5,25 @@ use linger_types::{DbError, Scalar, Value, ValueLimits};
 use rand::seq::{IndexedRandom, SliceRandom};
 use std::{collections::HashSet, time::Instant};
 
+/// 已验证标量的编码长度，不复制 String 或 Bytes。
+/// Returns the encoded length of a validated scalar without cloning String or Bytes.
+fn scalar_size(item: &Scalar) -> usize {
+    match item {
+        Scalar::Null => 1,
+        Scalar::Bool(_) => 2,
+        Scalar::String(s) => 5 + s.len(),
+        Scalar::Bytes(b) => 5 + b.len(),
+        _ => 9,
+    }
+}
+
 /// 复制成员前检查去重后集合的完整长度。
 /// Checks the complete deduplicated set length before cloning members.
 fn set(items: HashSet<&Scalar>, limits: ValueLimits) -> Result<Value, DbError> {
     let mut bytes = 5usize;
     u32::try_from(items.len()).map_err(|_| limit_error())?;
     for item in &items {
-        let len = match item {
-            Scalar::Null => 1,
-            Scalar::Bool(_) => 2,
-            Scalar::String(s) => 5 + s.len(),
-            Scalar::Bytes(b) => 5 + b.len(),
-            _ => 9,
-        };
+        let len = scalar_size(item);
         bytes = bytes
             .checked_add(len)
             .filter(|n| *n <= limits.max_bytes)
@@ -149,13 +155,20 @@ impl Engine {
                     return Ok(Effect::read(Value::List(result)));
                 }
                 pool.shuffle(&mut rng);
-                let selected = pool[..amount].to_vec();
+                let selected = &pool[..amount];
+                let mut wire = 6usize;
+                for member in selected {
+                    wire = wire
+                        .checked_add(scalar_size(member))
+                        .filter(|n| *n <= response_bytes)
+                        .ok_or_else(limit_error)?;
+                }
                 let values: Vec<_> = selected.iter().map(|v| Value::from((*v).clone())).collect();
                 let result = list(values.iter(), self.config.value)?;
                 if name == "SRANDMEMBER" {
                     return Ok(Effect::read(result));
                 }
-                let removed: HashSet<_> = selected.into_iter().collect();
+                let removed: HashSet<_> = selected.iter().copied().collect();
                 Ok(Effect::put(
                     result,
                     key,
@@ -200,9 +213,20 @@ impl Engine {
             sources.push(members);
         }
         let mut result: HashSet<_> = sources[0].iter().collect();
+        let mut bytes = 5 + sources[0].iter().map(scalar_size).sum::<usize>();
         for source in &sources[1..] {
             if name.starts_with("SUNION") {
-                result.extend(source.iter());
+                for member in source.iter() {
+                    if !result.contains(member) {
+                        // 并集只增不减，在扩展候选表前拒绝超限结果。
+                        // A union only grows; reject an oversized result before extending the table.
+                        bytes = bytes
+                            .checked_add(scalar_size(member))
+                            .filter(|n| *n <= self.config.value.max_bytes)
+                            .ok_or_else(limit_error)?;
+                        result.insert(member);
+                    }
+                }
             } else if name.starts_with("SINTER") {
                 result.retain(|v| source.contains(*v));
             } else {

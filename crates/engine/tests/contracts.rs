@@ -436,3 +436,60 @@ fn resource_failures_leave_values_versions_and_memory_unchanged() {
     );
     assert_eq!(run(&mut e, "DBSIZE", vec![]), Value::UInt(0));
 }
+
+/// 响应封套不占业务深度；集合结果超限不能覆盖目标。
+/// Response wrappers do not consume business depth; oversized unions never replace destinations.
+#[test]
+fn nested_results_and_union_budgets_preserve_contracts() {
+    let mut e = Engine::new(
+        Config {
+            value: ValueLimits {
+                max_depth: 1,
+                max_bytes: 32,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        9,
+    )
+    .unwrap();
+    put(
+        &mut e,
+        "m",
+        Value::Map(BTreeMap::from([("x".into(), Value::Null)])),
+    );
+    let Value::List(items) = run(&mut e, "MGET", vec![s("m"), s("m")]) else {
+        panic!()
+    };
+    assert_eq!(items[0], items[1]);
+    assert_eq!(
+        e.execute(0, "MGET", &[s("m"), s("m")], 32)
+            .unwrap_err()
+            .code,
+        "ERR_LIMIT_EXCEEDED"
+    );
+    put(
+        &mut e,
+        "a",
+        Value::Set(HashSet::from([Scalar::String("a".repeat(20))])),
+    );
+    put(
+        &mut e,
+        "b",
+        Value::Set(HashSet::from([Scalar::String("b".repeat(20))])),
+    );
+    let before = e.metadata(0, "a").unwrap();
+    fails(
+        &mut e,
+        "SUNIONSTORE",
+        vec![s("a"), s("a"), s("b")],
+        "ERR_LIMIT_EXCEEDED",
+    );
+    assert_eq!(e.metadata(0, "a").unwrap(), before);
+    assert_eq!(
+        e.execute(0, "SPOP", &[s("a")], 10).unwrap_err().code,
+        "ERR_LIMIT_EXCEEDED"
+    );
+    assert_eq!(e.metadata(0, "a").unwrap(), before);
+    assert_eq!(run(&mut e, "SCARD", vec![s("a")]), Value::UInt(1));
+}
