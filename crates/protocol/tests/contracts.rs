@@ -1,7 +1,12 @@
+//! 独立协议黄金向量与畸形输入契约；不依赖自编码自解码证明兼容。
+//! Independent protocol golden vectors and malformed-input contracts; round trips alone do not prove compatibility.
+
 use linger_protocol::*;
 use linger_types::{DbError, ErrorCode, Float, Scalar, Value};
 use std::collections::{BTreeMap, HashSet};
 
+/// 读取独立十六进制黄金文件，忽略排版空白。
+/// Reads independent hexadecimal golden files, ignoring formatting whitespace.
 fn hex(text: &str) -> Vec<u8> {
     let text: String = text.split_whitespace().collect();
     (0..text.len())
@@ -10,6 +15,8 @@ fn hex(text: &str) -> Vec<u8> {
         .collect()
 }
 
+/// 构造与黄金文件一一对应的类型值。
+/// Builds typed values corresponding to independent golden files.
 fn value(name: &str) -> Value {
     match name {
         "null" => Value::Null,
@@ -35,6 +42,8 @@ fn value(name: &str) -> Value {
     }
 }
 
+/// 构造包含完整宽度字段的复合事件身份。
+/// Builds a composite event identity with full-width fields.
 fn event_id() -> Value {
     Value::Map(BTreeMap::from([
         (
@@ -47,6 +56,8 @@ fn event_id() -> Value {
     ]))
 }
 
+/// 构造各帧种类的预期语义，不由编码器生成预期字节。
+/// Builds expected semantics for each frame kind without deriving expected bytes from the encoder.
 fn frame(name: &str) -> Frame {
     let (id, body) = match name {
         "hello" => (
@@ -88,6 +99,8 @@ fn frame(name: &str) -> Frame {
     }
 }
 
+/// 十种类型与独立冻结字节双向一致。
+/// All ten types agree in both directions with independently frozen bytes.
 #[test]
 fn independent_value_golden_vectors() {
     for line in include_str!("../../../tests/fixtures/protocol/values.tsv")
@@ -110,6 +123,8 @@ fn independent_value_golden_vectors() {
     }
 }
 
+/// 帧头、错误、Batch 与控制帧符合黄金字节。
+/// Headers, errors, Batch, and control frames match golden bytes.
 #[test]
 fn independent_frame_golden_vectors() {
     for line in include_str!("../../../tests/fixtures/protocol/frames.tsv")
@@ -124,6 +139,7 @@ fn independent_frame_golden_vectors() {
             expected,
             "{name}"
         );
+        // Map 顺序不属于线上保证，因此比较重新编码结果的语义。
         // Map order is not a wire guarantee; compare the re-encoded data semantically.
         let encoded = encode_frame(&expected, Limits::default()).unwrap();
         if !matches!(name, "event" | "ack") {
@@ -133,6 +149,8 @@ fn independent_frame_golden_vectors() {
     }
 }
 
+/// 区分结构无法继续与业务值非法但结构完整。
+/// Separates undecodable structures from structurally complete invalid business values.
 #[test]
 fn invalid_value_vectors_distinguish_semantic_errors() {
     for line in include_str!("../../../tests/fixtures/protocol/invalid-values.tsv")
@@ -146,6 +164,8 @@ fn invalid_value_vectors_distinguish_semantic_errors() {
     }
 }
 
+/// 帧标记、版本、ID 和长度在分配负载前拒绝。
+/// Invalid flags, versions, IDs, and lengths fail before payload allocation.
 #[test]
 fn flags_versions_ids_and_lengths_are_checked_before_payload_allocation() {
     let wire = encode_frame(&frame("hello"), Limits::default()).unwrap();
@@ -174,6 +194,8 @@ fn flags_versions_ids_and_lengths_are_checked_before_payload_allocation() {
     assert!(decode_frame(&bytes, Limits::default()).is_err());
 }
 
+/// 业务错误不掩盖帧尾结构损坏。
+/// Business errors cannot hide structural corruption later in the frame.
 #[test]
 fn invalid_business_values_are_isolated_and_entire_frame_is_checked() {
     let mut payload = hex("05 00000003 534554 07 00000002 05 00000001 6b 04 7ff8000000000001");
@@ -191,6 +213,8 @@ fn invalid_business_values_are_isolated_and_entire_frame_is_checked() {
     assert!(decode_frame(&wire, Limits::default()).unwrap_err().fatal);
 }
 
+/// 限制分配与递归，同时不把协议封套算作业务深度。
+/// Bounds allocation and recursion without charging protocol envelopes as business depth.
 #[test]
 fn decoding_is_bounded_and_envelopes_do_not_count_as_business_depth() {
     let limits = Limits {
@@ -226,6 +250,8 @@ fn decoding_is_bounded_and_envelopes_do_not_count_as_business_depth() {
     assert_eq!(members.len(), 1);
 }
 
+/// 小 Map 和 Set 的最小分配也计入预算。
+/// Even minimum allocations for small Maps and Sets count against the budget.
 #[test]
 fn small_map_and_set_tables_are_charged_before_allocation() {
     let limits = Limits {
@@ -237,6 +263,8 @@ fn small_map_and_set_tables_are_charged_before_allocation() {
     }
 }
 
+/// Batch 单项业务失败可隔离，但截断整帧必须拒绝。
+/// Batch item business failures are isolated, but truncation rejects the whole frame.
 #[test]
 fn batch_business_error_is_isolated_but_truncated_tail_rejects_all() {
     let payload = hex(
@@ -304,6 +332,8 @@ fn business_limits_do_not_restrict_keys_or_response_envelopes() {
     );
 }
 
+/// 流传输正确处理半包、粘包和不完整 EOF。
+/// Stream transport handles fragmentation, coalescing, and truncated EOF.
 #[tokio::test]
 async fn fragmented_and_coalesced_frames_and_truncated_eof() {
     use tokio::io::AsyncWriteExt;

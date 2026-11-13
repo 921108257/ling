@@ -1,6 +1,11 @@
+//! 类型契约：精度、相等、哈希、深度与稳定错误码。
+//! Type contracts: precision, equality, hashing, depth, and stable error codes.
+
 use linger_types::{ErrorCode, Float, Scalar, Value, ValueLimits};
 use std::collections::{BTreeMap, HashSet};
 
+/// 类型敏感的相等与哈希一致，拒绝 NaN 并归一化正负零。
+/// Type-sensitive equality agrees with hashing, rejects NaN, and canonicalizes signed zero.
 #[test]
 fn scalar_equality_and_hash_preserve_types() {
     let members = HashSet::from([
@@ -28,6 +33,8 @@ fn scalar_equality_and_hash_preserve_types() {
     );
 }
 
+/// 容器保留顺序或集合语义，非法名称、大小和深度均拒绝。
+/// Containers retain ordered or set semantics and reject invalid names, sizes, and depths.
 #[test]
 fn container_equality_and_validation() {
     let a = Value::Map(BTreeMap::from([
@@ -80,6 +87,8 @@ fn container_equality_and_validation() {
     assert!(ValueLimits::default().validate_key("").is_err());
 }
 
+/// 空容器仍消耗一层业务深度。
+/// Empty containers still consume one business nesting level.
 #[test]
 fn empty_containers_count_as_a_level() {
     for value in [
@@ -99,6 +108,8 @@ fn empty_containers_count_as_a_level() {
     }
 }
 
+/// 注册表错误码唯一且使用固定线上前缀。
+/// Registered error codes are unique and use the fixed wire prefix.
 #[test]
 fn error_codes_are_unique_and_stable() {
     let codes: HashSet<_> = ErrorCode::ALL.iter().map(|code| code.as_str()).collect();

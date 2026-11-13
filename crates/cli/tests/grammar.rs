@@ -1,7 +1,12 @@
+//! CLI 文本契约：类型标签、完整整数精度和明确参数边界。
+//! CLI text contracts: type tags, full integer precision, and explicit argument boundaries.
+
 use linger_cli::{display_value, parse_command, parse_value};
 use linger_types::{Float, Scalar, Value};
 use std::collections::{BTreeMap, HashSet};
 
+/// 十种 Value 的展示可逆，保留整数、Bytes 和 Float 区别。
+/// Rendering round trips all ten Values while distinguishing integers, Bytes, and Float.
 #[test]
 fn typed_values_display_without_losing_precision_or_type() {
     let values = [
@@ -33,6 +38,8 @@ fn typed_values_display_without_losing_precision_or_type() {
     );
 }
 
+/// 拒绝隐式数字、无效转义、重复字段和过深递归。
+/// Rejects implicit numbers, invalid escapes, duplicate fields, and excessive recursion.
 #[test]
 fn rejects_invalid_or_ambiguous_literals() {
     for literal in [
@@ -58,6 +65,8 @@ fn rejects_invalid_or_ambiguous_literals() {
     assert!(parse_value(&deep).is_err());
 }
 
+/// 连接命令按签名解析，错误与 Debug 不回显密码。
+/// Connection commands follow signatures and errors or Debug never echo passwords.
 #[test]
 fn command_signatures_and_secret_safe_errors() {
     let request = parse_command(" pInG \"hello world\" ").unwrap();

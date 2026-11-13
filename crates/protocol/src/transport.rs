@@ -1,14 +1,25 @@
+//! 异步流的精确帧读取与完整写入；调用方负责超时和取消。
+//! Exact frame reads and complete writes on async streams; callers own timeouts and cancellation.
+
 use crate::*;
 use std::io;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
+/// 区分传输错误与协议错误，避免丢失致命性信息。
+/// Separates transport and protocol failures without losing fatality information.
 #[derive(Debug)]
 pub enum ReadError {
+    /// 底层 I/O 失败；不暗示请求未执行。
+    /// Underlying I/O failure; does not imply the request was unexecuted.
     Io(io::Error),
+    /// 结构、语义或编码预算失败。
+    /// Structural, semantic, or encoding-budget failure.
     Decode(DecodeError),
 }
 
 impl std::fmt::Display for ReadError {
+    /// 保留 I/O 或协议说明，不伪装为业务缺失。
+    /// Preserves I/O or protocol diagnostics without turning them into business absence.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io(e) => e.fmt(f),
@@ -18,7 +29,11 @@ impl std::fmt::Display for ReadError {
 }
 impl std::error::Error for ReadError {}
 
-/// Cancellation after any byte was read invalidates this stream; callers close it.
+/// 先校验帧头再分配负载；干净 EOF 返回 None，截断帧返回错误。
+/// Validates the header before payload allocation; clean EOF returns None, truncation fails.
+///
+/// 读取任何字节后取消会破坏帧边界，调用方必须关闭流。
+/// Cancellation after any byte was read invalidates framing; callers must close the stream.
 pub async fn read_frame<R: AsyncRead + Unpin>(
     reader: &mut R,
     limits: Limits,
@@ -55,6 +70,8 @@ pub async fn read_frame<R: AsyncRead + Unpin>(
         .map_err(ReadError::Decode)
 }
 
+/// 发送前完成整帧编码与限额校验；I/O 失败可能已经写出部分字节。
+/// Encodes and validates the entire frame first; an I/O failure may follow partial transmission.
 pub async fn write_frame<W: AsyncWrite + Unpin>(
     writer: &mut W,
     frame: &Frame,

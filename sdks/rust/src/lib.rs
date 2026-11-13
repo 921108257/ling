@@ -1,17 +1,28 @@
-//! Stage-1 async client. One caller owns a connection and its database context.
+//! 异步 Rust 客户端；调用方独占连接和数据库上下文，不自动重放请求。
+//! Async Rust client; callers own the connection and database context, with no automatic request replay.
 
 use linger_protocol::{Body, Frame, Limits, ReadError, Request, encode_frame, read_frame};
 pub use linger_types::{DbError, ErrorCode, Float, Scalar, Value};
 use std::{collections::BTreeMap, net::SocketAddr, time::Duration};
 use tokio::{io::AsyncWriteExt, net::TcpStream, time::timeout};
 
+/// 连接、请求时限和编码预算；连接时拒绝零值或无法表示的时限。
+/// Connection and request deadlines with codec budgets; zero or unrepresentable deadlines fail at connect.
 #[derive(Clone, Debug)]
 pub struct Options {
+    /// TCP 建连的总时限。
+    /// Overall TCP connection deadline.
     pub connect_timeout: Duration,
+    /// 一次请求发送与匹配响应的总时限。
+    /// Overall deadline for sending a request and receiving its matching response.
     pub request_timeout: Duration,
+    /// 客户端独立执行的协议资源上限。
+    /// Protocol resource caps enforced independently by the client.
     pub limits: Limits,
 }
 impl Default for Options {
+    /// 默认建连 5 秒、请求 30 秒，使用标准协议预算。
+    /// Defaults to a five-second connect and thirty-second request deadline with standard codec budgets.
     fn default() -> Self {
         Self {
             connect_timeout: Duration::from_secs(5),
@@ -21,27 +32,52 @@ impl Default for Options {
     }
 }
 
+/// 区分服务端业务失败与客户端传输失败，保留结果未知语义。
+/// Separates server failures from client transport failures while retaining unknown-outcome semantics.
 #[derive(Debug)]
 pub enum Error {
+    /// 服务端返回的稳定错误。
+    /// Stable error returned by the server.
     Server(DbError),
+    /// 客户端连接、协议或生命周期错误。
+    /// Client connection, protocol, or lifecycle failure.
     Local {
+        /// 本地错误分类。
+        /// Local failure category.
         kind: LocalError,
+        /// 为真时无法确认已发送请求的执行结果。
+        /// True when the outcome of a sent request cannot be confirmed.
         outcome_unknown: bool,
     },
 }
 
+/// 不包含凭据和原始 Value 的本地错误分类。
+/// Local error categories containing neither credentials nor raw Values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LocalError {
+    /// TCP 建连或初始化套接字失败。
+    /// TCP connection or socket initialization failed.
     Connect,
+    /// 建立连接或等待请求超过时限。
+    /// Connection establishment or request wait timed out.
     Timeout,
+    /// 请求期间流关闭或发生 I/O 错误。
+    /// Stream closed or I/O failed during a request.
     Disconnected,
+    /// 服务端帧或能力不满足协议契约。
+    /// Server frame or capabilities violated the protocol contract.
     Protocol,
+    /// 请求在发送前无法编码或配置非法。
+    /// Request could not be encoded before sending, or configuration was invalid.
     InvalidRequest,
+    /// 连接已经关闭或请求编号耗尽。
+    /// Connection closed or request numbers exhausted.
     Closed,
 }
 
 impl Error {
-    /// Sending a request is not proof that it was executed, or that it was not.
+    /// 发送不代表已执行或未执行；调用方必须显式处理结果未知。
+    /// Sending proves neither execution nor nonexecution; callers must handle unknown outcomes.
     pub fn outcome_unknown(&self) -> bool {
         match self {
             Self::Server(error) => error.code == ErrorCode::CommitUnknown.as_str(),
@@ -50,6 +86,8 @@ impl Error {
             } => *outcome_unknown,
         }
     }
+    /// 构造本地错误并明确记录执行结果是否未知。
+    /// Constructs a local error with an explicit unknown-outcome flag.
     fn local(kind: LocalError, outcome_unknown: bool) -> Self {
         Self::Local {
             kind,
@@ -58,6 +96,8 @@ impl Error {
     }
 }
 impl std::fmt::Display for Error {
+    /// 保留错误分类及结果未知状态，不回显请求内容。
+    /// Preserves failure category and unknown outcome without echoing request contents.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Server(error) => error.fmt(f),
@@ -78,15 +118,29 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
+/// 单调用方连接；通过可变借用保证屏障，不共享可变 SELECT 状态。
+/// Single-caller connection; mutable borrowing enforces barriers without shared SELECT state.
 pub struct Client {
+    /// 请求等待时移出，取消即关闭。
+    /// Taken during request waits so cancellation closes it.
     stream: Option<TcpStream>,
+    /// 创建时固定的连接预算。
+    /// Connection budgets fixed at creation.
     options: Options,
+    /// 单调请求编号，不复用已发送 ID。
+    /// Monotonic request number; sent IDs are never reused.
     last_id: u64,
+    /// 最后一次成功 SELECT 的结果。
+    /// Result of the last successful SELECT.
     database: Option<u16>,
+    /// 校验通过的能力映射。
+    /// Validated capability map.
     hello: BTreeMap<String, Value>,
 }
 
 impl Client {
+    /// 连接并依次执行 HELLO、可选 AUTH 和 SELECT；任一步失败均释放连接。
+    /// Connects then performs HELLO, optional AUTH, and SELECT; any failure releases the connection.
     pub async fn connect(
         address: SocketAddr,
         password: Option<&str>,
@@ -155,18 +209,27 @@ impl Client {
         Ok(client)
     }
 
+    /// 读取握手确认的服务端能力，不推断未公布的功能。
+    /// Reads capabilities confirmed by the handshake without inferring unadvertised features.
     pub fn capabilities(&self) -> &BTreeMap<String, Value> {
         &self.hello
     }
+    /// 返回最后确认成功选择的数据库编号。
+    /// Returns the last database number confirmed by a successful SELECT.
     pub fn database(&self) -> Option<u16> {
         self.database
     }
+    /// 连接关闭后不会隐式重连。
+    /// Closed connections never reconnect implicitly.
     pub fn is_closed(&self) -> bool {
         self.stream.is_none()
     }
 
-    /// No automatic replay. Dropping this future after polling closes the stream:
-    /// it is taken out of self before the first network await.
+    /// 执行任意类型化命令，不自动重放；超时、断线或取消后释放连接。
+    /// Executes any typed command without replay; timeout, disconnect, or cancellation releases the socket.
+    ///
+    /// 第一次网络等待前移出套接字，避免取消后迟到响应污染下一请求。
+    /// Takes the socket before the first network await so cancellation cannot misroute a late response.
     pub async fn execute(&mut self, command: &str, arguments: Vec<Value>) -> Result<Value, Error> {
         let request = Request::new(command, arguments);
         let is_quit = request.command == "QUIT";
@@ -232,6 +295,8 @@ impl Client {
         }
     }
 
+    /// 发送可选 String 回显，返回服务端的类型化结果。
+    /// Sends an optional String echo and returns the typed server result.
     pub async fn ping(&mut self, message: Option<&str>) -> Result<Value, Error> {
         self.execute(
             "PING",
@@ -242,6 +307,8 @@ impl Client {
         )
         .await
     }
+    /// 等待 SELECT 成功后更新上下文，失败保留原库号。
+    /// Updates context only after SELECT succeeds; failure retains the prior database.
     pub async fn select(&mut self, database: u16) -> Result<(), Error> {
         if self
             .execute("SELECT", vec![Value::UInt(u64::from(database))])
@@ -253,6 +320,8 @@ impl Client {
         }
         Ok(())
     }
+    /// 发送 QUIT 并释放套接字；重复关闭为成功无操作。
+    /// Sends QUIT and releases the socket; repeated close is a successful no-op.
     pub async fn close(&mut self) -> Result<(), Error> {
         if self.is_closed() {
             return Ok(());

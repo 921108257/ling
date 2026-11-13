@@ -1,3 +1,6 @@
+//! 真实 TCP 服务契约：连接状态、共享引擎、并发与预算失败。
+//! Real TCP service contracts: connection state, shared engine, concurrency, and budget failures.
+
 use linger_protocol::{Body, Frame, Limits, Request, encode_frame, read_frame, write_frame};
 use linger_server::{Config, Server};
 use linger_types::Value;
@@ -7,6 +10,8 @@ use tokio::{
     sync::oneshot,
 };
 
+/// 在临时端口启动隔离服务，返回显式停止通道。
+/// Starts an isolated service on an ephemeral port with an explicit stop channel.
 async fn start(
     config: Config,
 ) -> (
@@ -29,6 +34,8 @@ async fn start(
     (addr, tx, task)
 }
 
+/// 构造指定请求编号的类型化请求帧。
+/// Builds a typed request frame with the specified request number.
 fn request(id: u64, name: &str, args: Vec<Value>) -> Frame {
     Frame {
         request_id: id,
@@ -36,6 +43,8 @@ fn request(id: u64, name: &str, args: Vec<Value>) -> Frame {
     }
 }
 
+/// 发送并读取一帧，核对响应请求 ID。
+/// Sends and reads one frame and checks its matching request ID.
 async fn call(stream: &mut TcpStream, id: u64, name: &str, args: Vec<Value>) -> Body {
     write_frame(stream, &request(id, name, args), Limits::default())
         .await
@@ -48,6 +57,8 @@ async fn call(stream: &mut TcpStream, id: u64, name: &str, args: Vec<Value>) -> 
     frame.body
 }
 
+/// 同时核对稳定错误码和普通或致命帧种类。
+/// Checks both the stable error code and ordinary versus fatal frame kind.
 fn assert_error(body: Body, code: &str, fatal: bool) {
     match body {
         Body::Response(Err(e)) if !fatal => assert_eq!(e.code, code),
@@ -56,6 +67,8 @@ fn assert_error(body: Body, code: &str, fatal: bool) {
     }
 }
 
+/// 握手能力、命令错误和 QUIT 关闭行为符合协议。
+/// Handshake capabilities, command errors, and QUIT closure follow the protocol.
 #[tokio::test]
 async fn hello_capabilities_and_command_errors_and_quit() {
     let (addr, stop, task) = start(Config::default()).await;
@@ -113,6 +126,8 @@ async fn hello_capabilities_and_command_errors_and_quit() {
     task.await.unwrap();
 }
 
+/// 粘包中的认证、选库和关闭屏障依接收顺序执行。
+/// Authentication, selection, and close barriers in coalesced frames execute in receive order.
 #[tokio::test]
 async fn authentication_and_select_barriers_follow_receive_order() {
     let mut config = Config::default();
@@ -167,6 +182,8 @@ async fn authentication_and_select_barriers_follow_receive_order() {
     task.await.unwrap();
 }
 
+/// 握手前请求、错误版本和重用 ID 必须断开。
+/// Pre-handshake requests, invalid versions, and reused IDs close the connection.
 #[tokio::test]
 async fn rejects_prehello_wrong_versions_and_reused_ids() {
     let (addr, stop, task) = start(Config::default()).await;
@@ -217,6 +234,8 @@ async fn rejects_prehello_wrong_versions_and_reused_ids() {
     task.await.unwrap();
 }
 
+/// 完整业务错误保留连接，结构错误关闭连接。
+/// Complete business errors retain the connection while structural errors close it.
 #[tokio::test]
 async fn semantic_errors_keep_connection_and_structural_errors_close_it() {
     let (addr, stop, task) = start(Config::default()).await;
@@ -262,6 +281,8 @@ async fn semantic_errors_keep_connection_and_structural_errors_close_it() {
     task.await.unwrap();
 }
 
+/// 响应超限明确报错，服务停止时清理仍存活连接。
+/// Oversized responses fail explicitly and shutdown cleans up live connections.
 #[tokio::test]
 async fn response_budget_and_shutdown_with_live_connection() {
     let mut config = Config::default();
@@ -293,6 +314,8 @@ async fn response_budget_and_shutdown_with_live_connection() {
     );
 }
 
+/// 连接满载拒绝新连接，半帧超时释放已有连接。
+/// Full connection capacity rejects newcomers and partial-frame timeouts release existing connections.
 #[tokio::test]
 async fn partial_frame_deadline_and_connection_limit() {
     let mut config = Config::default();

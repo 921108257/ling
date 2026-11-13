@@ -1,3 +1,6 @@
+//! 单连接状态机、认证和选库屏障；网络等待不持有数据引擎锁。
+//! Per-connection state, authentication, and database barriers; network waits never hold the engine lock.
+
 use crate::Config;
 use linger_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
 use linger_types::{DbError, ErrorCode, Value};
@@ -10,6 +13,8 @@ use tokio::{
     time::{Instant, timeout, timeout_at},
 };
 
+/// 按接收顺序处理请求，致命帧错误或关闭信号结束连接。
+/// Processes requests in receive order and closes on fatal framing errors or shutdown.
 pub(crate) async fn serve(
     mut stream: TcpStream,
     config: &Config,
@@ -145,6 +150,8 @@ pub(crate) async fn serve(
     let _ = stream.shutdown().await;
 }
 
+/// 构造致命 ERROR 帧，与普通命令错误区分。
+/// Builds a fatal ERROR frame, distinct from an ordinary command error.
 fn fatal(id: u64, code: ErrorCode, message: &'static str) -> Frame {
     Frame {
         request_id: id,
@@ -152,14 +159,27 @@ fn fatal(id: u64, code: ErrorCode, message: &'static str) -> Frame {
     }
 }
 
-// Serial execution is the stage-1 baseline and naturally enforces all barriers.
+// 连接内串行执行；跨连接数据操作由引擎的唯一执行权保护。
+// Connections execute serially; exclusive engine ownership protects cross-connection data operations.
+/// 连接独占状态；串行执行明确保证 AUTH / SELECT / QUIT 屏障。
+/// Connection-owned state; serial execution explicitly enforces AUTH, SELECT, and QUIT barriers.
 struct Session {
+    /// 是否完成唯一一次 HELLO。
+    /// Whether the sole HELLO handshake completed.
     hello: bool,
+    /// 当前认证状态；失败重认证会清除。
+    /// Current authentication state, revoked by failed reauthentication.
     authenticated: bool,
+    /// 当前连接选择的数据库。
+    /// Database selected by this connection.
     db: u16,
+    /// 最后接受的请求编号，避免重用。
+    /// Last accepted request number, preventing reuse.
     last_id: u64,
 }
 impl Session {
+    /// 先验证连接权限与参数，再在同步临界区执行数据命令。
+    /// Validates connection permissions and arguments, then executes data commands in a synchronous critical section.
     fn execute(
         &mut self,
         request: Request,
@@ -235,7 +255,8 @@ impl Session {
             },
             "AUTH" => match args {
                 [Value::String(password)] => {
-                    // A failed reauthentication never leaves an authenticated session.
+                    // 重新认证失败后必须撤销已有认证状态。
+                    // Failed reauthentication must revoke any prior authenticated state.
                     self.authenticated = !config.auth.enabled || password == &config.auth.password;
                     if self.authenticated {
                         Ok(Value::Bool(true))
@@ -275,8 +296,11 @@ impl Session {
     }
 }
 
+/// 分别限制帧间空闲和半帧接收，取消后连接不再复用。
+/// Separately limits inter-frame idle time and partial reads; cancelled streams are never reused.
 async fn receive(stream: &mut TcpStream, config: &Config) -> Result<Option<Frame>, ReadError> {
     let idle = config.server.idle_timeout_ms;
+    // 只预读首字节，用于区分空闲时间与半帧接收期限。
     // Peek only to separate idle time from the deadline for a partially received frame.
     let mut first = [0];
     let peek = if idle == 0 {
@@ -305,6 +329,8 @@ async fn receive(stream: &mut TcpStream, config: &Config) -> Result<Option<Frame
     }
 }
 
+/// 完整编码后按有界块写出，所有块共用一个截止时间。
+/// Encodes fully then writes bounded chunks sharing one deadline.
 async fn send(stream: &mut TcpStream, frame: Frame, config: &Config) -> Result<(), ()> {
     let limits = config.limits();
     let bytes = encode_frame(&frame, limits)

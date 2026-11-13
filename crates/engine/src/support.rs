@@ -6,14 +6,24 @@ use std::{collections::BTreeMap, mem::size_of};
 
 /// 一个尚未发布的 Key 变更；An unpublished change to one key.
 pub(crate) struct Change {
+    /// 变更目标，生成变更前已经校验。
+    /// Target name, validated before constructing the change.
     pub key: String,
+    /// Some 表示替换，None 表示删除。
+    /// Some replaces the entry; None deletes it.
     pub value: Option<Value>,
+    /// 局部修改保留期限；整体替换清除期限。
+    /// Local mutations preserve deadlines; whole replacements clear them.
     pub keep_deadline: bool,
 }
 
 /// 响应和变更共享同一提交边界；Result and changes share one publication boundary.
 pub(crate) struct Effect {
+    /// 发布前必须能完整编码的成功结果。
+    /// Successful result that must be fully encodable before publication.
     pub result: Value,
+    /// 同一命令无重复 Key 的待提交变更。
+    /// Pending changes with no duplicate key within one command.
     pub changes: Vec<Change>,
 }
 

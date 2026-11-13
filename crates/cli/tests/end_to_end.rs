@@ -1,3 +1,6 @@
+//! 真实 CLI 子进程与 TCP 服务的端到端契约。
+//! End-to-end contracts between real CLI subprocesses and the TCP service.
+
 use linger_server::{Config, Server};
 use std::{
     io::Write,
@@ -5,6 +8,8 @@ use std::{
 };
 use tokio::{net::TcpListener, sync::oneshot};
 
+/// 在临时端口启动可选认证服务。
+/// Starts a service with optional authentication on an ephemeral port.
 async fn start(auth: bool) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle<()>) {
     let mut config = Config::default();
     if auth {
@@ -26,6 +31,8 @@ async fn start(auth: bool) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle
     (port, tx, task)
 }
 
+/// 运行真实 CLI 子进程并收集输出，显式清理继承密码。
+/// Runs a real CLI subprocess and collects output after clearing inherited passwords.
 async fn cli(port: u16, source: &str, stdin: bool, password: Option<&str>) -> Output {
     let source = source.to_owned();
     let password = password.map(str::to_owned);
@@ -56,6 +63,8 @@ async fn cli(port: u16, source: &str, stdin: bool, password: Option<&str>) -> Ou
     .unwrap()
 }
 
+/// 标准输入逐行执行保持结果顺序，任一失败保留非零退出码。
+/// Line-by-line stdin execution preserves result order and any failure retains a nonzero exit code.
 #[tokio::test]
 async fn real_cli_ping_unknown_command_and_batch_input_exit_status() {
     let (port, stop, task) = start(false).await;
@@ -86,6 +95,8 @@ async fn real_cli_ping_unknown_command_and_batch_input_exit_status() {
     task.await.unwrap();
 }
 
+/// 真实认证失败通过 stderr 和退出码表达，不回显密码。
+/// Real authentication failures use stderr and exit status without echoing passwords.
 #[tokio::test]
 async fn real_cli_auth_errors_do_not_echo_passwords() {
     let (port, stop, task) = start(true).await;

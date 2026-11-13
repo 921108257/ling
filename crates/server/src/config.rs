@@ -1,14 +1,27 @@
+//! 严格解析启动配置；未知字段和不支持的能力均明确拒绝。
+//! Strict startup configuration parsing; unknown fields and unsupported features are rejected.
+
 use linger_protocol::Limits;
 use linger_types::{DbError, ErrorCode};
 use serde::Deserialize;
 use std::{net::IpAddr, path::Path, time::Duration};
 
+/// 当前阶段支持的配置全集；默认值在加载后仍经过验证。
+/// Complete supported configuration for this stage; defaults are validated after loading.
 #[derive(Clone, Deserialize, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
+    /// 监听和连接预算。
+    /// Listening and connection budgets.
     pub server: ServerConfig,
+    /// 实例级认证设置。
+    /// Instance-wide authentication settings.
     pub auth: AuthConfig,
+    /// 数据库命名空间设置。
+    /// Database namespace settings.
     pub database: DatabaseConfig,
+    /// 帧和解码入口设置。
+    /// Frame and decoding settings.
     pub protocol: ProtocolConfig,
     /// 数据引擎限额；Data-engine resource limits.
     pub engine: EngineConfig,
@@ -34,6 +47,8 @@ pub struct EngineConfig {
 }
 
 impl Default for EngineConfig {
+    /// 默认阶段 2 单分片与标准业务值限额。
+    /// Defaults to the stage 2 single shard and standard business-value limits.
     fn default() -> Self {
         Self {
             shard_count: 0,
@@ -46,23 +61,49 @@ impl Default for EngineConfig {
     }
 }
 
+/// TCP 监听、连接数量、超时和单连接缓冲限制。
+/// TCP listening, connection count, timeout, and per-connection buffer limits.
 #[derive(Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ServerConfig {
+    /// 监听 IP，默认回环地址。
+    /// Listening IP, loopback by default.
     pub host: IpAddr,
+    /// 非零监听端口。
+    /// Nonzero listening port.
     pub port: u16,
+    /// 操作系统接入队列长度。
+    /// OS accept backlog length.
     pub backlog: u32,
+    /// 同时存活的连接上限。
+    /// Maximum simultaneous live connections.
     pub max_connections: usize,
+    /// 帧间空闲超时，零表示禁用。
+    /// Idle timeout between frames; zero disables it.
     pub idle_timeout_ms: u64,
+    /// 半帧接收及响应发送期限，零禁用接收期限。
+    /// Partial-frame read and response-write timeout; zero disables the read deadline.
     pub request_timeout_ms: u64,
+    /// 请求负载字节上限，不含帧头。
+    /// Request payload cap excluding the header.
     pub max_request_bytes: usize,
+    /// 响应负载字节上限，在引擎发布前检查。
+    /// Response payload cap checked before engine publication.
     pub max_response_bytes: usize,
+    /// 关闭排空任务的最长等待毫秒数。
+    /// Maximum milliseconds to drain tasks during shutdown.
     pub shutdown_timeout_ms: u64,
+    /// 声明的每连接在途上限；当前实际串行执行。
+    /// Configured per-connection inflight cap; execution is currently serial.
     pub max_inflight_per_connection: usize,
+    /// 单次有界写出的分块字节数。
+    /// Chunk bytes used for bounded writes.
     pub write_buffer_bytes: usize,
 }
 
 impl Default for ServerConfig {
+    /// 默认回环监听与有界连接、超时和缓冲。
+    /// Defaults to loopback listening with bounded connections, deadlines, and buffers.
     fn default() -> Self {
         Self {
             host: "127.0.0.1".parse().unwrap(),
@@ -80,21 +121,36 @@ impl Default for ServerConfig {
     }
 }
 
+// 不实现 Debug：结构展示与解析错误均不得泄露凭据。
 // No Debug implementation: neither this structure nor parse errors may reveal credentials.
+/// 实例级可选密码认证；不派生 Debug，避免泄露凭据。
+/// Optional instance password authentication; no derived Debug to avoid credential exposure.
 #[derive(Clone, Deserialize, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct AuthConfig {
+    /// 是否要求客户端认证。
+    /// Whether clients must authenticate.
     pub enabled: bool,
+    /// 启用时必须非空；日志和错误不得包含其内容。
+    /// Must be nonempty when enabled; never included in logs or errors.
     pub password: String,
 }
 
+/// 数据库命名空间数量及新连接默认选择。
+/// Database namespace count and default selection for new connections.
 #[derive(Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct DatabaseConfig {
+    /// 命名空间数量，范围 1..=65536。
+    /// Namespace count, from 1 through 65536.
     pub databases: u32,
+    /// 新连接初始库号，必须小于数据库数量。
+    /// Initial database number, smaller than the namespace count.
     pub default_db: u16,
 }
 impl Default for DatabaseConfig {
+    /// 默认 16 个隔离数据库，新连接选择 0。
+    /// Defaults to 16 isolated databases with database zero for new connections.
     fn default() -> Self {
         Self {
             databases: 16,
@@ -103,14 +159,24 @@ impl Default for DatabaseConfig {
     }
 }
 
+/// 协议帧与批量编码限制，不表示已支持批量执行。
+/// Frame and batch codec limits, not a claim of batch execution support.
 #[derive(Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ProtocolConfig {
+    /// 完整帧上限，必须容纳最大方向负载及帧头。
+    /// Complete-frame cap, large enough for either payload plus its header.
     pub max_frame_bytes: usize,
+    /// 批量编码最大子项数。
+    /// Maximum items in a batch encoding.
     pub max_batch_size: usize,
+    /// 保留的调度开关；阶段 2 仍逐连接串行处理。
+    /// Reserved scheduling setting; stage 2 processes each connection serially.
     pub pipeline_enabled: bool,
 }
 impl Default for ProtocolConfig {
+    /// 保留协议默认帧和 Batch 数量限制。
+    /// Retains default frame and Batch item limits.
     fn default() -> Self {
         Self {
             max_frame_bytes: 128 * 1024 * 1024,
@@ -120,21 +186,28 @@ impl Default for ProtocolConfig {
     }
 }
 
+/// 生成不含配置源片段的安全错误。
+/// Builds an error without configuration source excerpts.
 fn invalid(message: &'static str) -> DbError {
     DbError::new(ErrorCode::ConfigInvalid, message)
 }
 
 impl Config {
+    /// 加载 UTF-8 TOML 并校验；错误隐藏可能包含密码的原文。
+    /// Loads UTF-8 TOML and validates it; errors omit source text that could contain passwords.
     pub fn load(path: &Path) -> Result<Self, DbError> {
         let source =
             std::fs::read_to_string(path).map_err(|_| invalid("Cannot read configuration file"))?;
-        // toml::Error includes source excerpts, potentially including auth.password.
+        // TOML 错误可能附带含 auth.password 的源片段，因此只返回安全说明。
+        // TOML errors may include auth.password source excerpts, so return only a safe description.
         let config: Self = toml::from_str(&source)
             .map_err(|_| invalid("Invalid configuration syntax, field or type"))?;
         config.validate()?;
         Ok(config)
     }
 
+    /// 监听前验证范围与组合关系，不创建引擎或分配索引。
+    /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
         if self.engine.shard_count > 1 {
             return Err(invalid("Stage 2 supports a single shard"));
@@ -189,6 +262,8 @@ impl Config {
         Ok(())
     }
 
+    /// 生成网络层使用的同一组配置限额。
+    /// Builds the same configured limits used by the network layer.
     pub fn limits(&self) -> Limits {
         Limits {
             max_frame_bytes: self.protocol.max_frame_bytes,

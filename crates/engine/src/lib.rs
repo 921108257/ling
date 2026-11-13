@@ -25,6 +25,8 @@ pub struct Config {
 }
 
 impl Default for Config {
+    /// 默认 16 个库且不限制受管内存和 Key 数。
+    /// Defaults to 16 databases with unlimited managed memory and key count.
     fn default() -> Self {
         Self {
             databases: 16,
@@ -78,18 +80,34 @@ pub struct Metadata {
 /// 索引条目；受管字节与元数据和值共同发布。
 /// Indexed entry; its managed charge is published with metadata and value.
 struct Entry {
+    /// 条目当前持有的完整业务值。
+    /// Complete business value owned by this entry.
     value: Value,
+    /// 与值原子发布的生命周期及期限。
+    /// Lifecycle and deadline published atomically with the value.
     metadata: Metadata,
+    /// 本条目占用的保守受管字节数。
+    /// Conservative managed-byte charge for this entry.
     bytes: usize,
 }
 
 /// 通过独占可变引用执行命令；服务端负责在外层取得唯一执行权。
 /// Executes commands through an exclusive mutable reference; the server acquires ownership.
 pub struct Engine {
+    /// 启动时固定的业务和容量限制。
+    /// Business and capacity limits fixed at startup.
     config: Config,
+    /// 命名空间独立；索引仅在持有引擎执行权时访问。
+    /// Isolated namespaces; indexes are accessed only under engine ownership.
     databases: Vec<HashMap<String, Entry>>,
+    /// 本进程生命周期代号，不写入用户数据。
+    /// Process lifecycle identifier, separate from user data.
     epoch: u128,
+    /// 全引擎创建计数，成功发布前不消耗。
+    /// Engine-wide creation counter, consumed only by successful publication.
     creations: u64,
+    /// 跨库受管占用总和，不代表进程 RSS。
+    /// Managed usage summed across databases, not process RSS.
     managed_bytes: usize,
 }
 

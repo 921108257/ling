@@ -1,8 +1,13 @@
+//! 大端版本 1 编解码；分配前校验长度、元素数和逻辑预算。
+//! Big-endian version 1 codec; lengths, counts, and logical budgets are checked before allocation.
+
 use crate::*;
 use linger_types::{Float, Scalar};
 use std::collections::{BTreeMap, HashSet};
 use std::mem::size_of;
 
+/// 校验魔数、版本、保留位、请求 ID 和方向限额，不读取或分配负载。
+/// Checks magic, version, reserved bits, IDs, and directional caps without reading or allocating payloads.
 pub fn parse_header(bytes: &[u8; HEADER_LEN], limits: Limits) -> Result<Header, DecodeError> {
     let id = u64::from_be_bytes(bytes[6..14].try_into().unwrap());
     let fail = |message| {
@@ -58,15 +63,29 @@ pub fn parse_header(bytes: &[u8; HEADER_LEN], limits: Limits) -> Result<Header, 
     })
 }
 
+/// 借用输入的有界解码器；语义错误延迟到帧结构完整后返回。
+/// Bounded decoder borrowing input; semantic errors wait until the full frame structure is checked.
 struct Decoder<'a> {
+    /// 只借用当前帧负载，不读取下一帧。
+    /// Borrows only the current payload, never reading into the next frame.
     bytes: &'a [u8],
+    /// 下一个未消费字节的位置。
+    /// Position of the next unconsumed byte.
     at: usize,
+    /// 分配前扣减的剩余额度。
+    /// Remaining budget debited before allocation.
     budget: usize,
+    /// 与当前帧关联的固定资源边界。
+    /// Resource boundaries fixed for the current frame.
     limits: Limits,
+    /// 首个完整业务值错误，结构检查仍继续。
+    /// First complete business-value error while structural validation continues.
     semantic: Option<DbError>,
 }
 
 impl<'a> Decoder<'a> {
+    /// 为单个负载建立独立解码预算。
+    /// Starts a separate decoding budget for one payload.
     fn new(bytes: &'a [u8], limits: Limits) -> Self {
         Self {
             bytes,
@@ -77,6 +96,8 @@ impl<'a> Decoder<'a> {
         }
     }
 
+    /// 检查偏移加法和剩余长度后移动游标。
+    /// Checks offset arithmetic and remaining bytes before advancing.
     fn take(&mut self, len: usize) -> Result<&'a [u8], DecodeError> {
         let end = self
             .at
@@ -88,12 +109,18 @@ impl<'a> Decoder<'a> {
         Ok(result)
     }
 
+    /// 读取一个标签或标记字节。
+    /// Reads one tag or flag byte.
     fn byte(&mut self) -> Result<u8, DecodeError> {
         Ok(self.take(1)?[0])
     }
+    /// 读取大端 u32 长度，不提前分配。
+    /// Reads a big-endian u32 length without allocating.
     fn count(&mut self) -> Result<usize, DecodeError> {
         Ok(u32::from_be_bytes(self.take(4)?.try_into().unwrap()) as usize)
     }
+    /// 在分配发生前扣减逻辑内存预算。
+    /// Debits the logical memory budget before allocation.
     fn charge(&mut self, bytes: usize) -> Result<(), DecodeError> {
         self.budget = self
             .budget
@@ -101,10 +128,14 @@ impl<'a> Decoder<'a> {
             .ok_or_else(DecodeError::limit)?;
         Ok(())
     }
+    /// 只记录首个业务错误，继续检查结构边界。
+    /// Records only the first business error while checking the remaining structure.
     fn invalid(&mut self, code: ErrorCode, message: &'static str) {
         self.semantic
             .get_or_insert_with(|| DbError::new(code, message));
     }
+    /// 以最小编码长度排除虚假数量，并预扣容器开销。
+    /// Rejects impossible counts using minimum wire length and reserves container overhead.
     fn elements(
         &mut self,
         count: usize,
@@ -117,6 +148,8 @@ impl<'a> Decoder<'a> {
         self.charge(count.checked_mul(memory).ok_or_else(DecodeError::limit)?)
     }
 
+    /// 按冻结标签递归解析，禁止未知标签和非法 UTF-8。
+    /// Recursively parses frozen tags, rejecting unknown tags and invalid UTF-8.
     fn value(&mut self, parents: usize) -> Result<Value, DecodeError> {
         let tag = self.byte()?;
         let depth = parents + usize::from((7..=9).contains(&tag));
@@ -169,6 +202,7 @@ impl<'a> Decoder<'a> {
                 self.elements(
                     count,
                     6,
+                    // 单字段 BTreeMap 也可能分配完整节点。
                     // A small BTreeMap may allocate a complete node for one field.
                     12 * size_of::<(String, Value)>() + 16 * size_of::<usize>(),
                 )?;
@@ -189,6 +223,7 @@ impl<'a> Decoder<'a> {
             }
             9 => {
                 let count = self.count()?;
+                // 同时计入控制字节、负载因子和最小哈希表。
                 // Account for control bytes, load factor and the minimum table.
                 self.elements(count, 1, 2 * size_of::<Scalar>() + 2)?;
                 if count != 0 {
@@ -212,12 +247,16 @@ impl<'a> Decoder<'a> {
         Ok(value)
     }
 
+    /// 读取必须为 String 的结构字段。
+    /// Reads a structural field that must be a String.
     fn string(&mut self) -> Result<String, DecodeError> {
         match self.value(0)? {
             Value::String(v) => Ok(v),
             _ => Err(DecodeError::protocol("Expected String")),
         }
     }
+    /// 解析命令封套，单独验证签名中的实际业务值。
+    /// Parses the command envelope and separately validates business-value arguments.
     fn request(&mut self) -> Result<Request, DecodeError> {
         let command = self.string()?;
         if !command.is_ascii() {
@@ -226,6 +265,7 @@ impl<'a> Decoder<'a> {
         let Value::List(arguments) = self.value(0)? else {
             return Err(DecodeError::protocol("Expected argument List"));
         };
+        // 协议封套不占用业务 Value 深度。
         // Protocol envelopes do not count against business Value depth.
         for (index, argument) in arguments.iter().enumerate() {
             if linger_types::is_value_argument(&command.to_ascii_uppercase(), index) {
@@ -240,12 +280,16 @@ impl<'a> Decoder<'a> {
             value_error: self.semantic.take(),
         })
     }
+    /// 保留服务端原始错误码和诊断文本。
+    /// Preserves the original server error code and diagnostic message.
     fn error(&mut self) -> Result<DbError, DecodeError> {
         Ok(DbError {
             code: self.string()?,
             message: self.string()?,
         })
     }
+    /// 按 status 区分成功 Null 与失败。
+    /// Uses status to distinguish successful Null from failure.
     fn response(&mut self) -> Result<Result<Value, DbError>, DecodeError> {
         match self.byte()? {
             0 => Ok(Ok(self.value(0)?)),
@@ -253,6 +297,8 @@ impl<'a> Decoder<'a> {
             _ => Err(DecodeError::protocol("Invalid response status")),
         }
     }
+    /// 确保没有被忽略的尾随字节。
+    /// Ensures no trailing bytes were ignored.
     fn finish(&self) -> Result<(), DecodeError> {
         if self.at != self.bytes.len() {
             return Err(DecodeError::protocol("Trailing payload bytes"));
@@ -261,6 +307,8 @@ impl<'a> Decoder<'a> {
     }
 }
 
+/// 解码独立业务值，拒绝尾随字节和任何语义错误。
+/// Decodes a standalone business value, rejecting trailing bytes and semantic errors.
 pub fn decode_value(bytes: &[u8], limits: Limits) -> Result<Value, DecodeError> {
     if bytes.len() > limits.max_frame_bytes {
         return Err(DecodeError::limit());
@@ -283,6 +331,8 @@ pub fn decode_value(bytes: &[u8], limits: Limits) -> Result<Value, DecodeError> 
     Ok(value)
 }
 
+/// 解码完整帧；请求业务错误留在 Request，结构错误使整帧失败。
+/// Decodes a complete frame; business errors stay in Request while structural errors reject the frame.
 pub fn decode_frame(bytes: &[u8], limits: Limits) -> Result<Frame, DecodeError> {
     let raw_header = bytes
         .get(..HEADER_LEN)
@@ -346,12 +396,20 @@ pub fn decode_frame(bytes: &[u8], limits: Limits) -> Result<Frame, DecodeError> 
     })
 }
 
+/// 始终受总字节上限约束的输出缓冲。
+/// Output buffer always bounded by its total byte cap.
 struct Encoder {
+    /// 只在预算允许时扩展的输出缓冲。
+    /// Output buffer extended only when the budget permits.
     bytes: Vec<u8>,
+    /// 当前编码操作的总字节上限。
+    /// Total byte cap for this encoding operation.
     cap: usize,
 }
 
 impl Encoder {
+    /// 检查缓冲增长后追加字节，失败不暴露半帧。
+    /// Checks buffer growth before appending; failures expose no partial frame.
     fn push(&mut self, bytes: &[u8]) -> Result<(), DbError> {
         if self
             .bytes
@@ -367,6 +425,8 @@ impl Encoder {
         self.bytes.extend_from_slice(bytes);
         Ok(())
     }
+    /// 禁止长度截断并写入大端 u32。
+    /// Rejects length truncation and writes a big-endian u32.
     fn count(&mut self, count: usize) -> Result<(), DbError> {
         self.push(
             &u32::try_from(count)
@@ -374,11 +434,15 @@ impl Encoder {
                 .to_be_bytes(),
         )
     }
+    /// 保留 UTF-8 原字节，写入标签及长度前缀。
+    /// Preserves UTF-8 bytes with a tag and length prefix.
     fn string(&mut self, text: &str) -> Result<(), DbError> {
         self.push(&[5])?;
         self.count(text.len())?;
         self.push(text.as_bytes())
     }
+    /// 编码 Set 成员，保持数值与文本类型标签。
+    /// Encodes Set members while preserving numeric and text type tags.
     fn scalar(&mut self, scalar: &Scalar) -> Result<(), DbError> {
         match scalar {
             Scalar::Null => self.push(&[0]),
@@ -403,6 +467,8 @@ impl Encoder {
             }
         }
     }
+    /// 递归编码并限制封套深度；业务深度由入口独立验证。
+    /// Encodes recursively with an envelope-depth cap; entry points validate business depth separately.
     fn value(&mut self, value: &Value, parents: usize, limits: Limits) -> Result<(), DbError> {
         let depth = parents
             + usize::from(matches!(
@@ -466,6 +532,8 @@ impl Encoder {
             }
         }
     }
+    /// 规范化命令并在写入业务参数前校验限额。
+    /// Normalizes the command and checks limits before writing business arguments.
     fn request(&mut self, request: &Request, limits: Limits) -> Result<(), DbError> {
         if let Some(error) = &request.value_error {
             return Err(error.clone());
@@ -487,10 +555,14 @@ impl Encoder {
         }
         Ok(())
     }
+    /// 编码稳定错误码和说明，不通过 JSON。
+    /// Encodes the stable error code and message without JSON.
     fn error(&mut self, error: &DbError) -> Result<(), DbError> {
         self.string(&error.code)?;
         self.string(&error.message)
     }
+    /// 显式写出成功或失败 status。
+    /// Writes an explicit success or failure status.
     fn response(
         &mut self,
         response: &Result<Value, DbError>,
@@ -509,6 +581,8 @@ impl Encoder {
     }
 }
 
+/// 先测量完整业务值再分配精确大小的编码缓冲。
+/// Measures the complete business value before allocating its wire buffer.
 pub fn encode_value(value: &Value, limits: Limits) -> Result<Vec<u8>, DbError> {
     let size = value.validate(limits.value)?;
     let mut e = Encoder {
@@ -519,6 +593,8 @@ pub fn encode_value(value: &Value, limits: Limits) -> Result<Vec<u8>, DbError> {
     Ok(e.bytes)
 }
 
+/// 编码负载后填入冻结帧头，再校验 ID 与方向约束。
+/// Encodes payload then fills the frozen header and validates ID and directional constraints.
 pub fn encode_frame(frame: &Frame, limits: Limits) -> Result<Vec<u8>, DbError> {
     let (kind, batch) = match &frame.body {
         Body::Request(_) => (1, false),

@@ -1,27 +1,44 @@
-//! CLI text grammar and rendering. JSON is used only for String escaping.
+//! CLI 类型字面量解析与展示；JSON 只用于 String 转义，不承载 Value。
+//! CLI typed-literal parsing and rendering; JSON is used only for String escaping, never to carry Values.
 
 use base64::{Engine, engine::general_purpose::STANDARD};
 use linger_protocol::Request;
 use linger_types::{Float, Scalar, Value, ValueLimits};
 use std::collections::{BTreeMap, HashSet};
 
+/// 单条输入的字节上限，解析前先检查。
+/// Byte cap for one input, checked before parsing.
 const MAX_LINE: usize = 64 * 1024 * 1024;
 
+/// 不含原始输入的语法错误，避免 AUTH 密码被回显。
+/// Syntax error without raw input, preventing AUTH password echoes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParseError;
 impl std::fmt::Display for ParseError {
+    /// 固定错误说明，不包含用户输入。
+    /// Uses a fixed diagnostic without user input.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("命令或值语法错误")
     }
 }
 impl std::error::Error for ParseError {}
 
+/// 借用 UTF-8 输入并跟踪游标、递归深度和分配预算。
+/// Borrows UTF-8 input and tracks cursor, nesting, and allocation budget.
 struct Parser<'a> {
+    /// 完整原始行，只借用不复制。
+    /// Original complete line, borrowed without copying.
     source: &'a str,
+    /// 始终位于 UTF-8 字符边界的字节游标。
+    /// Byte cursor always on a UTF-8 character boundary.
     at: usize,
+    /// 剩余的保守解析分配额度。
+    /// Remaining conservative parsing-allocation budget.
     budget: usize,
 }
 impl<'a> Parser<'a> {
+    /// 创建独立的单行解析预算。
+    /// Creates an independent per-line parsing budget.
     fn new(source: &'a str) -> Self {
         Self {
             source,
@@ -29,16 +46,24 @@ impl<'a> Parser<'a> {
             budget: 128 * 1024 * 1024,
         }
     }
+    /// 分配前扣除保守内存开销。
+    /// Charges conservative memory costs before allocation.
     fn charge(&mut self, bytes: usize) -> Result<(), ParseError> {
         self.budget = self.budget.checked_sub(bytes).ok_or(ParseError)?;
         Ok(())
     }
+    /// 只借用尚未消费的 UTF-8 尾部。
+    /// Borrows the remaining unconsumed UTF-8 suffix.
     fn rest(&self) -> &'a str {
         &self.source[self.at..]
     }
+    /// 跳过 Unicode 空白且保持字符边界。
+    /// Skips Unicode whitespace while preserving character boundaries.
     fn space(&mut self) {
         self.at += self.rest().len() - self.rest().trim_start().len();
     }
+    /// 跳过空白并尝试消费精确语法标记。
+    /// Skips whitespace and attempts to consume an exact syntax token.
     fn eat(&mut self, token: &str) -> bool {
         self.space();
         if self.rest().starts_with(token) {
@@ -48,6 +73,8 @@ impl<'a> Parser<'a> {
             false
         }
     }
+    /// 要求下一个语法标记存在。
+    /// Requires the next syntax token.
     fn expect(&mut self, token: &str) -> Result<(), ParseError> {
         if self.eat(token) {
             Ok(())
@@ -55,6 +82,8 @@ impl<'a> Parser<'a> {
             Err(ParseError)
         }
     }
+    /// 读取空白分隔裸词，不分配字符串。
+    /// Reads a whitespace-delimited bare word without allocating.
     fn word(&mut self) -> Result<&'a str, ParseError> {
         self.space();
         let end = self
@@ -68,6 +97,8 @@ impl<'a> Parser<'a> {
         self.at += end;
         Ok(result)
     }
+    /// 识别双引号边界，再由成熟 JSON 实现验证转义。
+    /// Finds double-quote boundaries and delegates escape validation to JSON.
     fn string(&mut self) -> Result<String, ParseError> {
         self.space();
         if !self.rest().starts_with('"') {
@@ -93,6 +124,8 @@ impl<'a> Parser<'a> {
         }
         Err(ParseError)
     }
+    /// Key、选项等文本位置接受引号或裸词。
+    /// Text positions such as keys and options accept quoted strings or bare words.
     fn text(&mut self) -> Result<String, ParseError> {
         self.space();
         if self.rest().starts_with('"') {
@@ -103,12 +136,16 @@ impl<'a> Parser<'a> {
             Ok(word.into())
         }
     }
+    /// 读取数字或十六进制字面量的右括号前内容。
+    /// Reads contents before the closing parenthesis of a numeric or hex literal.
     fn inside(&mut self) -> Result<&'a str, ParseError> {
         let end = self.rest().find(')').ok_or(ParseError)?;
         let inner = self.rest()[..end].trim();
         self.at += end + 1;
         Ok(inner)
     }
+    /// 按显式标签解析，拒绝隐式类型推测和超深容器。
+    /// Parses explicit tags, rejecting inferred types and excessive nesting.
     fn value(&mut self, parents: usize) -> Result<Value, ParseError> {
         self.space();
         if self.rest().starts_with('"') {
@@ -225,6 +262,8 @@ impl<'a> Parser<'a> {
         }
         Err(ParseError)
     }
+    /// 解析列表式元素序列并逐项预扣分配预算。
+    /// Parses list-like sequences and reserves allocation budget per item.
     fn sequence(&mut self, parents: usize) -> Result<Vec<Value>, ParseError> {
         self.expect("[")?;
         let mut items = Vec::new();
@@ -241,6 +280,8 @@ impl<'a> Parser<'a> {
         }
         Ok(items)
     }
+    /// 允许尾随空白，拒绝未消费内容。
+    /// Allows trailing whitespace but rejects unconsumed contents.
     fn end(&mut self) -> Result<(), ParseError> {
         self.space();
         if self.rest().is_empty() {
@@ -251,9 +292,13 @@ impl<'a> Parser<'a> {
     }
 }
 
+/// 只接受非空十进制数字，不猜测进制。
+/// Accepts only nonempty decimal digits without guessing a radix.
 fn unsigned_decimal(text: &str) -> bool {
     !text.is_empty() && text.bytes().all(|c| c.is_ascii_digit())
 }
+/// 有符号十进制允许一个前导正负号。
+/// Signed decimal permits a single leading plus or minus.
 fn signed_decimal(text: &str) -> bool {
     unsigned_decimal(
         text.strip_prefix('-')
@@ -262,6 +307,8 @@ fn signed_decimal(text: &str) -> bool {
     )
 }
 
+/// 解析单个完整类型字面量并验证业务深度和大小。
+/// Parses one complete typed literal and validates business depth and size.
 pub fn parse_value(source: &str) -> Result<Value, ParseError> {
     if source.len() > MAX_LINE {
         return Err(ParseError);
@@ -327,10 +374,14 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
     Ok(Request::new(command, args))
 }
 
+/// 仅使用 JSON 字符串转义，保持 Unicode 与控制字符可逆。
+/// Uses JSON string escaping only, preserving Unicode and control-character round trips.
 fn quoted(text: &str) -> String {
     serde_json::to_string(text).expect("String serialization")
 }
 
+/// 输出可再次解析的显式类型文本，64 位整数不转浮点。
+/// Renders parseable explicitly typed text without converting 64-bit integers to floats.
 pub fn display_value(value: &Value) -> String {
     match value {
         Value::Null => "null".into(),

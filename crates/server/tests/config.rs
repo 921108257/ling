@@ -1,5 +1,10 @@
+//! 启动配置契约：范围、未知字段和凭据脱敏。
+//! Startup configuration contracts: ranges, unknown fields, and credential redaction.
+
 use linger_server::Config;
 
+/// 默认值与 u16 数据库编号边界均经验证。
+/// Validates defaults and u16 database namespace boundaries.
 #[test]
 fn defaults_and_namespace_edges() {
     Config::default().validate().unwrap();
@@ -13,6 +18,8 @@ fn defaults_and_namespace_edges() {
     assert!(config.validate().is_err());
 }
 
+/// 拒绝无效认证组合、网络预算和不支持的配置。
+/// Rejects invalid authentication combinations, network budgets, and unsupported settings.
 #[test]
 fn rejects_invalid_auth_limits_and_unsupported_fields() {
     let mut config = Config::default();
@@ -38,6 +45,8 @@ fn rejects_invalid_auth_limits_and_unsupported_fields() {
     }
 }
 
+/// 配置解析错误不得包含源文件中的密码。
+/// Configuration parse errors never include passwords from the source file.
 #[test]
 fn file_errors_never_expose_password_source() {
     let dir = std::env::temp_dir().join(format!("linger-config-{}", std::process::id()));

@@ -1,4 +1,5 @@
-//! Network service only; the stage-1 build has no data engine or event source.
+//! TCP 服务装配：所有数据库共享单分片执行权，连接负责协议屏障。
+//! TCP service assembly: databases share single-shard ownership and connections enforce protocol barriers.
 
 mod config;
 mod connection;
@@ -16,8 +17,14 @@ use tokio::{
     task::JoinSet,
 };
 
+/// 拥有监听器、不可变配置和进程内数据引擎。
+/// Owns the listener, immutable configuration, and in-process data engine.
 pub struct Server {
+    /// 本实例唯一监听器。
+    /// Listener owned exclusively by this instance.
     listener: TcpListener,
+    /// 所有连接只读共享的启动配置。
+    /// Startup configuration shared read-only by connections.
     config: Arc<Config>,
     /// 唯一执行权覆盖所有命名空间，临界区中没有 await。
     /// Exclusive ownership covers all namespaces; critical sections contain no await.
@@ -25,6 +32,8 @@ pub struct Server {
 }
 
 impl Server {
+    /// 校验配置后创建引擎并绑定监听端口；配置失败不接入请求。
+    /// Validates configuration, creates the engine, and binds the listener; invalid settings accept no requests.
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
         let engine = Arc::new(Mutex::new(linger_engine::Engine::new(
@@ -46,7 +55,8 @@ impl Server {
         })
     }
 
-    /// Useful for supervisors and tests that own an already bound listener.
+    /// 使用已有监听器，适合进程管理器和临时端口测试；仍完整校验配置。
+    /// Uses an existing listener for supervisors and ephemeral-port tests; still validates all configuration.
     pub fn from_listener(
         listener: TcpListener,
         config: Config,
@@ -62,10 +72,14 @@ impl Server {
             engine,
         })
     }
+    /// 返回实际监听地址，支持由操作系统选择测试端口。
+    /// Returns the actual listening address, including OS-assigned test ports.
     pub fn local_addr(&self) -> io::Result<SocketAddr> {
         self.listener.local_addr()
     }
 
+    /// 运行有连接数上限的接入循环；关闭时排空任务，超时后取消剩余连接。
+    /// Runs a connection-limited accept loop; shutdown drains tasks and cancels remaining connections after its deadline.
     pub async fn run(self, shutdown: impl Future<Output = ()>) -> io::Result<()> {
         let semaphore = Arc::new(Semaphore::new(self.config.server.max_connections));
         let (closing, receiver) = watch::channel(false);
