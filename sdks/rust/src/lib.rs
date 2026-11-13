@@ -96,6 +96,12 @@ impl Client {
         if options.connect_timeout.is_zero() || options.request_timeout.is_zero() {
             return Err(Error::local(LocalError::InvalidRequest, false));
         }
+        if [options.connect_timeout, options.request_timeout]
+            .iter()
+            .any(|duration| std::time::Instant::now().checked_add(*duration).is_none())
+        {
+            return Err(Error::local(LocalError::InvalidRequest, false));
+        }
         let stream = timeout(options.connect_timeout, TcpStream::connect(address))
             .await
             .map_err(|_| Error::local(LocalError::Timeout, false))?

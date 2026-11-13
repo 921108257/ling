@@ -169,7 +169,8 @@ impl<'a> Decoder<'a> {
                 self.elements(
                     count,
                     6,
-                    size_of::<(String, Value)>() + 6 * size_of::<usize>(),
+                    // A small BTreeMap may allocate a complete node for one field.
+                    12 * size_of::<(String, Value)>() + 16 * size_of::<usize>(),
                 )?;
                 let mut fields = BTreeMap::new();
                 for _ in 0..count {
@@ -191,7 +192,11 @@ impl<'a> Decoder<'a> {
             }
             9 => {
                 let count = self.count()?;
-                self.elements(count, 1, 2 * size_of::<Scalar>())?;
+                // Account for control bytes, load factor and the minimum table.
+                self.elements(count, 1, 2 * size_of::<Scalar>() + 2)?;
+                if count != 0 {
+                    self.charge(4 * size_of::<Scalar>() + 32)?;
+                }
                 let mut members = HashSet::with_capacity(count);
                 for _ in 0..count {
                     match Scalar::try_from(self.value(depth)?) {

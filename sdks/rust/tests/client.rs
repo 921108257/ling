@@ -275,3 +275,24 @@ async fn local_encoding_failure_does_not_send_or_consume_id() {
     assert_eq!(client.ping(None).await.unwrap(), Value::Bool(true));
     task.await.unwrap();
 }
+
+#[tokio::test]
+async fn invalid_timeouts_fail_before_connecting() {
+    for request_timeout in [Duration::ZERO, Duration::MAX] {
+        let options = Options {
+            request_timeout,
+            ..Options::default()
+        };
+        let error = Client::connect("127.0.0.1:1".parse().unwrap(), None, 0, options)
+            .await
+            .err()
+            .unwrap();
+        assert!(matches!(
+            error,
+            Error::Local {
+                kind: LocalError::InvalidRequest,
+                outcome_unknown: false
+            }
+        ));
+    }
+}

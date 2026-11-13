@@ -226,6 +226,41 @@ fn decoding_is_bounded_and_envelopes_do_not_count_as_business_depth() {
     assert_eq!(members.len(), 1);
 }
 
+#[test]
+fn small_map_and_set_tables_are_charged_before_allocation() {
+    let limits = Limits {
+        max_decode_bytes: 64,
+        ..Limits::default()
+    };
+    for wire in ["08 00000001 05 00000001 78 00", "09 00000001 00"] {
+        assert!(decode_value(&hex(wire), limits).unwrap_err().fatal);
+    }
+}
+
+#[test]
+fn batch_business_error_is_isolated_but_truncated_tail_rejects_all() {
+    let payload = hex(
+        "00000002 05 00000003 534554 07 00000002 05 00000001 6b 04 7ff8000000000001 05 00000003 474554 07 00000001 05 00000001 6b",
+    );
+    let mut wire = hex("4c47 01 01 0001 0000000000000001 00000000");
+    wire[14..18].copy_from_slice(&(payload.len() as u32).to_be_bytes());
+    wire.extend(payload);
+    let Body::BatchRequest(items) = decode_frame(&wire, Limits::default()).unwrap().body else {
+        panic!()
+    };
+    assert_eq!(items.len(), 2);
+    assert_eq!(
+        items[0].value_error.as_ref().unwrap().code,
+        "ERR_INVALID_VALUE"
+    );
+    assert!(items[1].value_error.is_none());
+    assert_eq!(items[1].command, "GET");
+    wire.pop();
+    let len = (wire.len() - 18) as u32;
+    wire[14..18].copy_from_slice(&len.to_be_bytes());
+    assert!(decode_frame(&wire, Limits::default()).unwrap_err().fatal);
+}
+
 #[tokio::test]
 async fn fragmented_and_coalesced_frames_and_truncated_eof() {
     use tokio::io::AsyncWriteExt;
