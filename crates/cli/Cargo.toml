@@ -1,0 +1,20 @@
+[package]
+name = "linger-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+linger-client.workspace = true
+linger-protocol.workspace = true
+linger-types.workspace = true
+tokio.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+base64.workspace = true
+
+[dev-dependencies]
+linger-server.workspace = true
+
+[lints]
+workspace = true

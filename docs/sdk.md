@@ -4,6 +4,8 @@
 
 当前 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求；不提供连接池、并行多路复用、自动重连、Batch 执行或订阅。TLS、Java / Go 留在后续阶段。
 
+`crates/cli` 直接复用 Rust SDK，支持 `-c 'PING'` 单命令或标准输入逐行执行阶段 1 连接命令；连接会先自动初始化，交互中再次 HELLO 会得到连接状态错误。认证密码可由 `LINGER_PASSWORD` 提供，不支持密码命令行开关。String 使用双引号转义显示；解析和显示库已覆盖 10 种类型字面量，但数据命令尚未开放。未知命令交给服务端返回错误，不在 CLI 内模拟执行。
+
 `Options` 的连接和请求超时必须大于零。`Error::Server` 保留服务端错误码；`Error::Local` 区分连接、超时、协议、本地参数和关闭错误，`outcome_unknown()` 表达发送后的不确定性。超时、断线或取消网络等待会关闭该连接；默认不重放请求。成功认证和 SELECT 逐次等待响应，业务请求不越过连接屏障。已发送 ID 不复用，旧 ID 响应丢弃，0 或未发送 ID 的普通响应使连接失步并关闭。
 
 ## 范围与职责
