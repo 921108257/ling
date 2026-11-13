@@ -1,8 +1,8 @@
 # 验证与性能基准
 
-> 状态：阶段 1 已建立 Rust 契约与真实网络测试。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单；尚无性能测量结果。
+> 状态：阶段 1—2 已建立 Rust 契约、引擎和真实网络测试。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单；尚无性能测量结果。
 
-当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace` 和 `cargo clippy --workspace --all-targets -- -D warnings`。类型、协议、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。Java / Go、引擎、TTL、并发 Shard 与 Journal 的测试尚未建立。
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖单分片全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、MGET 封套、多连接自增及 MSET 原子可见性、超限 POP 保留数据。Java / Go、完整 TTL、多 Shard 协调与 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，注释为中英双语。
 
 ## 验证原则
 

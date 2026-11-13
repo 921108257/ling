@@ -1,6 +1,19 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 1 仅实现 HELLO、AUTH、SELECT、PING、QUIT；其余命令尚未开放，返回 `ERR_UNKNOWN_COMMAND`。本文是完整首版命令及返回值的来源；类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 2 已完成单分片数据命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+
+## 当前支持范围
+
+| 类别 | 阶段 2 已开放 |
+|---|---|
+| 连接 | HELLO、AUTH、SELECT、PING、QUIT |
+| 通用 | SET（无 TTL，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
+| 数值与文本 | INCR、DECR、INCRBY、DECRBY、INCRFLOAT、APPEND、STRLEN、BLEN |
+| List | 本文 List 表中的全部命令 |
+| Map | 本文 Map 表中的全部命令 |
+| Set | 本文 Set 表中的全部命令，含单分片内集合代数与 STORE |
+
+阶段 2 为多数据库共享单一执行权的原型，已开放的多 Key 命令在此范围内原子执行。RENAME / RENAMENX / COPY / MOVE、KEYS / SCAN / RANDOMKEY、清库 / 管理命令、TTL 系列、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。SET 的 EX / PX / EXAT / PXAT 尚未开放，返回 `ERR_INVALID_ARGUMENT`，不会忽略选项写入。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
 
 ## 通用规则
 

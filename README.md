@@ -1,8 +1,10 @@
 # linger-cache-db
 
-独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型。固定分片、多数据库存储、毫秒 TTL 与可靠事件按路线图逐步实现。
+独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型。已具备单分片多数据库存储；固定多分片、毫秒 TTL 与可靠事件按路线图继续实现。
 
-**当前为 0.1.0 阶段 1 网络原型，尚不是可用缓存数据库。** 已实现共享类型、版本 1 编解码、TCP 服务、Rust SDK 和 CLI；服务端支持 HELLO、AUTH、SELECT、PING、QUIT。未知或尚未实现的命令返回 `ERR_UNKNOWN_COMMAND`。没有数据引擎、TTL、事件运行能力、TLS、Java / Go SDK，Batch 仅完成编码用例。
+**当前为 0.1.0 阶段 2 单分片内存原型。** 已实现共享类型、版本 1 编解码、数据引擎、TCP 服务、Rust SDK 和 CLI。支持十种 Value、隔离数据库、通用读写、数值 / String / Bytes 操作及全部 List / Map / Set 命令；清单见 [命令契约](docs/commands.md)。
+
+当前所有数据库共享一个引擎执行锁，多 Key 变更整体发布；受管内存和每库 Key 数可配置，达到预算拒绝扩大内存的写入。尚不支持多分片调度、跨库移动、遍历、清库管理、TTL 设置与调度、事件、TLS 和 Java / Go SDK。Batch 仅有编码支持；尚未实现的命令返回 `ERR_UNKNOWN_COMMAND`，SET 的 TTL 选项返回 `ERR_INVALID_ARGUMENT`。
 
 ## 构建与试用
 
@@ -17,13 +19,16 @@ cargo run -p linger-server
 
 ```sh
 cargo run -p linger-cli -- -c 'PING'
-cargo run -p linger-cli -- --db 15 -c 'PING "你好"'
-printf 'SELECT 1\nPING\nQUIT\n' | cargo run -p linger-cli
+cargo run -p linger-cli -- -c 'SET counter int(0)'
+cargo run -p linger-cli -- -c 'INCRBY counter 2'
+cargo run -p linger-cli -- -c 'SET profile map({"name": "Lin", "visits": uint(1)})'
+cargo run -p linger-cli -- -c 'FGET profile name visits'
+printf 'SET nothing null\nGET nothing\nQUIT\n' | cargo run -p linger-cli
 ```
 
-PING 分别输出 `"PONG"` 和 `"你好"`。CLI 连接时自动完成 HELLO、可选 AUTH 和 SELECT；输入中的任何失败都会使最终退出码非零。Ctrl-C / SIGTERM 停止服务并关闭连接。SDK 不自动重放请求，发送后的断线或超时可通过 `outcome_unknown()` 判断不确定性。
+PING 输出 `"PONG"`，INCRBY 输出 `int(2)`；存储的 Null 输出 `null`，缺失 Key 则以独立错误和非零退出码表达。CLI 连接时自动完成 HELLO、可选 AUTH 和 SELECT；输入中的任何失败都会使最终退出码非零。Ctrl-C / SIGTERM 停止服务并关闭连接。SDK 不自动重放请求，发送后的断线或超时可通过 `outcome_unknown()` 判断不确定性。
 
-无 `--config` 时服务端尝试读取当前目录的 `linger.toml`，不存在则使用默认配置。阶段 1 仅接受 `server`、`auth`、`database`、`protocol` 四组，完整 v1.0 候选配置暂不能整份使用。可通过 `--config <path>` 指定文件，例如：
+无 `--config` 时服务端尝试读取当前目录的 `linger.toml`，不存在则使用默认配置。阶段 2 接受 `server`、`auth`、`database`、`protocol`、`engine` 五组，完整 v1.0 候选配置暂不能整份使用。可通过 `--config <path>` 指定文件，例如：
 
 ```toml
 [server]
@@ -33,6 +38,11 @@ port = 6380
 [auth]
 enabled = true
 password = "replace-me"
+
+[engine]
+shard_count = 1
+max_memory_bytes = 268435456
+max_keys = 100000
 ```
 
 启用认证后，通过环境变量 `LINGER_PASSWORD` 向 CLI 提供同一密码。配置规则与当前限制见 [config.md](docs/config.md)。
@@ -43,9 +53,10 @@ password = "replace-me"
 cargo fmt --all -- --check
 cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 ```
 
-测试覆盖独立黄金字节、10 种 Value、错误输入、半包粘包、版本拒绝、连接屏障、请求 ID、超时与取消，以及真实 CLI 进程的网络调用。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
+测试覆盖独立黄金字节、10 种 Value、数值边界、容器操作、原子失败回滚、深度 / 内存 / 响应限额、数据库隔离、多连接竞争、半包粘包、版本拒绝、连接屏障、请求 ID、超时与取消，以及真实 CLI 进程的网络调用。源码与测试使用中英双语注释；公开接口缺少 rustdoc 会使构建失败。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
 
 ## 从哪里开始
 

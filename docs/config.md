@@ -1,10 +1,12 @@
 # 配置规范
 
-> 状态：v0.3 配置契约，阶段 1 仅实现下述四组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
+> 状态：v0.3 配置契约，阶段 2 实现下述五组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
 
-阶段 1 已实现 `server`、`auth`、`database`、`protocol` 四组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这四组默认值；显式路径读取失败会退出。事件固定禁用；引擎、TLS、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
+阶段 2 已实现 `server`、`auth`、`database`、`protocol`、`engine` 五组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这五组默认值；显式路径读取失败会退出。事件固定禁用；TLS、淘汰策略选择、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
 
-阶段 1 每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。解码另有内部 128 MiB 分配预算。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超过 request 超时后关闭连接，尚未提交任何业务修改。
+当前 `engine.shard_count` 只接受 0 或 1，0 解析为 1；大于 1 明确拒绝，启动日志显示单分片。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。只执行 noeviction，扩大占用且超过预算的写入返回 `ERR_OUT_OF_MEMORY`，不会部分发布或删除无关 Key。解码和可重复读取的响应复制另有内部 128 MiB 分配预算，不代表进程 RSS。
+
+阶段 2 每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。解码另有内部 128 MiB 分配预算。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超过 request 超时后关闭连接，尚未提交任何业务修改。
 
 ## 候选默认配置
 
@@ -98,7 +100,7 @@ path = "/metrics"
 | tls | enabled 时证书和私钥必须可读且匹配；min_version 只接受 tls1.2 / tls1.3 |
 | auth | enabled 时 password 必须非空；未启用认证但提供密码也拒绝，避免配置意图被忽略 |
 | database | databases 为 1..65536；default_db 小于 databases |
-| engine | shard_count 为 0 或 1..u32::MAX；0 按系统可用并行度确定，至少 1；启动日志记录实际值 |
+| engine | v1.0：shard_count 为 0 或 1..u32::MAX，0 按系统可用并行度确定；阶段 2 只接受 0 / 1，均实际使用 1；启动日志记录实际值 |
 | engine 限额 | max_memory_bytes / max_keys 为 0 表示不限制；其他大小项必须为正；max_nest_depth 为 1..64 |
 | eviction | 仅 noeviction / lru / lfu / random / ttl-first；sample_size 为正整数 |
 | ttl | precision_ms 首版固定为 1，不接受其他值；maintenance_budget 为正整数 |

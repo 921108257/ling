@@ -2,7 +2,7 @@
 
 ## 当前状态与阅读顺序
 
-本项目已完成阶段 1 网络原型：有 Rust workspace、共享类型、协议、TCP 服务、Rust SDK、CLI 和契约测试；尚无数据引擎、TTL、事件运行能力及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
+本项目已完成阶段 2 单分片内存原型：有 Rust workspace、共享类型、协议、数据引擎、TCP 服务、Rust SDK、CLI 和契约测试；尚无多分片调度、TTL 设置与调度、事件运行能力及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
 
 开始工作先读 [docs/architecture.md](docs/architecture.md)。根据任务继续读专项规范：类型读 data-model，命令读 commands，网络读 protocol，生命周期读 ttl，可靠性读 events / persistence，客户端读 sdk，配置读 config，验收读 testing / roadmap。路径均位于 docs 下。
 
@@ -32,7 +32,9 @@ architecture 决定范围；对应专项文档决定具体契约；decisions 说
 
 ## 实现方法
 
-遵循已有结构和依赖。当前没有代码时，按 roadmap 做最小可运行纵向切片；先建立共享类型与协议，再接引擎，不一次创建全部计划 crate。
+遵循已有结构和依赖，按 roadmap 逐阶段交付可验证的纵向切片，不一次创建全部计划 crate。
+
+源码和测试统一使用中英双语注释：模块说明职责，公开类型 / 字段 / 方法说明语义、边界和必要错误；主要私有函数与非显然约束说明原因。标准 trait 实现说明本项目的具体约定；避免逐行翻译语法。保留 workspace 的 missing_docs 检查，新增公开接口必须提供 rustdoc。
 
 优先清晰的所有权、锁和有界队列。仅在基准证明瓶颈后引入无锁结构、自定义分配器、快照读或复杂时间轮。模块需由真实职责驱动，不创建仅转发调用的一次性抽象。
 
@@ -48,7 +50,7 @@ types 不依赖网络、SDK 或服务端。SDK 不链接 engine。核心错误�
 
 按 [docs/testing.md](docs/testing.md) 选择最少但有效的验证。实现非平凡类型、协议、并发、TTL 或 Journal 逻辑时，必须同时提供对应契约测试；纯文案修订通常只需链接与一致性检查。
 
-Rust workspace 存在后，按项目实际设置运行 fmt、受影响测试和 lint。Java / Go 只运行已存在的构建工具，不能在报告中将建议命令写成实际通过。
+按项目实际设置运行 fmt、受影响测试和 lint；修改公开文档注释时运行 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。Java / Go 只运行已存在的构建工具，不能在报告中将建议命令写成实际通过。
 
 协议字节、错误、配置与磁盘格式发生变化时同步规范和共享用例。格式冻结后采用明确版本变更，不静默重新分配标签。
 

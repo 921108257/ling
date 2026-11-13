@@ -1,6 +1,6 @@
 # linger-cache-db 架构与范围
 
-> 版本：v0.3 设计基线。阶段 1 已实现，后续 v1.0 能力仍为设计契约。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
+> 版本：v0.3 设计基线。阶段 1—2 已实现，后续 v1.0 能力仍为设计契约。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
 
 ## 项目定位
 
@@ -10,7 +10,9 @@ linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协�
 
 服务端不提供 Embedded API，不兼容 Redis 协议或命令行为。命令使用熟悉的名称，不意味着继承 Redis 的默认值、隐式创建、原子性或错误规则。
 
-当前已有最小 Rust workspace、10 种共享 Value、协议编解码、TCP 服务、Rust SDK、CLI 与契约测试。服务端仅支持 HELLO、AUTH、SELECT、PING、QUIT，事件禁用；数据引擎、TTL、Reliable 和 Java / Go 尚未实现。构建与启动入口见 [README](../README.md)，本文其余组件与目录仍按阶段建立。
+当前已有 Rust workspace、10 种共享 Value、协议编解码、单分片数据引擎、TCP 服务、Rust SDK、CLI 与契约测试。支持隔离数据库、通用数据读写、数值和容器命令；完整已开放清单见 [commands.md](commands.md)。事件禁用；固定多分片、跨库 / 管理命令、TTL 设置与调度、Reliable 和 Java / Go 尚未实现。构建与启动入口见 [README](../README.md)，本文其余组件与目录仍按阶段建立。
+
+阶段 2 的所有数据库共享一个同步引擎锁，临界区内无网络等待。单次命令以一个观察时点读取；候选结果通过类型、大小、响应、容量及身份计数检查后整体发布，因此多连接读不到 MSET / DEL / 集合 STORE 的中间状态。该锁是当前原型的明确执行权，不是未来跨 Shard 自然原子的假设；阶段 3 将实现固定顺序协调。当前只有 noeviction 语义，逻辑内存模型包含索引、Key、Value 与元数据，不代表 RSS。
 
 ## 版本边界
 
@@ -143,7 +145,7 @@ INFO 与可选 Prometheus 指标覆盖请求、延迟、内存、TTL、事件和
 ## 计划目录与依赖方向
 
 ```text
-Cargo.toml                 # 存在实现后创建 workspace
+Cargo.toml                 # 已建立 Rust workspace
 crates/
   server/                  # 入口、配置与组件装配
   cli/                     # 交互与命令展示，依赖 Rust SDK
