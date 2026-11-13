@@ -29,7 +29,7 @@ fn rejects_invalid_auth_limits_and_unsupported_fields() {
     config.server.max_connections = 0;
     assert!(config.validate().is_err());
     for text in [
-        "[engine]\nshard_count=1",
+        "[eviction]\npolicy=\"lru\"",
         "[server]\nprot=6380",
         "[auth]\npassword=123",
         "[database]\ndatabases=1\ndatabases=2",
@@ -47,4 +47,21 @@ fn file_errors_never_expose_password_source() {
     let error = Config::load(&path).err().unwrap();
     assert!(!error.to_string().contains("sensitive-password"));
     std::fs::remove_dir_all(dir).unwrap();
+}
+
+/// 单分片和业务限额必须在监听前校验；Validate shard count and business limits before listening.
+#[test]
+fn engine_limits_are_strict_and_available_to_protocol() {
+    let mut config: Config = toml::from_str(
+        "[engine]\nshard_count=1\nmax_value_bytes=10\nmax_key_bytes=32\nmax_nest_depth=2",
+    )
+    .unwrap();
+    config.validate().unwrap();
+    assert_eq!(config.limits().value.max_bytes, 10);
+    assert_eq!(config.limits().value.max_key_bytes, 32);
+    config.engine.shard_count = 2;
+    assert!(config.validate().is_err());
+    config.engine.shard_count = 0;
+    config.engine.max_nest_depth = 0;
+    assert!(config.validate().is_err());
 }

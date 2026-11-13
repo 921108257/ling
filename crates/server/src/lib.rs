@@ -2,8 +2,14 @@
 
 mod config;
 mod connection;
-pub use config::{AuthConfig, Config, DatabaseConfig, ProtocolConfig, ServerConfig};
-use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
+pub use config::{AuthConfig, Config, DatabaseConfig, EngineConfig, ProtocolConfig, ServerConfig};
+use std::{
+    future::Future,
+    io,
+    net::SocketAddr,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tokio::{
     net::{TcpListener, TcpSocket},
     sync::{Semaphore, watch},
@@ -13,11 +19,18 @@ use tokio::{
 pub struct Server {
     listener: TcpListener,
     config: Arc<Config>,
+    /// 唯一执行权覆盖所有命名空间，临界区中没有 await。
+    /// Exclusive ownership covers all namespaces; critical sections contain no await.
+    engine: Arc<Mutex<linger_engine::Engine>>,
 }
 
 impl Server {
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
+        let engine = Arc::new(Mutex::new(linger_engine::Engine::new(
+            config.engine_config(),
+            rand::random(),
+        )?));
         let socket = if config.server.host.is_ipv4() {
             TcpSocket::new_v4()?
         } else {
@@ -29,6 +42,7 @@ impl Server {
         Ok(Self {
             listener,
             config: Arc::new(config),
+            engine,
         })
     }
 
@@ -38,9 +52,14 @@ impl Server {
         config: Config,
     ) -> Result<Self, linger_types::DbError> {
         config.validate()?;
+        let engine = Arc::new(Mutex::new(linger_engine::Engine::new(
+            config.engine_config(),
+            rand::random(),
+        )?));
         Ok(Self {
             listener,
             config: Arc::new(config),
+            engine,
         })
     }
     pub fn local_addr(&self) -> io::Result<SocketAddr> {
@@ -62,8 +81,8 @@ impl Server {
                 accepted = self.listener.accept() => {
                     let (stream, _) = match accepted { Ok(value) => value, Err(e) => break Err(e) };
                     let Ok(permit) = semaphore.clone().try_acquire_owned() else { drop(stream); continue; };
-                    let config = self.config.clone(); let receiver = receiver.clone();
-                    connections.spawn(async move { let _permit = permit; connection::serve(stream, &config, receiver).await; });
+                    let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone();
+                    connections.spawn(async move { let _permit = permit; connection::serve(stream, &config, &engine, receiver).await; });
                 }
             }
         };

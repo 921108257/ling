@@ -77,7 +77,7 @@ async fn hello_capabilities_and_command_errors_and_quit() {
     );
     assert_error(
         call(&mut stream, 3, "GET", vec![Value::String("k".into())]).await,
-        "ERR_UNKNOWN_COMMAND",
+        "ERR_KEY_NOT_FOUND",
         false,
     );
     assert_error(
@@ -322,6 +322,150 @@ async fn partial_frame_deadline_and_connection_limit() {
         .unwrap()
         .unwrap()
         .is_none()
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// 多连接只能看到 MSET 整体状态，竞争自增不丢更新。
+/// Multiple connections observe whole MSET states and increments lose no updates.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn shared_engine_serializes_writes_and_atomic_observations() {
+    let (addr, stop, task) = start(Config::default()).await;
+    let mut seed = TcpStream::connect(addr).await.unwrap();
+    call(&mut seed, 1, "HELLO", vec![Value::UInt(1)]).await;
+    assert_eq!(
+        call(
+            &mut seed,
+            2,
+            "MSET",
+            vec![
+                Value::String("counter".into()),
+                Value::Int(0),
+                Value::String("left".into()),
+                Value::Int(0),
+                Value::String("right".into()),
+                Value::Int(0),
+            ]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    let mut workers = tokio::task::JoinSet::new();
+    for worker in 0..4 {
+        workers.spawn(async move {
+            let mut stream = TcpStream::connect(addr).await.unwrap();
+            call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
+            for iteration in 0..40 {
+                let id = 2 + iteration * 3;
+                assert!(matches!(
+                    call(
+                        &mut stream,
+                        id,
+                        "INCR",
+                        vec![Value::String("counter".into())]
+                    )
+                    .await,
+                    Body::Response(Ok(Value::Int(_)))
+                ));
+                let stamp = Value::Int(worker * 100 + iteration as i64);
+                assert_eq!(
+                    call(
+                        &mut stream,
+                        id + 1,
+                        "MSET",
+                        vec![
+                            Value::String("left".into()),
+                            stamp.clone(),
+                            Value::String("right".into()),
+                            stamp,
+                        ]
+                    )
+                    .await,
+                    Body::Response(Ok(Value::Bool(true)))
+                );
+                let Body::Response(Ok(Value::List(items))) = call(
+                    &mut stream,
+                    id + 2,
+                    "MGET",
+                    vec![Value::String("left".into()), Value::String("right".into())],
+                )
+                .await
+                else {
+                    panic!()
+                };
+                assert_eq!(items[0], items[1]);
+            }
+        });
+    }
+    while let Some(result) = workers.join_next().await {
+        result.unwrap();
+    }
+    assert_eq!(
+        call(&mut seed, 3, "GET", vec![Value::String("counter".into())]).await,
+        Body::Response(Ok(Value::Int(160)))
+    );
+    assert_error(
+        call(&mut seed, 4, "UNIMPLEMENTED", vec![]).await,
+        "ERR_UNKNOWN_COMMAND",
+        false,
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// POP 响应过大时保留列表；选库只改变当前连接上下文。
+/// An oversized POP preserves the list; SELECT changes only its connection context.
+#[tokio::test]
+async fn data_commands_preserve_state_on_response_limits_and_isolate_databases() {
+    let mut config = Config::default();
+    config.server.max_response_bytes = 1024;
+    let (addr, stop, task) = start(config).await;
+    let mut stream = TcpStream::connect(addr).await.unwrap();
+    call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
+    assert_eq!(
+        call(
+            &mut stream,
+            2,
+            "SET",
+            vec![
+                Value::String("items".into()),
+                Value::List(vec![Value::String("x".repeat(1100))])
+            ]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    assert_error(
+        call(&mut stream, 3, "LPOP", vec![Value::String("items".into())]).await,
+        "ERR_LIMIT_EXCEEDED",
+        false,
+    );
+    assert_eq!(
+        call(&mut stream, 4, "LLEN", vec![Value::String("items".into())]).await,
+        Body::Response(Ok(Value::UInt(1)))
+    );
+    call(&mut stream, 5, "SELECT", vec![Value::UInt(1)]).await;
+    assert_error(
+        call(&mut stream, 6, "GET", vec![Value::String("items".into())]).await,
+        "ERR_KEY_NOT_FOUND",
+        false,
+    );
+    call(
+        &mut stream,
+        7,
+        "SET",
+        vec![Value::String("items".into()), Value::Null],
+    )
+    .await;
+    assert_eq!(
+        call(&mut stream, 8, "GET", vec![Value::String("items".into())]).await,
+        Body::Response(Ok(Value::Null))
+    );
+    call(&mut stream, 9, "SELECT", vec![Value::UInt(0)]).await;
+    assert_eq!(
+        call(&mut stream, 10, "TYPE", vec![Value::String("items".into())]).await,
+        Body::Response(Ok(Value::String("list".into())))
     );
     stop.send(()).unwrap();
     task.await.unwrap();

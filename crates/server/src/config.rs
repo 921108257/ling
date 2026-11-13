@@ -10,6 +10,40 @@ pub struct Config {
     pub auth: AuthConfig,
     pub database: DatabaseConfig,
     pub protocol: ProtocolConfig,
+    /// 数据引擎限额；Data-engine resource limits.
+    pub engine: EngineConfig,
+}
+
+/// 单分片阶段接受的引擎配置，其他分片数量暂不开放。
+/// Engine settings supported by the single-shard stage; other shard counts are not yet supported.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct EngineConfig {
+    /// 0 自动解析为 1；0 resolves automatically to 1.
+    pub shard_count: u32,
+    /// 全实例受管字节；Instance-wide managed bytes.
+    pub max_memory_bytes: usize,
+    /// 每库活跃 Key 数；Active keys per database.
+    pub max_keys: usize,
+    /// Key 的 UTF-8 字节数；UTF-8 bytes per key.
+    pub max_key_bytes: usize,
+    /// 单个完整编码 Value 上限；Complete encoded bytes per Value.
+    pub max_value_bytes: usize,
+    /// 业务容器深度；Business-container depth.
+    pub max_nest_depth: usize,
+}
+
+impl Default for EngineConfig {
+    fn default() -> Self {
+        Self {
+            shard_count: 0,
+            max_memory_bytes: 0,
+            max_keys: 0,
+            max_key_bytes: 1024,
+            max_value_bytes: 64 * 1024 * 1024,
+            max_nest_depth: 8,
+        }
+    }
 }
 
 #[derive(Clone, Deserialize)]
@@ -102,6 +136,10 @@ impl Config {
     }
 
     pub fn validate(&self) -> Result<(), DbError> {
+        if self.engine.shard_count > 1 {
+            return Err(invalid("Stage 2 supports a single shard"));
+        }
+        self.engine_config().validate()?;
         let s = &self.server;
         if s.port == 0
             || s.backlog == 0
@@ -157,7 +195,23 @@ impl Config {
             max_request_bytes: self.server.max_request_bytes,
             max_response_bytes: self.server.max_response_bytes,
             max_batch_size: self.protocol.max_batch_size,
+            value: self.engine_config().value,
             ..Limits::default()
+        }
+    }
+
+    /// 将配置转换为不依赖网络的引擎配置。
+    /// Converts settings into the network-independent engine configuration.
+    pub fn engine_config(&self) -> linger_engine::Config {
+        linger_engine::Config {
+            databases: self.database.databases,
+            max_memory_bytes: self.engine.max_memory_bytes,
+            max_keys: self.engine.max_keys,
+            value: linger_types::ValueLimits {
+                max_bytes: self.engine.max_value_bytes,
+                max_depth: self.engine.max_nest_depth,
+                max_key_bytes: self.engine.max_key_bytes,
+            },
         }
     }
 }

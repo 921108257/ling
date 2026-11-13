@@ -3,7 +3,7 @@ use linger_server::{Config, Server};
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(version, about = "linger-cache-db 阶段 1 网络服务")]
+#[command(version, about = "linger-cache-db 阶段 2 单分片网络服务")]
 struct Args {
     #[arg(long)]
     config: Option<PathBuf>,
@@ -31,7 +31,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     };
     let server = Server::bind(config).await?;
     eprintln!(
-        "linger-server {} 监听 {}（阶段 1，事件禁用）",
+        "linger-server {} 监听 {}（阶段 2，单分片，事件禁用）",
         env!("CARGO_PKG_VERSION"),
         server.local_addr()?
     );

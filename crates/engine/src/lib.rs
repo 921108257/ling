@@ -35,6 +35,24 @@ impl Default for Config {
     }
 }
 
+impl Config {
+    /// 校验配置边界，不创建数据库或分配索引。
+    /// Validates configuration boundaries without allocating database indexes.
+    pub fn validate(&self) -> Result<(), DbError> {
+        if !(1..=65536).contains(&self.databases)
+            || !(1..=64).contains(&self.value.max_depth)
+            || self.value.max_bytes == 0
+            || self.value.max_key_bytes == 0
+        {
+            return Err(error(
+                ErrorCode::ConfigInvalid,
+                "Invalid engine configuration",
+            ));
+        }
+        Ok(())
+    }
+}
+
 /// 同时保存单调到期点和查询用 Unix 毫秒，留给 TTL 阶段使用。
 /// Stores both a monotonic deadline and queryable Unix milliseconds for the TTL stage.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -79,16 +97,7 @@ impl Engine {
     /// 建立数据库命名空间；epoch 由入口生成，测试可指定固定值。
     /// Creates namespaces; the entry point generates the epoch, while tests may fix it.
     pub fn new(config: Config, epoch: u128) -> Result<Self, DbError> {
-        if !(1..=65536).contains(&config.databases)
-            || !(1..=64).contains(&config.value.max_depth)
-            || config.value.max_bytes == 0
-            || config.value.max_key_bytes == 0
-        {
-            return Err(error(
-                ErrorCode::ConfigInvalid,
-                "Invalid engine configuration",
-            ));
-        }
+        config.validate()?;
         let databases = (0..config.databases).map(|_| HashMap::new()).collect();
         Ok(Self {
             config,

@@ -96,7 +96,7 @@ async fn real_service_auth_database_errors_and_close() {
         .execute("GET", vec![Value::String("null".into())])
         .await
         .unwrap_err();
-    assert!(matches!(error, Error::Server(e) if e.code == "ERR_UNKNOWN_COMMAND"));
+    assert!(matches!(error, Error::Server(e) if e.code == "ERR_KEY_NOT_FOUND"));
     client.close().await.unwrap();
     client.close().await.unwrap();
     assert!(client.is_closed());
