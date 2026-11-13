@@ -69,7 +69,7 @@ async fn real_cli_ping_unknown_command_and_batch_input_exit_status() {
     assert!(
         String::from_utf8(output.stderr)
             .unwrap()
-            .contains("ERR_UNKNOWN_COMMAND")
+            .contains("ERR_KEY_NOT_FOUND")
     );
     let output = cli(port, "SELECT 15\nSELECT 16\nPING\nQUIT\n", true, None).await;
     assert!(!output.status.success());
@@ -103,6 +103,48 @@ async fn real_cli_auth_errors_do_not_echo_passwords() {
             .unwrap()
             .contains("ERR_UNAUTHENTICATED")
     );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// CLI 通过真实 TCP 保留十种类型、整数精度和数据库隔离。
+/// CLI preserves all ten types, integer precision, and database isolation over real TCP.
+#[tokio::test]
+async fn typed_data_commands_work_through_sdk_and_tcp() {
+    let (port, stop, task) = start(false).await;
+    let values = [
+        "null",
+        "true",
+        "int(-9223372036854775808)",
+        "uint(18446744073709551615)",
+        "float(inf)",
+        "\"中 文\"",
+        "bytes(0x00ff)",
+        "list([null, int(1)])",
+        "map({\"n\": uint(1)})",
+        "set([int(1), uint(1)])",
+    ];
+    let mut source = String::new();
+    let mut expected = String::new();
+    for (index, value) in values.iter().enumerate() {
+        source.push_str(&format!("SET k{index} {value}\nGET k{index}\n"));
+        expected.push_str(&format!("true\n{value}\n"));
+    }
+    source.push_str("SET counter int(0)\nINCRBY counter 2\nSET items list([])\nRPUSH items null uint(3)\nLPOP items 1\nSELECT 1\nSET counter uint(9)\nSELECT 0\nGET counter\n");
+    expected.push_str("true\nint(2)\ntrue\nuint(2)\nlist([null])\ntrue\ntrue\ntrue\nint(2)\n");
+    let output = cli(port, &source, true, None).await;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(String::from_utf8(output.stdout).unwrap(), expected);
+    let output = cli(port, "INCR k0", false, None).await;
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("ERR_TYPE_MISMATCH"));
+    let output = cli(port, "UNIMPLEMENTED", false, None).await;
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("ERR_UNKNOWN_COMMAND"));
     stop.send(()).unwrap();
     task.await.unwrap();
 }

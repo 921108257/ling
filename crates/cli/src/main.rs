@@ -10,7 +10,7 @@ use std::{
 #[derive(Parser)]
 #[command(
     version,
-    about = "linger-cache-db 阶段 1 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
+    about = "linger-cache-db 阶段 2 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
 )]
 struct Args {
     #[arg(long, default_value = "127.0.0.1")]

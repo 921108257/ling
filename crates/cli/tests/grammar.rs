@@ -78,3 +78,52 @@ fn command_signatures_and_secret_safe_errors() {
     assert!(parse_command("SELECT -1").is_err());
     assert!(!format!("{:?}", parse_command("AUTH secret").unwrap()).contains("secret"));
 }
+
+/// 业务值保留显式类型，索引和计数依签名解析。
+/// Business values retain explicit types while indices and counts follow their signatures.
+#[test]
+fn data_command_signatures_and_argument_boundaries() {
+    assert_eq!(
+        parse_command("MSET first null second uint(18446744073709551615)")
+            .unwrap()
+            .arguments,
+        vec![
+            Value::String("first".into()),
+            Value::Null,
+            Value::String("second".into()),
+            Value::UInt(u64::MAX)
+        ]
+    );
+    assert_eq!(
+        parse_command("LRANGE items -2 -1").unwrap().arguments,
+        vec![
+            Value::String("items".into()),
+            Value::Int(-2),
+            Value::Int(-1)
+        ]
+    );
+    assert_eq!(
+        parse_command("LPOP items 2").unwrap().arguments,
+        vec![Value::String("items".into()), Value::UInt(2)]
+    );
+    assert_eq!(
+        parse_command("LSET items 0 map({\"nested\": true})")
+            .unwrap()
+            .arguments,
+        vec![
+            Value::String("items".into()),
+            Value::Int(0),
+            Value::Map(BTreeMap::from([("nested".into(), Value::Bool(true))]))
+        ]
+    );
+    for source in [
+        "SET key 1",
+        "SET key nulljunk",
+        "SET key int(1)XX",
+        "FSET key field trueoops",
+        "LPOP key -1",
+        "SRANDMEMBER key 9223372036854775808",
+    ] {
+        assert!(parse_command(source).is_err(), "{source}");
+    }
+}

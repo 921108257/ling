@@ -275,8 +275,8 @@ pub fn parse_value(source: &str) -> Result<Value, ParseError> {
     Ok(value)
 }
 
-/// Only stage-1 signatures are interpreted here. Other names reach the server
-/// as text arguments so its stable unknown-command error remains authoritative.
+/// 按命令签名区分业务 Value、固定整数和文本；未知名称仍交由服务端裁决。
+/// Distinguishes Values, fixed integers, and text by signature; the server resolves unknown names.
 pub fn parse_command(source: &str) -> Result<Request, ParseError> {
     if source.len() > MAX_LINE {
         return Err(ParseError);
@@ -290,15 +290,38 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
     p.space();
     while !p.rest().is_empty() {
         p.charge(2 * std::mem::size_of::<Value>())?;
-        args.push(if matches!(command.as_str(), "HELLO" | "SELECT") {
+        let index = args.len();
+        let unsigned = matches!(
+            (command.as_str(), index),
+            ("HELLO" | "SELECT", 0) | ("LPOP" | "RPOP" | "SPOP", 1)
+        );
+        let signed = matches!(
+            (command.as_str(), index),
+            (
+                "INCRBY" | "DECRBY" | "LINDEX" | "LSET" | "LREM" | "SRANDMEMBER",
+                1
+            ) | ("LRANGE" | "LTRIM", 1 | 2)
+        );
+        args.push(if linger_types::is_value_argument(&command, index) {
+            p.value(0)?
+        } else if unsigned {
             let n = p.word()?;
             if !unsigned_decimal(n) {
                 return Err(ParseError);
             }
             Value::UInt(n.parse().map_err(|_| ParseError)?)
+        } else if signed {
+            let n = p.word()?;
+            if !signed_decimal(n) {
+                return Err(ParseError);
+            }
+            Value::Int(n.parse().map_err(|_| ParseError)?)
         } else {
             Value::String(p.text()?)
         });
+        if !p.rest().is_empty() && !p.rest().starts_with(char::is_whitespace) {
+            return Err(ParseError);
+        }
         p.space();
     }
     Ok(Request::new(command, args))
