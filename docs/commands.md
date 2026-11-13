@@ -1,6 +1,6 @@
 # 命令契约
 
-> 状态：v0.3 设计草案，尚未实现。本文是首版命令及返回值的来源；类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 1 仅实现 HELLO、AUTH、SELECT、PING、QUIT；其余命令尚未开放，返回 `ERR_UNKNOWN_COMMAND`。本文是完整首版命令及返回值的来源；类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
 
 ## 通用规则
 

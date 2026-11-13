@@ -1,6 +1,8 @@
 # 验证与性能基准
 
-> 状态：v0.3 验收设计。当前没有代码、测试工具链或测量结果，以下是实施要求，不是已通过清单。
+> 状态：阶段 1 已建立 Rust 契约与真实网络测试。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单；尚无性能测量结果。
+
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace` 和 `cargo clippy --workspace --all-targets -- -D warnings`。类型、协议、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。Java / Go、引擎、TTL、并发 Shard 与 Journal 的测试尚未建立。
 
 ## 验证原则
 
@@ -71,4 +73,4 @@ Journal 测试在追加记录、提交标记、fsync、发布内存及发送响�
 
 文档中的能力与实际构建一致，CLI及三种SDK跑同一契约。性能未达到研究目标可以如实报告，不通过弱化TTL、关闭fsync或丢弃事件换取好看的数字。
 
-构建工具存在后，在仓库记录真实入口，例如Rust的fmt、测试与clippy，以及Java/Go现有工程任务。当前不提供伪造的命令输出或绿色勾选结果。
+Rust 构建、测试与 lint 入口已记录于本文及 README。Java / Go 工程建立后再记录其真实构建任务，不将建议命令作为通过证据。

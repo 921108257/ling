@@ -1,6 +1,6 @@
 # 数据模型
 
-> 状态：v0.3 设计草案，尚未实现。本文定义数据与相等性契约，不代表现有服务能力。
+> 状态：v0.3 数据契约。`linger-types` 已实现 10 种 Value、相等/哈希、大小/深度校验及稳定错误码；涉及存储、运算和 Key 生命周期的行为等待后续引擎实现。
 
 项目边界见 [architecture.md](architecture.md)，命令行为见 [commands.md](commands.md)，二进制编码见 [protocol.md](protocol.md)。三者使用本文定义的 Value，不另行推导语言特有的类型语义。
 

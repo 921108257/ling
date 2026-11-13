@@ -1,6 +1,6 @@
 # linger-cache-db 架构与范围
 
-> 版本：v0.3 设计基线。状态：设计草案，尚未实现。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
+> 版本：v0.3 设计基线。阶段 1 已实现，后续 v1.0 能力仍为设计契约。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
 
 ## 项目定位
 
@@ -10,7 +10,7 @@ linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协�
 
 服务端不提供 Embedded API，不兼容 Redis 协议或命令行为。命令使用熟悉的名称，不意味着继承 Redis 的默认值、隐式创建、原子性或错误规则。
 
-当前目录只有设计文档，没有 Cargo workspace、可运行服务端、SDK 或测试。本文的组件、命令与目录结构均为计划，不能据此生成虚假的安装、启动或测试成功说明。
+当前已有最小 Rust workspace、10 种共享 Value、协议编解码、TCP 服务、Rust SDK、CLI 与契约测试。服务端仅支持 HELLO、AUTH、SELECT、PING、QUIT，事件禁用；数据引擎、TTL、Reliable 和 Java / Go 尚未实现。构建与启动入口见 [README](../README.md)，本文其余组件与目录仍按阶段建立。
 
 ## 版本边界
 
