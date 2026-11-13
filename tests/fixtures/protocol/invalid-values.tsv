@@ -1,0 +1,12 @@
+# name | fatal | error code | wire hex
+bool|true|ERR_PROTOCOL|01 02
+unknown_tag|true|ERR_PROTOCOL|ff
+invalid_utf8|true|ERR_PROTOCOL|05 00000001 ff
+truncated_int|true|ERR_PROTOCOL|02 00
+huge_count|true|ERR_PROTOCOL|07 ffffffff
+huge_length|true|ERR_PROTOCOL|06 ffffffff
+trailing|true|ERR_PROTOCOL|00 00
+nan|false|ERR_INVALID_VALUE|04 7ff8000000000001
+empty_field|false|ERR_INVALID_VALUE|08 00000001 05 00000000 00
+duplicate_field|false|ERR_INVALID_VALUE|08 00000002 05 00000001 78 00 05 00000001 78 01 01
+set_container|false|ERR_INVALID_VALUE|09 00000001 07 00000000

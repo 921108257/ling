@@ -1,0 +1,12 @@
+[package]
+name = "linger-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+linger-types.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true
