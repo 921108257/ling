@@ -87,7 +87,7 @@ fn eviction_settings_are_strict() {
             format!("[engine]\nshard_count=4\n[eviction]\npolicy=\"{policy}\"\nsample_size=7");
         let mut config: Config = toml::from_str(&source).unwrap();
         config.validate().unwrap();
-        assert_eq!(config.engine_config().eviction.as_str(), policy);
+        assert_eq!(config.engine_config().unwrap().eviction.as_str(), policy);
         config.eviction.sample_size = 0;
         assert!(config.validate().is_err());
     }

@@ -493,3 +493,161 @@ async fn data_commands_preserve_state_on_response_limits_and_isolate_databases()
     stop.send(()).unwrap();
     task.await.unwrap();
 }
+
+/// 管理命令经真实 TCP 执行；SCAN 游标隔离于连接并在切库后失效。
+/// Administration runs over real TCP; SCAN cursors are connection-local and invalid after database changes.
+#[tokio::test]
+async fn sharded_administration_and_connection_owned_scan() {
+    let mut config = Config::default();
+    config.engine.shard_count = 4;
+    let (addr, stop, task) = start(config).await;
+    let mut stream = TcpStream::connect(addr).await.unwrap();
+    let mut other = TcpStream::connect(addr).await.unwrap();
+    call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
+    call(&mut other, 1, "HELLO", vec![Value::UInt(1)]).await;
+    call(
+        &mut stream,
+        2,
+        "MSET",
+        vec![
+            Value::String("a".into()),
+            Value::Int(1),
+            Value::String("b".into()),
+            Value::Null,
+            Value::String("c".into()),
+            Value::Bool(true),
+        ],
+    )
+    .await;
+    assert_eq!(
+        call(
+            &mut stream,
+            3,
+            "COPY",
+            vec![
+                Value::String("a".into()),
+                Value::String("copied".into()),
+                Value::String("DB".into()),
+                Value::UInt(1)
+            ]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    let Body::Response(Ok(Value::Map(page))) = call(
+        &mut stream,
+        4,
+        "SCAN",
+        vec![
+            Value::UInt(0),
+            Value::String("COUNT".into()),
+            Value::UInt(1),
+        ],
+    )
+    .await
+    else {
+        panic!()
+    };
+    let Value::UInt(cursor) = page["cursor"] else {
+        panic!()
+    };
+    assert_ne!(cursor, 0);
+    assert_error(
+        call(&mut other, 2, "SCAN", vec![Value::UInt(cursor)]).await,
+        "ERR_INVALID_CURSOR",
+        false,
+    );
+    call(&mut stream, 5, "SELECT", vec![Value::UInt(1)]).await;
+    assert_error(
+        call(&mut stream, 6, "SCAN", vec![Value::UInt(cursor)]).await,
+        "ERR_INVALID_CURSOR",
+        false,
+    );
+    assert_eq!(
+        call(&mut stream, 7, "GET", vec![Value::String("copied".into())]).await,
+        Body::Response(Ok(Value::Int(1)))
+    );
+    call(
+        &mut stream,
+        8,
+        "SWAPDB",
+        vec![Value::UInt(0), Value::UInt(1)],
+    )
+    .await;
+    assert_eq!(
+        call(&mut stream, 9, "GET", vec![Value::String("b".into())]).await,
+        Body::Response(Ok(Value::Null))
+    );
+    call(
+        &mut stream,
+        10,
+        "FLUSHDB",
+        vec![Value::String("ASYNC".into())],
+    )
+    .await;
+    assert_eq!(
+        call(&mut stream, 11, "DBSIZE", vec![]).await,
+        Body::Response(Ok(Value::UInt(0)))
+    );
+    call(&mut stream, 12, "FLUSHALL", vec![]).await;
+    assert_eq!(
+        call(&mut other, 3, "DBSIZE", vec![]).await,
+        Body::Response(Ok(Value::UInt(0)))
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// 跨库内存淘汰从真实协议进入，容量失败不得清掉旧数据。
+/// Cross-DB eviction enters through the real protocol; rejected writes must preserve existing data.
+#[tokio::test]
+async fn network_eviction_preserves_rejected_commands() {
+    let mut config = Config::default();
+    config.engine.shard_count = 2;
+    config.engine.max_keys = 1;
+    config.eviction.policy = "random".into();
+    let (addr, stop, task) = start(config).await;
+    let mut stream = TcpStream::connect(addr).await.unwrap();
+    call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
+    call(
+        &mut stream,
+        2,
+        "SET",
+        vec![Value::String("old".into()), Value::Null],
+    )
+    .await;
+    assert_error(
+        call(
+            &mut stream,
+            3,
+            "MSET",
+            vec![
+                Value::String("a".into()),
+                Value::Null,
+                Value::String("b".into()),
+                Value::Null,
+            ],
+        )
+        .await,
+        "ERR_OUT_OF_MEMORY",
+        false,
+    );
+    assert_eq!(
+        call(&mut stream, 4, "GET", vec![Value::String("old".into())]).await,
+        Body::Response(Ok(Value::Null))
+    );
+    call(
+        &mut stream,
+        5,
+        "SET",
+        vec![Value::String("new".into()), Value::Null],
+    )
+    .await;
+    assert_error(
+        call(&mut stream, 6, "GET", vec![Value::String("old".into())]).await,
+        "ERR_KEY_NOT_FOUND",
+        false,
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}

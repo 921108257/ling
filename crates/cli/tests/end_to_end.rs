@@ -159,3 +159,25 @@ async fn typed_data_commands_work_through_sdk_and_tcp() {
     stop.send(()).unwrap();
     task.await.unwrap();
 }
+
+/// CLI 跨库、遍历及清空命令共享 SDK 协议，无客户端数据库模拟。
+/// CLI cross-DB, query, and flush commands share the SDK protocol without client-side database emulation.
+#[tokio::test]
+async fn cli_cross_database_queries_and_flush() {
+    let (port, stop, task) = start(false).await;
+    let output = cli(port,
+        "SET a int(3)\nCOPY a b REPLACE DB 1\nSELECT 1\nGET b\nKEYS b\nMOVE b 2\nSWAPDB 1 2\nGET b\nFLUSHDB ASYNC\nDBSIZE\nSCAN 0 COUNT 10000\n",
+        true, None).await;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.starts_with(
+        "true\ntrue\ntrue\nint(3)\nlist([\"b\"])\ntrue\ntrue\nint(3)\ntrue\nuint(0)\n"
+    ));
+    assert!(stdout.contains("\"cursor\": uint(0)"));
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}

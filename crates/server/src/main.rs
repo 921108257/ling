@@ -8,7 +8,7 @@ use std::path::PathBuf;
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
 #[derive(Parser)]
-#[command(version, about = "linger-cache-db 阶段 2 单分片网络服务")]
+#[command(version, about = "linger-cache-db 阶段 3 固定分片网络服务")]
 struct Args {
     /// 可选配置路径，缺省尝试工作目录 linger.toml。
     /// Optional config path; defaults to linger.toml in the working directory.
@@ -42,9 +42,10 @@ async fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     };
     let server = Server::bind(config).await?;
     eprintln!(
-        "linger-server {} 监听 {}（阶段 2，单分片，事件禁用）",
+        "linger-server {} 监听 {}（阶段 3，{} 分片/库，事件禁用）",
         env!("CARGO_PKG_VERSION"),
-        server.local_addr()?
+        server.local_addr()?,
+        server.shard_count()
     );
     server
         .run(async {

@@ -13,7 +13,7 @@ use std::{
 #[derive(Parser)]
 #[command(
     version,
-    about = "linger-cache-db 阶段 2 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
+    about = "linger-cache-db 阶段 3 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
 )]
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.

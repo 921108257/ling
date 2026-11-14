@@ -237,7 +237,7 @@ impl Config {
         self.eviction
             .policy
             .parse::<linger_engine::EvictionPolicy>()?;
-        self.engine_config().validate()?;
+        self.engine_config()?.validate()?;
         let s = &self.server;
         if s.port == 0
             || s.backlog == 0
@@ -295,17 +295,21 @@ impl Config {
             max_request_bytes: self.server.max_request_bytes,
             max_response_bytes: self.server.max_response_bytes,
             max_batch_size: self.protocol.max_batch_size,
-            value: self.engine_config().value,
+            value: linger_types::ValueLimits {
+                max_bytes: self.engine.max_value_bytes,
+                max_depth: self.engine.max_nest_depth,
+                max_key_bytes: self.engine.max_key_bytes,
+            },
             ..Limits::default()
         }
     }
 
     /// 将配置转换为不依赖网络的引擎配置。
     /// Converts settings into the network-independent engine configuration.
-    pub fn engine_config(&self) -> linger_engine::Config {
-        linger_engine::Config {
+    pub fn engine_config(&self) -> Result<linger_engine::Config, DbError> {
+        Ok(linger_engine::Config {
             databases: self.database.databases,
-            eviction: self.eviction.policy.parse().unwrap_or_default(),
+            eviction: self.eviction.policy.parse()?,
             sample_size: self.eviction.sample_size,
             shard_count: self.engine.shard_count,
             max_memory_bytes: self.engine.max_memory_bytes,
@@ -315,6 +319,6 @@ impl Config {
                 max_depth: self.engine.max_nest_depth,
                 max_key_bytes: self.engine.max_key_bytes,
             },
-        }
+        })
     }
 }

@@ -1,5 +1,5 @@
-//! TCP 服务装配：所有数据库共享单分片执行权，连接负责协议屏障。
-//! TCP service assembly: databases share single-shard ownership and connections enforce protocol barriers.
+//! TCP 服务装配：分片所有权属于引擎，阻塞执行任务数量受控。
+//! TCP service assembly: the engine owns shards and blocking execution tasks are bounded.
 
 mod config;
 mod connection;
@@ -22,8 +22,8 @@ pub struct Server {
     /// 所有连接只读共享的启动配置。
     /// Startup configuration shared read-only by connections.
     config: Arc<Config>,
-    /// 唯一执行权覆盖所有命名空间，临界区中没有 await。
-    /// Exclusive ownership covers all namespaces; critical sections contain no await.
+    /// 分片锁由引擎协调，网络层只持有共享句柄。
+    /// The engine coordinates shard locks; networking holds only a shared handle.
     engine: Arc<linger_engine::Engine>,
 }
 
@@ -33,7 +33,7 @@ impl Server {
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
         let engine = Arc::new(linger_engine::Engine::new(
-            config.engine_config(),
+            config.engine_config()?,
             rand::random(),
         )?);
         let socket = if config.server.host.is_ipv4() {
@@ -59,7 +59,7 @@ impl Server {
     ) -> Result<Self, linger_types::DbError> {
         config.validate()?;
         let engine = Arc::new(linger_engine::Engine::new(
-            config.engine_config(),
+            config.engine_config()?,
             rand::random(),
         )?);
         Ok(Self {
@@ -74,10 +74,25 @@ impl Server {
         self.listener.local_addr()
     }
 
+    /// 读取已解析的固定分片数供启动日志使用。
+    /// Reads the resolved fixed shard count for startup diagnostics.
+    pub fn shard_count(&self) -> u32 {
+        self.engine.shard_count()
+    }
+
     /// 运行有连接数上限的接入循环；关闭时排空任务，超时后取消剩余连接。
     /// Runs a connection-limited accept loop; shutdown drains tasks and cancels remaining connections after its deadline.
+    /// 已开始的阻塞命令仍会完成；关闭期限不能强制回滚执行中的修改。
+    /// Started blocking commands still finish; the shutdown deadline cannot roll back in-progress mutations.
     pub async fn run(self, shutdown: impl Future<Output = ()>) -> io::Result<()> {
         let semaphore = Arc::new(Semaphore::new(self.config.server.max_connections));
+        // 在提交阻塞任务前取得许可，任务和等待者分别受 CPU 并行度与连接数约束。
+        // Acquire permits before spawning; CPU parallelism bounds tasks and connection count bounds waiters.
+        let slots = Arc::new(Semaphore::new(
+            std::thread::available_parallelism()
+                .map_or(1, |n| n.get())
+                .min(self.config.server.max_connections),
+        ));
         let (closing, receiver) = watch::channel(false);
         let mut connections = JoinSet::new();
         tokio::pin!(shutdown);
@@ -91,8 +106,8 @@ impl Server {
                 accepted = self.listener.accept() => {
                     let (stream, _) = match accepted { Ok(value) => value, Err(e) => break Err(e) };
                     let Ok(permit) = semaphore.clone().try_acquire_owned() else { drop(stream); continue; };
-                    let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone();
-                    connections.spawn(async move { let _permit = permit; connection::serve(stream, &config, &engine, receiver).await; });
+                    let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone(); let slots = slots.clone();
+                    connections.spawn(async move { let _permit = permit; connection::serve(stream, &config, &engine, slots, receiver).await; });
                 }
             }
         };

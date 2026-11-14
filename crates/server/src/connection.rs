@@ -5,11 +5,11 @@ use crate::Config;
 use linger_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
 use linger_types::{DbError, ErrorCode, Value};
 use std::collections::BTreeMap;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 use tokio::{
     io::AsyncWriteExt,
     net::TcpStream,
-    sync::watch,
+    sync::{Semaphore, watch},
     time::{Instant, timeout, timeout_at},
 };
 
@@ -18,7 +18,8 @@ use tokio::{
 pub(crate) async fn serve(
     mut stream: TcpStream,
     config: &Config,
-    engine: &linger_engine::Engine,
+    engine: &Arc<linger_engine::Engine>,
+    slots: Arc<Semaphore>,
     mut shutdown: watch::Receiver<bool>,
 ) {
     let mut session = Session {
@@ -101,7 +102,11 @@ pub(crate) async fn serve(
             break;
         }
         let (result, close, fatal_error) = match frame.body {
-            Body::Request(request) => session.execute(request, config, engine),
+            Body::Request(request) => {
+                session
+                    .execute(request, config, engine, slots.clone())
+                    .await
+            }
             _ if !session.authenticated => (
                 Err(DbError::new(
                     ErrorCode::Unauthenticated,
@@ -183,11 +188,12 @@ struct Session {
 impl Session {
     /// 先验证连接权限与参数，再在同步临界区执行数据命令。
     /// Validates connection permissions and arguments, then executes data commands in a synchronous critical section.
-    fn execute(
+    async fn execute(
         &mut self,
         request: Request,
         config: &Config,
-        engine: &linger_engine::Engine,
+        engine: &Arc<linger_engine::Engine>,
+        slots: Arc<Semaphore>,
     ) -> (Result<Value, DbError>, bool, bool) {
         let name = request.command.as_str();
         if !self.authenticated && self.hello && !matches!(name, "AUTH" | "PING" | "QUIT") {
@@ -291,13 +297,58 @@ impl Session {
                     invalid()
                 }
             }
-            "SCAN" => engine.scan(
-                self.db,
-                args,
-                &mut self.scan,
-                config.server.max_response_bytes,
-            ),
-            _ => engine.execute(self.db, name, args, config.server.max_response_bytes),
+            _ => {
+                let permit = if config.server.request_timeout_ms == 0 {
+                    slots.acquire_owned().await.ok()
+                } else {
+                    timeout(
+                        Duration::from_millis(config.server.request_timeout_ms),
+                        slots.acquire_owned(),
+                    )
+                    .await
+                    .ok()
+                    .and_then(Result::ok)
+                };
+                let Some(permit) = permit else {
+                    return (
+                        Err(DbError::new(
+                            ErrorCode::Busy,
+                            "Execution queue deadline exceeded before starting",
+                        )),
+                        false,
+                        false,
+                    );
+                };
+                let engine = engine.clone();
+                let db = self.db;
+                let cap = config.server.max_response_bytes;
+                let mut scan = std::mem::take(&mut self.scan);
+                // 任务一旦开始就不以超时宣称回滚；客户端失去响应时结果可能未知。
+                // Once started, timeout cannot claim rollback; losing a response may leave the client outcome unknown.
+                match tokio::task::spawn_blocking(move || {
+                    let _permit = permit;
+                    let result = if request.command == "SCAN" {
+                        engine.scan(db, &request.arguments, &mut scan, cap)
+                    } else {
+                        engine.execute(db, &request.command, &request.arguments, cap)
+                    };
+                    (result, scan)
+                })
+                .await
+                {
+                    Ok((result, scan)) => {
+                        self.scan = scan;
+                        result
+                    }
+                    Err(_) => {
+                        close = true;
+                        Err(DbError::new(
+                            ErrorCode::CommitUnknown,
+                            "Engine task failed; request outcome unknown",
+                        ))
+                    }
+                }
+            }
         };
         (result, close, fatal)
     }
