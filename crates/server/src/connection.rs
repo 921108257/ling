@@ -165,8 +165,8 @@ fn fatal(id: u64, code: ErrorCode, message: &'static str) -> Frame {
     }
 }
 
-// 连接内串行执行；跨连接数据操作由引擎的唯一执行权保护。
-// Connections execute serially; exclusive engine ownership protects cross-connection data operations.
+// 连接内串行执行；跨连接操作由引擎协调相关分片的执行权。
+// Connections execute serially; the engine coordinates ownership of relevant shards across connections.
 /// 连接独占状态；串行执行明确保证 AUTH / SELECT / QUIT 屏障。
 /// Connection-owned state; serial execution explicitly enforces AUTH, SELECT, and QUIT barriers.
 struct Session {
@@ -415,4 +415,51 @@ async fn send(stream: &mut TcpStream, frame: Frame, config: &Config) -> Result<(
             .map_err(|_| ())?;
     }
     Ok(())
+}
+
+/// 执行调度的边界测试，不依赖制造昂贵命令或不稳定的网络竞争。
+/// Scheduling boundary tests without expensive commands or timing-sensitive network contention.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 排队超时必须明确尚未执行；许可释放后同一会话可以继续请求。
+    /// Queue timeout must precede execution; the same session works after a permit becomes available.
+    #[tokio::test]
+    async fn saturated_queue_rejects_before_engine_mutation() {
+        let mut config = Config::default();
+        config.engine.shard_count = 2;
+        config.server.request_timeout_ms = 1;
+        let engine =
+            Arc::new(linger_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
+        let slots = Arc::new(Semaphore::new(1));
+        let occupied = slots.clone().acquire_owned().await.unwrap();
+        let mut session = Session {
+            hello: true,
+            authenticated: true,
+            db: 0,
+            last_id: 1,
+            scan: linger_engine::ScanState::default(),
+        };
+        let request = Request::new("SET", vec![Value::String("queued".into()), Value::Null]);
+        let (result, close, fatal) = session
+            .execute(request.clone(), &config, &engine, slots.clone())
+            .await;
+        assert_eq!(result.unwrap_err().code, "ERR_BUSY");
+        assert!(!close && !fatal);
+        assert_eq!(
+            engine.execute(0, "DBSIZE", &[], 1024).unwrap(),
+            Value::UInt(0)
+        );
+        drop(occupied);
+        let (result, close, fatal) = session.execute(request, &config, &engine, slots).await;
+        assert_eq!(result.unwrap(), Value::Bool(true));
+        assert!(!close && !fatal);
+        assert_eq!(
+            engine
+                .execute(0, "GET", &[Value::String("queued".into())], 1024)
+                .unwrap(),
+            Value::Null
+        );
+    }
 }
