@@ -12,9 +12,23 @@ pub(crate) struct Change {
     /// Some 表示替换，None 表示删除。
     /// Some replaces the entry; None deletes it.
     pub value: Option<Value>,
-    /// 局部修改保留期限；整体替换清除期限。
-    /// Local mutations preserve deadlines; whole replacements clear them.
-    pub keep_deadline: bool,
+    /// None 使用当前数据库；跨库操作显式指定目标。
+    /// None uses the current database; cross-DB operations name their target.
+    pub db: Option<u16>,
+    /// 值替换或迁入时的身份与期限规则。
+    /// Identity and deadline policy for replacement or relocation.
+    pub policy: Mutation,
+}
+
+/// 迁入必须分配新身份，不能继承目标生命周期。
+/// Relocations need a fresh identity rather than inheriting the destination lifecycle.
+pub(crate) enum Mutation {
+    /// 局部修改保留期限；Local mutation preserves deadline.
+    Preserve,
+    /// 整体替换清除期限；Whole replacement clears deadline.
+    Replace,
+    /// 迁入保留源期限并新建生命周期；Relocation preserves source deadline with a fresh lifecycle.
+    Recreate(Option<crate::Deadline>),
 }
 
 /// 响应和变更共享同一提交边界；Result and changes share one publication boundary.
@@ -42,7 +56,12 @@ impl Effect {
             changes: vec![Change {
                 key: key.into(),
                 value: Some(value),
-                keep_deadline,
+                db: None,
+                policy: if keep_deadline {
+                    Mutation::Preserve
+                } else {
+                    Mutation::Replace
+                },
             }],
         }
     }

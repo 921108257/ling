@@ -1,6 +1,7 @@
 //! 固定分片内存引擎；按 (db, shard) 取得执行权，预检后整体发布。
 //! Fixed-shard memory engine; acquires ownership in (db, shard) order and publishes after preflight.
 
+mod administration;
 mod containers;
 mod generic;
 mod numeric;
@@ -14,7 +15,7 @@ use std::{
     collections::{BTreeMap, hash_map::RandomState},
     hash::BuildHasher,
     mem::size_of,
-    sync::{Mutex, MutexGuard},
+    sync::{Mutex, MutexGuard, OnceLock, mpsc},
     time::Instant,
 };
 use support::{error, response_size};
@@ -141,6 +142,9 @@ pub struct Engine {
     epoch: u128,
     /// 全局受管预算及身份分配；Global managed budget and identity allocation.
     budget: Mutex<Budget>,
+    /// 有界后台释放队列，首次 ASYNC 时创建。
+    /// Bounded background reclamation queue, created on the first ASYNC.
+    reclaimer: OnceLock<Option<mpsc::SyncSender<Vec<Index>>>>,
 }
 
 /// 命令持有的有序分片执行权；私有入口避免绕过协调器。
@@ -172,6 +176,7 @@ impl Engine {
             hash: RandomState::new(),
             epoch,
             budget: Mutex::new(Budget::default()),
+            reclaimer: OnceLock::new(),
         })
     }
 
@@ -222,8 +227,12 @@ impl Engine {
         let locations = self.locations(db, &name, args)?;
         let mut tx = self.lock(locations)?;
         let now = Instant::now();
+        if matches!(name.as_str(), "FLUSHDB" | "FLUSHALL" | "SWAPDB") {
+            return tx.administration(db, &name, args, now, response_bytes);
+        }
         let effect =
             match name.as_str() {
+                "RENAME" | "RENAMENX" | "COPY" | "MOVE" => tx.relocate(db, &name, args, now)?,
                 "SET" | "GET" | "GETSET" | "MGET" | "MSET" | "DEL" | "EXISTS" | "TYPE"
                 | "DBSIZE" => tx.generic(db, &name, args, now, response_bytes)?,
                 "INCR" | "DECR" | "INCRBY" | "DECRBY" | "INCRFLOAT" | "APPEND" | "STRLEN"
@@ -232,6 +241,28 @@ impl Engine {
             };
         response_size(&effect.result, response_bytes, self.config.value)?;
         tx.publish(db, effect, now)
+    }
+
+    /// 后台释放队列满或线程不可用时同步释放，绝不积压无界退休索引。
+    /// Frees synchronously when the background queue is full or unavailable, never accumulating unbounded retired indexes.
+    fn retire(&self, indexes: Vec<Index>) {
+        let sender = self.reclaimer.get_or_init(|| {
+            let (tx, rx) = mpsc::sync_channel::<Vec<Index>>(1);
+            std::thread::Builder::new()
+                .name("linger-reclaim".into())
+                .spawn(move || {
+                    while let Ok(indexes) = rx.recv() {
+                        drop(indexes);
+                    }
+                })
+                .ok()
+                .map(|_| tx)
+        });
+        if let Some(sender) = sender {
+            if let Err(error) = sender.try_send(indexes) {
+                drop(error);
+            }
+        }
     }
 
     /// 校验数据库编号，不以平台整数截断宽编号。
@@ -261,7 +292,36 @@ impl Engine {
     /// 先完成签名相关的路由；Key 配额写入锁定全库以核对活跃数量。
     /// Routes by signature first; writes with key quotas lock the database to count active entries.
     fn locations(&self, db: u16, name: &str, args: &[Value]) -> Result<Vec<usize>, DbError> {
-        if name == "DBSIZE" || (self.config.max_keys != 0 && !read_only(name)) {
+        if name == "FLUSHALL" {
+            return Ok((0..self.shards.len()).collect());
+        }
+        if name == "SWAPDB" {
+            let [a, b] = args else {
+                return Err(support::argument_error());
+            };
+            let (a, b) = (self.database_arg(a)?, self.database_arg(b)?);
+            return Ok(self.db_locations(a).chain(self.db_locations(b)).collect());
+        }
+        if matches!(name, "COPY" | "MOVE" | "RENAME" | "RENAMENX") {
+            let target = if name == "MOVE" {
+                if args.len() != 2 {
+                    return Err(support::argument_error());
+                }
+                self.database_arg(&args[1])?
+            } else if name == "COPY" {
+                copy_options(self, db, args)?.0
+            } else {
+                db
+            };
+            // 涉及容量协调时预先锁全库；不会持有目标锁再逆序追加。
+            // Lock whole involved databases up front for quotas; never append locks in reverse order.
+            return Ok(self
+                .db_locations(db)
+                .chain(self.db_locations(target))
+                .collect());
+        }
+        if name == "DBSIZE" || name == "FLUSHDB" || (self.config.max_keys != 0 && !read_only(name))
+        {
             return Ok(self.db_locations(db).collect());
         }
         let keys: Vec<_> = match name {
@@ -277,6 +337,16 @@ impl Engine {
                 self.location(db, key)
             })
             .collect()
+    }
+
+    /// 将 UInt 参数转为合法数据库编号，禁止截断。
+    /// Converts a UInt argument to a valid database number without truncation.
+    fn database_arg(&self, value: &Value) -> Result<u16, DbError> {
+        let n = support::count(value)?;
+        let db = u16::try_from(n)
+            .map_err(|_| error(ErrorCode::DbOutOfRange, "Database out of range"))?;
+        self.validate_db(db)?;
+        Ok(db)
     }
 
     /// 排序去重后才加锁；所有路径都遵守此顺序，不逆序追加锁。
@@ -364,4 +434,29 @@ fn entry_size(key: &str, value: &Value) -> Result<usize, DbError> {
         .and_then(|n| n.checked_add(key.len()))
         .and_then(|n| n.checked_add(support::heap_size(value).ok()?))
         .ok_or_else(support::budget_error)
+}
+
+/// COPY 选项严格验证，重复项与未知选项均拒绝。
+/// COPY options are strict; duplicate and unknown options are rejected.
+fn copy_options(engine: &Engine, db: u16, args: &[Value]) -> Result<(u16, bool), DbError> {
+    if args.len() < 2 {
+        return Err(support::argument_error());
+    }
+    let mut target = None;
+    let mut replace = false;
+    let mut pos = 2;
+    while pos < args.len() {
+        match support::text(&args[pos])?.to_ascii_uppercase().as_str() {
+            "DB" if target.is_none() && pos + 1 < args.len() => {
+                target = Some(engine.database_arg(&args[pos + 1])?);
+                pos += 2;
+            }
+            "REPLACE" if !replace => {
+                replace = true;
+                pos += 1;
+            }
+            _ => return Err(support::argument_error()),
+        }
+    }
+    Ok((target.unwrap_or(db), replace))
 }

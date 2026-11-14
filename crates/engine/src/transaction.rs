@@ -3,7 +3,7 @@
 
 use crate::{Entry, Metadata, Transaction, entry_size, support::*, unavailable};
 use linger_types::{DbError, ErrorCode, Generation, Value};
-use std::time::Instant;
+use std::{collections::BTreeMap, time::Instant};
 
 impl Transaction<'_> {
     /// 仅访问协调器预先锁定的分片；缺少执行权是内部编程错误。
@@ -49,26 +49,34 @@ impl Transaction<'_> {
         }
         let mut budget = self.engine.budget.lock().map_err(|_| unavailable())?;
         let mut memory = budget.memory;
-        let mut keys = if self.config.max_keys != 0 {
-            self.entries(db)
-                .filter(|(_, e)| e.metadata.deadline.is_none_or(|d| now < d.monotonic))
-                .count()
-        } else {
-            0
-        };
+        let mut key_counts = BTreeMap::new();
+        if self.config.max_keys != 0 {
+            for change in &effect.changes {
+                let target = change.db.unwrap_or(db);
+                key_counts.entry(target).or_insert_with(|| {
+                    self.entries(target)
+                        .filter(|(_, e)| e.metadata.deadline.is_none_or(|d| now < d.monotonic))
+                        .count()
+                });
+            }
+        }
         let mut creations = budget.creations;
         let mut prepared = Vec::with_capacity(effect.changes.len());
         for change in effect.changes {
-            let old = self.index(db, &change.key).get(&change.key);
+            let target = change.db.unwrap_or(db);
+            let old = self.index(target, &change.key).get(&change.key);
             let active = old.filter(|e| e.metadata.deadline.is_none_or(|d| now < d.monotonic));
-            let deadline = if change.keep_deadline {
-                active.and_then(|e| e.metadata.deadline)
-            } else {
-                None
+            let recreate = matches!(change.policy, Mutation::Recreate(_));
+            let deadline = match change.policy {
+                Mutation::Preserve => active.and_then(|e| e.metadata.deadline),
+                Mutation::Replace => None,
+                Mutation::Recreate(deadline) => deadline,
             };
-            if active.is_some_and(|e| {
-                change.value.as_ref() == Some(&e.value) && e.metadata.deadline == deadline
-            }) || (change.value.is_none() && old.is_none())
+            if !recreate
+                && active.is_some_and(|e| {
+                    change.value.as_ref() == Some(&e.value) && e.metadata.deadline == deadline
+                })
+                || (change.value.is_none() && old.is_none())
             {
                 continue;
             }
@@ -76,14 +84,16 @@ impl Transaction<'_> {
                 memory -= old.bytes;
             }
             if self.config.max_keys != 0 && active.is_some() {
-                keys -= 1;
+                *key_counts.get_mut(&target).unwrap() -= 1;
             }
             let next = if let Some(value) = change.value {
                 value.validate(self.config.value)?;
                 let bytes = entry_size(&change.key, &value)?;
                 memory = memory.checked_add(bytes).ok_or_else(budget_error)?;
-                keys += 1;
-                let metadata = if let Some(entry) = active {
+                if let Some(keys) = key_counts.get_mut(&target) {
+                    *keys += 1;
+                }
+                let metadata = if let Some(entry) = active.filter(|_| !recreate) {
                     Metadata {
                         generation: entry.metadata.generation,
                         revision: entry
@@ -114,17 +124,20 @@ impl Transaction<'_> {
             } else {
                 None
             };
-            prepared.push((change.key, next));
+            prepared.push((target, change.key, next));
         }
         if (self.config.max_memory_bytes != 0
             && memory > self.config.max_memory_bytes
             && memory > budget.memory)
-            || (self.config.max_keys != 0 && keys > self.config.max_keys)
+            || (key_counts.values().any(|keys| *keys > self.config.max_keys))
         {
             return Err(budget_error());
         }
-        for (key, entry) in prepared {
-            let id = self.engine.location(db, &key)?;
+        for (target, key, entry) in prepared {
+            let id = self
+                .engine
+                .location(target, &key)
+                .expect("validated target");
             let pos = self
                 .guards
                 .binary_search_by_key(&id, |(id, _)| *id)

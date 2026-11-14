@@ -122,3 +122,129 @@ fn cross_shard_writes_have_fixed_order_and_atomic_observers() {
         worker.join().unwrap();
     }
 }
+
+/// 双库互换时，另一个多库观察者始终看见完整的一对值。
+/// While databases swap, an observer locking both databases always sees a complete pair.
+#[test]
+fn database_swap_is_atomic_to_coordinated_observers() {
+    let engine = Arc::new(
+        Engine::new(
+            Config {
+                shard_count: 2,
+                ..Config::default()
+            },
+            10,
+        )
+        .unwrap(),
+    );
+    for db in 0..2 {
+        engine
+            .execute(
+                db,
+                "SET",
+                &[Value::String("k".into()), Value::Int(db.into())],
+                4096,
+            )
+            .unwrap();
+    }
+    let other = engine.clone();
+    let worker = std::thread::spawn(move || {
+        for _ in 0..400 {
+            other
+                .execute(0, "SWAPDB", &[Value::UInt(0), Value::UInt(1)], 4096)
+                .unwrap();
+        }
+    });
+    for _ in 0..400 {
+        let tx = engine
+            .lock(
+                engine
+                    .db_locations(0)
+                    .chain(engine.db_locations(1))
+                    .collect(),
+            )
+            .unwrap();
+        let now = std::time::Instant::now();
+        let values = [
+            &tx.entry(0, "k", now).unwrap().value,
+            &tx.entry(1, "k", now).unwrap().value,
+        ];
+        assert!(
+            values == [&Value::Int(0), &Value::Int(1)]
+                || values == [&Value::Int(1), &Value::Int(0)]
+        );
+    }
+    worker.join().unwrap();
+}
+
+/// 内部注入期限验证迁移和交换不会重新开始 TTL，过期值不能复活。
+/// Injected deadlines prove relocation and swap do not restart TTL or revive expired values.
+#[test]
+fn relocation_preserves_deadlines_and_expired_values_stay_hidden() {
+    let engine = Engine::new(
+        Config {
+            shard_count: 2,
+            ..Config::default()
+        },
+        3,
+    )
+    .unwrap();
+    engine
+        .execute(0, "SET", &[Value::String("live".into()), Value::Null], 4096)
+        .unwrap();
+    engine
+        .execute(
+            0,
+            "SET",
+            &[Value::String("expired".into()), Value::Null],
+            4096,
+        )
+        .unwrap();
+    let deadline = crate::Deadline {
+        monotonic: std::time::Instant::now() + Duration::from_secs(60),
+        unix_ms: 12345,
+    };
+    for (key, deadline) in [
+        ("live", deadline),
+        (
+            "expired",
+            crate::Deadline {
+                monotonic: std::time::Instant::now(),
+                unix_ms: 1,
+            },
+        ),
+    ] {
+        engine.shards[engine.location(0, key).unwrap()]
+            .lock()
+            .unwrap()
+            .get_mut(key)
+            .unwrap()
+            .metadata
+            .deadline = Some(deadline);
+    }
+    engine
+        .execute(
+            0,
+            "COPY",
+            &[
+                Value::String("live".into()),
+                Value::String("copy".into()),
+                Value::String("DB".into()),
+                Value::UInt(1),
+            ],
+            4096,
+        )
+        .unwrap();
+    assert_eq!(engine.metadata(1, "copy").unwrap().deadline, Some(deadline));
+    engine
+        .execute(0, "SWAPDB", &[Value::UInt(0), Value::UInt(1)], 4096)
+        .unwrap();
+    assert_eq!(engine.metadata(0, "copy").unwrap().deadline, Some(deadline));
+    assert_eq!(
+        engine
+            .execute(1, "GET", &[Value::String("expired".into())], 4096)
+            .unwrap_err()
+            .code,
+        "ERR_KEY_NOT_FOUND"
+    );
+}

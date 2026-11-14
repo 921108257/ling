@@ -99,7 +99,8 @@ impl Transaction<'_> {
                             .map(|key| Change {
                                 key: key.into(),
                                 value: None,
-                                keep_deadline: false,
+                                db: None,
+                                policy: Mutation::Replace,
                             })
                             .collect()
                     } else {
@@ -124,7 +125,8 @@ impl Transaction<'_> {
                         .map(|pair| Change {
                             key: text(&pair[0]).unwrap().into(),
                             value: Some(pair[1].clone()),
-                            keep_deadline: false,
+                            db: None,
+                            policy: Mutation::Replace,
                         })
                         .collect(),
                 })
