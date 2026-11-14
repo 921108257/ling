@@ -3,7 +3,7 @@
 
 use crate::{Entry, Metadata, Transaction, entry_size, support::*, unavailable};
 use linger_types::{DbError, ErrorCode, Generation, Value};
-use std::{collections::BTreeMap, time::Instant};
+use std::{cell::Cell, collections::BTreeMap, time::Instant};
 
 impl Transaction<'_> {
     /// 仅访问协调器预先锁定的分片；缺少执行权是内部编程错误。
@@ -30,10 +30,24 @@ impl Transaction<'_> {
     /// 所有入口使用同一个观察时点过滤到期状态。
     /// Every entry point filters expiry at the same observation instant.
     pub(crate) fn entry(&self, db: u16, key: &str, now: Instant) -> Result<&Entry, DbError> {
-        self.index(db, key)
+        let entry = self
+            .index(db, key)
             .get(key)
             .filter(|e| e.metadata.deadline.is_none_or(|d| now < d.monotonic))
-            .ok_or_else(|| error(ErrorCode::KeyNotFound, "Key not found"))
+            .ok_or_else(|| error(ErrorCode::KeyNotFound, "Key not found"))?;
+        self.touched
+            .borrow_mut()
+            .entry(db)
+            .or_default()
+            .insert(key.into());
+        let millis = self.engine.millis(now);
+        let old = entry.access.get();
+        entry.access.set(crate::eviction::Access {
+            last: millis,
+            frequency: old.decay(millis).saturating_add(1),
+            minute: millis / 60_000,
+        });
+        Ok(entry)
     }
 
     /// 在提交锁中预检完整变更集，之后不再执行可失败业务操作。
@@ -59,6 +73,13 @@ impl Transaction<'_> {
                         .count()
                 });
             }
+        }
+        let mut protected = self.touched.borrow().clone();
+        for change in &effect.changes {
+            protected
+                .entry(change.db.unwrap_or(db))
+                .or_default()
+                .insert(change.key.clone());
         }
         let mut creations = budget.creations;
         let mut prepared = Vec::with_capacity(effect.changes.len());
@@ -120,18 +141,35 @@ impl Transaction<'_> {
                     value,
                     metadata,
                     bytes,
+                    access: Cell::new(
+                        active
+                            .filter(|_| !recreate)
+                            .map(|e| e.access.get())
+                            .unwrap_or(crate::eviction::Access {
+                                last: self.engine.millis(now),
+                                frequency: 1,
+                                minute: self.engine.millis(now) / 60_000,
+                            }),
+                    ),
                 })
             } else {
                 None
             };
             prepared.push((target, change.key, next));
         }
-        if (self.config.max_memory_bytes != 0
-            && memory > self.config.max_memory_bytes
-            && memory > budget.memory)
-            || (key_counts.values().any(|keys| *keys > self.config.max_keys))
-        {
-            return Err(budget_error());
+        let victims = self.victims(&protected, &mut memory, &mut key_counts, budget.memory, now)?;
+        // 受害者和写入共用一次发布；预算不足时不会提前删除任何 Key。
+        // Victims and writes share publication; insufficient budgets never delete keys early.
+        for (target, key) in victims {
+            let id = self
+                .engine
+                .location(target, &key)
+                .expect("validated victim");
+            let pos = self
+                .guards
+                .binary_search_by_key(&id, |(id, _)| *id)
+                .expect("victim shard locked");
+            self.guards[pos].1.remove(&key);
         }
         for (target, key, entry) in prepared {
             let id = self

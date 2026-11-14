@@ -136,3 +136,43 @@ fn data_command_signatures_and_argument_boundaries() {
         assert!(parse_command(source).is_err(), "{source}");
     }
 }
+
+/// 跨库和遍历的数值位置不能作为 String 发送，字段值不因文本相同被误判。
+/// Cross-DB and scan numeric positions cannot be sent as Strings; literal field names cannot change signatures.
+#[test]
+fn database_and_scan_signatures_preserve_unsigned_arguments() {
+    assert_eq!(
+        parse_command("COPY key dest REPLACE DB 15")
+            .unwrap()
+            .arguments,
+        vec![
+            Value::String("key".into()),
+            Value::String("dest".into()),
+            Value::String("REPLACE".into()),
+            Value::String("DB".into()),
+            Value::UInt(15)
+        ]
+    );
+    assert_eq!(
+        parse_command("SCAN 0 MATCH \"COUNT\" COUNT 2 TYPE null")
+            .unwrap()
+            .arguments,
+        vec![
+            Value::UInt(0),
+            Value::String("MATCH".into()),
+            Value::String("COUNT".into()),
+            Value::String("COUNT".into()),
+            Value::UInt(2),
+            Value::String("TYPE".into()),
+            Value::String("null".into())
+        ]
+    );
+    assert_eq!(
+        parse_command("MOVE key 1").unwrap().arguments[1],
+        Value::UInt(1)
+    );
+    assert_eq!(
+        parse_command("SWAPDB 0 1").unwrap().arguments,
+        vec![Value::UInt(0), Value::UInt(1)]
+    );
+}

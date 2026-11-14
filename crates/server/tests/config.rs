@@ -37,7 +37,7 @@ fn rejects_invalid_auth_limits_and_unsupported_fields() {
     config.server.max_connections = 0;
     assert!(config.validate().is_err());
     for text in [
-        "[eviction]\npolicy=\"lru\"",
+        "[ttl]\nprecision_ms=1",
         "[server]\nprot=6380",
         "[auth]\npassword=123",
         "[database]\ndatabases=1\ndatabases=2",
@@ -75,5 +75,26 @@ fn engine_limits_are_strict_and_available_to_protocol() {
     assert!(config.validate().is_err());
     config.engine.shard_count = 0;
     config.engine.max_nest_depth = 0;
+    assert!(config.validate().is_err());
+}
+
+/// 所有淘汰策略可配置，拼写错误与无界采样在启动前拒绝。
+/// Every eviction policy is configurable; typos and unbounded sampling fail before startup.
+#[test]
+fn eviction_settings_are_strict() {
+    for policy in ["noeviction", "lru", "lfu", "random", "ttl-first"] {
+        let source =
+            format!("[engine]\nshard_count=4\n[eviction]\npolicy=\"{policy}\"\nsample_size=7");
+        let mut config: Config = toml::from_str(&source).unwrap();
+        config.validate().unwrap();
+        assert_eq!(config.engine_config().eviction.as_str(), policy);
+        config.eviction.sample_size = 0;
+        assert!(config.validate().is_err());
+    }
+    let mut config = Config::default();
+    config.eviction.policy = "LRU".into();
+    assert!(config.validate().is_err());
+    config.eviction.policy = "lru".into();
+    config.eviction.sample_size = usize::MAX;
     assert!(config.validate().is_err());
 }

@@ -248,3 +248,65 @@ fn relocation_preserves_deadlines_and_expired_values_stay_hidden() {
         "ERR_KEY_NOT_FOUND"
     );
 }
+
+/// 注入热度与期限，验证 LRU、LFU 和 ttl-first 的候选选择及频率衰减。
+/// Injected heat and deadlines verify LRU, LFU, ttl-first selection, and frequency decay.
+#[test]
+fn eviction_scores_and_ttl_candidates_follow_their_contracts() {
+    for policy in [
+        crate::EvictionPolicy::Lru,
+        crate::EvictionPolicy::Lfu,
+        crate::EvictionPolicy::TtlFirst,
+    ] {
+        let e = Engine::new(
+            Config {
+                shard_count: 2,
+                max_keys: 2,
+                eviction: policy,
+                sample_size: 100,
+                ..Config::default()
+            },
+            1,
+        )
+        .unwrap();
+        for key in ["cold", "hot"] {
+            e.execute(0, "SET", &[Value::String(key.into()), Value::Null], 4096)
+                .unwrap();
+        }
+        let now = std::time::Instant::now();
+        for (key, last, frequency, delay) in [("cold", 1, 1, 30), ("hot", 2, 100, 90)] {
+            let mut index = e.shards[e.location(0, key).unwrap()].lock().unwrap();
+            let entry = index.get_mut(key).unwrap();
+            entry.access.set(crate::eviction::Access {
+                last,
+                frequency,
+                minute: 0,
+            });
+            entry.metadata.deadline = Some(crate::Deadline {
+                monotonic: now + Duration::from_secs(delay),
+                unix_ms: delay as i64,
+            });
+        }
+        e.execute(0, "SET", &[Value::String("new".into()), Value::Null], 4096)
+            .unwrap();
+        assert_eq!(
+            e.execute(0, "GET", &[Value::String("cold".into())], 4096)
+                .unwrap_err()
+                .code,
+            "ERR_KEY_NOT_FOUND"
+        );
+        assert_eq!(
+            e.execute(0, "GET", &[Value::String("hot".into())], 4096)
+                .unwrap(),
+            Value::Null
+        );
+    }
+    let access = crate::eviction::Access {
+        last: 0,
+        frequency: 8,
+        minute: 1,
+    };
+    assert_eq!(access.decay(60_000), 8);
+    assert_eq!(access.decay(180_000), 2);
+    assert_eq!(access.decay(u64::MAX), 0);
+}

@@ -26,6 +26,7 @@ pub(crate) async fn serve(
         authenticated: !config.auth.enabled,
         db: config.database.default_db,
         last_id: 0,
+        scan: linger_engine::ScanState::default(),
     };
     loop {
         if *shutdown.borrow() {
@@ -176,6 +177,8 @@ struct Session {
     /// 最后接受的请求编号，避免重用。
     /// Last accepted request number, preventing reuse.
     last_id: u64,
+    /// 当前连接唯一游标，断线即释放；Connection-owned cursor, released on disconnect.
+    scan: linger_engine::ScanState,
 }
 impl Session {
     /// 先验证连接权限与参数，再在同步临界区执行数据命令。
@@ -268,6 +271,9 @@ impl Session {
             },
             "SELECT" => match args {
                 [Value::UInt(db)] if *db < u64::from(config.database.databases) => {
+                    if self.db != *db as u16 {
+                        self.scan = linger_engine::ScanState::default();
+                    }
                     self.db = *db as u16;
                     Ok(Value::Bool(true))
                 }
@@ -285,6 +291,12 @@ impl Session {
                     invalid()
                 }
             }
+            "SCAN" => engine.scan(
+                self.db,
+                args,
+                &mut self.scan,
+                config.server.max_response_bytes,
+            ),
             _ => engine.execute(self.db, name, args, config.server.max_response_bytes),
         };
         (result, close, fatal)

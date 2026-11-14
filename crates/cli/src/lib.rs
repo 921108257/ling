@@ -340,8 +340,13 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
         let index = args.len();
         let unsigned = matches!(
             (command.as_str(), index),
-            ("HELLO" | "SELECT", 0) | ("LPOP" | "RPOP" | "SPOP", 1)
+            ("HELLO" | "SELECT" | "SCAN", 0)
+                | ("LPOP" | "RPOP" | "SPOP" | "MOVE", 1)
+                | ("SWAPDB", 0 | 1)
         );
+        let unsigned = unsigned || (command == "COPY" && index >= 3
+            && args.get(index - 1).is_some_and(|value| matches!(value, Value::String(option) if option.eq_ignore_ascii_case("DB"))))
+            || (command == "SCAN" && index >= 2 && index % 2 == 0 && args.get(index - 1).is_some_and(|value| matches!(value, Value::String(option) if option.eq_ignore_ascii_case("COUNT"))));
         let signed = matches!(
             (command.as_str(), index),
             (

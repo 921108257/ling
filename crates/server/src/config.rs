@@ -25,6 +25,9 @@ pub struct Config {
     pub protocol: ProtocolConfig,
     /// 数据引擎限额；Data-engine resource limits.
     pub engine: EngineConfig,
+    /// 内存和 Key 预算达到上限时的候选选择。
+    /// Candidate selection when memory or key budgets are exhausted.
+    pub eviction: EvictionConfig,
 }
 
 /// 单分片阶段接受的引擎配置，其他分片数量暂不开放。
@@ -57,6 +60,28 @@ impl Default for EngineConfig {
             max_key_bytes: 1024,
             max_value_bytes: 64 * 1024 * 1024,
             max_nest_depth: 8,
+        }
+    }
+}
+
+/// 淘汰策略与采样数量；不接受未知策略或零采样数。
+/// Eviction policy and sample count; unknown policies and zero samples are rejected.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct EvictionConfig {
+    /// 精确小写策略名；Exact lowercase policy name.
+    pub policy: String,
+    /// LRU / LFU 候选数量；LRU / LFU candidate count.
+    pub sample_size: usize,
+}
+
+impl Default for EvictionConfig {
+    /// 默认不淘汰，采样数量为 5。
+    /// Defaults to no eviction and five samples.
+    fn default() -> Self {
+        Self {
+            policy: "noeviction".into(),
+            sample_size: 5,
         }
     }
 }
@@ -209,6 +234,9 @@ impl Config {
     /// 监听前验证范围与组合关系，不创建引擎或分配索引。
     /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
+        self.eviction
+            .policy
+            .parse::<linger_engine::EvictionPolicy>()?;
         self.engine_config().validate()?;
         let s = &self.server;
         if s.port == 0
@@ -277,6 +305,8 @@ impl Config {
     pub fn engine_config(&self) -> linger_engine::Config {
         linger_engine::Config {
             databases: self.database.databases,
+            eviction: self.eviction.policy.parse().unwrap_or_default(),
+            sample_size: self.eviction.sample_size,
             shard_count: self.engine.shard_count,
             max_memory_bytes: self.engine.max_memory_bytes,
             max_keys: self.engine.max_keys,

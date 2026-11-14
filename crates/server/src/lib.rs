@@ -3,7 +3,9 @@
 
 mod config;
 mod connection;
-pub use config::{AuthConfig, Config, DatabaseConfig, EngineConfig, ProtocolConfig, ServerConfig};
+pub use config::{
+    AuthConfig, Config, DatabaseConfig, EngineConfig, EvictionConfig, ProtocolConfig, ServerConfig,
+};
 use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     net::{TcpListener, TcpSocket},

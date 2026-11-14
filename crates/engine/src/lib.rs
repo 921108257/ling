@@ -3,8 +3,12 @@
 
 mod administration;
 mod containers;
+mod eviction;
 mod generic;
+pub use eviction::EvictionPolicy;
 mod numeric;
+mod scan;
+pub use scan::ScanState;
 #[cfg(test)]
 mod ownership_tests;
 mod support;
@@ -12,6 +16,7 @@ mod transaction;
 
 use linger_types::{DbError, ErrorCode, Generation, Value, ValueLimits};
 use std::{
+    cell::{Cell, RefCell},
     collections::{BTreeMap, hash_map::RandomState},
     hash::BuildHasher,
     mem::size_of,
@@ -34,6 +39,10 @@ pub struct Config {
     pub max_keys: usize,
     /// 单值编码、深度与名称预算；Value wire, depth, and name budgets.
     pub value: ValueLimits,
+    /// 达到预算后的淘汰策略；Eviction policy when budgets are exhausted.
+    pub eviction: EvictionPolicy,
+    /// LRU / LFU 的候选采样数；Candidate sample count for LRU / LFU.
+    pub sample_size: usize,
 }
 
 impl Default for Config {
@@ -46,6 +55,8 @@ impl Default for Config {
             max_memory_bytes: 0,
             max_keys: 0,
             value: ValueLimits::default(),
+            eviction: EvictionPolicy::NoEviction,
+            sample_size: 5,
         }
     }
 }
@@ -72,6 +83,8 @@ impl Config {
             || !(1..=64).contains(&self.value.max_depth)
             || self.value.max_bytes == 0
             || self.value.max_key_bytes == 0
+            || self.sample_size == 0
+            || self.sample_size > 128 * 1024 * 1024 / size_of::<usize>() / 4
             || topology.is_none_or(|n| n > 128 * 1024 * 1024)
         {
             return Err(error(
@@ -117,6 +130,8 @@ struct Entry {
     metadata: Metadata,
     /// 保守逻辑内存，不等于 RSS；Conservative logical memory, not RSS.
     bytes: usize,
+    /// 不改变业务版本的访问热度；Access heat independent of business revision.
+    access: Cell<eviction::Access>,
 }
 
 /// 全实例短提交锁；永远在全部分片锁之后取得。
@@ -140,6 +155,8 @@ pub struct Engine {
     hash: RandomState,
     /// 本进程生命周期代号；Process lifecycle identifier.
     epoch: u128,
+    /// 内部热度时间基准；Internal heat clock origin.
+    started: Instant,
     /// 全局受管预算及身份分配；Global managed budget and identity allocation.
     budget: Mutex<Budget>,
     /// 有界后台释放队列，首次 ASYNC 时创建。
@@ -156,6 +173,9 @@ struct Transaction<'a> {
     config: Config,
     /// 已排序且去重的锁，覆盖本次全部读写；Sorted, deduplicated guards covering all reads and writes.
     guards: Vec<(usize, MutexGuard<'a, Index>)>,
+    /// 已读来源不得在同一原子命令中被顺手淘汰。
+    /// Read sources cannot be evicted as a side effect of their own atomic command.
+    touched: RefCell<BTreeMap<u16, std::collections::HashSet<String>>>,
 }
 
 impl Engine {
@@ -175,6 +195,7 @@ impl Engine {
             shards,
             hash: RandomState::new(),
             epoch,
+            started: Instant::now(),
             budget: Mutex::new(Budget::default()),
             reclaimer: OnceLock::new(),
         })
@@ -232,6 +253,7 @@ impl Engine {
         }
         let effect =
             match name.as_str() {
+                "KEYS" | "RANDOMKEY" => tx.query(db, &name, args, now, response_bytes)?,
                 "RENAME" | "RENAMENX" | "COPY" | "MOVE" => tx.relocate(db, &name, args, now)?,
                 "SET" | "GET" | "GETSET" | "MGET" | "MSET" | "DEL" | "EXISTS" | "TYPE"
                 | "DBSIZE" => tx.generic(db, &name, args, now, response_bytes)?,
@@ -241,6 +263,14 @@ impl Engine {
             };
         response_size(&effect.result, response_bytes, self.config.value)?;
         tx.publish(db, effect, now)
+    }
+
+    /// 从内部单调基准换算热度毫秒，饱和而不回绕。
+    /// Converts the internal monotonic origin to heat milliseconds, saturating rather than wrapping.
+    fn millis(&self, now: Instant) -> u64 {
+        now.saturating_duration_since(self.started)
+            .as_millis()
+            .min(u128::from(u64::MAX)) as u64
     }
 
     /// 后台释放队列满或线程不可用时同步释放，绝不积压无界退休索引。
@@ -292,7 +322,11 @@ impl Engine {
     /// 先完成签名相关的路由；Key 配额写入锁定全库以核对活跃数量。
     /// Routes by signature first; writes with key quotas lock the database to count active entries.
     fn locations(&self, db: u16, name: &str, args: &[Value]) -> Result<Vec<usize>, DbError> {
-        if name == "FLUSHALL" {
+        if (!read_only(name)
+            && self.config.eviction != EvictionPolicy::NoEviction
+            && (self.config.max_memory_bytes != 0 || self.config.max_keys != 0))
+            || name == "FLUSHALL"
+        {
             return Ok((0..self.shards.len()).collect());
         }
         if name == "SWAPDB" {
@@ -320,7 +354,8 @@ impl Engine {
                 .chain(self.db_locations(target))
                 .collect());
         }
-        if name == "DBSIZE" || name == "FLUSHDB" || (self.config.max_keys != 0 && !read_only(name))
+        if matches!(name, "DBSIZE" | "KEYS" | "RANDOMKEY" | "FLUSHDB")
+            || (self.config.max_keys != 0 && !read_only(name))
         {
             return Ok(self.db_locations(db).collect());
         }
@@ -367,6 +402,7 @@ impl Engine {
             engine: self,
             config: self.config,
             guards,
+            touched: RefCell::new(BTreeMap::new()),
         })
     }
 }
@@ -381,6 +417,8 @@ fn read_only(name: &str) -> bool {
             | "EXISTS"
             | "TYPE"
             | "DBSIZE"
+            | "KEYS"
+            | "RANDOMKEY"
             | "STRLEN"
             | "BLEN"
             | "LLEN"
