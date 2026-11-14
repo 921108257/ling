@@ -1,8 +1,8 @@
 # 验证与性能基准
 
-> 状态：阶段 1—2 已建立 Rust 契约、引擎和真实网络测试。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单；尚无性能测量结果。
+> 状态：阶段 1—3 已建立 Rust 契约、分片引擎、真实网络测试和基础性能测量。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
 
-当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖单分片全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、MGET 封套、多连接自增及 MSET 原子可见性、超限 POP 保留数据。Java / Go、完整 TTL、多 Shard 协调与 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，注释为中英双语。
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。Java / Go、完整 TTL 和 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
 
 ## 验证原则
 
@@ -60,6 +60,31 @@ Journal 测试在追加记录、提交标记、fsync、发布内存及发送响�
 测量 TTL 时分别报告“过期后错误可见次数”（必须为0）与“到期至回收/事件投递的延迟”（允许排队但应度量），不能用平均调度精度掩盖旧值泄漏。
 
 内存实验需说明统计分母是逻辑活跃Key还是实际仍占内存条目，并给出预热/稳态/删除后RSS。协议缓冲、Journal页缓存及分配器滞留不能归为不存在的“免费内存”。
+
+## 阶段 3 基础测量
+
+2026-11-14 在 VMware 虚拟机中测量，客户机暴露 8 个逻辑 CPU，型号为 i7-11800H @ 2.30GHz，内存约 23.4 GiB，Linux x86_64，rustc 1.98.1。使用 Cargo release 默认优化，不绑核；TCP 客户端与独立服务端共享同机 CPU，经回环地址通信。完整内核、CPU、存储、编译器、Cargo.lock 摘要和源码版本见 [环境原始数据](../benchmarks/results/stage3-2026-11-14-environment.json)。所记录工作区只有未追踪的 Python 字节码，已清理，无源码改动。
+
+工具为 [baseline.rs](../crates/server/examples/baseline.rs) 和 [run.py](../benchmarks/run.py)。复现命令为 `python3 benchmarks/run.py target/benchmarks/my-run`，需要 Linux `/proc`、Python 3 和 Rust；输出目录须不存在。脚本构建 release，为每次 TCP 实验启动全新服务端，保存配置、原始 JSON、错误输出及进程指标。没有运行 Redis 比较，也没有 TLS、认证、TTL、事件或 Journal。
+
+固定 16 个数据库、每库 4 个 Shard，只使用数据库 0；noeviction，实例预算 256 MiB，无 Key 配额。TCP 最大 32 个连接，请求 / 响应上限 1 MiB，其余使用默认配置。8 个闭环客户端，每连接流水线深度 1；预填充 10,000 个固定长度 Key（`baseline:` 加 8 位数字），值为 64 字节 Bytes，均匀命中读取。分别测纯 GET、纯 SET、50% GET / 50% SET；写入内容随序号变化。负载种子 20261114，进程内部路由哈希仍随机。每客户端预热 1,000 次再测量 10,000 次，每次共 80,000 个测量请求，各负载独立重复三次。
+
+下表每列为三次独立结果的中位数，分位数来自各次成功请求按最近秩计算；不是合并样本的分位数。单请求计时从参数准备后调用 SDK / 引擎开始，到完整结果返回，TCP 包含编码、队列、网络与解码；吞吐使用所有客户端测量阶段的总完成时间，包含收集结果的少量开销。原始输出保留每次结果、微秒直方图与 CPU / RSS：[18 次测量原始数据](../benchmarks/results/stage3-2026-11-14-results.json)。
+
+| 路径与负载 | 成功请求/秒 | P50 μs | P95 μs | P99 μs | P99.9 μs |
+|---|---:|---:|---:|---:|---:|
+| 引擎 GET | 1,603,359 | 0.923 | 5.903 | 82.145 | 331.379 |
+| 引擎 SET | 616,263 | 1.903 | 27.505 | 205.732 | 1,126.791 |
+| 引擎混合 | 841,442 | 1.432 | 28.521 | 144.168 | 749.856 |
+| TCP GET | 35,087 | 195.343 | 464.379 | 776.431 | 1,490.872 |
+| TCP SET | 34,896 | 196.899 | 456.088 | 743.046 | 1,446.911 |
+| TCP 混合 | 35,400 | 193.866 | 449.323 | 737.623 | 1,432.582 |
+
+全部测量与预热错误 / 超时为 0。网络测量阶段每次约 2.17—2.56 秒，引擎仅约 0.048—0.151 秒，短实验容易受调度影响，不能视为稳态容量或过载验收。闭环负载不会模拟无界到达请求；尾延迟也不能代表开放负载下的排队。此结果是阶段 3 基线，完整矩阵、热点、大值、长期压力及淘汰策略成本留待后续阶段。
+
+TCP 服务端 VmHWM 峰值为 9,781,248—10,313,728 字节（约 9.33—9.84 MiB），CPU 时间约 6.76—7.74 秒；CPU 指标包含预填充和预热，不能直接除以测量时长当作 CPU 百分比。引擎所在进程的采样 RSS 峰值约 9.23—9.77 MiB，含客户端任务和采样 Vec。RSS 每 20 ms 采集 Linux VmHWM；极短进程仍可能漏采末尾高点。
+
+引擎最终受管字节均为 26,730,000，即每个活跃 Key 保守计费 2,673 字节；该逻辑模型包含有意高估的索引开销，因此可能高于 RSS。TCP 当前没有开放 INFO，服务端受管字节未经网络测得，原始记录为 null；不得拿直接引擎值冒充 TCP 观测。尚未进行删除后 RSS 或分配器滞留实验。
 
 ## Redis 对比边界
 

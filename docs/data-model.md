@@ -1,6 +1,6 @@
 # 数据模型
 
-> 状态：v0.3 数据契约。`linger-types` 已实现 10 种 Value、相等/哈希、大小/深度校验及稳定错误码；阶段 2 引擎已实现类型化存储、运算、generation / revision 与数据库隔离。条目保留单调时钟和 Unix 毫秒期限字段，开放 TTL 命令及调度留到阶段 4。
+> 状态：v0.3 数据契约。`linger-types` 已实现 10 种 Value、相等/哈希、大小/深度校验及稳定错误码；阶段 3 引擎已实现固定分片存储、运算、generation / revision、数据库隔离与跨库迁入身份。条目保留单调时钟和 Unix 毫秒期限字段，开放 TTL 命令及调度留到阶段 4。
 
 项目边界见 [architecture.md](architecture.md)，命令行为见 [commands.md](commands.md)，二进制编码见 [protocol.md](protocol.md)。三者使用本文定义的 Value，不另行推导语言特有的类型语义。
 
@@ -12,7 +12,7 @@
 
 Key 是非空 UTF-8 文本，默认最大长度为 1024 字节，按 UTF-8 编码后的字节计数。Key 大小写敏感，不进行 Unicode 归一化；视觉相同但字节不同的文本可以是不同 Key。Bytes 不能直接作为 Key。
 
-阶段 2 新建条目的 generation 由随机进程 epoch 和全引擎创建计数组成，revision 从 1 开始；状态实际变化才递增，失败和无变化操作不消耗版本，删除重建使用新 generation。Key 的 Value、版本与可选过期时间属于同一条记录。过期与删除使记录不可见，不改变 Value 中 Null 的定义。TTL 规则见 [ttl.md](ttl.md)。
+新建条目的 generation 由随机进程 epoch 和全引擎创建计数组成，revision 从 1 开始；状态实际变化才递增，失败和无变化操作不消耗版本，删除重建使用新 generation。COPY / MOVE / RENAME 及 SWAPDB 的迁入条目取得新 generation 与 revision=1，保留源期限；清空不重置身份计数。Key 的 Value、版本与可选过期时间属于同一条记录。过期与删除使记录不可见，不改变 Value 中 Null 的定义。TTL 规则见 [ttl.md](ttl.md)。
 
 ## Value 类型
 

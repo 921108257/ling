@@ -1,10 +1,10 @@
 # CLI 与官方 SDK
 
-> 状态：Rust SDK 与 CLI 已接入阶段 2 数据命令；本文其余部分定义 v1.0 的完整职责与验收边界，不表示已经发布或完整支持。
+> 状态：Rust SDK 与 CLI 已接入阶段 3 数据、跨库和查询命令；本文其余部分定义 v1.0 的完整职责与验收边界，不表示已经发布或完整支持。
 
-当前 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求；不提供连接池、并行多路复用、自动重连、Batch 执行或订阅。TLS、Java / Go 留在后续阶段。阶段 2 数据命令通过 `execute` 直接发送类型化参数；SDK 不进行读改写，也不链接数据引擎。
+当前 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求；不提供连接池、并行多路复用、自动重连、Batch 执行或订阅。TLS、Java / Go 留在后续阶段。已开放命令通过 `execute` 直接发送类型化参数；SDK 不进行读改写，也不链接数据引擎。
 
-`crates/cli` 直接复用 Rust SDK，支持单命令或标准输入逐行执行阶段 2 数据和连接命令；连接会先自动初始化，交互中再次 HELLO 会得到连接状态错误。认证密码可由 `LINGER_PASSWORD` 提供，不支持密码命令行开关。String 使用双引号转义显示；任意 Value 位置使用显式类型字面量，索引、计数和增减步长按照命令签名解析成 Int / UInt。十种 Value 均可通过 CLI 存取，示例见 [README](../README.md)。未知命令交给服务端返回错误，不在 CLI 内模拟执行。
+`crates/cli` 直接复用 Rust SDK，支持单命令或标准输入逐行执行阶段 3 已开放命令；连接会先自动初始化，交互中再次 HELLO 会得到连接状态错误。认证密码可由 `LINGER_PASSWORD` 提供，不支持密码命令行开关。String 使用双引号转义显示；任意 Value 位置使用显式类型字面量，索引、计数和增减步长按照命令签名解析成 Int / UInt。COPY 的 DB、MOVE / SWAPDB 的库号、SCAN 的 cursor / COUNT 均编码为 UInt；SCAN 续页须在同一连接保留筛选参数，不可每页启动新 CLI 进程。十种 Value 均可通过 CLI 存取，示例见 [README](../README.md)。未知命令交给服务端返回错误，不在 CLI 内模拟执行。
 
 `Options` 的连接和请求超时必须大于零。`Error::Server` 保留服务端错误码；`Error::Local` 区分连接、超时、协议、本地参数和关闭错误，`outcome_unknown()` 表达发送后的不确定性。超时、断线或取消网络等待会关闭该连接；默认不重放请求。成功认证和 SELECT 逐次等待响应，业务请求不越过连接屏障。已发送 ID 不复用，旧 ID 响应丢弃，0 或未发送 ID 的普通响应使连接失步并关闭。
 

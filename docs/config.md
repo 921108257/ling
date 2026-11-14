@@ -1,12 +1,12 @@
 # 配置规范
 
-> 状态：v0.3 配置契约，阶段 2 实现下述五组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
+> 状态：v0.3 配置契约，阶段 3 实现下述六组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
 
-阶段 2 已实现 `server`、`auth`、`database`、`protocol`、`engine` 五组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这五组默认值；显式路径读取失败会退出。事件固定禁用；TLS、淘汰策略选择、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
+阶段 3 已实现 `server`、`auth`、`database`、`protocol`、`engine`、`eviction` 六组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这六组默认值；显式路径读取失败会退出。事件固定禁用；TLS、TTL、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
 
-阶段 3 中 engine.shard_count 在启动时固定，0 按系统可用并行度解析，至少为 1；拓扑控制块超过内部 128 MiB 预算时拒绝启动。每个 (db, shard) 独占有序索引与锁，执行线程不按数据库和分片数量相乘创建。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。只执行 noeviction，扩大占用且超过预算的写入返回 `ERR_OUT_OF_MEMORY`，不会部分发布或删除无关 Key。解码和可重复读取的响应复制另有内部 128 MiB 分配预算，不代表进程 RSS。
+`engine.shard_count` 在启动时固定，0 按系统可用并行度解析，至少为 1；数据库 × 分片的索引控制块超过内部 128 MiB 预算时拒绝启动。每个 (db, shard) 独占有序索引与锁，执行线程不按数据库和分片数量相乘创建。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。默认 noeviction；其他策略先选足够受害者，完整预检成功后才与写入一起发布，无候选或容量仍不足返回 `ERR_OUT_OF_MEMORY`。解码、重复读取响应和 KEYS 复制另有内部 128 MiB 分配预算，KEYS / SCAN 还受内部 64 MiB 结果上限约束；这些均不代表进程 RSS。
 
-阶段 2 每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。解码另有内部 128 MiB 分配预算。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超过 request 超时后关闭连接，尚未提交任何业务修改。
+当前每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。数据命令在取得全局有界许可后进入阻塞线程池，最多 min(系统可用并行度, max_connections) 个任务；等待者总量不超过连接数。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超时后关闭连接且无业务修改，执行许可等待超时返回 `ERR_BUSY` 且尚未执行。取得许可后不以超时假定回滚；关闭排空期限也不能强制停止已开始的阻塞命令。
 
 ## 候选默认配置
 
@@ -102,7 +102,7 @@ path = "/metrics"
 | database | databases 为 1..65536；default_db 小于 databases |
 | engine | v1.0：shard_count 为 0 或 1..u32::MAX，0 按系统可用并行度确定；启动日志记录实际值，拓扑资源不足拒绝启动 |
 | engine 限额 | max_memory_bytes / max_keys 为 0 表示不限制；其他大小项必须为正；max_nest_depth 为 1..64 |
-| eviction | 仅 noeviction / lru / lfu / random / ttl-first；sample_size 为正整数 |
+| eviction | 仅精确小写 noeviction / lru / lfu / random / ttl-first；sample_size 为正且不超过 128 MiB / (4 × size_of(usize)) |
 | ttl | precision_ms 首版固定为 1，不接受其他值；maintenance_budget 为正整数 |
 | events | mode 仅 fast / reliable；保留天数、缓冲、在途窗口、组上限、租约和重投间隔均为正整数 |
 | event_journal | Reliable 必须给出非空可写目录，max_bytes 至少 1 MiB；group_commit_ms 为 0..1000，0 表示不主动等待组提交 |
@@ -134,6 +134,8 @@ path = "/metrics"
 
 `engine.max_keys` 是单数据库活跃 Key 上限。到期条目不算活跃 Key，但待记账条目仍占受管内存，不能通过逻辑过期绕开内存预算。新写入预留容量，不能只在分配后检查。
 
+FLUSH ASYNC 退役索引在物理释放后才归还受管预算；清空后立即写入仍可能遇到容量不足。一个懒启动回收线程配合容量为 1 的队列，满时同步释放；分配器是否把空闲页归还系统不影响逻辑计费，RSS 可能继续保留。
+
 | 淘汰策略 | 范围与选择 |
 |---|---|
 | noeviction | 不主动淘汰活跃 Key，超过预算拒绝扩大内存的写入 |
@@ -145,6 +147,8 @@ path = "/metrics"
 内存预算触发时可跨数据库淘汰；max_keys 触发时仅从对应数据库选择候选。所有候选在正式提交前重新验证，淘汰与触发写入整体预留/提交，失败不提前删除其他 Key。Reliable 下淘汰也必须完成 Journal 提交。
 
 受害 Key 所在 Shard 必须加入本次完整执行权集合。先选择候选，再按全局顺序取得目标与受害 Shard 并重验；候选改变时释放后重新取得完整集合，不能持有目标锁再逆序追加受害锁。
+
+阶段 3 先采用保守方案：启用淘汰且存在内存或 Key 上限时，写入在选候选前直接取得全实例执行权，不执行逆序追加。noeviction 下带每库 Key 配额的写入取得全库执行权；普通单 Key 无配额写入只锁目标分片。后续可依据基准优化锁范围，但不降低原子性。LRU / LFU 从活跃候选均匀采样；LFU 为饱和计数、每单调分钟右移一位衰减。普通条目读取（含元数据与条件检查）更新热度，KEYS / SCAN 不加热，热度不改变 revision。ttl-first 选择全部有期限候选中最早的一项；公开 TTL 命令尚未实现，因此当前外部写入无期限候选时按 noeviction 拒绝。
 
 ## TTL 与事件容量
 

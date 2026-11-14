@@ -1,10 +1,12 @@
 # linger-cache-db
 
-独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型。已具备单分片多数据库存储；固定多分片、毫秒 TTL 与可靠事件按路线图继续实现。
+独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型、固定分片和多数据库；毫秒 TTL 与可靠事件按路线图继续实现。
 
-**当前为 0.1.0 阶段 2 单分片内存原型。** 已实现共享类型、版本 1 编解码、数据引擎、TCP 服务、Rust SDK 和 CLI。支持十种 Value、隔离数据库、通用读写、数值 / String / Bytes 操作及全部 List / Map / Set 命令；清单见 [命令契约](docs/commands.md)。
+**当前为 0.1.0 阶段 3 固定分片原型。** 已实现共享类型、版本 1 编解码、数据引擎、TCP 服务、Rust SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库与数据库交换；清单见 [命令契约](docs/commands.md)。
 
-当前所有数据库共享一个引擎执行锁，多 Key 变更整体发布；受管内存和每库 Key 数可配置，达到预算拒绝扩大内存的写入。尚不支持多分片调度、跨库移动、遍历、清库管理、TTL 设置与调度、事件、TLS 和 Java / Go SDK。Batch 仅有编码支持；尚未实现的命令返回 `ERR_UNKNOWN_COMMAND`，SET 的 TTL 选项返回 `ERR_INVALID_ARGUMENT`。
+每个 (数据库, Shard) 拥有独立索引与锁，多 Key 命令按固定顺序取得全部执行权后整体发布。可配置全实例受管内存、每库 Key 配额及 noeviction / lru / lfu / random / ttl-first 策略；受管内存不等于进程 RSS。启用淘汰且配置容量上限时，当前写入保守取得全实例执行权。ttl-first 的候选选择已实现，但公开 TTL 设置仍留到阶段 4，无期限候选时拒绝写入。
+
+尚不支持 TTL 设置与调度、事件、TLS、INFO / CONFIG / SHUTDOWN 和 Java / Go SDK。Batch 仅有编码支持；尚未实现的命令返回 `ERR_UNKNOWN_COMMAND`，SET 的 TTL 选项返回 `ERR_INVALID_ARGUMENT`。
 
 ## 构建与试用
 
@@ -21,6 +23,8 @@ cargo run -p linger-server
 cargo run -p linger-cli -- -c 'PING'
 cargo run -p linger-cli -- -c 'SET counter int(0)'
 cargo run -p linger-cli -- -c 'INCRBY counter 2'
+cargo run -p linger-cli -- -c 'COPY counter copied DB 1'
+cargo run -p linger-cli -- --db 1 -c 'SCAN 0 COUNT 100'
 cargo run -p linger-cli -- -c 'SET profile map({"name": "Lin", "visits": uint(1)})'
 cargo run -p linger-cli -- -c 'FGET profile name visits'
 printf 'SET nothing null\nGET nothing\nQUIT\n' | cargo run -p linger-cli
@@ -28,7 +32,7 @@ printf 'SET nothing null\nGET nothing\nQUIT\n' | cargo run -p linger-cli
 
 PING 输出 `"PONG"`，INCRBY 输出 `int(2)`；存储的 Null 输出 `null`，缺失 Key 则以独立错误和非零退出码表达。CLI 连接时自动完成 HELLO、可选 AUTH 和 SELECT；输入中的任何失败都会使最终退出码非零。Ctrl-C / SIGTERM 停止服务并关闭连接。SDK 不自动重放请求，发送后的断线或超时可通过 `outcome_unknown()` 判断不确定性。
 
-无 `--config` 时服务端尝试读取当前目录的 `linger.toml`，不存在则使用默认配置。阶段 2 接受 `server`、`auth`、`database`、`protocol`、`engine` 五组，完整 v1.0 候选配置暂不能整份使用。可通过 `--config <path>` 指定文件，例如：
+无 `--config` 时服务端尝试读取当前目录的 `linger.toml`，不存在则使用默认配置。阶段 3 接受 `server`、`auth`、`database`、`protocol`、`engine`、`eviction` 六组，完整 v1.0 候选配置暂不能整份使用。可通过 `--config <path>` 指定文件，例如：
 
 ```toml
 [server]
@@ -40,9 +44,13 @@ enabled = true
 password = "replace-me"
 
 [engine]
-shard_count = 1
+shard_count = 4
 max_memory_bytes = 268435456
 max_keys = 100000
+
+[eviction]
+policy = "lru"
+sample_size = 5
 ```
 
 启用认证后，通过环境变量 `LINGER_PASSWORD` 向 CLI 提供同一密码。配置规则与当前限制见 [config.md](docs/config.md)。
@@ -56,7 +64,9 @@ cargo clippy --workspace --all-targets -- -D warnings
 RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 ```
 
-测试覆盖独立黄金字节、10 种 Value、数值边界、容器操作、原子失败回滚、深度 / 内存 / 响应限额、数据库隔离、多连接竞争、半包粘包、版本拒绝、连接屏障、请求 ID、超时与取消，以及真实 CLI 进程的网络调用。源码与测试使用中英双语注释；公开接口缺少 rustdoc 会使构建失败。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
+测试覆盖独立黄金字节、10 种 Value、数值与容器边界、失败无部分修改、资源限额、跨分片原子观察、锁顺序、跨库身份与期限保留、游标弱一致性、淘汰失败原子性、异步回收计费，以及真实 TCP / CLI 调用。源码、测试和基准工具使用中英双语注释；公开接口缺少 rustdoc 会使构建失败。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
+
+Linux 下运行 `python3 benchmarks/run.py target/benchmarks/my-run` 可重现 release 引擎和 TCP 的 GET / SET / 混合负载，每项默认三次；输出目录必须不存在。实验使用独立进程和临时端口，记录硬件、配置、种子、错误、分位数、CPU 与 RSS。阶段 3 实测及边界见 [测试与基准](docs/testing.md#阶段-3-基础测量)。
 
 ## 从哪里开始
 

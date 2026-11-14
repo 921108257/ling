@@ -1,19 +1,21 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 2 已完成单分片数据命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 3 已完成固定分片数据、跨库与遍历命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
 
 ## 当前支持范围
 
-| 类别 | 阶段 2 已开放 |
+| 类别 | 阶段 3 已开放 |
 |---|---|
 | 连接 | HELLO、AUTH、SELECT、PING、QUIT |
 | 通用 | SET（无 TTL，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
+| 迁移与查询 | RENAME、RENAMENX、COPY、MOVE、KEYS、SCAN、RANDOMKEY |
+| 数据库管理 | FLUSHDB、FLUSHALL（均含 ASYNC）、SWAPDB |
 | 数值与文本 | INCR、DECR、INCRBY、DECRBY、INCRFLOAT、APPEND、STRLEN、BLEN |
 | List | 本文 List 表中的全部命令 |
 | Map | 本文 Map 表中的全部命令 |
-| Set | 本文 Set 表中的全部命令，含单分片内集合代数与 STORE |
+| Set | 本文 Set 表中的全部命令，含跨分片集合代数与 STORE |
 
-阶段 2 为多数据库共享单一执行权的原型，已开放的多 Key 命令在此范围内原子执行。RENAME / RENAMENX / COPY / MOVE、KEYS / SCAN / RANDOMKEY、清库 / 管理命令、TTL 系列、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。SET 的 EX / PX / EXAT / PXAT 尚未开放，返回 `ERR_INVALID_ARGUMENT`，不会忽略选项写入。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
+已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。TTL 系列、INFO / CONFIG / SHUTDOWN、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。SET 的 EX / PX / EXAT / PXAT 尚未开放，返回 `ERR_INVALID_ARGUMENT`，不会忽略选项写入。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
 
 ## 通用规则
 
@@ -168,6 +170,8 @@ FGET 的整个 Key 缺失或类型错误时整条命令失败，不伪造成字�
 
 SWAPDB 仅交换缓存数据，不交换事件流、组、历史或数据库编号。迁入目标库的每条数据取得目标 generation，原期限不变；事件按源 DELETED、目标 CREATED（原数据先移出）描述。Reliable 在一个事务中提交这些事件，允许该操作耗时或因容量限制拒绝。
 
+当前阶段的 FLUSH ASYNC 在返回前移出全部索引；待释放条目持续计入受管内存，直至后台物理释放，期间新写入可能因预算不足被拒绝。回收队列满或线程不可用时同步释放，不承诺 ASYNC 一定低延迟。此阶段事件禁用；上文的事件提交语义在对应阶段实现。
+
 首版没有 SAVE、SHUTDOWN NOSAVE、DEBUG SLEEP / JMAP。调试钩子如测试需要可在测试环境实现，不作为公开生产协议。
 
 AUTH、SELECT、QUIT、HELLO 与管理命令的连接权限、屏障和订阅限制见协议规范。认证是实例级权限，首版没有按数据库或命令的 ACL。
@@ -186,7 +190,7 @@ pattern 使用 UTF-8 字节匹配：`*` 匹配任意字节序列，`?` 匹配一
 
 SCAN cursor 是不透明 UInt，初始输入 0，返回 0 表示完成。cursor 绑定当前连接、数据库及 MATCH / TYPE 过滤；非法、重连后的或已失效 cursor 返回 `ERR_INVALID_CURSOR`。每连接最多一条扫描，新的 cursor=0 替换旧扫描，断线释放。
 
-COUNT 默认 100，为正数工作量提示，不保证页大小；允许空页但非零 cursor。持续存在且匹配的 Key 在完整扫描中至少出现一次，可能重复；扫描期间变化的 Key 无完整性保证。实现不可用偏移下标加可变数组来声称该保证。超过单项响应容量返回错误，不截断 Key。
+COUNT 默认 100，为正数工作量提示，单页最多处理 10,000 个工作单位（条目或空分片），不保证页大小；允许空页但非零 cursor。COUNT 可在续页时调整，MATCH / TYPE 必须保持一致。每个成功的非末页返回新票号，旧票号失效；成功切换数据库也释放游标。持续存在且匹配的 Key 在完整扫描中至少出现一次，可能重复；扫描期间变化的 Key 无完整性保证。当前用每分片有序 Key 的排他下界推进，不保存全库快照。超过单项响应容量返回错误，不截断 Key，响应失败不消耗游标进度。
 
 ## CLI 值语法
 

@@ -2,7 +2,7 @@
 
 ## 当前状态与阅读顺序
 
-本项目已完成阶段 2 单分片内存原型：有 Rust workspace、共享类型、协议、数据引擎、TCP 服务、Rust SDK、CLI 和契约测试；尚无多分片调度、TTL 设置与调度、事件运行能力及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
+本项目已完成阶段 3 固定分片原型：有 Rust workspace、共享类型、协议、数据引擎、TCP 服务、Rust SDK、CLI、契约测试及基础性能测量。已支持跨分片协调、跨库管理、游标与淘汰；尚无公开 TTL 设置与调度、事件运行能力及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
 
 开始工作先读 [docs/architecture.md](docs/architecture.md)。根据任务继续读专项规范：类型读 data-model，命令读 commands，网络读 protocol，生命周期读 ttl，可靠性读 events / persistence，客户端读 sdk，配置读 config，验收读 testing / roadmap。路径均位于 docs 下。
 
