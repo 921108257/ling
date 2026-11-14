@@ -451,3 +451,201 @@ fn ttl_first_and_rejected_commands_do_not_leave_timer_garbage() {
     assert_eq!(e.expire_due(1).unwrap(), 1);
     assert_eq!(e.managed_bytes(), 0);
 }
+
+/// 耗尽的修订或创建计数不能发布半条变更，溢出的期限不能清除原定时项。
+/// Exhausted revision or creation counters never publish partial changes; overflowing deadlines preserve timers.
+#[test]
+fn exhausted_versions_and_deadline_overflow_preserve_state() {
+    let (e, clock) = engine();
+    run(
+        &e,
+        "SET",
+        &[s("k"), Value::Int(0), s("PX"), Value::Int(100)],
+    );
+    let id = e.location(0, "k").unwrap();
+    {
+        let mut index = e.shards[id].lock().unwrap();
+        let entry = index.get_mut("k").unwrap();
+        let old = entry.metadata;
+        entry.metadata.revision = u64::MAX;
+        e.budget
+            .lock()
+            .unwrap()
+            .schedule(id, "k", Some(old), Some(entry.metadata));
+    }
+    let before = e.metadata(0, "k").unwrap();
+    let bytes = e.managed_bytes();
+    for (name, args) in [
+        ("PERSIST", vec![s("k")]),
+        ("PEXPIRE", vec![s("k"), Value::Int(200)]),
+        ("INCR", vec![s("k")]),
+        ("SET", vec![s("k"), Value::Int(1)]),
+    ] {
+        assert_eq!(
+            e.execute(0, name, &args, 4096).unwrap_err().code,
+            "ERR_OVERFLOW"
+        );
+        assert_eq!(e.metadata(0, "k").unwrap(), before);
+        assert_eq!(e.scheduled_expirations().unwrap(), 1);
+        assert_eq!(e.managed_bytes(), bytes);
+    }
+    // 不改变状态的命令无需新版本，仍然成功；终结生命周期也无需递增。
+    // No-op commands need no new revision and still succeed; lifecycle termination does not increment it either.
+    assert_eq!(
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(100)]),
+        Value::Bool(true)
+    );
+    clock.wall(i64::MAX);
+    assert_eq!(
+        e.execute(0, "PEXPIRE", &[s("k"), Value::Int(1)], 4096)
+            .unwrap_err()
+            .code,
+        "ERR_OVERFLOW"
+    );
+    assert_eq!(e.metadata(0, "k").unwrap(), before);
+    clock.wall(i64::MIN);
+    assert_eq!(
+        e.execute(0, "PEXPIREAT", &[s("k"), Value::Int(i64::MAX)], 4096)
+            .unwrap_err()
+            .code,
+        "ERR_OVERFLOW"
+    );
+    clock.wall(1_700_000_000_000);
+    e.budget.lock().unwrap().creations = u64::MAX;
+    assert_eq!(
+        e.execute(
+            0,
+            "MSET",
+            &[s("k"), Value::Int(0), s("new"), Value::Null],
+            4096
+        )
+        .unwrap_err()
+        .code,
+        "ERR_OVERFLOW"
+    );
+    assert_eq!(e.metadata(0, "k").unwrap(), before);
+    assert_eq!(run(&e, "EXISTS", &[s("new")]), Value::UInt(0));
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    clock.advance(100);
+    assert_eq!(
+        e.execute(0, "SET", &[s("k"), Value::Null, s("NX")], 4096)
+            .unwrap_err()
+            .code,
+        "ERR_OVERFLOW"
+    );
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    assert_eq!(e.managed_bytes(), 0);
+}
+
+/// 每个身份或期限字段均须匹配，丢弃过时任务不能移除当前定时项。
+/// Every identity and deadline field must match; discarding stale work cannot remove the current timer.
+#[test]
+fn expiry_validates_every_identity_and_deadline_component() {
+    let (e, clock) = engine();
+    run(&e, "SET", &[s("k"), Value::Null, s("PX"), Value::Int(10)]);
+    let id = e.location(0, "k").unwrap();
+    let original = e.metadata(0, "k").unwrap();
+    let bytes = e.managed_bytes();
+    clock.advance(20);
+    for field in 0..5 {
+        let mut stale = original;
+        match field {
+            0 => stale.generation.epoch += 1,
+            1 => stale.generation.counter += 1,
+            2 => stale.revision += 1,
+            3 => stale.deadline.as_mut().unwrap().unix_ms += 1,
+            _ => stale.deadline.as_mut().unwrap().monotonic += Duration::from_millis(1),
+        }
+        let task = crate::expiry::ExpiryTask::new(id, "k", stale).unwrap();
+        assert!(
+            !e.lock(vec![id])
+                .unwrap()
+                .expire_task(&task, clock.now().unwrap().monotonic)
+                .unwrap()
+        );
+        assert_eq!(e.scheduled_expirations().unwrap(), 1);
+        assert_eq!(e.managed_bytes(), bytes);
+    }
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    assert_eq!(e.managed_bytes(), 0);
+}
+
+/// 到期边界上，后台回收与条件写入、删除、复制和扫描共享同一可见性规则。
+/// At expiry, reclamation races with conditional writes, deletion, copy, and scan under one visibility rule.
+#[test]
+fn concurrent_expiry_never_revives_or_deletes_new_lifecycles() {
+    let (e, clock) = engine();
+    let e = Arc::new(e);
+    for round in 0..32 {
+        run(&e, "FLUSHALL", &[]);
+        for key in ["nx", "xx", "gone-del", "gone-copy", "gone-scan"] {
+            run(&e, "SET", &[s(key), Value::Int(-1), s("PX"), Value::Int(1)]);
+        }
+        clock.advance(1);
+        let barrier = Arc::new(std::sync::Barrier::new(3));
+        let reclaim_engine = e.clone();
+        let reclaim_barrier = barrier.clone();
+        let reclaim = std::thread::spawn(move || {
+            reclaim_barrier.wait();
+            for _ in 0..8 {
+                reclaim_engine.expire_due(1).unwrap();
+                std::thread::yield_now();
+            }
+        });
+        let commands_engine = e.clone();
+        let commands_barrier = barrier.clone();
+        let commands = std::thread::spawn(move || {
+            commands_barrier.wait();
+            assert_eq!(
+                run(
+                    &commands_engine,
+                    "SET",
+                    &[s("nx"), Value::Int(round), s("NX")]
+                ),
+                Value::Bool(true)
+            );
+            assert_eq!(
+                run(&commands_engine, "SET", &[s("xx"), Value::Null, s("XX")]),
+                Value::Bool(false)
+            );
+            assert_eq!(
+                run(&commands_engine, "DEL", &[s("gone-del")]),
+                Value::UInt(0)
+            );
+            assert_eq!(
+                commands_engine
+                    .execute(0, "COPY", &[s("gone-copy"), s("copy")], 4096)
+                    .unwrap_err()
+                    .code,
+                "ERR_KEY_NOT_FOUND"
+            );
+            let mut scan = crate::ScanState::default();
+            let Value::Map(page) = commands_engine
+                .scan(
+                    0,
+                    &[
+                        Value::UInt(0),
+                        s("MATCH"),
+                        s("gone-*"),
+                        s("COUNT"),
+                        Value::UInt(100),
+                    ],
+                    &mut scan,
+                    4096,
+                )
+                .unwrap()
+            else {
+                panic!()
+            };
+            assert_eq!(page["keys"], Value::List(vec![]));
+            assert_eq!(page["cursor"], Value::UInt(0));
+        });
+        barrier.wait();
+        reclaim.join().unwrap();
+        commands.join().unwrap();
+        assert_eq!(run(&e, "GET", &[s("nx")]), Value::Int(round));
+        assert_eq!(run(&e, "DBSIZE", &[]), Value::UInt(1));
+        assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    }
+}
