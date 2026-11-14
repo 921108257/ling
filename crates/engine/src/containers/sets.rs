@@ -1,6 +1,6 @@
 //! Set 按 Scalar 类型敏感相等；随机选择不承诺密码学强度。
 //! Sets use type-sensitive Scalar equality; random selection is not cryptographic.
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, Scalar, Value, ValueLimits};
 use rand::seq::{IndexedRandom, SliceRandom};
 use std::{collections::HashSet, time::Instant};
@@ -35,7 +35,7 @@ fn set(items: HashSet<&Scalar>, limits: ValueLimits) -> Result<Value, DbError> {
     Ok(Value::Set(items.into_iter().cloned().collect()))
 }
 
-impl Engine {
+impl Transaction<'_> {
     /// 先验证全部成员，STORE 先读齐源再替换目标。
     /// Validates all members first; STORE reads all sources before replacing its destination.
     pub(crate) fn set_command(

@@ -1,6 +1,6 @@
 //! Map 修改浅合并，请求中的重复字段在写入前拒绝。
 //! Map mutations use shallow merging and reject duplicate request fields before writing.
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Value};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -38,7 +38,7 @@ fn map(
     ))
 }
 
-impl Engine {
+impl Transaction<'_> {
     /// 字段 Null 保持成功；缺失字段以逐项错误表达。
     /// Null fields remain successful; missing fields use per-item errors.
     pub(crate) fn map_command(

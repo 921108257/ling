@@ -209,9 +209,6 @@ impl Config {
     /// 监听前验证范围与组合关系，不创建引擎或分配索引。
     /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
-        if self.engine.shard_count > 1 {
-            return Err(invalid("Stage 2 supports a single shard"));
-        }
         self.engine_config().validate()?;
         let s = &self.server;
         if s.port == 0
@@ -280,6 +277,7 @@ impl Config {
     pub fn engine_config(&self) -> linger_engine::Config {
         linger_engine::Config {
             databases: self.database.databases,
+            shard_count: self.engine.shard_count,
             max_memory_bytes: self.engine.max_memory_bytes,
             max_keys: self.engine.max_keys,
             value: linger_types::ValueLimits {

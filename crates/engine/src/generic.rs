@@ -1,11 +1,11 @@
 //! 通用 Key 命令；多 Key 结果在单所有者范围内整体发布。
 //! Generic key commands; multi-key changes publish atomically within one owner.
 
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Value};
 use std::{collections::HashSet, time::Instant};
 
-impl Engine {
+impl Transaction<'_> {
     /// 分派通用命令；先校验所有名称和条件，再生成变更。
     /// Dispatches generic commands after validating every name and condition.
     pub(crate) fn generic(
@@ -21,9 +21,8 @@ impl Engine {
                 return Err(argument_error());
             }
             return Ok(Effect::read(Value::UInt(
-                self.database(db)?
-                    .values()
-                    .filter(|e| e.metadata.deadline.is_none_or(|d| now < d.monotonic))
+                self.entries(db)
+                    .filter(|(_, e)| e.metadata.deadline.is_none_or(|d| now < d.monotonic))
                     .count() as u64,
             )));
         }

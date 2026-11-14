@@ -1,10 +1,10 @@
 //! 数值操作保留类型与 TTL，并在宽整数中校验溢出。
 //! Numeric operations preserve type and TTL and check overflow with wide integers.
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Float, Value};
 use std::time::Instant;
 
-impl Engine {
+impl Transaction<'_> {
     /// 失败仅丢弃候选值，不发布部分修改。
     /// Failures discard the candidate without publishing partial mutations.
     pub(crate) fn numeric(

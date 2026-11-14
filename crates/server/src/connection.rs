@@ -18,7 +18,7 @@ use tokio::{
 pub(crate) async fn serve(
     mut stream: TcpStream,
     config: &Config,
-    engine: &std::sync::Mutex<linger_engine::Engine>,
+    engine: &linger_engine::Engine,
     mut shutdown: watch::Receiver<bool>,
 ) {
     let mut session = Session {
@@ -184,7 +184,7 @@ impl Session {
         &mut self,
         request: Request,
         config: &Config,
-        engine: &std::sync::Mutex<linger_engine::Engine>,
+        engine: &linger_engine::Engine,
     ) -> (Result<Value, DbError>, bool, bool) {
         let name = request.command.as_str();
         if !self.authenticated && self.hello && !matches!(name, "AUTH" | "PING" | "QUIT") {
@@ -285,12 +285,7 @@ impl Session {
                     invalid()
                 }
             }
-            _ => match engine.lock() {
-                Ok(mut engine) => {
-                    engine.execute(self.db, name, args, config.server.max_response_bytes)
-                }
-                Err(_) => Err(DbError::new(ErrorCode::Busy, "Data engine unavailable")),
-            },
+            _ => engine.execute(self.db, name, args, config.server.max_response_bytes),
         };
         (result, close, fatal)
     }

@@ -3,11 +3,11 @@
 mod lists;
 mod maps;
 mod sets;
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Value};
 use std::time::Instant;
 
-impl Engine {
+impl Transaction<'_> {
     /// 精确匹配名称，不把未知名称误作同前缀命令。
     /// Matches names exactly instead of accepting unknown commands by prefix.
     pub(crate) fn container(

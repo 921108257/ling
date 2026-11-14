@@ -9,6 +9,7 @@ use linger_server::Config;
 fn defaults_and_namespace_edges() {
     Config::default().validate().unwrap();
     let mut config = Config::default();
+    config.engine.shard_count = 1;
     config.database.databases = 65536;
     config.database.default_db = u16::MAX;
     config.validate().unwrap();
@@ -69,6 +70,8 @@ fn engine_limits_are_strict_and_available_to_protocol() {
     assert_eq!(config.limits().value.max_bytes, 10);
     assert_eq!(config.limits().value.max_key_bytes, 32);
     config.engine.shard_count = 2;
+    config.validate().unwrap();
+    config.engine.shard_count = u32::MAX;
     assert!(config.validate().is_err());
     config.engine.shard_count = 0;
     config.engine.max_nest_depth = 0;

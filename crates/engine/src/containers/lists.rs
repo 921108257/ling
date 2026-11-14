@@ -1,6 +1,6 @@
 //! List 负索引与闭区间在宽整数中换算。
 //! List negative indices and inclusive ranges use wide arithmetic.
-use crate::{Engine, support::*};
+use crate::{Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Value};
 use std::{collections::HashSet, ops::Range, time::Instant};
 
@@ -35,7 +35,7 @@ fn range(start: i64, end: i64, len: usize) -> Range<usize> {
     }
 }
 
-impl Engine {
+impl Transaction<'_> {
     /// 候选列表先校验父层深度；修改为空时仍保留顶级 Key。
     /// Checks parent depth before building a candidate; empty results keep the top-level key.
     pub(crate) fn list_command(

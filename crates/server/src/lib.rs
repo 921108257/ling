@@ -4,13 +4,7 @@
 mod config;
 mod connection;
 pub use config::{AuthConfig, Config, DatabaseConfig, EngineConfig, ProtocolConfig, ServerConfig};
-use std::{
-    future::Future,
-    io,
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     net::{TcpListener, TcpSocket},
     sync::{Semaphore, watch},
@@ -28,7 +22,7 @@ pub struct Server {
     config: Arc<Config>,
     /// 唯一执行权覆盖所有命名空间，临界区中没有 await。
     /// Exclusive ownership covers all namespaces; critical sections contain no await.
-    engine: Arc<Mutex<linger_engine::Engine>>,
+    engine: Arc<linger_engine::Engine>,
 }
 
 impl Server {
@@ -36,10 +30,10 @@ impl Server {
     /// Validates configuration, creates the engine, and binds the listener; invalid settings accept no requests.
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
-        let engine = Arc::new(Mutex::new(linger_engine::Engine::new(
+        let engine = Arc::new(linger_engine::Engine::new(
             config.engine_config(),
             rand::random(),
-        )?));
+        )?);
         let socket = if config.server.host.is_ipv4() {
             TcpSocket::new_v4()?
         } else {
@@ -62,10 +56,10 @@ impl Server {
         config: Config,
     ) -> Result<Self, linger_types::DbError> {
         config.validate()?;
-        let engine = Arc::new(Mutex::new(linger_engine::Engine::new(
+        let engine = Arc::new(linger_engine::Engine::new(
             config.engine_config(),
             rand::random(),
-        )?));
+        )?);
         Ok(Self {
             listener,
             config: Arc::new(config),
