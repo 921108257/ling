@@ -169,6 +169,12 @@ impl Transaction<'_> {
                 .guards
                 .binary_search_by_key(&id, |(id, _)| *id)
                 .expect("victim shard locked");
+            budget.schedule(
+                id,
+                &key,
+                self.guards[pos].1.get(&key).map(|e| e.metadata),
+                None,
+            );
             self.guards[pos].1.remove(&key);
         }
         for (target, key, entry) in prepared {
@@ -181,6 +187,12 @@ impl Transaction<'_> {
                 .binary_search_by_key(&id, |(id, _)| *id)
                 .expect("shard not locked");
             let index = &mut self.guards[pos].1;
+            budget.schedule(
+                id,
+                &key,
+                index.get(&key).map(|e| e.metadata),
+                entry.as_ref().map(|e| e.metadata),
+            );
             match entry {
                 Some(entry) => {
                     index.insert(key, entry);

@@ -87,6 +87,9 @@ impl Transaction<'_> {
         for (id, index) in &mut self.guards {
             if name == "FLUSHALL" || self.engine.db_locations(db).contains(id) {
                 bytes += index.values().map(|e| e.bytes).sum::<usize>();
+                for (key, entry) in index.iter() {
+                    budget.schedule(*id, key, Some(entry.metadata), None);
+                }
                 retired.push(std::mem::take(&mut **index));
             }
         }
@@ -138,8 +141,9 @@ impl Transaction<'_> {
                 .unwrap();
             let mut left = std::mem::take(&mut *self.guards[ap].1);
             let mut right = std::mem::take(&mut *self.guards[bp].1);
-            for index in [&mut left, &mut right] {
-                index.retain(|_, entry| {
+            for (index, origin, destination) in [(&mut left, ai, bi), (&mut right, bi, ai)] {
+                index.retain(|key, entry| {
+                    budget.schedule(origin, key, Some(entry.metadata), None);
                     if entry.metadata.deadline.is_some_and(|d| now >= d.monotonic) {
                         budget.memory -= entry.bytes;
                         return false;
@@ -153,6 +157,7 @@ impl Transaction<'_> {
                         revision: 1,
                         deadline: entry.metadata.deadline,
                     };
+                    budget.schedule(destination, key, None, Some(entry.metadata));
                     true
                 });
             }

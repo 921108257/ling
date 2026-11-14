@@ -308,3 +308,146 @@ fn absolute_deadlines_ignore_later_wall_clock_jumps() {
     assert_eq!(run(&e, "KEYS", &[s("*")]), Value::List(vec![]));
     assert_eq!(run(&e, "DEL", &[s("k")]), Value::UInt(0));
 }
+
+/// 高频续期和局部写入只保留当前定时项，旧任务不能误删新版本或新生命周期。
+/// Frequent renewals and local writes retain only current timers; stale tasks cannot delete new revisions or lifecycles.
+#[test]
+fn renewal_is_bounded_and_stale_tasks_cannot_delete_current_state() {
+    let (e, clock) = engine();
+    run(&e, "SET", &[s("k"), Value::Int(0), s("PX"), Value::Int(10)]);
+    let id = e.location(0, "k").unwrap();
+    let old = crate::expiry::ExpiryTask::new(id, "k", e.metadata(0, "k").unwrap()).unwrap();
+    let bytes = e.managed_bytes();
+    for i in 11..1011 {
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(i)]);
+        run(&e, "INCR", &[s("k")]);
+        assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    }
+    assert_eq!(e.managed_bytes(), bytes);
+    clock.advance(10);
+    assert!(
+        !e.lock(vec![id])
+            .unwrap()
+            .expire_task(&old, clock.now().unwrap().monotonic)
+            .unwrap()
+    );
+    assert_eq!(run(&e, "GET", &[s("k")]), Value::Int(1000));
+    let before_recreate =
+        crate::expiry::ExpiryTask::new(id, "k", e.metadata(0, "k").unwrap()).unwrap();
+    run(&e, "DEL", &[s("k")]);
+    run(
+        &e,
+        "SET",
+        &[s("k"), Value::Int(7), s("PX"), Value::Int(5000)],
+    );
+    clock.advance(1000);
+    assert!(
+        !e.lock(vec![id])
+            .unwrap()
+            .expire_task(&before_recreate, clock.now().unwrap().monotonic)
+            .unwrap()
+    );
+    assert_eq!(run(&e, "GET", &[s("k")]), Value::Int(7));
+    run(&e, "PERSIST", &[s("k")]);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    clock.advance(5000);
+    assert_eq!(e.expire_due(100).unwrap(), 0);
+    assert_eq!(run(&e, "GET", &[s("k")]), Value::Int(7));
+}
+
+/// 当前修订保留同一期限也要重调度，到期批次严格受工作量预算限制。
+/// A new revision retaining its deadline is rescheduled, and due batches obey the work budget.
+#[test]
+fn expiry_reclaims_memory_in_bounded_batches_with_current_revisions() {
+    let (e, clock) = engine();
+    for i in 0..25 {
+        run(
+            &e,
+            "SET",
+            &[s(&format!("k{i}")), Value::Int(0), s("PX"), Value::Int(10)],
+        );
+        run(&e, "INCR", &[s(&format!("k{i}"))]);
+    }
+    assert_eq!(e.expire_due(10).unwrap(), 0);
+    clock.advance(10);
+    assert_eq!(run(&e, "DBSIZE", &[]), Value::UInt(0));
+    assert!(e.managed_bytes() > 0);
+    assert_eq!(e.expire_due(0).unwrap(), 0);
+    assert_eq!(e.expire_due(7).unwrap(), 7);
+    assert_eq!(e.scheduled_expirations().unwrap(), 18);
+    assert_eq!(e.expire_due(100).unwrap(), 18);
+    assert_eq!(e.managed_bytes(), 0);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
+}
+
+/// 复制、移动、重命名与交换沿用原期限，为新存储位置发布新定时身份。
+/// Copy, move, rename, and swap retain deadlines while publishing fresh timer identities at destination locations.
+#[test]
+fn relocation_and_flush_keep_timer_ownership_consistent() {
+    let (e, clock) = engine();
+    run(&e, "SET", &[s("a"), Value::Null, s("PX"), Value::Int(20)]);
+    let original = e.metadata(0, "a").unwrap();
+    run(&e, "COPY", &[s("a"), s("b"), s("DB"), Value::UInt(1)]);
+    run(&e, "MOVE", &[s("a"), Value::UInt(2)]);
+    e.execute(2, "RENAME", &[s("a"), s("renamed")], 4096)
+        .unwrap();
+    run(&e, "SWAPDB", &[Value::UInt(1), Value::UInt(2)]);
+    assert_eq!(e.scheduled_expirations().unwrap(), 2);
+    assert_eq!(
+        e.metadata(1, "renamed").unwrap().deadline,
+        original.deadline
+    );
+    assert_eq!(e.metadata(2, "b").unwrap().deadline, original.deadline);
+    clock.advance(20);
+    assert_eq!(e.expire_due(10).unwrap(), 2);
+    assert_eq!(e.managed_bytes(), 0);
+    run(&e, "SET", &[s("c"), Value::Null, s("PX"), Value::Int(20)]);
+    run(&e, "FLUSHDB", &[s("ASYNC")]);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    clock.advance(20);
+    assert_eq!(e.expire_due(10).unwrap(), 0);
+    run(&e, "SET", &[s("d"), Value::Null, s("PX"), Value::Int(20)]);
+    run(&e, "FLUSHALL", &[]);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
+}
+
+/// 失败写入不发布定时项，ttl-first 淘汰会同时移除原条目的调度信息。
+/// Failed writes publish no timers; ttl-first eviction also removes the victim's scheduling metadata.
+#[test]
+fn ttl_first_and_rejected_commands_do_not_leave_timer_garbage() {
+    let clock = TestClock::new();
+    let e = Engine::with_clock(
+        Config {
+            shard_count: 2,
+            max_keys: 1,
+            eviction: crate::EvictionPolicy::TtlFirst,
+            ..Config::default()
+        },
+        1,
+        clock.clone(),
+    )
+    .unwrap();
+    run(
+        &e,
+        "SET",
+        &[s("old"), Value::Null, s("PX"), Value::Int(100)],
+    );
+    assert_eq!(
+        e.execute(
+            0,
+            "SET",
+            &[s("new"), Value::Null, s("PX"), Value::Int(10)],
+            1
+        )
+        .unwrap_err()
+        .code,
+        "ERR_LIMIT_EXCEEDED"
+    );
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    assert_eq!(run(&e, "PTTL", &[s("old")]), Value::Int(100));
+    run(&e, "SET", &[s("new"), Value::Null, s("PX"), Value::Int(10)]);
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    clock.advance(10);
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    assert_eq!(e.managed_bytes(), 0);
+}

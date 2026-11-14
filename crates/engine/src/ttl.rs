@@ -125,6 +125,7 @@ impl Transaction<'_> {
         }
         let immediate = deadline.is_some_and(|d| d.monotonic <= time.monotonic);
         let mut metadata = entry.metadata;
+        let old = metadata;
         if !immediate {
             metadata.revision = metadata
                 .revision
@@ -139,6 +140,7 @@ impl Transaction<'_> {
             .guards
             .binary_search_by_key(&id, |(id, _)| *id)
             .expect("TTL shard locked");
+        budget.schedule(id, key, Some(old), (!immediate).then_some(metadata));
         if immediate {
             self.guards[pos].1.remove(key);
             budget.memory -= bytes;

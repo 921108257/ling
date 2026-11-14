@@ -6,6 +6,7 @@ mod clock;
 pub use clock::{Clock, SystemClock, TimeSnapshot};
 mod containers;
 mod eviction;
+mod expiry;
 mod generic;
 pub use eviction::EvictionPolicy;
 mod numeric;
@@ -22,7 +23,7 @@ mod ttl_tests;
 use linger_types::{DbError, ErrorCode, Generation, Value, ValueLimits};
 use std::{
     cell::{Cell, RefCell},
-    collections::{BTreeMap, hash_map::RandomState},
+    collections::{BTreeMap, BTreeSet, hash_map::RandomState},
     hash::BuildHasher,
     mem::size_of,
     sync::{Arc, Mutex, MutexGuard, OnceLock, mpsc},
@@ -147,6 +148,9 @@ struct Budget {
     memory: usize,
     /// 只在发布成功时消耗的创建计数；Creation counter consumed only on publication.
     creations: u64,
+    /// 每个有期限条目至多一个定时项，与变更在同一提交锁下发布。
+    /// At most one timer per expiring entry, published under the same commit lock as mutations.
+    expirations: BTreeSet<expiry::ExpiryTask>,
 }
 
 /// 退役索引在物理释放后才归还预算，包括队列满后的同步释放路径。
@@ -534,6 +538,9 @@ fn entry_size(key: &str, value: &Value) -> Result<usize, DbError> {
     size_of::<Entry>()
         .checked_add(12 * size_of::<(String, Entry)>() + 16 * size_of::<usize>())
         .and_then(|n| n.checked_add(key.len()))
+        // 为每条目预留一个定时项的保守空间，设置 TTL 无需临时突破总预算。
+        // Reserve conservative space for one timer per entry so adding TTL never exceeds the total budget.
+        .and_then(|n| n.checked_add(12 * size_of::<expiry::ExpiryTask>() + 128 + key.len()))
         .and_then(|n| n.checked_add(support::heap_size(value).ok()?))
         .ok_or_else(support::budget_error)
 }
