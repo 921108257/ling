@@ -181,3 +181,27 @@ async fn cli_cross_database_queries_and_flush() {
     stop.send(()).unwrap();
     task.await.unwrap();
 }
+
+/// 真实 CLI 保留 TTL 查询哨兵值，并把相对期限按 Int 送达服务端。
+/// The real CLI preserves TTL sentinel values and sends relative deadlines as Int arguments.
+#[tokio::test]
+async fn cli_ttl_lifecycle_and_invalid_conditional_write() {
+    let (port, stop, task) = start(false).await;
+    let source = "SET ttl null NX PX 10000\nPERSIST ttl\nPTTL ttl\nPEXPIRE ttl -1\nPTTL ttl\nSET text \"PX\"\nGET text\n";
+    let output = cli(port, source, true, None).await;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        "true\ntrue\nint(-1)\ntrue\nint(-2)\ntrue\n\"PX\"\n"
+    );
+    let output = cli(port, "SET text null NX PX 0\nGET text\n", true, None).await;
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("ERR_INVALID_ARGUMENT"));
+    assert_eq!(String::from_utf8(output.stdout).unwrap(), "\"PX\"\n");
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}

@@ -176,3 +176,37 @@ fn database_and_scan_signatures_preserve_unsigned_arguments() {
         vec![Value::UInt(0), Value::UInt(1)]
     );
 }
+
+/// TTL 参数按有符号整数传输，SET 选项不受值文本和顺序影响。
+/// TTL arguments use signed integers; SET options remain independent of value text and ordering.
+#[test]
+fn ttl_signatures_preserve_signed_time_arguments() {
+    for command in ["EXPIRE", "PEXPIRE", "EXPIREAT", "PEXPIREAT"] {
+        assert_eq!(
+            parse_command(&format!("{command} key -1"))
+                .unwrap()
+                .arguments,
+            vec![Value::String("key".into()), Value::Int(-1)]
+        );
+        assert!(parse_command(&format!("{command} key 9223372036854775808")).is_err());
+    }
+    for source in ["SET key null NX PX 500", "SET key null PX 500 NX"] {
+        assert!(
+            parse_command(source)
+                .unwrap()
+                .arguments
+                .contains(&Value::Int(500))
+        );
+    }
+    assert_eq!(
+        parse_command("SET key \"PX\" NX").unwrap().arguments,
+        vec![
+            Value::String("key".into()),
+            Value::String("PX".into()),
+            Value::String("NX".into())
+        ]
+    );
+    for source in ["SET key null EX 1.2", "SET key null PX 9223372036854775808"] {
+        assert!(parse_command(source).is_err());
+    }
+}

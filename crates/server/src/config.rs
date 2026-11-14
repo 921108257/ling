@@ -28,6 +28,32 @@ pub struct Config {
     /// 内存和 Key 预算达到上限时的候选选择。
     /// Candidate selection when memory or key budgets are exhausted.
     pub eviction: EvictionConfig,
+    /// 毫秒精度与每轮到期维护预算。
+    /// Millisecond precision and per-round expiry maintenance budget.
+    pub ttl: TtlConfig,
+}
+
+/// 精度固定为毫秒，维护工作量不改变逻辑到期边界。
+/// Precision is fixed at milliseconds; maintenance work limits never alter logical expiry boundaries.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct TtlConfig {
+    /// 固定为 1，不提供近似过期精度开关。
+    /// Fixed at one, with no approximate-expiry precision switch.
+    pub precision_ms: u64,
+    /// 每轮最多检查的到期候选数，必须为正。
+    /// Maximum due candidates checked per round; must be positive.
+    pub maintenance_budget: usize,
+}
+impl Default for TtlConfig {
+    /// 默认每轮 1024 个候选，不承诺回收延迟上限。
+    /// Defaults to 1024 candidates per round without promising a reclamation latency bound.
+    fn default() -> Self {
+        Self {
+            precision_ms: 1,
+            maintenance_budget: 1024,
+        }
+    }
 }
 
 /// 启动时确定的固定分片和业务资源配置。
@@ -234,6 +260,9 @@ impl Config {
     /// 监听前验证范围与组合关系，不创建引擎或分配索引。
     /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
+        if self.ttl.precision_ms != 1 || self.ttl.maintenance_budget == 0 {
+            return Err(invalid("Invalid TTL precision or maintenance budget"));
+        }
         self.eviction
             .policy
             .parse::<linger_engine::EvictionPolicy>()?;

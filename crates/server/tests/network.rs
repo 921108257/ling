@@ -651,3 +651,80 @@ async fn network_eviction_preserves_rejected_commands() {
     stop.send(()).unwrap();
     task.await.unwrap();
 }
+
+/// TTL 经真实 TCP 保持类型、条件校验与到期可见性，错误后仍能继续使用连接。
+/// TTL over real TCP preserves types, conditional validation, and expiry visibility while errors keep the connection usable.
+#[tokio::test]
+async fn network_ttl_queries_and_expiry_boundary() {
+    let (addr, stop, task) = start(Config::default()).await;
+    let mut stream = TcpStream::connect(addr).await.unwrap();
+    call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
+    let key = Value::String("ttl".into());
+    assert_eq!(
+        call(
+            &mut stream,
+            2,
+            "SET",
+            vec![
+                key.clone(),
+                Value::Null,
+                Value::String("PX".into()),
+                Value::Int(10000)
+            ]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    let Body::Response(Ok(Value::Int(remaining))) =
+        call(&mut stream, 3, "PTTL", vec![key.clone()]).await
+    else {
+        panic!()
+    };
+    assert!((1..=10000).contains(&remaining));
+    assert_error(
+        call(
+            &mut stream,
+            4,
+            "SET",
+            vec![
+                key.clone(),
+                Value::Int(1),
+                Value::String("NX".into()),
+                Value::String("PX".into()),
+                Value::Int(0),
+            ],
+        )
+        .await,
+        "ERR_INVALID_ARGUMENT",
+        false,
+    );
+    assert_eq!(
+        call(&mut stream, 5, "GET", vec![key.clone()]).await,
+        Body::Response(Ok(Value::Null))
+    );
+    assert_eq!(
+        call(&mut stream, 6, "PERSIST", vec![key.clone()]).await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    assert_eq!(
+        call(&mut stream, 7, "PTTL", vec![key.clone()]).await,
+        Body::Response(Ok(Value::Int(-1)))
+    );
+    call(&mut stream, 8, "PEXPIRE", vec![key.clone(), Value::Int(20)]).await;
+    tokio::time::timeout(std::time::Duration::from_secs(2), async {
+        let mut id = 9;
+        loop {
+            if call(&mut stream, id, "PTTL", vec![key.clone()]).await
+                == Body::Response(Ok(Value::Int(-2)))
+            {
+                break;
+            }
+            id += 1;
+            tokio::time::sleep(std::time::Duration::from_millis(2)).await;
+        }
+    })
+    .await
+    .unwrap();
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}

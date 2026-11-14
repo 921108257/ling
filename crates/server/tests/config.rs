@@ -37,7 +37,7 @@ fn rejects_invalid_auth_limits_and_unsupported_fields() {
     config.server.max_connections = 0;
     assert!(config.validate().is_err());
     for text in [
-        "[ttl]\nprecision_ms=1",
+        "[events]\nenabled=true",
         "[server]\nprot=6380",
         "[auth]\npassword=123",
         "[database]\ndatabases=1\ndatabases=2",
@@ -97,4 +97,21 @@ fn eviction_settings_are_strict() {
     config.eviction.policy = "lru".into();
     config.eviction.sample_size = usize::MAX;
     assert!(config.validate().is_err());
+}
+
+/// 毫秒精度固定为一，维护预算必须为正，未知 TTL 字段不得被忽略。
+/// Millisecond precision is fixed at one, maintenance budgets must be positive, and unknown TTL fields fail.
+#[test]
+fn ttl_settings_enforce_precision_and_bounded_rounds() {
+    let defaults = Config::default();
+    assert_eq!(defaults.ttl.precision_ms, 1);
+    assert_eq!(defaults.ttl.maintenance_budget, 1024);
+    let mut config: Config = toml::from_str("[ttl]\nprecision_ms=1\nmaintenance_budget=7").unwrap();
+    config.validate().unwrap();
+    config.ttl.precision_ms = 2;
+    assert!(config.validate().is_err());
+    config.ttl.precision_ms = 1;
+    config.ttl.maintenance_budget = 0;
+    assert!(config.validate().is_err());
+    assert!(toml::from_str::<Config>("[ttl]\ninterval_ms=1").is_err());
 }

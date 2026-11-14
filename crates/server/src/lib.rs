@@ -3,8 +3,10 @@
 
 mod config;
 mod connection;
+mod maintenance;
 pub use config::{
     AuthConfig, Config, DatabaseConfig, EngineConfig, EvictionConfig, ProtocolConfig, ServerConfig,
+    TtlConfig,
 };
 use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
@@ -94,12 +96,25 @@ impl Server {
                 .min(self.config.server.max_connections),
         ));
         let (closing, receiver) = watch::channel(false);
+        let mut background = JoinSet::new();
+        background.spawn(maintenance::run(
+            self.engine.clone(),
+            slots.clone(),
+            self.config.ttl.maintenance_budget,
+            receiver.clone(),
+        ));
         let mut connections = JoinSet::new();
         tokio::pin!(shutdown);
         let result = loop {
             tokio::select! {
                 biased;
                 _ = &mut shutdown => break Ok(()),
+                Some(result) = background.join_next() => {
+                    break match result {
+                        Ok(Err(error)) => Err(error),
+                        _ => Err(io::Error::other("TTL maintenance stopped unexpectedly")),
+                    };
+                }
                 Some(result) = connections.join_next(), if !connections.is_empty() => {
                     if let Err(e) = result { break Err(io::Error::other(format!("Connection task failed: {e}"))); }
                 }
@@ -112,7 +127,10 @@ impl Server {
             }
         };
         closing.send_replace(true);
-        let drain = async { while connections.join_next().await.is_some() {} };
+        let drain = async {
+            while connections.join_next().await.is_some() {}
+            while background.join_next().await.is_some() {}
+        };
         if tokio::time::timeout(
             Duration::from_millis(self.config.server.shutdown_timeout_ms),
             drain,
@@ -121,7 +139,9 @@ impl Server {
         .is_err()
         {
             connections.abort_all();
+            background.abort_all();
             while connections.join_next().await.is_some() {}
+            while background.join_next().await.is_some() {}
         }
         result
     }

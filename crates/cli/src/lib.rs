@@ -350,10 +350,21 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
         let signed = matches!(
             (command.as_str(), index),
             (
-                "INCRBY" | "DECRBY" | "LINDEX" | "LSET" | "LREM" | "SRANDMEMBER",
+                "INCRBY"
+                    | "DECRBY"
+                    | "LINDEX"
+                    | "LSET"
+                    | "LREM"
+                    | "SRANDMEMBER"
+                    | "EXPIRE"
+                    | "PEXPIRE"
+                    | "EXPIREAT"
+                    | "PEXPIREAT",
                 1
             ) | ("LRANGE" | "LTRIM", 1 | 2)
         );
+        let signed = signed || (command == "SET" && index >= 3 && args.get(index - 1).is_some_and(|value|
+            matches!(value, Value::String(option) if matches!(option.to_ascii_uppercase().as_str(), "EX" | "PX" | "EXAT" | "PXAT"))));
         args.push(if linger_types::is_value_argument(&command, index) {
             p.value(0)?
         } else if unsigned {
