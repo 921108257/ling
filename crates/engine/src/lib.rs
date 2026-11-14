@@ -2,6 +2,8 @@
 //! Fixed-shard memory engine; acquires ownership in (db, shard) order and publishes after preflight.
 
 mod administration;
+mod clock;
+pub use clock::{Clock, SystemClock, TimeSnapshot};
 mod containers;
 mod eviction;
 mod generic;
@@ -13,6 +15,8 @@ pub use scan::ScanState;
 mod ownership_tests;
 mod support;
 mod transaction;
+#[cfg(test)]
+mod ttl_tests;
 
 use linger_types::{DbError, ErrorCode, Generation, Value, ValueLimits};
 use std::{
@@ -95,8 +99,8 @@ impl Config {
         Ok(())
     }
 }
-/// 同时保存单调到期点和查询用 Unix 毫秒，留给 TTL 阶段使用。
-/// Stores both a monotonic deadline and queryable Unix milliseconds for the TTL stage.
+/// 同时保存单调到期点和查询用 Unix 毫秒，墙钟校正不重算已接受期限。
+/// Stores monotonic deadlines and queryable Unix milliseconds; wall-clock corrections never remap accepted deadlines.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Deadline {
     /// 可见性使用的单调期限；Monotonic deadline used for visibility.
@@ -179,6 +183,8 @@ pub struct Engine {
     epoch: u128,
     /// 内部热度时间基准；Internal heat clock origin.
     started: Instant,
+    /// 命令与维护共同使用的时间源；Time source shared by commands and maintenance.
+    clock: Arc<dyn Clock>,
     /// 全局受管预算及身份分配；Global managed budget and identity allocation.
     budget: Arc<Mutex<Budget>>,
     /// 有界后台释放队列，首次 ASYNC 时创建。
@@ -203,7 +209,17 @@ struct Transaction<'a> {
 impl Engine {
     /// 分配固定拓扑；epoch 来自进程入口，测试可指定。
     /// Allocates the fixed topology; the process entry point supplies the epoch, tests may fix it.
-    pub fn new(mut config: Config, epoch: u128) -> Result<Self, DbError> {
+    pub fn new(config: Config, epoch: u128) -> Result<Self, DbError> {
+        Self::with_clock(config, epoch, Arc::new(SystemClock))
+    }
+
+    /// 注入双时钟以验证时间边界；与默认构造执行相同的预算校验。
+    /// Injects a dual clock for time-boundary verification with the same budget checks as the default constructor.
+    pub fn with_clock(
+        mut config: Config,
+        epoch: u128,
+        clock: Arc<dyn Clock>,
+    ) -> Result<Self, DbError> {
         config.validate()?;
         config.shard_count = config.resolved_shards();
         let count = config.databases as usize * config.shard_count as usize;
@@ -217,7 +233,8 @@ impl Engine {
             shards,
             hash: RandomState::new(),
             epoch,
-            started: Instant::now(),
+            started: clock.now()?.monotonic,
+            clock,
             budget: Arc::new(Mutex::new(Budget::default())),
             reclaimer: OnceLock::new(),
         })
@@ -252,7 +269,7 @@ impl Engine {
     pub fn metadata(&self, db: u16, key: &str) -> Result<Metadata, DbError> {
         self.config.value.validate_key(key)?;
         let tx = self.lock(vec![self.location(db, key)?])?;
-        Ok(tx.entry(db, key, Instant::now())?.metadata)
+        Ok(tx.entry(db, key, self.clock.now()?.monotonic)?.metadata)
     }
 
     /// 在所有相关分片锁取得后采样时间；响应预算包含 status，不含帧头。
@@ -269,7 +286,8 @@ impl Engine {
         validate_arguments(&name, args, self.config.value)?;
         let locations = self.locations(db, &name, args)?;
         let mut tx = self.lock(locations)?;
-        let now = Instant::now();
+        let time = self.clock.now()?;
+        let now = time.monotonic;
         if matches!(name.as_str(), "FLUSHDB" | "FLUSHALL" | "SWAPDB") {
             return tx.administration(db, &name, args, now, response_bytes);
         }

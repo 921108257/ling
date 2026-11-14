@@ -168,7 +168,7 @@ impl Engine {
             state.position.clone()
         };
         let tx = self.lock(self.db_locations(db).collect())?;
-        let now = Instant::now();
+        let now = self.clock.now()?.monotonic;
         let mut keys = Vec::new();
         // 包含 status、Map、字段名、游标和 List 封套。 Includes status, Map, names, cursor, and List.
         let mut bytes = 40usize;
