@@ -30,12 +30,12 @@ pub struct Config {
     pub eviction: EvictionConfig,
 }
 
-/// 单分片阶段接受的引擎配置，其他分片数量暂不开放。
-/// Engine settings supported by the single-shard stage; other shard counts are not yet supported.
+/// 启动时确定的固定分片和业务资源配置。
+/// Fixed sharding and business resource settings resolved at startup.
 #[derive(Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EngineConfig {
-    /// 0 自动解析为 1；0 resolves automatically to 1.
+    /// 0 按系统可用并行度解析；Zero resolves to system available parallelism.
     pub shard_count: u32,
     /// 全实例受管字节；Instance-wide managed bytes.
     pub max_memory_bytes: usize,
@@ -50,8 +50,8 @@ pub struct EngineConfig {
 }
 
 impl Default for EngineConfig {
-    /// 默认阶段 2 单分片与标准业务值限额。
-    /// Defaults to the stage 2 single shard and standard business-value limits.
+    /// 默认自动固定分片与标准业务值限额。
+    /// Defaults to automatic fixed sharding and standard business-value limits.
     fn default() -> Self {
         Self {
             shard_count: 0,
@@ -195,8 +195,8 @@ pub struct ProtocolConfig {
     /// 批量编码最大子项数。
     /// Maximum items in a batch encoding.
     pub max_batch_size: usize,
-    /// 保留的调度开关；阶段 2 仍逐连接串行处理。
-    /// Reserved scheduling setting; stage 2 processes each connection serially.
+    /// 保留的调度开关；当前仍逐连接串行处理。
+    /// Reserved scheduling setting; each connection is currently processed serially.
     pub pipeline_enabled: bool,
 }
 impl Default for ProtocolConfig {

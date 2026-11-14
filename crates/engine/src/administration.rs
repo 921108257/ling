@@ -83,17 +83,19 @@ impl Transaction<'_> {
         };
         let mut budget = self.engine.budget.lock().map_err(|_| unavailable())?;
         let mut retired = Vec::with_capacity(self.guards.len());
+        let mut bytes = 0;
         for (id, index) in &mut self.guards {
             if name == "FLUSHALL" || self.engine.db_locations(db).contains(id) {
-                budget.memory -= index.values().map(|e| e.bytes).sum::<usize>();
+                bytes += index.values().map(|e| e.bytes).sum::<usize>();
                 retired.push(std::mem::take(&mut **index));
             }
         }
-        drop(budget);
         if asynchronous {
-            self.engine.retire(retired);
+            drop(budget);
+            self.engine.retire(retired, bytes);
         } else {
             drop(retired);
+            budget.memory -= bytes;
         }
         Ok(Value::Bool(true))
     }

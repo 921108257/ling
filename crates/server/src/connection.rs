@@ -118,7 +118,7 @@ pub(crate) async fn serve(
             Body::BatchRequest(_) => (
                 Err(DbError::new(
                     ErrorCode::InvalidArgument,
-                    "Batch execution is not supported in stage 2",
+                    "Batch execution is not supported",
                 )),
                 false,
                 false,

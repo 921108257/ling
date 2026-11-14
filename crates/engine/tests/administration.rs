@@ -156,7 +156,9 @@ fn swap_and_flush_are_whole_database_operations() {
     assert_eq!(run(&e, 0, "DBSIZE", &[]), Value::UInt(0));
     assert_eq!(run(&e, 1, "DBSIZE", &[]), Value::UInt(30));
     run(&e, 0, "FLUSHALL", &[]);
-    assert_eq!(e.managed_bytes(), 0);
+    // ASYNC 退休条目可能尚未释放，但同步清空的另一半已归还预算。
+    // ASYNC retired entries may still exist, but the synchronously flushed half has returned its budget.
+    assert!(e.managed_bytes() <= memory / 2);
     run(&e, 0, "SET", &[s("k0"), Value::Null]);
     assert!(e.metadata(0, "k0").unwrap().generation.counter > same.generation.counter);
 }

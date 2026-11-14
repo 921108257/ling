@@ -20,7 +20,7 @@ use std::{
     collections::{BTreeMap, hash_map::RandomState},
     hash::BuildHasher,
     mem::size_of,
-    sync::{Mutex, MutexGuard, OnceLock, mpsc},
+    sync::{Arc, Mutex, MutexGuard, OnceLock, mpsc},
     time::Instant,
 };
 use support::{error, response_size};
@@ -144,6 +144,28 @@ struct Budget {
     creations: u64,
 }
 
+/// 退役索引在物理释放后才归还预算，包括队列满后的同步释放路径。
+/// Retired indexes return their budget only after physical release, including a full-queue fallback.
+struct Retired {
+    /// 已逻辑移除的索引；Logically removed indexes.
+    indexes: Vec<Index>,
+    /// 仍应计费的字节数；Bytes that remain charged.
+    bytes: usize,
+    /// 可安全存活至后台释放完成的共享预算；Shared budget that outlives background reclamation.
+    budget: Arc<Mutex<Budget>>,
+}
+
+impl Drop for Retired {
+    /// 先释放所有值，再归还预算，避免在释放窗口内重复使用容量。
+    /// Releases all values before returning the budget to prevent premature capacity reuse.
+    fn drop(&mut self) {
+        drop(std::mem::take(&mut self.indexes));
+        if let Ok(mut budget) = self.budget.lock() {
+            budget.memory -= self.bytes;
+        }
+    }
+}
+
 /// 分片内可变状态由各自锁保护；没有全局读锁或每分片专属线程。
 /// Each shard lock protects its state; no global read lock or thread per shard exists.
 pub struct Engine {
@@ -158,10 +180,10 @@ pub struct Engine {
     /// 内部热度时间基准；Internal heat clock origin.
     started: Instant,
     /// 全局受管预算及身份分配；Global managed budget and identity allocation.
-    budget: Mutex<Budget>,
+    budget: Arc<Mutex<Budget>>,
     /// 有界后台释放队列，首次 ASYNC 时创建。
     /// Bounded background reclamation queue, created on the first ASYNC.
-    reclaimer: OnceLock<Option<mpsc::SyncSender<Vec<Index>>>>,
+    reclaimer: OnceLock<Option<mpsc::SyncSender<Retired>>>,
 }
 
 /// 命令持有的有序分片执行权；私有入口避免绕过协调器。
@@ -196,7 +218,7 @@ impl Engine {
             hash: RandomState::new(),
             epoch,
             started: Instant::now(),
-            budget: Mutex::new(Budget::default()),
+            budget: Arc::new(Mutex::new(Budget::default())),
             reclaimer: OnceLock::new(),
         })
     }
@@ -275,9 +297,14 @@ impl Engine {
 
     /// 后台释放队列满或线程不可用时同步释放，绝不积压无界退休索引。
     /// Frees synchronously when the background queue is full or unavailable, never accumulating unbounded retired indexes.
-    fn retire(&self, indexes: Vec<Index>) {
+    fn retire(&self, indexes: Vec<Index>, bytes: usize) {
+        let retired = Retired {
+            indexes,
+            bytes,
+            budget: self.budget.clone(),
+        };
         let sender = self.reclaimer.get_or_init(|| {
-            let (tx, rx) = mpsc::sync_channel::<Vec<Index>>(1);
+            let (tx, rx) = mpsc::sync_channel::<Retired>(1);
             std::thread::Builder::new()
                 .name("linger-reclaim".into())
                 .spawn(move || {
@@ -289,7 +316,7 @@ impl Engine {
                 .map(|_| tx)
         });
         if let Some(sender) = sender {
-            if let Err(error) = sender.try_send(indexes) {
+            if let Err(error) = sender.try_send(retired) {
                 drop(error);
             }
         }

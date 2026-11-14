@@ -59,7 +59,7 @@ fn file_errors_never_expose_password_source() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 
-/// 单分片和业务限额必须在监听前校验；Validate shard count and business limits before listening.
+/// 固定分片和业务限额必须在监听前校验；Validate fixed sharding and business limits before listening.
 #[test]
 fn engine_limits_are_strict_and_available_to_protocol() {
     let mut config: Config = toml::from_str(

@@ -8,6 +8,59 @@ use std::{
     time::Duration,
 };
 
+/// 暂停后台释放时逻辑清空仍成功，但物理释放前不能重复使用预算。
+/// Logical flush succeeds with reclamation paused, but its budget cannot be reused before release.
+#[test]
+fn async_flush_keeps_retired_memory_charged_until_released() {
+    let key = Value::String("retired".into());
+    let bytes = crate::entry_size("retired", &Value::Null).unwrap();
+    let engine = Engine::new(
+        Config {
+            shard_count: 2,
+            max_memory_bytes: bytes,
+            ..Config::default()
+        },
+        1,
+    )
+    .unwrap();
+    let (sender, receiver) = mpsc::sync_channel(1);
+    assert!(engine.reclaimer.set(Some(sender)).is_ok());
+    engine
+        .execute(0, "SET", &[key.clone(), Value::Null], 4096)
+        .unwrap();
+    engine
+        .execute(0, "FLUSHDB", &[Value::String("ASYNC".into())], 4096)
+        .unwrap();
+    assert_eq!(
+        engine.execute(0, "DBSIZE", &[], 4096).unwrap(),
+        Value::UInt(0)
+    );
+    assert_eq!(engine.memory_usage().unwrap(), bytes);
+    assert_eq!(
+        engine
+            .execute(0, "SET", &[key.clone(), Value::Null], 4096)
+            .unwrap_err()
+            .code,
+        "ERR_OUT_OF_MEMORY"
+    );
+    let retired = receiver.recv_timeout(Duration::from_secs(1)).unwrap();
+    assert_eq!(engine.memory_usage().unwrap(), bytes);
+    drop(retired);
+    assert_eq!(engine.memory_usage().unwrap(), 0);
+    engine
+        .execute(0, "SET", &[key.clone(), Value::Null], 4096)
+        .unwrap();
+    // 队列满时第二次退役同步释放，不能留下无界队列或悬挂预算。
+    // With a full queue, the second retirement releases synchronously without unbounded work or stale charges.
+    engine.retire(Vec::new(), 0);
+    engine
+        .execute(0, "FLUSHDB", &[Value::String("ASYNC".into())], 4096)
+        .unwrap();
+    assert_eq!(engine.memory_usage().unwrap(), 0);
+    drop(receiver.recv().unwrap());
+    assert_eq!(engine.memory_usage().unwrap(), 0);
+}
+
 /// 找到落在不同分片的 Key；不假设进程随机哈希的具体结果。
 /// Finds keys on distinct shards without assuming a particular process-random hash result.
 fn distinct(engine: &Engine) -> (String, String) {

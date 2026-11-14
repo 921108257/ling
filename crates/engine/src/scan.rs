@@ -258,6 +258,11 @@ impl Transaction<'_> {
                 .choose(&mut rand::rng())
                 .map(|(key, _)| key)
                 .ok_or_else(|| error(ErrorCode::KeyNotFound, "Database is empty"))?;
+            // 在复制 Key 前校验响应，避免失败查询产生不必要的大分配。
+            // Check the response before copying the key to avoid large allocations on rejected queries.
+            if key.len().checked_add(6).is_none_or(|n| n > cap) {
+                return Err(limit_error());
+            }
             let value = Value::String(key.clone());
             response_size(&value, cap, self.config.value)?;
             return Ok(Effect::read(value));
@@ -268,12 +273,20 @@ impl Transaction<'_> {
         let pattern = text(pattern)?;
         validate_pattern(pattern)?;
         let mut bytes = 6usize;
+        let mut memory = 0usize;
         let mut keys = Vec::new();
         for (key, entry) in self.entries(db) {
             if entry.metadata.deadline.is_none_or(|d| now < d.monotonic) && matches(pattern, key) {
                 bytes = bytes
                     .checked_add(5 + key.len())
                     .filter(|n| *n <= cap && *n <= 64 * 1024 * 1024)
+                    .ok_or_else(limit_error)?;
+                // 为 Vec 扩容预留最多两倍元素空间，与字符串分配一起限制。
+                // Allow up to twice the element storage for Vec growth, alongside string allocations.
+                memory = memory
+                    .checked_add(key.len())
+                    .and_then(|n| n.checked_add(2 * std::mem::size_of::<Value>()))
+                    .filter(|n| *n <= 128 * 1024 * 1024)
                     .ok_or_else(limit_error)?;
                 keys.push(Value::String(key.clone()));
             }

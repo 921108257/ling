@@ -1,5 +1,5 @@
-# 单分片数据引擎，不依赖网络或 SDK。
-# Single-shard data engine, independent of networking and SDKs.
+# 固定分片数据引擎，不依赖网络或 SDK。
+# Fixed-shard data engine, independent of networking and SDKs.
 [package]
 name = "linger-engine"
 version.workspace = true

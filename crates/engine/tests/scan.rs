@@ -193,6 +193,10 @@ fn byte_patterns_types_and_query_limits_are_explicit() {
         "ERR_KEY_NOT_FOUND"
     );
     let random = e.execute(0, "RANDOMKEY", &[], 4096).unwrap();
+    assert_eq!(
+        e.execute(0, "RANDOMKEY", &[], 1).unwrap_err().code,
+        "ERR_LIMIT_EXCEEDED"
+    );
     assert!([s("中"), s("*"), s("abc"), s("a?c")].contains(&random));
     let mut state = ScanState::default();
     assert_eq!(
