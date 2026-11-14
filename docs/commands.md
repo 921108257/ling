@@ -1,13 +1,14 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 3 已完成固定分片数据、跨库与遍历命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 4 已完成固定分片数据、跨库、遍历与 TTL 命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
 
 ## 当前支持范围
 
-| 类别 | 阶段 3 已开放 |
+| 类别 | 阶段 4 已开放 |
 |---|---|
 | 连接 | HELLO、AUTH、SELECT、PING、QUIT |
-| 通用 | SET（无 TTL，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
+| 通用 | SET（含 EX / PX / EXAT / PXAT，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
+| TTL | EXPIRE、PEXPIRE、EXPIREAT、PEXPIREAT、PERSIST、TTL、PTTL、EXPIRETIME、PEXPIRETIME |
 | 迁移与查询 | RENAME、RENAMENX、COPY、MOVE、KEYS、SCAN、RANDOMKEY |
 | 数据库管理 | FLUSHDB、FLUSHALL（均含 ASYNC）、SWAPDB |
 | 数值与文本 | INCR、DECR、INCRBY、DECRBY、INCRFLOAT、APPEND、STRLEN、BLEN |
@@ -15,7 +16,7 @@
 | Map | 本文 Map 表中的全部命令 |
 | Set | 本文 Set 表中的全部命令，含跨分片集合代数与 STORE |
 
-已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。TTL 系列、INFO / CONFIG / SHUTDOWN、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。SET 的 EX / PX / EXAT / PXAT 尚未开放，返回 `ERR_INVALID_ARGUMENT`，不会忽略选项写入。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
+已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。INFO / CONFIG / SHUTDOWN、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。TTL 已开放，事件仍禁用；下文的生命周期事件在阶段 5 实现。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
 
 ## 通用规则
 

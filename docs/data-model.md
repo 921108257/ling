@@ -1,6 +1,6 @@
 # 数据模型
 
-> 状态：v0.3 数据契约。`linger-types` 已实现 10 种 Value、相等/哈希、大小/深度校验及稳定错误码；阶段 3 引擎已实现固定分片存储、运算、generation / revision、数据库隔离与跨库迁入身份。条目保留单调时钟和 Unix 毫秒期限字段，开放 TTL 命令及调度留到阶段 4。
+> 状态：v0.3 数据契约。`linger-types` 已实现 10 种 Value、相等/哈希、大小/深度校验及稳定错误码；阶段 4 引擎已实现固定分片存储、运算、generation / revision、数据库隔离与跨库迁入身份。条目同时保存单调时钟和 Unix 毫秒期限，TTL 命令与有界回收已开放，期限变更和定时身份在同一次发布中更新。
 
 项目边界见 [architecture.md](architecture.md)，命令行为见 [commands.md](commands.md)，二进制编码见 [protocol.md](protocol.md)。三者使用本文定义的 Value，不另行推导语言特有的类型语义。
 

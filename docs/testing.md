@@ -1,8 +1,8 @@
 # 验证与性能基准
 
-> 状态：阶段 1—3 已建立 Rust 契约、分片引擎、真实网络测试和基础性能测量。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
+> 状态：阶段 1—4 已建立 Rust 契约、分片引擎、TTL 生命周期与真实网络测试；基础性能数据来自阶段 3。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
 
-当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。Java / Go、完整 TTL 和 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。TTL 契约位于 `crates/engine/src/ttl_tests.rs`，覆盖可控双时钟、严格到期边界、墙钟跳变、版本与期限溢出、1000 次续期、每轮回收预算、迁移与清库、旧任务逐字段校验，以及到期和 NX / XX / DEL / COPY / SCAN 的并发竞争。服务端另验证空闲回收、等待许可时关闭，以及真实 TCP / CLI 生命周期。Java / Go 和 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
 
 ## 验证原则
 
@@ -62,6 +62,8 @@ Journal 测试在追加记录、提交标记、fsync、发布内存及发送响�
 内存实验需说明统计分母是逻辑活跃Key还是实际仍占内存条目，并给出预热/稳态/删除后RSS。协议缓冲、Journal页缓存及分配器滞留不能归为不存在的“免费内存”。
 
 ## 阶段 3 基础测量
+
+以下为阶段 3 源码的历史基线；阶段 4 为每条目增加到期索引预留计费并启用维护循环，尚未重测性能，不能用这些结果表示当前开销。
 
 2026-11-14 在 VMware 虚拟机中测量，客户机暴露 8 个逻辑 CPU，型号为 i7-11800H @ 2.30GHz，内存约 23.4 GiB，Linux x86_64，rustc 1.98.1。使用 Cargo release 默认优化，不绑核；TCP 客户端与独立服务端共享同机 CPU，经回环地址通信。完整内核、CPU、存储、编译器、Cargo.lock 摘要和源码版本见 [环境原始数据](../benchmarks/results/stage3-2026-11-14-environment.json)。所记录工作区只有未追踪的 Python 字节码，已清理，无源码改动。
 
