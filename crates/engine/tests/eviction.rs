@@ -13,6 +13,38 @@ fn get(e: &Engine, db: u16, key: &str) -> Result<Value, linger_types::DbError> {
     e.execute(db, "GET", &[s(key)], 4096)
 }
 
+/// 样本大于候选集时仍随机选择，不能总淘汰有序索引的首个 Key。
+/// Selection stays random when samples exceed candidates instead of always evicting the first sorted key.
+#[test]
+fn random_eviction_is_not_biased_to_the_first_sample() {
+    let mut saw_a = false;
+    let mut saw_b = false;
+    // 两个候选连续 128 次只选同一个的概率为 2^-127。
+    // With two candidates, choosing only one across 128 independent trials has probability 2^-127.
+    for _ in 0..128 {
+        let e = Engine::new(
+            Config {
+                shard_count: 1,
+                max_keys: 2,
+                eviction: EvictionPolicy::Random,
+                sample_size: 5,
+                ..Config::default()
+            },
+            1,
+        )
+        .unwrap();
+        for key in ["a", "b", "c"] {
+            e.execute(0, "SET", &[s(key), Value::Null], 4096).unwrap();
+        }
+        saw_a |= get(&e, 0, "a").is_err();
+        saw_b |= get(&e, 0, "b").is_err();
+        if saw_a && saw_b {
+            return;
+        }
+    }
+    panic!("random eviction always selected the same sorted candidate");
+}
+
 /// Key 配额只淘汰受限数据库；TTL-first 没有期限候选时拒绝写入。
 /// Key quotas evict only in the constrained database; ttl-first rejects writes with no timed candidates.
 #[test]

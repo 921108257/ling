@@ -119,7 +119,11 @@ impl Transaction<'_> {
                             || entry.metadata.deadline.is_some())
                 });
             let mut rng = rand::rng();
-            let sample = if self.config.eviction == EvictionPolicy::TtlFirst {
+            let sample = if self.config.eviction == EvictionPolicy::Random {
+                // 多项蓄水池的返回顺序不随机，不能取第一项冒充均匀选择。
+                // A multi-item reservoir is not randomly ordered, so its first item is not a uniform choice.
+                candidates.choose(&mut rng).into_iter().collect()
+            } else if self.config.eviction == EvictionPolicy::TtlFirst {
                 // ttl-first 承诺最早期限，必须检查所有有期限候选。
                 // ttl-first promises the earliest deadline, so inspect all eligible timed candidates.
                 candidates
