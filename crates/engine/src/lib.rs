@@ -15,6 +15,7 @@ pub use scan::ScanState;
 mod ownership_tests;
 mod support;
 mod transaction;
+mod ttl;
 #[cfg(test)]
 mod ttl_tests;
 
@@ -288,6 +289,20 @@ impl Engine {
         let mut tx = self.lock(locations)?;
         let time = self.clock.now()?;
         let now = time.monotonic;
+        if matches!(
+            name.as_str(),
+            "EXPIRE"
+                | "PEXPIRE"
+                | "EXPIREAT"
+                | "PEXPIREAT"
+                | "PERSIST"
+                | "TTL"
+                | "PTTL"
+                | "EXPIRETIME"
+                | "PEXPIRETIME"
+        ) {
+            return tx.ttl(db, &name, args, time, response_bytes);
+        }
         if matches!(name.as_str(), "FLUSHDB" | "FLUSHALL" | "SWAPDB") {
             return tx.administration(db, &name, args, now, response_bytes);
         }
@@ -296,7 +311,7 @@ impl Engine {
                 "KEYS" | "RANDOMKEY" => tx.query(db, &name, args, now, response_bytes)?,
                 "RENAME" | "RENAMENX" | "COPY" | "MOVE" => tx.relocate(db, &name, args, now)?,
                 "SET" | "GET" | "GETSET" | "MGET" | "MSET" | "DEL" | "EXISTS" | "TYPE"
-                | "DBSIZE" => tx.generic(db, &name, args, now, response_bytes)?,
+                | "DBSIZE" => tx.generic(db, &name, args, time, response_bytes)?,
                 "INCR" | "DECR" | "INCRBY" | "DECRBY" | "INCRFLOAT" | "APPEND" | "STRLEN"
                 | "BLEN" => tx.numeric(db, &name, args, now)?,
                 _ => tx.container(db, &name, args, now, response_bytes)?,
@@ -462,6 +477,10 @@ fn read_only(name: &str) -> bool {
             | "EXISTS"
             | "TYPE"
             | "DBSIZE"
+            | "TTL"
+            | "PTTL"
+            | "EXPIRETIME"
+            | "PEXPIRETIME"
             | "KEYS"
             | "RANDOMKEY"
             | "STRLEN"

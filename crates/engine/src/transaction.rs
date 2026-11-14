@@ -91,7 +91,7 @@ impl Transaction<'_> {
             let deadline = match change.policy {
                 Mutation::Preserve => active.and_then(|e| e.metadata.deadline),
                 Mutation::Replace => None,
-                Mutation::Recreate(deadline) => deadline,
+                Mutation::Recreate(deadline) | Mutation::Deadline(deadline) => deadline,
             };
             if !recreate
                 && active.is_some_and(|e| {

@@ -27,6 +27,8 @@ pub(crate) enum Mutation {
     Preserve,
     /// 整体替换清除期限；Whole replacement clears deadline.
     Replace,
+    /// 设置期限但保留原生命周期；Sets a deadline while preserving the lifecycle.
+    Deadline(Option<crate::Deadline>),
     /// 迁入保留源期限并新建生命周期；Relocation preserves source deadline with a fresh lifecycle.
     Recreate(Option<crate::Deadline>),
 }

@@ -125,3 +125,186 @@ fn clock_failure_never_publishes_a_write() {
     );
     assert_eq!(e.memory_usage().unwrap(), 0);
 }
+
+/// 期限与查询使用毫秒精度，边界到达后所有入口都过滤旧值。
+/// Deadlines and queries use millisecond precision; every entry point filters old values at the boundary.
+#[test]
+fn ttl_queries_round_down_and_expired_entries_cannot_revive() {
+    let (e, clock) = engine();
+    for name in ["TTL", "PTTL", "EXPIRETIME", "PEXPIRETIME"] {
+        assert_eq!(run(&e, name, &[s("k")]), Value::Int(-2));
+    }
+    run(&e, "SET", &[s("k"), Value::Int(3)]);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-1));
+    assert_eq!(
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(1001)]),
+        Value::Bool(true)
+    );
+    assert_eq!(run(&e, "TTL", &[s("k")]), Value::Int(1));
+    assert_eq!(
+        run(&e, "PEXPIRETIME", &[s("k")]),
+        Value::Int(1_700_000_001_001)
+    );
+    clock.advance(2);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(999));
+    assert_eq!(run(&e, "TTL", &[s("k")]), Value::Int(0));
+    clock.advance(999);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-2));
+    assert_eq!(
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(9000)]),
+        Value::Bool(false)
+    );
+    assert_eq!(run(&e, "PERSIST", &[s("k")]), Value::Bool(false));
+    assert_eq!(
+        run(&e, "SET", &[s("k"), Value::Int(4), s("XX")]),
+        Value::Bool(false)
+    );
+    assert_eq!(
+        run(
+            &e,
+            "SET",
+            &[s("k"), Value::Int(5), s("NX"), s("EX"), Value::Int(2)]
+        ),
+        Value::Bool(true)
+    );
+    assert_eq!(run(&e, "TTL", &[s("k")]), Value::Int(2));
+}
+
+/// 选项和数值先完整校验，条件不满足也不能隐藏非法期限。
+/// Options and numbers are validated completely before unmet conditions can hide an invalid deadline.
+#[test]
+fn ttl_invalid_arguments_and_response_limits_preserve_state() {
+    let (e, _) = engine();
+    run(&e, "SET", &[s("k"), Value::Null]);
+    let before = e.metadata(0, "k").unwrap();
+    for options in [
+        vec![s("PX"), Value::Int(0)],
+        vec![s("EX"), Value::Int(-1)],
+        vec![s("PXAT"), Value::Int(1)],
+        vec![s("EX"), Value::UInt(2)],
+        vec![s("NX"), s("XX")],
+        vec![s("PX"), Value::Int(1), s("EX"), Value::Int(1)],
+        vec![s("PX")],
+        vec![s("mystery")],
+    ] {
+        let mut args = vec![s("k"), Value::Int(9), s("NX")];
+        args.extend(options);
+        assert_eq!(
+            e.execute(0, "SET", &args, 4096).unwrap_err().code,
+            "ERR_INVALID_ARGUMENT"
+        );
+        assert_eq!(e.metadata(0, "k").unwrap(), before);
+    }
+    for (name, args, code) in [
+        (
+            "SET",
+            vec![s("k"), Value::Int(1), s("EX"), Value::Int(i64::MAX)],
+            "ERR_OVERFLOW",
+        ),
+        (
+            "PEXPIRE",
+            vec![s("k"), Value::UInt(3)],
+            "ERR_INVALID_ARGUMENT",
+        ),
+        (
+            "EXPIRE",
+            vec![s("missing"), Value::Int(i64::MAX)],
+            "ERR_OVERFLOW",
+        ),
+        (
+            "EXPIRETIME",
+            vec![s("k"), Value::Int(0)],
+            "ERR_INVALID_ARGUMENT",
+        ),
+    ] {
+        assert_eq!(e.execute(0, name, &args, 4096).unwrap_err().code, code);
+        assert_eq!(e.metadata(0, "k").unwrap(), before);
+    }
+    for name in ["EXPIRE", "PEXPIRE"] {
+        assert_eq!(
+            e.execute(0, name, &[s("k"), Value::Int(0)], 1)
+                .unwrap_err()
+                .code,
+            "ERR_LIMIT_EXCEEDED"
+        );
+        assert_eq!(e.metadata(0, "k").unwrap(), before);
+    }
+    assert_eq!(run(&e, "GET", &[s("k")]), Value::Null);
+}
+
+/// 局部修改保留期限，整体替换清除；TTL 变化只增加一次修订。
+/// Local mutations preserve deadlines, replacements clear them, and TTL changes increment revisions once.
+#[test]
+fn ttl_mutation_revisions_and_immediate_expiry_follow_lifecycle() {
+    let (e, _) = engine();
+    run(
+        &e,
+        "SET",
+        &[s("k"), Value::Int(0), s("PX"), Value::Int(5000)],
+    );
+    let before = e.metadata(0, "k").unwrap();
+    run(&e, "INCR", &[s("k")]);
+    let changed = e.metadata(0, "k").unwrap();
+    assert_eq!(changed.deadline, before.deadline);
+    assert_eq!(changed.revision, before.revision + 1);
+    assert_eq!(
+        run(
+            &e,
+            "PEXPIREAT",
+            &[s("k"), Value::Int(before.deadline.unwrap().unix_ms)]
+        ),
+        Value::Bool(true)
+    );
+    assert_eq!(e.metadata(0, "k").unwrap(), changed);
+    assert_eq!(run(&e, "PERSIST", &[s("k")]), Value::Bool(true));
+    let persistent = e.metadata(0, "k").unwrap();
+    assert_eq!(persistent.generation, before.generation);
+    assert_eq!(persistent.revision, changed.revision + 1);
+    assert_eq!(run(&e, "PERSIST", &[s("k")]), Value::Bool(false));
+    assert_eq!(e.metadata(0, "k").unwrap(), persistent);
+    run(&e, "SET", &[s("k"), Value::Int(1), s("PX"), Value::Int(9)]);
+    assert_eq!(
+        e.metadata(0, "k").unwrap().revision,
+        persistent.revision + 1
+    );
+    run(&e, "MSET", &[s("k"), Value::Int(1)]);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-1));
+    for (name, value) in [
+        ("EXPIRE", 0),
+        ("PEXPIRE", -1),
+        ("EXPIREAT", 0),
+        ("PEXPIREAT", 1),
+    ] {
+        run(&e, "SET", &[s("k"), Value::Null]);
+        let previous = e.metadata(0, "k").unwrap();
+        assert_eq!(
+            run(&e, name, &[s("k"), Value::Int(value)]),
+            Value::Bool(true)
+        );
+        assert_eq!(run(&e, "TTL", &[s("k")]), Value::Int(-2));
+        run(&e, "SET", &[s("k"), Value::Null]);
+        assert_ne!(e.metadata(0, "k").unwrap().generation, previous.generation);
+    }
+}
+
+/// 绝对期限只在接受时换算；墙钟跃迁后查询期限和剩余时间可以不同步。
+/// Absolute deadlines are converted only when accepted; wall-clock jumps may separate expiry timestamps from remaining time.
+#[test]
+fn absolute_deadlines_ignore_later_wall_clock_jumps() {
+    let (e, clock) = engine();
+    let target = clock.now().unwrap().unix_ms + 2000;
+    run(
+        &e,
+        "SET",
+        &[s("k"), Value::Null, s("PXAT"), Value::Int(target)],
+    );
+    clock.wall(1);
+    clock.advance(500);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(1500));
+    assert_eq!(run(&e, "PEXPIRETIME", &[s("k")]), Value::Int(target));
+    clock.wall(i64::MAX);
+    clock.advance(1500);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-2));
+    assert_eq!(run(&e, "KEYS", &[s("*")]), Value::List(vec![]));
+    assert_eq!(run(&e, "DEL", &[s("k")]), Value::UInt(0));
+}

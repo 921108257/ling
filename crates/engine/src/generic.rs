@@ -1,9 +1,9 @@
 //! 通用 Key 命令；多 Key 结果在单所有者范围内整体发布。
 //! Generic key commands; multi-key changes publish atomically within one owner.
 
-use crate::{Transaction, support::*};
+use crate::{TimeSnapshot, Transaction, support::*};
 use linger_types::{DbError, ErrorCode, Value};
-use std::{collections::HashSet, time::Instant};
+use std::collections::HashSet;
 
 impl Transaction<'_> {
     /// 分派通用命令；先校验所有名称和条件，再生成变更。
@@ -13,9 +13,10 @@ impl Transaction<'_> {
         db: u16,
         name: &str,
         args: &[Value],
-        now: Instant,
+        time: TimeSnapshot,
         response_bytes: usize,
     ) -> Result<Effect, DbError> {
+        let now = time.monotonic;
         if name == "DBSIZE" {
             if !args.is_empty() {
                 return Err(argument_error());
@@ -31,25 +32,15 @@ impl Transaction<'_> {
         }
         match name {
             "SET" => {
-                if args.len() < 2 || args.len() > 3 {
-                    return Err(argument_error());
-                }
+                let (condition, deadline) = crate::ttl::set_options(args, time)?;
                 let key = self.key(&args[0])?;
-                let option = args
-                    .get(2)
-                    .map(text)
-                    .transpose()?
-                    .map(str::to_ascii_uppercase);
-                if option.as_deref().is_some_and(|o| !matches!(o, "NX" | "XX")) {
-                    return Err(argument_error());
-                }
                 let exists = self.entry(db, key, now).is_ok();
-                if matches!(option.as_deref(), Some("NX")) && exists
-                    || matches!(option.as_deref(), Some("XX")) && !exists
-                {
+                if condition.is_some_and(|required| required != exists) {
                     return Ok(Effect::read(Value::Bool(false)));
                 }
-                Ok(Effect::put(Value::Bool(true), key, args[1].clone(), false))
+                let mut effect = Effect::put(Value::Bool(true), key, args[1].clone(), false);
+                effect.changes[0].policy = Mutation::Deadline(deadline);
+                Ok(effect)
             }
             "GET" | "GETSET" | "TYPE" => {
                 if args.len() != if name == "GETSET" { 2 } else { 1 } {
