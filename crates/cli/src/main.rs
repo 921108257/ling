@@ -13,7 +13,7 @@ use std::{
 #[derive(Parser)]
 #[command(
     version,
-    about = "linger-cache-db 阶段 5 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
+    about = "linger-cache-db 阶段 6 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
 )]
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
@@ -45,6 +45,22 @@ struct Args {
     /// Automatically ACK after output and flush; otherwise read explicit ACKs from stdin.
     #[arg(long)]
     auto_ack: bool,
+    /// 验证服务端证书的名称；Verified TLS server name.
+    #[arg(long)]
+    tls_server_name: Option<String>,
+    /// 自定义可信 CA 文件；Custom trusted CA file.
+    #[arg(long, requires = "tls_server_name")]
+    tls_ca: Option<std::path::PathBuf>,
+    /// mTLS 客户端证书；mTLS client certificate.
+    #[arg(long, requires_all = ["tls_server_name", "tls_key"])]
+    tls_cert: Option<std::path::PathBuf>,
+    /// mTLS 客户端私钥；mTLS client private key.
+    #[arg(long, requires_all = ["tls_server_name", "tls_cert"])]
+    tls_key: Option<std::path::PathBuf>,
+    /// 从 stdin 读取最多 1000 条普通命令并以非事务 Batch 提交。
+    /// Reads up to 1000 ordinary commands from stdin and submits a nontransactional Batch.
+    #[arg(long, conflicts_with = "command")]
+    batch: bool,
 }
 
 /// 将失败转为非零退出状态，不输出敏感输入。
@@ -68,6 +84,14 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
     let password = std::env::var("LINGER_PASSWORD").ok();
     let options = Options {
         request_timeout: Duration::from_millis(args.timeout_ms),
+        tls: args
+            .tls_server_name
+            .map(|server_name| linger_client::ClientTls {
+                server_name,
+                ca_file: args.tls_ca,
+                cert_file: args.tls_cert,
+                key_file: args.tls_key,
+            }),
         ..Options::default()
     };
     let mut client = Client::connect(
@@ -77,6 +101,46 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
         options,
     )
     .await?;
+    if args.batch {
+        let stdin = io::stdin();
+        let mut input = stdin.lock();
+        let mut requests = Vec::new();
+        let mut total = 0;
+        loop {
+            let mut line = Vec::new();
+            let n = input
+                .by_ref()
+                .take(64 * 1024 * 1024 + 1)
+                .read_until(b'\n', &mut line)?;
+            if n == 0 {
+                break;
+            }
+            total += n;
+            if total > 64 * 1024 * 1024 {
+                return Err("批量输入超过上限".into());
+            }
+            let line = std::str::from_utf8(&line)?;
+            if line.trim().is_empty() {
+                continue;
+            }
+            if requests.len() >= 1000 {
+                return Err("批量命令数超过上限".into());
+            }
+            requests.push(parse_command(line)?);
+        }
+        let mut success = true;
+        for result in client.batch(requests).await? {
+            match result {
+                Ok(value) => println!("{}", display_value(&value)),
+                Err(error) => {
+                    eprintln!("{error}");
+                    success = false;
+                }
+            }
+        }
+        client.close().await?;
+        return Ok(success);
+    }
     let mut success = true;
     if let Some(source) = args.command.as_ref() {
         let request = parse_command(source)?;

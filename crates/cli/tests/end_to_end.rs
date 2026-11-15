@@ -95,6 +95,50 @@ async fn real_cli_ping_unknown_command_and_batch_input_exit_status() {
     task.await.unwrap();
 }
 
+/// 真正 Batch 与逐行输入分开；一项失败保留已完成项及非零退出码。
+/// Actual Batch differs from line input; item errors preserve completed results and a nonzero exit code.
+#[tokio::test]
+async fn explicit_batch_and_operations_commands() {
+    let (port, stop, task) = start(false).await;
+    let output = tokio::task::spawn_blocking(move || {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_linger-cli"))
+            .args(["--port", &port.to_string(), "--batch"])
+            .env_remove("LINGER_PASSWORD")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(b"SET batch null\nINCR batch\nGET batch\n")
+            .unwrap();
+        child.wait_with_output().unwrap()
+    })
+    .await
+    .unwrap();
+    assert!(!output.status.success());
+    assert_eq!(String::from_utf8(output.stdout).unwrap(), "true\nnull\n");
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .contains("ERR_TYPE_MISMATCH")
+    );
+    let output = cli(port, "CONFIG GET auth.password", false, None).await;
+    assert!(output.status.success());
+    assert!(
+        String::from_utf8(output.stdout)
+            .unwrap()
+            .contains("<redacted>")
+    );
+    let output = cli(port, "INFO stats", false, None).await;
+    assert!(output.status.success());
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
 /// 真实认证失败通过 stderr 和退出码表达，不回显密码。
 /// Real authentication failures use stderr and exit status without echoing passwords.
 #[tokio::test]
