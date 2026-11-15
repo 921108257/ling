@@ -1,6 +1,6 @@
 # TTL 与 Key 生命周期
 
-> 状态：v0.3 生命周期契约，阶段 4 已实现时间、TTL 命令、严格可见性及有界后台回收。事件禁用；下述 Fast / Reliable 提交语义留待阶段 5。范围以 [architecture.md](architecture.md) 为准；命令返回值见 [commands.md](commands.md)。
+> 状态：v0.3 生命周期契约，阶段 4 已实现时间、TTL 命令、严格可见性及有界后台回收。阶段 5 已接入下述 Fast / Reliable 提交语义。范围以 [architecture.md](architecture.md) 为准；命令返回值见 [commands.md](commands.md)。
 
 ## 范围与时间单位
 

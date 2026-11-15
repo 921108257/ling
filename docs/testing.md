@@ -1,8 +1,8 @@
 # 验证与性能基准
 
-> 状态：阶段 1—4 已建立 Rust 契约、分片引擎、TTL 生命周期与真实网络测试；基础性能数据来自阶段 3。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
+> 状态：阶段 1—5 已建立 Rust 契约、TTL、Journal、消费恢复与真实网络测试；基础性能数据来自阶段 3。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
 
-当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。TTL 契约位于 `crates/engine/src/ttl_tests.rs`，覆盖可控双时钟、严格到期边界、墙钟跳变、版本与期限溢出、1000 次续期、每轮回收预算、迁移与清库、旧任务逐字段校验，以及到期和 NX / XX / DEL / COPY / SCAN 的并发竞争。服务端另验证空闲回收、等待许可时关闭，以及真实 TCP / CLI 生命周期。Java / Go 和 Journal 的测试尚未建立。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。TTL 契约位于 `crates/engine/src/ttl_tests.rs`，覆盖可控双时钟、严格到期边界、墙钟跳变、版本与期限溢出、1000 次续期、每轮回收预算、迁移与清库、旧任务逐字段校验，以及到期和 NX / XX / DEL / COPY / SCAN 的并发竞争。服务端另验证空闲回收、等待许可时关闭，以及真实 TCP / CLI 生命周期。事件契约位于 `crates/events/src/tests.rs`、`crates/engine/tests/events.rs`，覆盖独立磁盘向量、六类生命周期、Fast 丢弃、ACK 空洞、组隔离、租约、保留与容量、目录锁、CRC / 拓扑、重复序号、截断多分片事务、真实只读目录、Linux /dev/full 写满错误和模拟 fsync 错误。`crates/server/tests/crash_recovery.rs` 强制终止真实服务子进程，验证 MSET 单个物理事务、ACK 恢复及缓存为空；网络验证半个 ACK 与推送交错，SDK / CLI 验证显式消费及取消。Java / Go 测试尚未建立。这些测试不等于物理断电、长期压力或生产验收。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
 
 ## 验证原则
 

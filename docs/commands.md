@@ -1,10 +1,10 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 4 已完成固定分片数据、跨库、遍历与 TTL 命令；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 5 已完成数据、TTL 与事件订阅；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
 
 ## 当前支持范围
 
-| 类别 | 阶段 4 已开放 |
+| 类别 | 阶段 5 已开放 |
 |---|---|
 | 连接 | HELLO、AUTH、SELECT、PING、QUIT |
 | 通用 | SET（含 EX / PX / EXAT / PXAT，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
@@ -16,7 +16,7 @@
 | Map | 本文 Map 表中的全部命令 |
 | Set | 本文 Set 表中的全部命令，含跨分片集合代数与 STORE |
 
-已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。INFO / CONFIG / SHUTDOWN、订阅均未开放，返回 `ERR_UNKNOWN_COMMAND`。TTL 已开放，事件仍禁用；下文的生命周期事件在阶段 5 实现。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
+已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。INFO / CONFIG / SHUTDOWN 尚未开放，返回 `ERR_UNKNOWN_COMMAND`。SUBSCRIBE / UNSUBSCRIBE 和 ACK 帧已开放，默认 Fast，可配置 Reliable。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
 
 ## 通用规则
 
@@ -169,9 +169,9 @@ FGET 的整个 Key 缺失或类型错误时整条命令失败，不伪造成字�
 | `CONFIG RELOAD` | Bool(true)；全部校验后仅应用允许动态修改项；出现静态项变化则整次拒绝 |
 | `SHUTDOWN` | 确认已接受关闭请求后停止接入并排空，受关闭期限约束 |
 
-SWAPDB 仅交换缓存数据，不交换事件流、组、历史或数据库编号。迁入目标库的每条数据取得目标 generation，原期限不变；事件按源 DELETED、目标 CREATED（原数据先移出）描述。Reliable 在一个事务中提交这些事件，允许该操作耗时或因容量限制拒绝。
+SWAPDB 仅交换缓存数据，不交换事件流、组、历史或数据库编号。迁入目标库的每条数据取得目标 generation，原期限不变；事件按各目标最终状态描述：活跃目标替换为 UPDATED，空目标为 CREATED，只移出为 DELETED，已到期条目保留 EXPIRED 原因；期限实际变化另有 TTL_CHANGED。这与 events 的目标覆盖规则一致，不把同名替换拆为删除和创建。Reliable 在一个事务中提交这些事件，允许该操作耗时或因容量限制拒绝。
 
-当前阶段的 FLUSH ASYNC 在返回前移出全部索引；待释放条目持续计入受管内存，直至后台物理释放，期间新写入可能因预算不足被拒绝。回收队列满或线程不可用时同步释放，不承诺 ASYNC 一定低延迟。此阶段事件禁用；上文的事件提交语义在对应阶段实现。
+当前阶段的 FLUSH ASYNC 在返回前移出全部索引；待释放条目持续计入受管内存，直至后台物理释放，期间新写入可能因预算不足被拒绝。回收队列满或线程不可用时同步释放，不承诺 ASYNC 一定低延迟。Reliable 在逻辑移除前同步完整清库事务；ASYNC 仅延后物理释放。
 
 首版没有 SAVE、SHUTDOWN NOSAVE、DEBUG SLEEP / JMAP。调试钩子如测试需要可在测试环境实现，不作为公开生产协议。
 
@@ -182,6 +182,8 @@ AUTH、SELECT、QUIT、HELLO 与管理命令的连接权限、屏障和订阅限
 `SUBSCRIBE pattern [pattern ...] [GROUP group]` 返回 Bool(true) 后进入专用订阅状态，随后推送 EVENT。一个连接只能有一个组上下文；省略 GROUP 是临时会话。`UNSUBSCRIBE` 结束本会话并返回 Bool(true)，不删除命名组。
 
 CLI 将未引用的 GROUP 识别为末尾组选项；作为 pattern 的 GROUP 必须加双引号。线上把 patterns 打包为第一个 List 参数，避免丢失引号信息后歧义；具体见协议。组名为 1..128 字节的 UTF-8 String。
+
+CLI 以 `-c 'SUBSCRIBE ...'` 进入订阅模式，默认逐条从 stdin 读取 ACK，可输入 PING / UNSUBSCRIBE / QUIT；`--auto-ack` 才会在输出刷新后确认，`--count N` 在 N 条处理后退出（0 为持续消费）。当前不在普通逐行输入中切换为异步订阅。
 
 `ACK event_id` 在 CLI / SDK 中确认复合事件 ID，在线上映射为 ACK 帧；成功 Bool(true)。没有订阅上下文、错误 stream、未曾交付给当前组或临时会话的事件不得确认。Reliable 命名组的成功 ACK 表示状态已持久化；临时会话只确认内存交付。组与保留语义见 [events.md](events.md)。首版不支持部分 UNSUBSCRIBE。
 

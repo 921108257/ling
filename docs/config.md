@@ -1,8 +1,8 @@
 # 配置规范
 
-> 状态：v0.3 配置契约，阶段 4 实现下述七组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
+> 状态：v0.3 配置契约，阶段 5 实现下述九组子集。下面的长示例为首版完整候选配置，暂不能作为整体可运行文件。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
 
-阶段 4 已实现 `server`、`auth`、`database`、`protocol`、`engine`、`eviction`、`ttl` 七组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这七组默认值；显式路径读取失败会退出。事件固定禁用；TLS、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
+阶段 5 已实现 `server`、`auth`、`database`、`protocol`、`engine`、`eviction`、`ttl`、`events`、`event_journal` 九组配置及其下列字段，其他组暂不接受，避免把未支持的能力配置为启用。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用这九组默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。TLS、日志和指标配置将在对应阶段接入。配置错误不会输出原文件片段，以防泄露密码。
 
 `engine.shard_count` 在启动时固定，0 按系统可用并行度解析，至少为 1；数据库 × 分片的索引控制块超过内部 128 MiB 预算时拒绝启动。每个 (db, shard) 独占有序索引与锁，执行线程不按数据库和分片数量相乘创建。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。默认 noeviction；其他策略先选足够受害者，完整预检成功后才与写入一起发布，无候选或容量仍不足返回 `ERR_OUT_OF_MEMORY`。解码、重复读取响应和 KEYS 复制另有内部 128 MiB 分配预算，KEYS / SCAN 还受内部 64 MiB 结果上限约束；这些均不代表进程 RSS。
 
@@ -156,9 +156,11 @@ precision_ms 固定为 1；它表示逻辑比较精度，不是回收或事件�
 
 时间轮大小、层数和 tick 是内部算法参数，尚无基准证明需要，首版不作为公开配置。必须覆盖全部合法期限，不能因为时间轮跨度不足静默丢失远期任务。
 
-Fast 缓冲满时丢弃最早的未交付事件并计数，不阻止正常缓存写入；未 ACK 交付也可能因容量或保留超期变成恢复错误，不提供可靠保证。Fast 不运行磁盘 Journal；命名组也只在本次进程内存在。
+Fast 队列占 buffer_bytes 至多一半，其余预留消费元数据；队列满时丢弃最早事件并计数，不阻止正常缓存写入；未 ACK 交付也可能因容量或保留超期变成恢复错误，不提供可靠保证。Fast 不运行磁盘 Journal；命名组也只在本次进程内存在。
 
-Reliable 以磁盘 Journal 为事件源，buffer_bytes 限制推送缓存与事件投递元数据，缓冲满先暂停交付。max_pending_events 为单组所有消费者/逻辑流合计的未消除交付窗口，包含未 ACK 及被前序空洞阻挡的乱序 ACK；max_groups 为实例命名组数上限，防止没有删除接口时元数据无界增长。Fast 的同类元数据也计入 buffer_bytes。
+Reliable 以磁盘 Journal 为事件源，buffer_bytes 限制推送缓存与事件投递元数据，缓冲满先暂停交付。max_pending_events 为单组所有消费者/逻辑流合计的未消除交付窗口，包含未 ACK 及被前序空洞阻挡的乱序 ACK；max_groups 为实例命名组及临时会话合计上限，防止没有删除接口时元数据无界增长。Fast 的同类元数据也计入 buffer_bytes。
+
+当前 buffer_bytes 范围为 4 KiB..1 GiB，max_pending_events ≤ buffer_bytes / 256，max_groups ≤ buffer_bytes / 512；真实可建立的窗口和组还受合计内存及 Journal 控制预留约束。元数据不足暂停新交付，仍允许 ACK。事件启用时 64 × databases × shards ≤ buffer_bytes / 4；max_key_bytes + 768 ≤ max_response_bytes，且 2 × max_key_bytes + 256 ≤ buffer_bytes / 4，确保单事件可投递。事件候选每事务保守上限 buffer_bytes / 4；大型 MSET / FLUSH / SWAPDB 在复制事件 Key 前预检，超限返回 ERR_LIMIT_EXCEEDED 并保留状态。逻辑预算不等于 RSS。
 
 Journal 容量包含元数据、事务、检查点和轮转预留。预算不足拒绝事件写入，不能缩短保留时间或自动降级 Fast。ACK / 检查点需要保留独立的提交空间。保留期不是消费者无限落后保证。
 

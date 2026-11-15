@@ -1,6 +1,6 @@
 # 事件持久化与故障恢复
 
-> 状态：设计规范草案 v0.3，尚未实现。范围以 [architecture.md](architecture.md) 为准；消费契约见 [events.md](events.md)。
+> 状态：阶段 5 已实现同步 Journal v1、消费元数据恢复与保留压缩；缓存及 TTL 不恢复。范围以 [architecture.md](architecture.md) 为准；消费契约见 [events.md](events.md)。
 
 ## 首版边界
 
@@ -60,11 +60,11 @@ TTL 到期是例外的可见性边界：时钟已使条目逻辑不可见，Jour
 
 所有整数为大端，字符串为 u32 字节长度加 UTF-8。目录含 `LOCK`（操作系统独占锁）、`journal.lgj` 和仅压缩期间存在的 `journal.next`。不写 Value 或 TTL；不复用网络封套。新目录初始化文件及重命名均同步目录。
 
-文件头为 `LGJRNL01`（8 字节）、版本 u32=1、stream_id u128、数据库数 u32、实际 Shard 数 u32、前述 36 字节的 CRC32 u32，共 40 字节。记录为 Payload 长 u32、Payload CRC32 u32、Payload、提交尾标 `LGCMT001`（8 字节）。Payload 首字节为类型：1=事件事务，2=消费组状态，3=检查点。事件事务为 u32 数量及事件序列；事件编码为 db u16、shard u32、sequence u64、类型 u8（依次 CREATED=1、UPDATED=2、EXPIRED=3、DELETED=4、EVICTED=5、TTL_CHANGED=6）、Key 字符串、generation epoch u128/counter u64、revision u64、timestamp_ms u64。
+文件头为 `LGJRNL01`（8 字节）、版本 u32=1、stream_id u128、数据库数 u32、实际 Shard 数 u32、前述 36 字节的 CRC32 u32，共 40 字节。记录为 Payload 长 u32、Payload CRC32 u32、Payload、提交尾标 `LGCMT001`（8 字节）。Payload 首字节为类型：1=事件事务，2=消费组状态，3=检查点。事件事务为非零 u32 数量及事件序列；事件编码为 db u16、shard u32、sequence u64、类型 u8（依次 CREATED=1、UPDATED=2、EXPIRED=3、DELETED=4、EVICTED=5、TTL_CHANGED=6）、Key 字符串、generation epoch u128/counter u64、revision u64、timestamp_ms u64。
 
-消费组状态保存名称、数据库、规范化 pattern 集合、每流连续水位和已交付窗口中的 sequence/ACK 位；租约不恢复。检查点保存每流已分配序号及保留下界。每条记录最长 128 MiB，长度在分配前校验；CRC 或完整尾标错误均拒绝恢复。只允许截断文件末尾不完整的记录，不猜测完整坏记录是否提交。未知版本或标签拒绝启动。
+消费组 Payload 为标签 2、内部名称字符串（命名组前缀 `n:`，其后组名为 1—128 字节）、db u16、expired u8、pattern 数 u32 及字符串列表、进度数 u32 及每项 shard u32/origin u64/watermark u64/cursor u64、pending 数 u32 及每项 shard u32/sequence u64/acked u8。Bool 仅允许 0/1；pattern 排序去重，进度按 shard、pending 按 (shard, sequence) 排序。租约不恢复。检查点为标签 3、tails 和 floors 两张表；每表为 count u32 及排序的 db u16/shard u32/sequence u64。检查点只可作为文件首条记录，重放从 floors 连续验证至 tails 并继续，不接受重复或跳号。每条记录最长 min(128 MiB, buffer_bytes / 2)，长度在分配前校验；CRC 或完整尾标错误均拒绝恢复。只允许截断文件末尾不完整的记录，不猜测完整坏记录是否提交。未知版本或标签拒绝启动。
 
-首个实现每次事务直接 fsync，不主动等待合并；group_commit_ms 是允许的最大主动等待预算。压缩以检查点、存活事件事务和最新消费组状态写入 journal.next，fsync 后原子替换并同步目录；替换失败后进入全局故障状态。一个有效日志占 max_bytes 的至多一半，另一半预留原子替换；其中八分之一总容量另留给控制记录，事件追加不能侵占。资源上限不足显式背压，不缩短保留期。消费从磁盘顺序读取，避免把全部 Reliable 事件载入内存。
+首个实现每次事务直接 fsync，不主动等待合并；group_commit_ms 是允许的最大主动等待预算。压缩以检查点、存活事件事务和最新消费组状态写入 journal.next，fsync 后原子替换并同步目录；替换失败后进入全局故障状态。一个有效日志占 max_bytes 的至多一半，另一半预留原子替换；其中八分之一总容量另留给控制记录，事件追加不能侵占；最新组快照合计（含记录边界）≤ max_bytes / 16，完整拓扑检查点预留满足 28 × databases × shards + 65 ≤ max_bytes / 16，保证状态替换与 ACK 预算。资源上限不足显式背压，不缩短保留期。消费从磁盘顺序读取，避免把全部 Reliable 事件载入内存。独立字段黄金向量位于 `tests/fixtures/journal/event-v1.hex`。
 
 ## 启动与恢复
 

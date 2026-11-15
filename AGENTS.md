@@ -2,7 +2,7 @@
 
 ## 当前状态与阅读顺序
 
-本项目已完成阶段 4 TTL 生命周期原型：有 Rust workspace、共享类型、协议、数据引擎、TCP 服务、Rust SDK、CLI、契约测试及基础性能测量。已支持跨分片协调、跨库管理、游标、淘汰与毫秒 TTL 设置、查询和有界回收；尚无事件运行能力及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
+本项目已完成阶段 5 事件与 Journal 原型：有 Rust workspace、共享类型、协议、数据引擎、TCP 服务、Rust SDK、CLI、契约测试及基础性能测量。已支持跨分片协调、跨库管理、游标、淘汰与毫秒 TTL 设置、查询和有界回收；已支持 Fast / Reliable 六类事件、消费组、ACK、重投与保留恢复；尚无 TLS、运维命令及 Java / Go SDK。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
 
 开始工作先读 [docs/architecture.md](docs/architecture.md)。根据任务继续读专项规范：类型读 data-model，命令读 commands，网络读 protocol，生命周期读 ttl，可靠性读 events / persistence，客户端读 sdk，配置读 config，验收读 testing / roadmap。路径均位于 docs 下。
 
