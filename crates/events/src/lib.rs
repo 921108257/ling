@@ -14,7 +14,8 @@ pub use store::{EventStore, GroupStats, Stats, Subscription};
 pub struct Config {
     /// 是否生成事件；Whether to generate events.
     pub enabled: bool,
-    /// 是否逐事务同步 Journal；Whether to synchronize a Journal per transaction.
+    /// 是否逐事务同步 Journal；Windows 当前不支持 Reliable。
+    /// Whether to synchronize a Journal per transaction; Reliable is currently unsupported on Windows.
     pub reliable: bool,
     /// Reliable 独占目录，Fast 必须为空；Exclusive Reliable directory, empty for Fast.
     pub directory: PathBuf,
@@ -51,7 +52,8 @@ impl Default for Config {
     }
 }
 impl Config {
-    /// 分配或打开文件前验证组合与预算；Validates combinations and budgets before allocation or opening files.
+    /// 分配或打开文件前验证组合、预算和平台支持，不静默降级。
+    /// Validates combinations, budgets, and platform support before allocation or opening files, without fallback.
     pub fn validate(&self) -> Result<(), DbError> {
         if self.buffer_bytes < 4096
             || self.buffer_bytes > 1024 * 1024 * 1024
@@ -69,6 +71,15 @@ impl Config {
             || (!self.reliable && !self.directory.as_os_str().is_empty())
         {
             return Err(err(ErrorCode::ConfigInvalid, "Invalid event configuration"));
+        }
+        // Windows 尚未实现与当前目录同步、原子替换相同的持久化保证。
+        // Windows does not yet implement the required directory-sync and atomic-replacement durability guarantees.
+        #[cfg(windows)]
+        if self.reliable {
+            return Err(err(
+                ErrorCode::ConfigInvalid,
+                "Reliable Journal is not supported on Windows; use Fast mode",
+            ));
         }
         Ok(())
     }

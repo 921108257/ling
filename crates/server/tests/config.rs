@@ -124,7 +124,13 @@ fn event_configuration_and_relative_directory() {
     c.events.mode = "reliable".into();
     assert!(c.validate().is_err());
     c.event_journal.dir = "journal".into();
-    c.validate().unwrap();
+    if cfg!(windows) {
+        let error = c.validate().unwrap_err();
+        assert_eq!(error.code, "ERR_CONFIG_INVALID");
+        assert!(error.message.contains("not supported on Windows"));
+    } else {
+        c.validate().unwrap();
+    }
     c.events.enabled = false;
     assert!(c.validate().is_err());
     c.events.enabled = true;
@@ -144,9 +150,16 @@ fn event_configuration_and_relative_directory() {
         "[events]\nmode=\"reliable\"\n[event_journal]\ndir=\"journal\"\n",
     )
     .unwrap();
-    assert_eq!(
-        Config::load(&path).unwrap().event_journal.dir,
-        dir.join("journal")
-    );
+    if cfg!(windows) {
+        let error = Config::load(&path).err().unwrap();
+        assert_eq!(error.code, "ERR_CONFIG_INVALID");
+        assert!(error.message.contains("not supported on Windows"));
+        assert!(!dir.join("journal").exists());
+    } else {
+        assert_eq!(
+            Config::load(&path).unwrap().event_journal.dir,
+            dir.join("journal")
+        );
+    }
     std::fs::remove_dir_all(dir).unwrap();
 }

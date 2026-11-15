@@ -6,6 +6,8 @@
 
 首个稳定版的持久化对象是 Reliable Event Journal 以及维持消费连续性所需的元数据。缓存 Value、内存索引和 TTL 不做 Snapshot / 数据 WAL 恢复，重启后缓存为空。
 
+当前 Reliable 实现面向支持文件及目录同步、原子替换的 Linux / macOS 文件系统。Windows 尚未实现对应的目录同步与替换持久化路径，Reliable 配置在文件操作前返回 `ERR_CONFIG_INVALID`；服务端和 CLI 的默认 Fast 模式仍可使用。不得通过省略目录同步或静默改用 Fast 来宣称支持相同的可靠提交保证。
+
 这收紧了 v0.2 草案中的可选缓存持久化范围：`SAVE`、`SHUTDOWN NOSAVE`、Snapshot 周期、数据 WAL 模式等不作为首版接口，安排到后续 v1.x 验证。不能把这些尚未实现的选项放进首版可运行配置。
 
 | 数据 | Fast | Reliable |

@@ -6,6 +6,8 @@
 
 ## 三语言客户端验收
 
+完整 Rust workspace 与下述 Reliable 驱动适用于 Linux / macOS；Windows 当前不支持 Reliable，不在该平台将整套 Journal 测试列为通过。Windows 发行验证运行不依赖 Journal 的类型、协议、网络与 CLI 逻辑契约，以及原生 release 服务端 / CLI 的 Fast TCP 烟测。`cargo test --locked -p linger-server --test config` 验证平台配置边界；Windows 另运行 `cargo test --locked -p linger-events --lib windows_reliable_rejected_without_creating_directory`，验证 Fast 事件提交及 Reliable 在创建目录前明确返回 `ERR_CONFIG_INVALID`。这些是验证入口，只有实际执行成功才计入通过结果。
+
 在仓库根目录执行：
 
 ```sh

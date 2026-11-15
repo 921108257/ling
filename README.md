@@ -8,6 +8,26 @@
 
 已支持 SET EX / PX / EXAT / PXAT、EXPIRE 系列、PERSIST 和四种 TTL 查询；逻辑到期不依赖后台回收。默认启用有界 Fast 事件，可选 Reliable 持久化事件与消费元数据；缓存和 TTL 重启后仍为空。支持验证证书的 TLS / 双向 TLS、三种 SDK 的固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志和可选 Prometheus。单连接串行执行，并发通过多连接提供；普通 Batch 不提供事务或整体回滚。
 
+## 下载安装包
+
+在私有仓库的 [Releases](https://github.com/921108257/linger-cache-db/releases) 下载 `0.1.0` 预览安装包，需要拥有仓库访问权限。每个安装包都包含 `linger-server`、`linger-cli`、配置示例及配置/持久化说明。
+
+| 平台 | 架构 | 安装包 |
+|---|---|---|
+| Windows | x86_64 | 安装 EXE、便携 ZIP |
+| macOS | Intel x86_64、Apple Silicon ARM64 | PKG、便携 tar.gz |
+| Linux | x86_64、ARM64 | DEB、RPM、AppImage、便携 tar.gz |
+
+Windows 安装到 `%LOCALAPPDATA%\Programs\Linger Cache DB`，开始菜单提供 Server / CLI；也可使用安装目录 `bin` 中的 EXE。macOS PKG 安装到 `/usr/local/bin`；DEB / RPM 安装到 `/usr/bin`。安装不修改 PATH，不自动启动或注册系统服务。安装器未签名，macOS PKG 未公证；系统可能要求手动允许运行。
+
+在终端启动 `linger-server`，另开终端运行 `linger-cli -c 'PING'`。Windows 未加入 PATH 时使用完整路径或在 `bin` 目录运行 `./linger-server.exe`、`./linger-cli.exe -c 'PING'`。配置示例 `linger.example.toml` 位于 Windows 安装根目录、macOS `/usr/local/share/linger-cache-db/`、Linux `/usr/share/linger-cache-db/`；复制到可写目录后通过 `linger-server --config <path>` 使用。
+
+AppImage 先执行 `chmod +x <文件>.AppImage`，默认启动服务端，`<文件>.AppImage --cli -c 'PING'` 调用 CLI。没有 FUSE 的环境可在文件名后加入 `--appimage-extract-and-run`。发布页的 `SHA256SUMS` 用于校验下载文件。
+
+**Windows 当前仅支持 Fast 事件；Reliable 配置在文件操作和监听前返回 `ERR_CONFIG_INVALID`，不会降级为 Fast。** Linux / macOS 保留 Reliable 支持；其恢复边界仍是已提交事件和消费元数据，缓存值与 TTL 不恢复。
+
+[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预览 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。更新版本后推送匹配标签（如 `v0.1.0`）即可构建下一次发布。
+
 ## 构建与试用
 
 需要 Rust 2024 工具链，Cargo 声明最低版本为 1.85。以下命令在仓库根目录执行：

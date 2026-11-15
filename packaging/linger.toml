@@ -1,0 +1,11 @@
+# 安装包示例；复制到可写目录后通过 --config 指定。
+# Packaged example; copy to a writable directory and pass it with --config.
+[server]
+host = "127.0.0.1"
+port = 6380
+
+[engine]
+shard_count = 4
+
+[events]
+mode = "fast"

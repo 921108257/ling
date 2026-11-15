@@ -1,0 +1,10 @@
+#!/bin/sh
+# 保留调用目录，使显式配置和默认 linger.toml 解析一致。
+# Preserve the caller's directory for explicit configuration and linger.toml.
+set -eu
+app_dir=${APPDIR:-$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)}
+if [ "${1:-}" = "--cli" ]; then
+    shift
+    exec "$app_dir/usr/bin/linger-cli" "$@"
+fi
+exec "$app_dir/usr/bin/linger-server" "$@"

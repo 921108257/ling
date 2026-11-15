@@ -1,0 +1,198 @@
+name: Cross-platform packages
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release version
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import os, tomllib
+          from pathlib import Path
+          version = tomllib.loads(Path('Cargo.toml').read_text())['workspace']['package']['version']
+          if os.environ['REF_TYPE'] == 'tag':
+              assert os.environ['REF_NAME'] == f'v{version}', 'Tag must match Cargo.toml version'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={version}\n')
+          PY
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+          cache: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo doc --locked --workspace --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+      - run: python3 tests/sdk_contracts.py
+
+  packages:
+    needs: checks
+    name: Package ${{ matrix.platform }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            arch: x86_64
+            runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            rustflags: ''
+          - platform: linux
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            rustflags: ''
+          - platform: macos
+            arch: x86_64
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+            rustflags: ''
+          - platform: macos
+            arch: aarch64
+            runner: macos-15
+            target: aarch64-apple-darwin
+            rustflags: ''
+          - platform: windows
+            arch: x86_64
+            runner: windows-2022
+            target: x86_64-pc-windows-msvc
+            rustflags: '-C target-feature=+crt-static'
+    env:
+      VERSION: ${{ needs.checks.outputs.version }}
+      TARGET: ${{ matrix.target }}
+      ARCH: ${{ matrix.arch }}
+      RUSTFLAGS: ${{ matrix.rustflags }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools rpm
+          tools_dir="$RUNNER_TEMP/packaging-tools"
+          mkdir -p "$tools_dir"
+          case "$ARCH" in
+            x86_64) nfpm_arch=x86_64 ;;
+            aarch64) nfpm_arch=arm64 ;;
+          esac
+          gh release download v2.49.0 --repo goreleaser/nfpm --pattern "nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" --pattern checksums.txt --dir "$tools_dir"
+          (cd "$tools_dir" && sha256sum --check --ignore-missing checksums.txt)
+          tar -xzf "$tools_dir/nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" -C "$tools_dir" nfpm
+          gh release download 1.9.1 --repo AppImage/appimagetool --pattern "appimagetool-${ARCH}.AppImage" --dir "$tools_dir"
+          mv "$tools_dir/appimagetool-${ARCH}.AppImage" "$tools_dir/appimagetool"
+          chmod +x "$tools_dir/appimagetool"
+          echo "$tools_dir" >> "$GITHUB_PATH"
+      - name: Test native Unix contracts
+        if: runner.os != 'Windows'
+        run: cargo test --locked --workspace
+      - name: Test Windows Fast mode and explicit Reliable rejection
+        if: runner.os == 'Windows'
+        run: |
+          cargo test --locked --target "$TARGET" -p linger-types -p linger-protocol -p linger-network
+          cargo test --locked --target "$TARGET" -p linger-cli --test grammar
+          cargo test --locked --target "$TARGET" -p linger-cli --test end_to_end
+          cargo test --locked --target "$TARGET" -p linger-server --test config
+          cargo test --locked --target "$TARGET" -p linger-events --lib windows_reliable_rejected_without_creating_directory
+      - name: Build server and CLI
+        run: cargo build --locked --release --target "$TARGET" -p linger-server -p linger-cli
+      - name: Build and verify Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          bash packaging/linux/build.sh
+          sudo dpkg -i "dist/linger-cache-db_${VERSION}_linux_${ARCH}.deb"
+          python3 scripts/smoke-package.py --server /usr/bin/linger-server --cli /usr/bin/linger-cli
+          sudo dpkg -r linger-cache-db
+          sudo rpm -i --nodeps "dist/linger-cache-db_${VERSION}_linux_${ARCH}.rpm"
+          python3 scripts/smoke-package.py --server /usr/bin/linger-server --cli /usr/bin/linger-cli
+          sudo rpm -e linger-cache-db
+          python3 scripts/smoke-package.py --appimage "dist/linger-cache-db_${VERSION}_linux_${ARCH}.AppImage"
+      - name: Build and verify macOS packages
+        if: runner.os == 'macOS'
+        run: |
+          bash packaging/macos/build.sh
+          sudo installer -pkg "dist/linger-cache-db_${VERSION}_macos_${ARCH}.pkg" -target /
+          python3 scripts/smoke-package.py --server /usr/local/bin/linger-server --cli /usr/local/bin/linger-cli
+      - name: Build and verify Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./packaging/windows/build.ps1 -Version $env:VERSION
+          $installer = (Resolve-Path "dist/linger-cache-db_$($env:VERSION)_windows_x86_64_setup.exe").Path
+          $installed = Join-Path $env:RUNNER_TEMP 'linger-installed'
+          $installProcess = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installed`"" -Wait -PassThru
+          if ($installProcess.ExitCode -ne 0) { throw 'Installer execution failed' }
+          python scripts/smoke-package.py --server "$installed/bin/linger-server.exe" --cli "$installed/bin/linger-cli.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'Installed binaries failed smoke test' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linger-cache-db-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [checks, packages]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Verify assets and publish private prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.checks.outputs.version }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          files = sorted(Path('dist').iterdir())
+          assert len(files) == 14, f'Expected 14 packages, found {len(files)}'
+          Path('dist/SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in files))
+          PY
+          gh release create "v${VERSION}" dist/* --verify-tag --prerelease --title "v${VERSION} Preview" --notes-file packaging/release-notes.md

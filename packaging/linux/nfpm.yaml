@@ -1,0 +1,35 @@
+# 共用静态二进制生成 DEB / RPM。/ Package the same static binaries as DEB / RPM.
+name: linger-cache-db
+arch: ${NFPM_ARCH}
+platform: linux
+version: ${PACKAGE_VERSION}
+section: database
+priority: optional
+maintainer: 921108257 <921108257@users.noreply.github.com>
+homepage: https://github.com/921108257/linger-cache-db
+description: |
+  Standalone typed in-memory cache database and command-line client (preview).
+  Reliable mode persists events and consumer metadata, not cached values or TTLs.
+contents:
+  - src: ${NFPM_STAGE}/linger-server
+    dst: /usr/bin/linger-server
+    expand: true
+    file_info:
+      mode: 0755
+  - src: ${NFPM_STAGE}/linger-cli
+    dst: /usr/bin/linger-cli
+    expand: true
+    file_info:
+      mode: 0755
+  - src: ${NFPM_STAGE}/linger.example.toml
+    dst: /usr/share/linger-cache-db/linger.example.toml
+    expand: true
+  - src: ${NFPM_STAGE}/README.md
+    dst: /usr/share/linger-cache-db/README.md
+    expand: true
+  - src: ${NFPM_STAGE}/docs/config.md
+    dst: /usr/share/linger-cache-db/docs/config.md
+    expand: true
+  - src: ${NFPM_STAGE}/docs/persistence.md
+    dst: /usr/share/linger-cache-db/docs/persistence.md
+    expand: true

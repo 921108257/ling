@@ -4,6 +4,8 @@
 
 已实现 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组配置及其下列字段。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。配置错误不会输出原文件片段，以防泄露密码。
 
+Windows 当前仅支持 Fast 模式；设置 `events.mode="reliable"` 会在打开 Journal 或监听端口前返回 `ERR_CONFIG_INVALID`，提示该平台尚不支持 Reliable。不会自动改用 Fast，也不会为此创建 Journal 目录。Linux / macOS 可按 [persistence.md](persistence.md) 的文件系统要求启用 Reliable。
+
 `engine.shard_count` 在启动时固定，0 按系统可用并行度解析，至少为 1；数据库 × 分片的索引控制块超过内部 128 MiB 预算时拒绝启动。每个 (db, shard) 独占有序索引与锁，执行线程不按数据库和分片数量相乘创建。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。默认 noeviction；其他策略先选足够受害者，完整预检成功后才与写入一起发布，无候选或容量仍不足返回 `ERR_OUT_OF_MEMORY`。解码、重复读取响应和 KEYS 复制另有内部 128 MiB 分配预算，KEYS / SCAN 还受内部 64 MiB 结果上限约束；这些均不代表进程 RSS。
 
 当前每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。数据命令在取得全局有界许可后进入阻塞线程池，最多 min(系统可用并行度, max_connections) 个任务；请求等待者总量不超过连接数，另有最多一个后台维护等待者。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超时后关闭连接且无业务修改，执行许可等待超时返回 `ERR_BUSY` 且尚未执行。取得许可后不以超时假定回滚；关闭排空期限也不能强制停止已开始的阻塞命令。

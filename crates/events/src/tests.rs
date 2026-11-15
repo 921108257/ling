@@ -52,6 +52,23 @@ fn code<T: std::fmt::Debug>(result: Result<T, linger_types::DbError>, code: Erro
     assert_eq!(result.unwrap_err().code, code.as_str());
 }
 
+/// Windows 保持 Fast 可用，Reliable 在创建任何目录前明确拒绝，不静默降级。
+/// Windows keeps Fast available and rejects Reliable before creating any directory, without silent fallback.
+#[cfg(windows)]
+#[test]
+fn windows_reliable_rejected_without_creating_directory() {
+    let fast = EventStore::open(Config::default(), 1, 1).unwrap();
+    assert!(!fast.reliable());
+    fast.commit(&[change("fast", 0)], || ()).unwrap();
+    assert_eq!(fast.stats().unwrap().committed, 1);
+
+    let directory = Directory::new();
+    let error = EventStore::open(directory.config(), 1, 1).err().unwrap();
+    assert_eq!(error.code, ErrorCode::ConfigInvalid.as_str());
+    assert!(error.message.contains("not supported on Windows"));
+    assert!(!directory.0.exists());
+}
+
 /// 独立字节固定磁盘字段宽度，所有截断均拒绝。
 /// Independent bytes freeze disk field widths and reject every truncated payload.
 #[test]
