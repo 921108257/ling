@@ -112,8 +112,16 @@ jobs:
           tools_dir="$RUNNER_TEMP/packaging-tools"
           mkdir -p "$tools_dir"
           case "$ARCH" in
-            x86_64) nfpm_arch=x86_64 ;;
-            aarch64) nfpm_arch=arm64 ;;
+            x86_64)
+              nfpm_arch=x86_64
+              echo 'CC_x86_64_unknown_linux_musl=musl-gcc' >> "$GITHUB_ENV"
+              echo 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc' >> "$GITHUB_ENV"
+              ;;
+            aarch64)
+              nfpm_arch=arm64
+              echo 'CC_aarch64_unknown_linux_musl=musl-gcc' >> "$GITHUB_ENV"
+              echo 'CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc' >> "$GITHUB_ENV"
+              ;;
           esac
           gh release download v2.49.0 --repo goreleaser/nfpm --pattern "nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" --pattern checksums.txt --dir "$tools_dir"
           (cd "$tools_dir" && sha256sum --check --ignore-missing checksums.txt)
