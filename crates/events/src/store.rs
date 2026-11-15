@@ -51,6 +51,9 @@ pub(crate) struct Group {
     pub expired: bool,
     /// 命名组才持久化；Only named groups persist.
     pub named: bool,
+    /// 仅运行时的已验证记录边界；压缩及恢复后重置，不写入磁盘格式。
+    /// Runtime-only validated record boundary; reset on compaction/recovery, never serialized.
+    pub scan_offset: usize,
 }
 impl Group {
     /// 窗口首个未完成位置前移，已确认后继释放；Advance past completed positions and release acknowledged successors.
@@ -490,6 +493,7 @@ impl EventStore {
                 pending: BTreeMap::new(),
                 expired: false,
                 named: name.is_some(),
+                scan_offset: 40,
             };
             check_group_budget(&s, &key, &g, &self.config)?;
             save_group(&mut s, &key, &g, &self.config)?;
@@ -557,7 +561,14 @@ impl EventStore {
             .iter()
             .map(|(&shard, p)| (shard, p.cursor))
             .collect();
-        let events = read_after(&mut s, g.db, &cursors, self.config.buffer_bytes / 4)?;
+        let events = read_after(
+            &mut s,
+            g.db,
+            &cursors,
+            self.config.buffer_bytes / 4,
+            &mut g.scan_offset,
+            &g.patterns,
+        )?;
         let mut result = None;
         let mut changed = false;
         for event in events {
@@ -595,8 +606,10 @@ impl EventStore {
                 return Ok(None);
             }
             save_group(&mut s, &sub.group, &g, &self.config)?;
-            s.groups.insert(sub.group.clone(), g);
         }
+        // 只更新运行时读游标不产生持久变更，也不跳过尚未交付的同记录事件。
+        // Advancing a runtime read cursor is not a durable change and skips no undelivered record items.
+        s.groups.insert(sub.group.clone(), g);
         Ok(result)
     }
     /// ACK 仅属于已交付组，连续水位前进前保留乱序空洞。
@@ -807,34 +820,42 @@ fn read_after(
     db: u16,
     cursors: &BTreeMap<u32, u64>,
     limit_bytes: usize,
+    offset: &mut usize,
+    patterns: &[String],
 ) -> Result<Vec<Event>, DbError> {
     let mut out = Vec::new();
     let mut bytes = 0;
-    let mut full = false;
     let mut accept = |e: Event| {
-        if e.id.db == db && e.id.sequence > cursors.get(&e.id.shard).copied().unwrap_or(0) && !full
-        {
+        if e.id.db == db && e.id.sequence > cursors.get(&e.id.shard).copied().unwrap_or(0) {
             if bytes + event_charge(&e) > limit_bytes {
-                full = true;
-                return;
+                return false;
             }
             bytes += event_charge(&e);
-            out.push(e)
+            let matched = patterns.iter().any(|pattern| matches(pattern, &e.key));
+            out.push(e);
+            return !matched;
         }
+        true
     };
     if let Some(j) = s.journal.as_mut() {
         let stream = s.stream;
-        j.visit(|r| {
+        // 每次只需下一条，已验证的前缀不重复扫描；记录内依赖逻辑游标去重。
+        // Only the next event is needed; logical cursors deduplicate within a revisited record.
+        *offset = j.visit_from(*offset, |r| {
             if r[0] == codec::EVENTS {
                 for e in codec::read_events(r, stream)? {
-                    accept(e)
+                    if !accept(e) {
+                        return Ok(false);
+                    }
                 }
             }
-            Ok(())
+            Ok(true)
         })?;
     } else {
         for e in &s.fast {
-            accept(e.clone())
+            if !accept(e.clone()) {
+                break;
+            }
         }
     }
     Ok(out)
@@ -844,15 +865,16 @@ fn find(s: &mut State, db: u16, shard: u32, sequence: u64) -> Result<Option<Even
     if let Some(j) = s.journal.as_mut() {
         let stream = s.stream;
         let mut out = None;
-        j.visit(|r| {
+        j.visit_from(40, |r| {
             if r[0] == codec::EVENTS {
                 for e in codec::read_events(r, stream)? {
                     if e.id.db == db && e.id.shard == shard && e.id.sequence == sequence {
-                        out = Some(e)
+                        out = Some(e);
+                        return Ok(false);
                     }
                 }
             }
-            Ok(())
+            Ok(true)
         })?;
         Ok(out)
     } else {
@@ -927,6 +949,9 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
             Ok(true)
         }
     })?;
+    for group in groups.values_mut() {
+        group.scan_offset = 40;
+    }
     s.stats.oldest_retained_ms = oldest;
     s.floors = floors;
     s.groups = groups;

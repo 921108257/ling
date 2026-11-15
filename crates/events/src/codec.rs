@@ -245,6 +245,7 @@ pub(crate) fn read_group(data: &[u8]) -> Result<(String, Group), DbError> {
             pending,
             expired,
             named: true,
+            scan_offset: 40,
         },
     ))
 }

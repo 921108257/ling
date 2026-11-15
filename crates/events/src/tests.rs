@@ -577,3 +577,46 @@ fn consumer_visibility_waits_for_complete_publication() {
     );
     reader.join().unwrap();
 }
+
+/// 物理读游标不能跳过同事务后继；压缩及重启仍由逻辑水位恢复。
+/// Physical read cursors never skip transaction siblings; compaction and restart use logical watermarks.
+#[test]
+fn sequential_reader_preserves_filtered_siblings_and_compaction_recovery() {
+    let dir = Directory::new();
+    let config = dir.config();
+    let store = EventStore::open(config.clone(), 1, 2).unwrap();
+    let sub = store
+        .subscribe(0, vec!["match:*".into()], Some("reader"))
+        .unwrap();
+    store
+        .commit(
+            &[
+                change("skip", 0),
+                change("match:a", 1),
+                change("match:b", 0),
+            ],
+            || (),
+        )
+        .unwrap();
+    let first = store.next(&sub, Instant::now()).unwrap().unwrap();
+    assert_eq!(first.key, "match:a");
+    store.ack(&sub, first.id).unwrap();
+    store.maintain(1100).unwrap();
+    let second = store.next(&sub, Instant::now()).unwrap().unwrap();
+    assert_eq!(second.key, "match:b");
+    store.ack(&sub, second.id).unwrap();
+    assert!(store.next(&sub, Instant::now()).unwrap().is_none());
+    // 已到 EOF 后追加仍可见；Appending after EOF remains visible.
+    store.commit(&[change("match:c", 1)], || ()).unwrap();
+    let third = store.next(&sub, Instant::now()).unwrap().unwrap();
+    assert_eq!(third.key, "match:c");
+    drop(store);
+    let store = EventStore::open(config, 1, 2).unwrap();
+    let sub = store
+        .subscribe(0, vec!["match:*".into()], Some("reader"))
+        .unwrap();
+    let retry = store.next(&sub, Instant::now()).unwrap().unwrap();
+    assert_eq!(retry.id, third.id);
+    store.ack(&sub, retry.id).unwrap();
+    assert!(store.next(&sub, Instant::now()).unwrap().is_none());
+}

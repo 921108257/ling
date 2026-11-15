@@ -143,11 +143,27 @@ impl Journal {
         &mut self,
         mut apply: impl FnMut(&[u8]) -> Result<(), DbError>,
     ) -> Result<(), DbError> {
+        self.visit_from(HEADER, |record| {
+            apply(record)?;
+            Ok(true)
+        })?;
+        Ok(())
+    }
+    /// 从已验证的记录边界继续，false 保留当前记录位置供下次重访。
+    /// Resumes at a validated record boundary; false retains that record for the next visit.
+    pub fn visit_from(
+        &mut self,
+        start: usize,
+        mut apply: impl FnMut(&[u8]) -> Result<bool, DbError>,
+    ) -> Result<usize, DbError> {
         self.file
-            .seek(SeekFrom::Start(HEADER as u64))
+            .seek(SeekFrom::Start(start as u64))
             .map_err(|_| unavailable())?;
         let total = self.file.metadata().map_err(|_| unavailable())?.len() as usize;
-        let mut pos = HEADER;
+        let mut pos = start;
+        if start < HEADER || start > total {
+            return Err(codec::corrupt());
+        }
         while pos < total {
             if total - pos < 8 {
                 self.truncate(pos)?;
@@ -176,10 +192,12 @@ impl Journal {
             {
                 return Err(at_offset(codec::corrupt(), pos));
             }
-            apply(&payload).map_err(|error| at_offset(error, pos))?;
+            if !apply(&payload).map_err(|error| at_offset(error, pos))? {
+                return Ok(pos);
+            }
             pos += n + 16;
         }
-        Ok(())
+        Ok(pos)
     }
     /// 尾部修复必须同步，后续追加不能越过未确认字节。
     /// Tail repair is synced so later appends cannot skip uncertain bytes.
