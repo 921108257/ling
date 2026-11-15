@@ -1,9 +1,13 @@
 //! 异步 Rust 客户端；调用方独占连接和数据库上下文，不自动重放请求。
 //! Async Rust client; callers own the connection and database context, with no automatic request replay.
 
-use linger_protocol::{Body, Frame, Limits, ReadError, Request, encode_frame, read_frame};
+use linger_protocol::{Body, Frame, Limits, ReadError, encode_frame, read_frame};
 pub use linger_types::{DbError, ErrorCode, Event, EventId, EventKind, Float, Scalar, Value};
+mod pool;
 mod subscriber;
+pub use linger_network::ClientTls;
+pub use linger_protocol::Request;
+pub use pool::{Pool, PoolOptions, PooledClient};
 use std::{collections::BTreeMap, net::SocketAddr, time::Duration};
 pub use subscriber::Subscriber;
 use tokio::{io::AsyncWriteExt, net::TcpStream, time::timeout};
@@ -21,6 +25,9 @@ pub struct Options {
     /// 客户端独立执行的协议资源上限。
     /// Protocol resource caps enforced independently by the client.
     pub limits: Limits,
+    /// 可选 TLS；默认仅 TCP，启用后始终验证服务端身份。
+    /// Optional TLS; defaults to TCP and always verifies server identity when enabled.
+    pub tls: Option<ClientTls>,
 }
 impl Default for Options {
     /// 默认建连 5 秒、请求 30 秒，使用标准协议预算。
@@ -30,6 +37,7 @@ impl Default for Options {
             connect_timeout: Duration::from_secs(5),
             request_timeout: Duration::from_secs(30),
             limits: Limits::default(),
+            tls: None,
         }
     }
 }
@@ -127,7 +135,7 @@ impl std::error::Error for Error {}
 pub struct Client {
     /// 请求等待时移出，取消即关闭。
     /// Taken during request waits so cancellation closes it.
-    stream: Option<TcpStream>,
+    stream: Option<linger_network::Stream>,
     /// 创建时固定的连接预算。
     /// Connection budgets fixed at creation.
     options: Options,
@@ -167,6 +175,17 @@ impl Client {
         stream
             .set_nodelay(true)
             .map_err(|_| Error::local(LocalError::Connect, false))?;
+        let stream: linger_network::Stream = if let Some(tls) = &options.tls {
+            let (connector, name) = tls.connector().map_err(Error::Server)?;
+            Box::new(
+                timeout(options.connect_timeout, connector.connect(name, stream))
+                    .await
+                    .map_err(|_| Error::local(LocalError::Timeout, false))?
+                    .map_err(|_| Error::local(LocalError::Connect, false))?,
+            )
+        } else {
+            Box::new(stream)
+        };
         let mut client = Self {
             stream: Some(stream),
             options,
@@ -318,6 +337,73 @@ impl Client {
                 result.map_err(Error::Server)
             }
             Ok(Err(error)) => Err(error),
+            Err(_) => Err(Error::local(LocalError::Timeout, true)),
+        }
+    }
+
+    /// 普通批量请求，结果按输入顺序返回；整体无事务性，传输失败可能有部分执行。
+    /// Ordinary batch with input-ordered results; it is nontransactional and transport failure may follow partial execution.
+    pub async fn batch(
+        &mut self,
+        requests: Vec<Request>,
+    ) -> Result<Vec<Result<Value, DbError>>, Error> {
+        let count = requests.len();
+        let id = self
+            .last_id
+            .checked_add(1)
+            .ok_or_else(|| Error::local(LocalError::Closed, false))?;
+        let bytes = encode_frame(
+            &Frame {
+                request_id: id,
+                body: Body::BatchRequest(requests),
+            },
+            self.options.limits,
+        )
+        .map_err(|_| Error::local(LocalError::InvalidRequest, false))?;
+        let mut stream = self
+            .stream
+            .take()
+            .ok_or_else(|| Error::local(LocalError::Closed, false))?;
+        self.last_id = id;
+        let mut fatal = false;
+        let exchange = async {
+            stream
+                .write_all(&bytes)
+                .await
+                .map_err(|_| Error::local(LocalError::Disconnected, true))?;
+            loop {
+                let frame = read_frame(&mut stream, self.options.limits)
+                    .await
+                    .map_err(|_| Error::local(LocalError::Disconnected, true))?
+                    .ok_or_else(|| Error::local(LocalError::Disconnected, true))?;
+                match frame.body {
+                    Body::Heartbeat => {}
+                    Body::BatchResponse(results)
+                        if frame.request_id == id && results.len() == count =>
+                    {
+                        return Ok(results);
+                    }
+                    Body::Response(Err(e)) if frame.request_id == id => {
+                        return Err(Error::Server(e));
+                    }
+                    Body::Error(e) => {
+                        fatal = true;
+                        return Err(Error::Server(e));
+                    }
+                    _ => return Err(Error::local(LocalError::Protocol, true)),
+                }
+            }
+        };
+        match timeout(self.options.request_timeout, exchange).await {
+            Ok(Ok(results)) => {
+                self.stream = Some(stream);
+                Ok(results)
+            }
+            Ok(Err(Error::Server(e))) if !fatal => {
+                self.stream = Some(stream);
+                Err(Error::Server(e))
+            }
+            Ok(Err(e)) => Err(e),
             Err(_) => Err(Error::local(LocalError::Timeout, true)),
         }
     }

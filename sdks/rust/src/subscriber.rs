@@ -3,13 +3,13 @@
 
 use super::*;
 use std::collections::VecDeque;
-use tokio::{net::tcp::OwnedWriteHalf, sync::mpsc, task::JoinSet};
+use tokio::{io::WriteHalf, sync::mpsc, task::JoinSet};
 
 /// 有界读任务保留半帧状态；析构中止任务并关闭读端。
 /// A bounded reader preserves partial frames and aborts with the read half on drop.
 struct Connection {
     /// 独占写端；Exclusive writer.
-    writer: OwnedWriteHalf,
+    writer: WriteHalf<linger_network::Stream>,
     /// 最多预读一帧；At most one prefetched frame.
     incoming: mpsc::Receiver<Result<Frame, Error>>,
     /// Drop 自动取消读取；Drop automatically cancels reading.
@@ -65,11 +65,11 @@ impl Client {
         if self.execute("SUBSCRIBE", args).await? != Value::Bool(true) {
             return Err(Error::local(LocalError::Protocol, false));
         }
-        let (mut reader, writer) = self
+        let stream = self
             .stream
             .take()
-            .ok_or_else(|| Error::local(LocalError::Closed, false))?
-            .into_split();
+            .ok_or_else(|| Error::local(LocalError::Closed, false))?;
+        let (mut reader, writer) = tokio::io::split(stream);
         let (sender, incoming) = mpsc::channel(1);
         let limits = self.options.limits;
         let mut task = JoinSet::new();

@@ -51,7 +51,7 @@ struct Args {
 /// Each client owns its connection; engine mode shares the same ownership implementation.
 enum Target {
     /// 经过官方 SDK 的真实 TCP；Real TCP through the official SDK.
-    Tcp(Client),
+    Tcp(Box<Client>),
     /// 直接引擎调用，只用于微基准；Direct calls for the engine microbenchmark only.
     Engine(Arc<Engine>),
 }
@@ -89,7 +89,9 @@ async fn target(
     Ok(if let Some(engine) = engine {
         Target::Engine(engine.clone())
     } else {
-        Target::Tcp(Client::connect(args.address, None, 0, Options::default()).await?)
+        Target::Tcp(Box::new(
+            Client::connect(args.address, None, 0, Options::default()).await?,
+        ))
     })
 }
 

@@ -7,6 +7,7 @@ rust-version.workspace = true
 [dependencies]
 linger-types.workspace = true
 linger-protocol.workspace = true
+linger-network.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
