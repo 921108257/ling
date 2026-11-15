@@ -106,7 +106,7 @@ Reliable 命名组的 ACK 状态需 fsync 后才返回成功。ACK 提交前断�
 
 日志不可写、校验损坏、订阅身份冲突、Offset 过期必须分别可辨识。Fast 的丢弃计数与 Reliable 的 Journal 同步错误计数分开，不能统一显示为“已发送”。
 
-事件存储的 `stats / group_stats` 提供提交及按类型事件数、Journal 字节数、最老保留时间、组确认水位、最老未确认交付年龄、窗口项数、重投、Fast 丢弃及 Journal 同步错误数。年龄仅指本次进程已发送的交付；恢复后的租约年龄未知，返回空值。网络 INFO / Prometheus 留到阶段 6。
+事件存储的 `stats / group_stats` 提供提交及按类型事件数、Journal 字节数、最老保留时间、组确认水位、最老未确认交付年龄、窗口项数、重投、Fast 丢弃及 Journal 同步错误数。年龄仅指本次进程已发送的交付；恢复后的租约年龄未知，返回空值。`INFO events` 暴露分类统计及消费组详情；Prometheus 暴露固定分类与聚合计数，不以组名或 Key 建立标签。
 
 ## 必需验证
 

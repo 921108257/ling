@@ -1,6 +1,6 @@
 # linger-cache-db 架构与范围
 
-> 版本：v0.3 设计基线。阶段 1—5 已实现，后续 v1.0 能力仍为设计契约。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
+> 版本：v0.3 设计基线。阶段 1—6 已实现，阶段 7 稳定版验收待完成。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
 
 ## 项目定位
 
@@ -10,7 +10,7 @@ linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协�
 
 服务端不提供 Embedded API，不兼容 Redis 协议或命令行为。命令使用熟悉的名称，不意味着继承 Redis 的默认值、隐式创建、原子性或错误规则。
 
-当前已有 Rust workspace、10 种共享 Value、协议编解码、固定分片引擎、TCP 服务、Rust SDK、CLI 与契约测试。支持隔离数据库、通用与容器命令、跨库复制 / 移动、遍历、清库 / 交换、五种淘汰策略及毫秒 TTL 生命周期；完整已开放清单见 [commands.md](commands.md)。支持六类事件、默认有界 Fast、可选同步 Reliable Journal、专用订阅、消费组、ACK、重投与保留清理。TLS、INFO / CONFIG / SHUTDOWN、连接池和 Java / Go 尚未实现。构建与启动入口见 [README](../README.md)，本文其余组件与目录仍按阶段建立。
+当前已有 Rust workspace、10 种共享 Value、协议编解码、固定分片引擎、TCP / TLS 服务、Rust / Java / Go SDK、CLI 与契约测试。支持隔离数据库、通用与容器命令、跨库复制 / 移动、遍历、清库 / 交换、五种淘汰策略及毫秒 TTL 生命周期；完整已开放清单见 [commands.md](commands.md)。支持六类事件、默认有界 Fast、可选同步 Reliable Journal、专用订阅、消费组、ACK、重投与保留清理，以及固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志和可选 Prometheus。构建与启动入口见 [README](../README.md)，本文计划目录仅按实际职责建立。
 
 当前使用每个 (db, shard) 独占的有序索引与 Mutex，按全局顺序取得全部执行权后采样时间；预算 / 身份提交锁永远在分片锁之后取得，事件提交锁最后取得；消费者不反向取得引擎锁。候选结果通过类型、大小、响应、容量和身份检查后整体发布，多连接读不到原子命令中间状态。单 Key 读取可在独立分片并行；有每库 Key 配额的写入锁全库，启用淘汰且有限额的写入暂保守锁全实例，以避免逆序追加受害分片。此性能取舍需后续测量后再优化。
 
@@ -110,7 +110,7 @@ CLI ── Rust SDK       Java SDK       Go SDK
 
 Reliable 下，一条原子变更的所有事件写入同一个物理 Journal 事务，fsync 完成后发布。逻辑事件流按 `(db, shard)` 排序；统一物理文件不对外承诺全局消费顺序。当前逐事务 fsync，未主动聚合；消费顺序扫描磁盘，保留维护每秒检查并原子替换压缩，尚未做吞吐优化测量。该方案存在协调和磁盘瓶颈，必须测量，不能一边保证原子性一边省略协调成本。
 
-多路复用连接上的同 Key 操作按接收顺序执行；跨 Shard 响应可以乱序。AUTH、SELECT、QUIT 是连接屏障。普通 Batch 的子命令独立成功或失败，不具有整体回滚能力。
+当前服务端及三种 SDK 均在单连接内串行执行；独立连接可在不同 Shard 并行，由有界连接池向客户端提供并发。协议 Request ID 保留响应匹配能力，尚未实现单连接并行多路复用。AUTH、SELECT、QUIT 是连接屏障。普通 Batch 的子命令按输入顺序独立成功或失败，不具有整体回滚能力。
 
 ## TTL 与身份
 
@@ -140,7 +140,7 @@ Reliable 保证已 fsync 的完整事件，在保留窗口内可恢复、可重�
 
 默认 noeviction，达到限制拒绝扩大内存的写入。其他策略按样本或候选集选择受害者，淘汰也是正常状态变更，需要生成相应事件。实现必须先预留预算，不能为一次最终失败的写入提前删除无关 Key。
 
-默认监听回环地址，认证和 TLS 可选。启用认证时空密码非法；配置查询与日志隐藏凭据。数据库编号是命名空间，不是授权边界。TLS 使用成熟实现（计划使用 rustls），不自行实现密码协议。
+默认监听回环地址，认证和 TLS 可选。启用认证时空密码非法；配置查询与日志隐藏凭据。数据库编号是命名空间，不是授权边界。Rust 使用 rustls，Java 使用 JSSE，Go 使用 crypto/tls，验证证书与服务端名称，可选客户端证书认证。
 
 INFO 与可选 Prometheus 指标覆盖请求、延迟、内存、TTL、事件和日志；禁止把 Key、Value 或密码作为指标标签。运行时仅支持修改日志级别，其他配置重启生效。
 
@@ -153,7 +153,7 @@ crates/
   cli/                     # 交互与命令展示，依赖 Rust SDK
   types/                   # Value、Scalar、身份及核心错误
   protocol/                # 线上编解码，依赖 types
-  network/                 # TCP/TLS，依赖 protocol
+  network/                 # TCP/TLS 共享传输与证书验证，依赖 types
   engine/                  # 命令、Shard 状态、索引与内存预算
   ttl/                     # 可独立验证后再拆出
   events/                  # 流、组、投递

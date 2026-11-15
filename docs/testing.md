@@ -1,8 +1,22 @@
 # 验证与性能基准
 
-> 状态：阶段 1—5 已建立 Rust 契约、TTL、Journal、消费恢复与真实网络测试；基础性能数据来自阶段 3。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
+> 状态：阶段 1—6 已建立 Rust 契约、TTL、Journal、消费恢复、三语言客户端与运维测试；基础性能数据来自阶段 3。下列完整矩阵仍是 v1.0 验收要求，不能视为已通过清单。
 
-当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。TTL 契约位于 `crates/engine/src/ttl_tests.rs`，覆盖可控双时钟、严格到期边界、墙钟跳变、版本与期限溢出、1000 次续期、每轮回收预算、迁移与清库、旧任务逐字段校验，以及到期和 NX / XX / DEL / COPY / SCAN 的并发竞争。服务端另验证空闲回收、等待许可时关闭，以及真实 TCP / CLI 生命周期。事件契约位于 `crates/events/src/tests.rs`、`crates/engine/tests/events.rs`，覆盖独立磁盘向量、六类生命周期、Fast 丢弃、ACK 空洞、组隔离、租约、保留与容量、目录锁、CRC / 拓扑、重复序号、截断多分片事务、真实只读目录、Linux /dev/full 写满错误和模拟 fsync 错误。`crates/server/tests/crash_recovery.rs` 强制终止真实服务子进程，验证 MSET 单个物理事务、ACK 恢复及缓存为空；网络验证半个 ACK 与推送交错，SDK / CLI 验证显式消费及取消。Java / Go 测试尚未建立。这些测试不等于物理断电、长期压力或生产验收。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
+当前实际入口为 `cargo fmt --all -- --check`、`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings` 和 `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps`。类型、协议、引擎、服务端、Rust SDK、CLI 的测试分别位于各 crate 的 `tests` 中；分片内部所有权契约另在 `crates/engine/src/ownership_tests.rs`，共享字节文件在 [tests/fixtures/protocol](../tests/fixtures/protocol)。CLI 端到端测试启动真实 TCP 服务并运行编译后的 CLI 进程。已覆盖全部数据类型、数值与容器边界、失败无部分修改、generation / revision、容量限制、多连接竞争、跨分片独立推进 / MSET / SWAPDB 原子观察、反向锁序、跨库迁入、游标绑定及弱一致性、淘汰失败原子性、异步回收预算和超限 POP 保留数据。TTL 契约位于 `crates/engine/src/ttl_tests.rs`，覆盖可控双时钟、严格到期边界、墙钟跳变、版本与期限溢出、1000 次续期、每轮回收预算、迁移与清库、旧任务逐字段校验，以及到期和 NX / XX / DEL / COPY / SCAN 的并发竞争。服务端另验证空闲回收、等待许可时关闭，以及真实 TCP / CLI 生命周期。事件契约位于 `crates/events/src/tests.rs`、`crates/engine/tests/events.rs`，覆盖独立磁盘向量、六类生命周期、Fast 丢弃、ACK 空洞、组隔离、租约、保留与容量、目录锁、CRC / 拓扑、重复序号、截断多分片事务、真实只读目录、Linux /dev/full 写满错误和模拟 fsync 错误。`crates/server/tests/crash_recovery.rs` 强制终止真实服务子进程，验证 MSET 单个物理事务、ACK 恢复及缓存为空；网络验证半个 ACK 与推送交错，SDK / CLI 验证显式消费及取消。阶段 6 的 crates/server/tests/operations.rs 与 tls.rs 验证配置脱敏、重载整体拒绝、指标、关闭、Batch 准入及响应预算、证书与服务端名称校验。Rust SDK 覆盖池容量、固定库、取消及关闭。这些测试不等于物理断电、长期压力或生产验收。公开接口使用 missing_docs 强制 rustdoc，源码、测试及基准工具注释为中英双语。
+
+## 三语言客户端验收
+
+在仓库根目录执行：
+
+```sh
+python3 tests/sdk_contracts.py
+```
+
+需要 Python 3、Go 1.22+、JDK 17 与 OpenSSL。驱动先构建 Rust 服务端，并以 `javac -Xlint:all -Werror` 编译 Java，然后分别启动 TCP 与双向 TLS 的真实服务端，每轮使用独立临时 Reliable Journal。Go 执行 `go test -race -count=1 ./...`，Java 执行 `java -ea` 契约入口；结束清理服务进程和临时目录。测试中使用仓库内公开的测试证书与私钥，仅用于本地验证。
+
+共享的 `values.tsv`、`invalid-values.tsv`、`frames.tsv` 验证字节、类型与错误，`commands.tsv` 验证真实服务端上的 Null / 缺失、最大 UInt、数值溢出不修改及 TTL 哨兵值。Go / Java 还覆盖十种 Value 往返、Batch 逐项错误、SELECT 后订阅数据库、断线重投稳定 ID、显式 ACK、订阅取消、固定库租约与关闭、发送后断线结果未知。Rust 同时消费该命令用例，并通过服务端 TLS 测试覆盖信任错误和主机名错误。
+
+独立运行 Go 测试时，没有 `LINGER_TEST_ADDR` 会跳过真实服务用例；应使用驱动取得完整验收结果。`go vet ./...` 在 `sdks/go` 运行。Java 无 Maven / Gradle 工程，实际构建入口为 JDK；本阶段不宣称已完成模糊测试、长期压力、资源耗尽或物理断电验证。
 
 ## 验证原则
 
@@ -86,7 +100,7 @@ Journal 测试在追加记录、提交标记、fsync、发布内存及发送响�
 
 TCP 服务端 VmHWM 峰值为 9,781,248—10,313,728 字节（约 9.33—9.84 MiB），CPU 时间约 6.76—7.74 秒；CPU 指标包含预填充和预热，不能直接除以测量时长当作 CPU 百分比。引擎所在进程的采样 RSS 峰值约 9.23—9.77 MiB，含客户端任务和采样 Vec。RSS 每 20 ms 采集 Linux VmHWM；极短进程仍可能漏采末尾高点。
 
-引擎最终受管字节均为 26,730,000，即每个活跃 Key 保守计费 2,673 字节；该逻辑模型包含有意高估的索引开销，因此可能高于 RSS。TCP 当前没有开放 INFO，服务端受管字节未经网络测得，原始记录为 null；不得拿直接引擎值冒充 TCP 观测。尚未进行删除后 RSS 或分配器滞留实验。
+引擎最终受管字节均为 26,730,000，即每个活跃 Key 保守计费 2,673 字节；该逻辑模型包含有意高估的索引开销，因此可能高于 RSS。阶段 3 测量时尚未开放 INFO，服务端受管字节未经网络测得，原始记录为 null；不得拿直接引擎值冒充 TCP 观测。尚未进行删除后 RSS 或分配器滞留实验。
 
 ## Redis 对比边界
 
@@ -100,4 +114,4 @@ TCP 服务端 VmHWM 峰值为 9,781,248—10,313,728 字节（约 9.33—9.84 Mi
 
 文档中的能力与实际构建一致，CLI及三种SDK跑同一契约。性能未达到研究目标可以如实报告，不通过弱化TTL、关闭fsync或丢弃事件换取好看的数字。
 
-Rust 构建、测试与 lint 入口已记录于本文及 README。Java / Go 工程建立后再记录其真实构建任务，不将建议命令作为通过证据。
+Rust 构建、测试与 lint 入口已记录于本文及 README。Java / Go 的真实构建与网络验证由下述共享驱动执行，不将跳过的用例当作通过证据。

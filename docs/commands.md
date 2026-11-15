@@ -1,22 +1,24 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 5 已完成数据、TTL 与事件订阅；下方先列当前支持范围，其余章节继续定义完整 v1.0 契约。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 6 已完成本文公开命令、普通 Batch 和运维入口；性能与长期压力验收仍待阶段 7。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)。名称相似不意味着兼容 Redis。
 
 ## 当前支持范围
 
-| 类别 | 阶段 5 已开放 |
+| 类别 | 阶段 6 已开放 |
 |---|---|
 | 连接 | HELLO、AUTH、SELECT、PING、QUIT |
 | 通用 | SET（含 EX / PX / EXAT / PXAT，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
 | TTL | EXPIRE、PEXPIRE、EXPIREAT、PEXPIREAT、PERSIST、TTL、PTTL、EXPIRETIME、PEXPIRETIME |
 | 迁移与查询 | RENAME、RENAMENX、COPY、MOVE、KEYS、SCAN、RANDOMKEY |
 | 数据库管理 | FLUSHDB、FLUSHALL（均含 ASYNC）、SWAPDB |
+| 运维 | INFO、CONFIG GET / SET / RELOAD、SHUTDOWN |
+| 事件 | SUBSCRIBE、UNSUBSCRIBE、ACK 帧 |
 | 数值与文本 | INCR、DECR、INCRBY、DECRBY、INCRFLOAT、APPEND、STRLEN、BLEN |
 | List | 本文 List 表中的全部命令 |
 | Map | 本文 Map 表中的全部命令 |
 | Set | 本文 Set 表中的全部命令，含跨分片集合代数与 STORE |
 
-已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。INFO / CONFIG / SHUTDOWN 尚未开放，返回 `ERR_UNKNOWN_COMMAND`。SUBSCRIBE / UNSUBSCRIBE 和 ACK 帧已开放，默认 Fast，可配置 Reliable。普通 Batch 目前拒绝执行并返回 `ERR_INVALID_ARGUMENT`；不能将多行 CLI 输入视为协议 Batch 或事务。
+已开放的多 Key 和跨库命令按 (db, shard) 固定顺序取得执行权后原子发布；整体数据库操作允许阻塞相关数据库。事件默认 Fast，可配置 Reliable。普通 Batch 按白名单准入、顺序执行并逐项返回；CLI 只有显式 `--batch` 才提交协议 Batch，默认多行输入逐行执行，均不等于事务。
 
 ## 通用规则
 
@@ -47,6 +49,8 @@
 多 Key 读取中的 missing 可逐项返回；`MSET` 等写命令某项不合法则整条命令失败。不能以自动拆成若干单 Key 调用实现其原子性。
 
 Batch 白名单是下文通用 Key、TTL、数值、String、Bytes、List、Map、Set 章节中的命令，但不含 KEYS、SCAN、RANDOMKEY。数据库、服务器、管理、订阅及连接命令均不允许进入 Batch，包括 PING、DBSIZE、INFO。协议对整批做准入校验，出现非白名单命令时一项都不执行。
+
+Batch 在执行前预留每项稳定错误码的响应空间，随后按剩余预算执行子项；例如 POP 在无法返回完整 Value 时不得先删除。前项业务错误不阻止后项执行；诊断文本可为空，稳定错误码保留。整批只发送一个结果帧，发送后断线或未收齐响应时客户端不能推断哪些项已提交。
 
 ## 通用 Key 命令
 
@@ -168,6 +172,21 @@ FGET 的整个 Key 缺失或类型错误时整条命令失败，不伪造成字�
 | `CONFIG SET key value` | Bool(true)；首版仅 log.level 可动态修改 |
 | `CONFIG RELOAD` | Bool(true)；全部校验后仅应用允许动态修改项；出现静态项变化则整次拒绝 |
 | `SHUTDOWN` | 确认已接受关闭请求后停止接入并排空，受关闭期限约束 |
+
+INFO 返回以 section 名为顶层键的 Map；即使只请求一个 section，也保留这层封套。未知 section 或错误参数返回 `ERR_INVALID_ARGUMENT`。各字段按顺序采样，不是全实例原子快照；keyspace 逐库统计活跃 Key。memory 的 managed_bytes 是受管预算，不冒充 RSS。
+
+| section | 字段 |
+|---|---|
+| server | version、uptime_ms、shards_per_database |
+| memory | managed_bytes、limit_bytes、scheduled_expirations |
+| stats | requests、errors（已完成请求，不包含当前 INFO） |
+| clients | connected |
+| keyspace | db0、db1 等，对应活跃 Key 数 UInt |
+| events | committed、dropped、redelivered、journal_bytes、journal_errors、groups、pending、oldest_retained_ms、by_kind、consumer_groups |
+
+事件统计可用时返回 events；by_kind 按 CREATED / UPDATED / EXPIRED / DELETED / EVICTED / TTL_CHANGED 顺序排列。consumer_groups 为 Map 列表，包含 name、db、expired、pending、oldest_pending_ms 和 `[shard, sequence]` watermarks；无可用时间时返回 Null。结果超过响应预算返回 `ERR_LIMIT_EXCEEDED`。
+
+CONFIG GET 的 pattern 按字节匹配标准扁平字段名，支持 `*` 与 `?`，其他字节按字面匹配；密码固定返回 `<redacted>`。CONFIG 子操作和 log.level 的规则见 [config.md](config.md#运行时变更)。SHUTDOWN 在尝试写出 Bool(true) 后广播关闭信号，随后停止接入并排空；应答失败也执行已接受的关闭，已开始的阻塞命令不因关闭期限而回滚。
 
 SWAPDB 仅交换缓存数据，不交换事件流、组、历史或数据库编号。迁入目标库的每条数据取得目标 generation，原期限不变；事件按各目标最终状态描述：活跃目标替换为 UPDATED，空目标为 CREATED，只移出为 DELETED，已到期条目保留 EXPIRED 原因；期限实际变化另有 TTL_CHANGED。这与 events 的目标覆盖规则一致，不把同名替换拆为删除和创建。Reliable 在一个事务中提交这些事件，允许该操作耗时或因容量限制拒绝。
 

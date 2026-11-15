@@ -184,6 +184,6 @@ TCP 半包和粘包是正常情况：累积完整 18 字节头，再按长度读
 00 05 00 00 00 04 50 4f 4e 47
 ```
 
-共享用例位于 [tests/fixtures/protocol](../tests/fixtures/protocol)：`values.tsv` 覆盖全部 Value 与边界，`frames.tsv` 覆盖 HELLO、PING/PONG、ERROR、Batch、EVENT、ACK、HEARTBEAT，`invalid-values.tsv` 标注错误码及是否致命。每行使用 `|` 分隔，十六进制中的空白仅供阅读，`#` 行为注释。Map / Set 顺序不属于冻结内容，按语义比较。Rust 测试同时检查独立期望字节及所有分包位置；后续 SDK 复用这些文件。
+共享用例位于 [tests/fixtures/protocol](../tests/fixtures/protocol)：`values.tsv` 覆盖全部 Value 与边界，`frames.tsv` 覆盖 HELLO、PING/PONG、ERROR、Batch、EVENT、ACK、HEARTBEAT，`invalid-values.tsv` 标注错误码及是否致命。每行使用 `|` 分隔，十六进制中的空白仅供阅读，`#` 行为注释。Map / Set 顺序不属于冻结内容，按语义比较。Rust 测试同时检查独立期望字节及所有分包位置；Java / Go 复用同一套文件。`commands.tsv` 另外保存命令参数与预期成功 Value / 稳定错误码，三种 SDK 均连接真实服务端验证。阶段 6 未改变版本 1 的类型标签或帧格式。
 
 不得重分配已使用标记、悄然改变单位或复用保留位；不兼容变更必须提升协议版本。
