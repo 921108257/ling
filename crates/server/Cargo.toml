@@ -8,6 +8,7 @@ rust-version.workspace = true
 linger-types.workspace = true
 linger-protocol.workspace = true
 linger-engine.workspace = true
+linger-events.workspace = true
 rand.workspace = true
 tokio.workspace = true
 serde.workspace = true

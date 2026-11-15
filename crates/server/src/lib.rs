@@ -5,8 +5,8 @@ mod config;
 mod connection;
 mod maintenance;
 pub use config::{
-    AuthConfig, Config, DatabaseConfig, EngineConfig, EvictionConfig, ProtocolConfig, ServerConfig,
-    TtlConfig,
+    AuthConfig, Config, DatabaseConfig, EngineConfig, EventJournalConfig, EventsConfig,
+    EvictionConfig, ProtocolConfig, ServerConfig, TtlConfig,
 };
 use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
@@ -34,9 +34,17 @@ impl Server {
     /// Validates configuration, creates the engine, and binds the listener; invalid settings accept no requests.
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
-        let engine = Arc::new(linger_engine::Engine::new(
-            config.engine_config()?,
+        let engine_config = config.engine_config()?;
+        let events = Arc::new(linger_events::EventStore::open(
+            config.event_config()?,
+            engine_config.databases,
+            engine_config.resolved_shards(),
+        )?);
+        let engine = Arc::new(linger_engine::Engine::with_events(
+            engine_config,
             rand::random(),
+            Arc::new(linger_engine::SystemClock),
+            Some(events),
         )?);
         let socket = if config.server.host.is_ipv4() {
             TcpSocket::new_v4()?
@@ -60,9 +68,17 @@ impl Server {
         config: Config,
     ) -> Result<Self, linger_types::DbError> {
         config.validate()?;
-        let engine = Arc::new(linger_engine::Engine::new(
-            config.engine_config()?,
+        let engine_config = config.engine_config()?;
+        let events = Arc::new(linger_events::EventStore::open(
+            config.event_config()?,
+            engine_config.databases,
+            engine_config.resolved_shards(),
+        )?);
+        let engine = Arc::new(linger_engine::Engine::with_events(
+            engine_config,
             rand::random(),
+            Arc::new(linger_engine::SystemClock),
+            Some(events),
         )?);
         Ok(Self {
             listener,

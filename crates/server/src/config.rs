@@ -31,6 +31,69 @@ pub struct Config {
     /// 毫秒精度与每轮到期维护预算。
     /// Millisecond precision and per-round expiry maintenance budget.
     pub ttl: TtlConfig,
+    /// 事件缓冲与消费策略；Event buffering and consumption policy.
+    pub events: EventsConfig,
+    /// Reliable 磁盘预算；Reliable disk budget.
+    pub event_journal: EventJournalConfig,
+}
+
+/// 启动固定的事件与消费策略；Event and consumer policy fixed at startup.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct EventsConfig {
+    /// 是否生成事件；Whether events are generated.
+    pub enabled: bool,
+    /// fast 或 reliable；Either fast or reliable.
+    pub mode: String,
+    /// 统一保留天数；Global retention in days.
+    pub retention_days: u64,
+    /// 事件与消费元数据内存预算；Memory budget for events and consumption metadata.
+    pub buffer_bytes: usize,
+    /// 每组交付窗口；Delivery window per group.
+    pub max_pending_events: usize,
+    /// 命名及临时组上限；Named and temporary group cap.
+    pub max_groups: usize,
+    /// 消费租约毫秒；Consumer lease milliseconds.
+    pub consumer_timeout_ms: u64,
+    /// 最小重投间隔毫秒；Minimum redelivery interval in milliseconds.
+    pub retry_interval_ms: u64,
+}
+impl Default for EventsConfig {
+    /// 默认有界 Fast 与七天保留；Defaults to bounded Fast with seven-day retention.
+    fn default() -> Self {
+        let c = linger_events::Config::default();
+        Self {
+            enabled: c.enabled,
+            mode: "fast".into(),
+            retention_days: 7,
+            buffer_bytes: c.buffer_bytes,
+            max_pending_events: c.max_pending,
+            max_groups: c.max_groups,
+            consumer_timeout_ms: c.consumer_timeout_ms,
+            retry_interval_ms: c.retry_interval_ms,
+        }
+    }
+}
+/// 仅 Reliable 打开的目录与容量；Directory and capacity opened only in Reliable mode.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct EventJournalConfig {
+    /// 相对配置文件目录解析；Resolved relative to the configuration file.
+    pub dir: std::path::PathBuf,
+    /// 含替换预留的总物理容量；Total physical capacity including replacement reserve.
+    pub max_bytes: usize,
+    /// 允许的主动聚合等待预算，当前逐事务同步；Allowed aggregation wait budget; currently syncs each transaction.
+    pub group_commit_ms: u64,
+}
+impl Default for EventJournalConfig {
+    /// 默认空目录与 1 GiB 容量；Defaults to no directory and one GiB capacity.
+    fn default() -> Self {
+        Self {
+            dir: Default::default(),
+            max_bytes: 1024 * 1024 * 1024,
+            group_commit_ms: 2,
+        }
+    }
 }
 
 /// 精度固定为毫秒，维护工作量不改变逻辑到期边界。
@@ -251,8 +314,16 @@ impl Config {
             std::fs::read_to_string(path).map_err(|_| invalid("Cannot read configuration file"))?;
         // TOML 错误可能附带含 auth.password 的源片段，因此只返回安全说明。
         // TOML errors may include auth.password source excerpts, so return only a safe description.
-        let config: Self = toml::from_str(&source)
+        let mut config: Self = toml::from_str(&source)
             .map_err(|_| invalid("Invalid configuration syntax, field or type"))?;
+        if !config.event_journal.dir.as_os_str().is_empty()
+            && config.event_journal.dir.is_relative()
+        {
+            config.event_journal.dir = path
+                .parent()
+                .unwrap_or(Path::new("."))
+                .join(&config.event_journal.dir);
+        }
         config.validate()?;
         Ok(config)
     }
@@ -260,6 +331,7 @@ impl Config {
     /// 监听前验证范围与组合关系，不创建引擎或分配索引。
     /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
+        self.event_config()?.validate()?;
         if self.ttl.precision_ms != 1 || self.ttl.maintenance_budget == 0 {
             return Err(invalid("Invalid TTL precision or maintenance budget"));
         }
@@ -313,7 +385,43 @@ impl Config {
         {
             return Err(invalid("Invalid protocol byte or Batch limits"));
         }
+        if self.events.enabled
+            && (self.engine.max_key_bytes.saturating_add(768) > s.max_response_bytes
+                || self
+                    .engine
+                    .max_key_bytes
+                    .saturating_mul(2)
+                    .saturating_add(256)
+                    > self.events.buffer_bytes / 4)
+        {
+            return Err(invalid("Event key exceeds response or event budget"));
+        }
         Ok(())
+    }
+
+    /// 将外部名称转换为已校验事件策略；Converts public names into validated event policy.
+    pub fn event_config(&self) -> Result<linger_events::Config, DbError> {
+        if !matches!(self.events.mode.as_str(), "fast" | "reliable")
+            || self.event_journal.group_commit_ms > 1000
+        {
+            return Err(invalid("Invalid event mode or group commit interval"));
+        }
+        Ok(linger_events::Config {
+            enabled: self.events.enabled,
+            reliable: self.events.mode == "reliable",
+            directory: self.event_journal.dir.clone(),
+            max_bytes: self.event_journal.max_bytes,
+            buffer_bytes: self.events.buffer_bytes,
+            max_pending: self.events.max_pending_events,
+            max_groups: self.events.max_groups,
+            consumer_timeout_ms: self.events.consumer_timeout_ms,
+            retry_interval_ms: self.events.retry_interval_ms,
+            retention_ms: self
+                .events
+                .retention_days
+                .checked_mul(86400000)
+                .ok_or_else(|| invalid("Retention overflow"))?,
+        })
     }
 
     /// 生成网络层使用的同一组配置限额。

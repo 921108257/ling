@@ -13,11 +13,14 @@ pub(crate) async fn run(
     budget: usize,
     mut closing: watch::Receiver<bool>,
 ) -> io::Result<()> {
+    let mut maintenance = std::time::Instant::now();
+    let mut delay = Duration::from_millis(1);
+    let mut previous_error = String::new();
     loop {
         tokio::select! {
             biased;
             _ = closing.changed() => return Ok(()),
-            _ = tokio::time::sleep(Duration::from_millis(1)) => {}
+            _ = tokio::time::sleep(delay) => {}
         }
         let permit = tokio::select! {
             biased;
@@ -28,13 +31,50 @@ pub(crate) async fn run(
             return Ok(());
         }
         let engine = engine.clone();
-        tokio::task::spawn_blocking(move || {
+        let compact = maintenance.elapsed() >= Duration::from_secs(1);
+        if compact {
+            maintenance = std::time::Instant::now();
+        }
+        let result = tokio::task::spawn_blocking(move || {
             let _permit = permit;
+            // 即使到期记账遇到容量限制，保留清理仍可让后续重试恢复。
+            // Retention cleanup can unblock later retries even when expiry accounting is capacity-limited.
+            if compact {
+                if let Some(events) = engine.events() {
+                    let now = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map_err(|_| {
+                            linger_types::DbError::new(
+                                linger_types::ErrorCode::Busy,
+                                "System clock unavailable",
+                            )
+                        })?;
+                    events.maintain(now.as_millis().min(u128::from(u64::MAX)) as u64)?;
+                }
+            }
             engine.expire_due(budget)
         })
         .await
-        .map_err(|_| io::Error::other("TTL maintenance task failed"))?
-        .map_err(io::Error::other)?;
+        .map_err(|_| io::Error::other("TTL maintenance task failed"))?;
+        match result {
+            Ok(_) => {
+                delay = Duration::from_millis(1);
+                previous_error.clear();
+            }
+            Err(e)
+                if matches!(
+                    e.code.as_str(),
+                    "ERR_JOURNAL_FULL" | "ERR_JOURNAL_UNAVAILABLE" | "ERR_COMMIT_UNKNOWN"
+                ) =>
+            {
+                delay = Duration::from_millis(100);
+                if previous_error != e.code {
+                    eprintln!("事件维护暂停：{}", e.code);
+                    previous_error = e.code;
+                }
+            }
+            Err(e) => return Err(io::Error::other(e)),
+        }
     }
 }
 

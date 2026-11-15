@@ -66,6 +66,60 @@ pub struct Event {
     pub timestamp_ms: u64,
 }
 impl Event {
+    /// 严格验证 EVENT 字段；不允许整数隐式转换或截断身份。
+    /// Strictly validates EVENT fields without integer coercion or identity truncation.
+    pub fn from_value(value: &Value) -> Result<Self, DbError> {
+        let Value::Map(m) = value else {
+            return Err(invalid());
+        };
+        if m.len() != 6 {
+            return Err(invalid());
+        }
+        let id = EventId::from_value(m.get("event_id").ok_or_else(invalid)?)?;
+        let Some(Value::String(kind)) = m.get("event_type") else {
+            return Err(invalid());
+        };
+        let kind = (1..=6)
+            .filter_map(|n| EventKind::from_tag(n).ok())
+            .find(|k| k.as_str() == kind)
+            .ok_or_else(invalid)?;
+        let Some(Value::String(key)) = m.get("key") else {
+            return Err(invalid());
+        };
+        let Some(Value::Map(g)) = m.get("generation") else {
+            return Err(invalid());
+        };
+        if key.is_empty() || g.len() != 2 {
+            return Err(invalid());
+        }
+        let Some(Value::Bytes(epoch)) = g.get("epoch") else {
+            return Err(invalid());
+        };
+        let Some(Value::UInt(counter)) = g.get("counter") else {
+            return Err(invalid());
+        };
+        let Some(Value::UInt(revision)) = m.get("revision") else {
+            return Err(invalid());
+        };
+        let Some(Value::UInt(timestamp_ms)) = m.get("timestamp_ms") else {
+            return Err(invalid());
+        };
+        if *counter == 0 || *revision == 0 {
+            return Err(invalid());
+        }
+        Ok(Self {
+            id,
+            kind,
+            key: key.clone(),
+            generation: Generation {
+                epoch: u128::from_be_bytes(epoch.as_slice().try_into().map_err(|_| invalid())?),
+                counter: *counter,
+            },
+            revision: *revision,
+            timestamp_ms: *timestamp_ms,
+        })
+    }
+
     /// 构造已冻结的 EVENT Map，身份使用 16 字节大端而非浮点数。
     /// Builds the frozen EVENT Map with 16-byte big-endian identities rather than floating point.
     pub fn to_value(&self) -> Value {

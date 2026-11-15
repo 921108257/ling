@@ -82,8 +82,8 @@ async fn hello_capabilities_and_command_errors_and_quit() {
         info["server_version"],
         Value::String(env!("CARGO_PKG_VERSION").into())
     );
-    assert_eq!(info["events"], Value::Bool(false));
-    assert_eq!(info["stream_id"], Value::Null);
+    assert_eq!(info["events"], Value::Bool(true));
+    assert!(matches!(&info["stream_id"], Value::Bytes(id) if id.len()==16));
     assert_eq!(
         call(&mut stream, 2, "ping", vec![]).await,
         Body::Response(Ok(Value::String("PONG".into())))
@@ -287,6 +287,7 @@ async fn semantic_errors_keep_connection_and_structural_errors_close_it() {
 async fn response_budget_and_shutdown_with_live_connection() {
     let mut config = Config::default();
     config.server.max_response_bytes = 1024;
+    config.engine.max_key_bytes = 256;
     let (addr, stop, task) = start(config).await;
     let mut stream = TcpStream::connect(addr).await.unwrap();
     call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
@@ -443,6 +444,7 @@ async fn shared_engine_serializes_writes_and_atomic_observations() {
 async fn data_commands_preserve_state_on_response_limits_and_isolate_databases() {
     let mut config = Config::default();
     config.server.max_response_bytes = 1024;
+    config.engine.max_key_bytes = 256;
     let (addr, stop, task) = start(config).await;
     let mut stream = TcpStream::connect(addr).await.unwrap();
     call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
@@ -725,6 +727,85 @@ async fn network_ttl_queries_and_expiry_boundary() {
     })
     .await
     .unwrap();
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// 订阅响应先于事件，半个 ACK 不被推送轮询丢弃；订阅禁止普通数据命令。
+/// Subscription responses precede events, polling preserves partial ACKs, and ordinary data commands are forbidden.
+#[tokio::test]
+async fn subscription_barrier_and_fragmented_ack_survive_event_pushes() {
+    use std::time::Duration;
+    let mut config = Config::default();
+    config.engine.shard_count = 1;
+    let (address, stop, task) = start(config).await;
+    let mut subscriber = TcpStream::connect(address).await.unwrap();
+    call(&mut subscriber, 1, "HELLO", vec![Value::UInt(1)]).await;
+    assert_eq!(
+        call(
+            &mut subscriber,
+            2,
+            "SUBSCRIBE",
+            vec![Value::List(vec![Value::String("*".into())])]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    assert_error(
+        call(&mut subscriber, 3, "SELECT", vec![Value::UInt(1)]).await,
+        "ERR_CONNECTION_STATE",
+        false,
+    );
+    let mut writer = TcpStream::connect(address).await.unwrap();
+    call(&mut writer, 1, "HELLO", vec![Value::UInt(1)]).await;
+    call(
+        &mut writer,
+        2,
+        "SET",
+        vec![Value::String("a".into()), Value::Null],
+    )
+    .await;
+    let event = read_frame(&mut subscriber, Limits::default())
+        .await
+        .unwrap()
+        .unwrap();
+    let Body::Event(value) = event.body else {
+        panic!()
+    };
+    let event = linger_types::Event::from_value(&value).unwrap();
+    let ack = encode_frame(
+        &Frame {
+            request_id: 4,
+            body: Body::Ack(event.id.to_value()),
+        },
+        Limits::default(),
+    )
+    .unwrap();
+    subscriber.write_all(&ack[..9]).await.unwrap();
+    tokio::time::sleep(Duration::from_millis(35)).await;
+    call(
+        &mut writer,
+        3,
+        "SET",
+        vec![Value::String("b".into()), Value::Null],
+    )
+    .await;
+    let pushed = read_frame(&mut subscriber, Limits::default())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(matches!(pushed.body, Body::Event(_)));
+    subscriber.write_all(&ack[9..]).await.unwrap();
+    let response = read_frame(&mut subscriber, Limits::default())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(response.request_id, 4);
+    assert_eq!(response.body, Body::Response(Ok(Value::Bool(true))));
+    assert_eq!(
+        call(&mut subscriber, 5, "UNSUBSCRIBE", vec![]).await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
     stop.send(()).unwrap();
     task.await.unwrap();
 }

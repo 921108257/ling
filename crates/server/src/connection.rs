@@ -7,8 +7,8 @@ use linger_types::{DbError, ErrorCode, Value};
 use std::collections::BTreeMap;
 use std::{sync::Arc, time::Duration};
 use tokio::{
-    io::AsyncWriteExt,
-    net::TcpStream,
+    io::{AsyncWrite, AsyncWriteExt},
+    net::{TcpStream, tcp::OwnedReadHalf},
     sync::{Semaphore, watch},
     time::{Instant, timeout, timeout_at},
 };
@@ -16,18 +16,37 @@ use tokio::{
 /// 按接收顺序处理请求，致命帧错误或关闭信号结束连接。
 /// Processes requests in receive order and closes on fatal framing errors or shutdown.
 pub(crate) async fn serve(
-    mut stream: TcpStream,
+    stream: TcpStream,
     config: &Config,
     engine: &Arc<linger_engine::Engine>,
     slots: Arc<Semaphore>,
     mut shutdown: watch::Receiver<bool>,
 ) {
+    let (mut reader, mut stream) = stream.into_split();
+    let (frames, mut incoming) = tokio::sync::mpsc::channel(1);
+    let read_config = config.clone();
+    let mut reading = tokio::task::JoinSet::new();
+    // 独立有界读任务保存半帧状态；事件推送不会取消正在进行的帧读取。
+    // A bounded reader preserves partial-frame state; event pushes never cancel frame reads.
+    reading.spawn(async move {
+        loop {
+            let frame = receive(&mut reader, &read_config).await;
+            let done = !matches!(frame, Ok(Some(_)));
+            if frames.send(frame).await.is_err() || done {
+                break;
+            }
+        }
+    });
+    let mut poll = tokio::time::interval(Duration::from_millis(10));
+    poll.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let mut session = Session {
         hello: false,
         authenticated: !config.auth.enabled,
         db: config.database.default_db,
         last_id: 0,
         scan: linger_engine::ScanState::default(),
+        subscription: None,
+        events: engine.events().cloned(),
     };
     loop {
         if *shutdown.borrow() {
@@ -35,7 +54,23 @@ pub(crate) async fn serve(
         }
         let received = tokio::select! {
             _ = shutdown.changed() => break,
-            frame = receive(&mut stream, config) => frame,
+            frame = incoming.recv() => match frame {Some(frame)=>frame,None=>break},
+            _ = poll.tick(), if session.subscription.is_some() => {
+                let sub=session.subscription.as_ref().unwrap().clone();
+                let store=session.events.as_ref().unwrap().clone();
+                match event_work(slots.clone(),config,move ||store.next(&sub.token,std::time::Instant::now())).await {
+                    Ok(Some(event))=>{
+                        if send(&mut stream,Frame{request_id:0,body:Body::Event(event.to_value())},config).await.is_err(){break;}
+                    }
+                    Ok(None)=>{}
+                    Err(error) if error.code==ErrorCode::Busy.as_str()=>{}
+                    Err(error)=>{
+                        let _=send(&mut stream,Frame{request_id:0,body:Body::Error(error)},config).await;
+                        break;
+                    }
+                }
+                continue;
+            }
         };
         let frame = match received {
             Ok(Some(frame)) => frame,
@@ -117,20 +152,37 @@ pub(crate) async fn serve(
             ),
             Body::BatchRequest(_) => (
                 Err(DbError::new(
-                    ErrorCode::InvalidArgument,
+                    if session.subscription.is_some() {
+                        ErrorCode::ConnectionState
+                    } else {
+                        ErrorCode::InvalidArgument
+                    },
                     "Batch execution is not supported",
                 )),
                 false,
                 false,
             ),
-            Body::Ack(_) => (
-                Err(DbError::new(
-                    ErrorCode::ConnectionState,
-                    "No subscription context",
-                )),
-                false,
-                false,
-            ),
+            Body::Ack(value) => {
+                let result = match (
+                    session.subscription.as_ref(),
+                    session.events.as_ref(),
+                    linger_types::EventId::from_value(&value),
+                ) {
+                    (Some(sub), Some(store), Ok(id)) => {
+                        let (sub, store) = (sub.clone(), store.clone());
+                        event_work(slots.clone(), config, move || {
+                            store.ack(&sub.token, id).map(|()| Value::Bool(true))
+                        })
+                        .await
+                    }
+                    (_, _, Err(e)) => Err(e),
+                    _ => Err(DbError::new(
+                        ErrorCode::ConnectionState,
+                        "No subscription context",
+                    )),
+                };
+                (result, false, false)
+            }
             _ => unreachable!(),
         };
         let body = if fatal_error {
@@ -154,6 +206,41 @@ pub(crate) async fn serve(
         }
     }
     let _ = stream.shutdown().await;
+}
+
+/// 与数据命令共享阻塞许可；开始后等待真实提交结果。
+/// Shares blocking permits with data commands and awaits actual outcomes once started.
+async fn event_work<T: Send + 'static>(
+    slots: Arc<Semaphore>,
+    config: &Config,
+    work: impl FnOnce() -> Result<T, DbError> + Send + 'static,
+) -> Result<T, DbError> {
+    let waiting = slots.acquire_owned();
+    let permit = if config.server.request_timeout_ms == 0 {
+        waiting.await.ok()
+    } else {
+        timeout(
+            Duration::from_millis(config.server.request_timeout_ms),
+            waiting,
+        )
+        .await
+        .ok()
+        .and_then(Result::ok)
+    };
+    let Some(permit) = permit else {
+        return Err(DbError::new(ErrorCode::Busy, "Event execution queue full"));
+    };
+    tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        work()
+    })
+    .await
+    .map_err(|_| {
+        DbError::new(
+            ErrorCode::CommitUnknown,
+            "Event task failed; outcome unknown",
+        )
+    })?
 }
 
 /// 构造致命 ERROR 帧，与普通命令错误区分。
@@ -184,6 +271,24 @@ struct Session {
     last_id: u64,
     /// 当前连接唯一游标，断线即释放；Connection-owned cursor, released on disconnect.
     scan: linger_engine::ScanState,
+    /// 专用连接拥有的消费身份；Consumption identity owned by this dedicated connection.
+    subscription: Option<Arc<Consumer>>,
+    /// 事件句柄保证取消时释放租约；Event handle releases leases on cancellation.
+    events: Option<Arc<linger_events::EventStore>>,
+}
+/// 订阅结果自带释放责任，包括阻塞任务完成前连接已取消的情况。
+/// Subscription results own cleanup, including connection cancellation before blocking tasks complete.
+struct Consumer {
+    /// 消费令牌；Consumption token.
+    token: linger_events::Subscription,
+    /// 保证释放时存储仍存活；Keeps storage alive until cleanup.
+    store: Arc<linger_events::EventStore>,
+}
+impl Drop for Consumer {
+    /// 最后一个在途操作释放后归还租约；Releases leases after the last in-flight operation.
+    fn drop(&mut self) {
+        self.store.disconnect(&self.token);
+    }
 }
 impl Session {
     /// 先验证连接权限与参数，再在同步临界区执行数据命令。
@@ -196,6 +301,16 @@ impl Session {
         slots: Arc<Semaphore>,
     ) -> (Result<Value, DbError>, bool, bool) {
         let name = request.command.as_str();
+        if self.subscription.is_some() && !matches!(name, "PING" | "QUIT" | "UNSUBSCRIBE") {
+            return (
+                Err(DbError::new(
+                    ErrorCode::ConnectionState,
+                    "Dedicated subscription connection",
+                )),
+                false,
+                false,
+            );
+        }
         if !self.authenticated && self.hello && !matches!(name, "AUTH" | "PING" | "QUIT") {
             return (
                 Err(DbError::new(
@@ -231,6 +346,13 @@ impl Session {
         let result = match name {
             "HELLO" => match args {
                 [Value::UInt(1)] => {
+                    let stream_id = match self.events.as_ref().filter(|s| s.enabled()) {
+                        Some(store) => match store.stream_id() {
+                            Ok(id) => Value::Bytes(id.to_be_bytes().to_vec()),
+                            Err(e) => return (Err(e), true, true),
+                        },
+                        None => Value::Null,
+                    };
                     self.hello = true;
                     Ok(Value::Map(BTreeMap::from([
                         ("protocol".into(), Value::UInt(1)),
@@ -238,9 +360,15 @@ impl Session {
                             "server_version".into(),
                             Value::String(env!("CARGO_PKG_VERSION").into()),
                         ),
-                        ("events".into(), Value::Bool(false)),
-                        ("reliable_events".into(), Value::Bool(false)),
-                        ("stream_id".into(), Value::Null),
+                        (
+                            "events".into(),
+                            Value::Bool(self.events.as_ref().is_some_and(|s| s.enabled())),
+                        ),
+                        (
+                            "reliable_events".into(),
+                            Value::Bool(self.events.as_ref().is_some_and(|s| s.reliable())),
+                        ),
+                        ("stream_id".into(), stream_id),
                     ])))
                 }
                 [Value::UInt(_)] => {
@@ -257,6 +385,62 @@ impl Session {
                     invalid()
                 }
             },
+            "SUBSCRIBE" => {
+                let parsed = match args {
+                    [Value::List(patterns)] => Some((patterns, None)),
+                    [
+                        Value::List(patterns),
+                        Value::String(group),
+                        Value::String(name),
+                    ] if group == "GROUP" => Some((patterns, Some(name.clone()))),
+                    _ => None,
+                };
+                if let Some((patterns, name)) = parsed {
+                    let patterns = patterns
+                        .iter()
+                        .map(|p| match p {
+                            Value::String(s) => Ok(s.clone()),
+                            _ => Err(DbError::new(
+                                ErrorCode::InvalidArgument,
+                                "Invalid subscription pattern",
+                            )),
+                        })
+                        .collect::<Result<Vec<_>, _>>();
+                    match (patterns, self.events.clone()) {
+                        (Ok(patterns), Some(store)) => {
+                            let db = self.db;
+                            match event_work(slots.clone(), config, move || {
+                                store
+                                    .subscribe(db, patterns, name.as_deref())
+                                    .map(|token| Consumer { token, store })
+                            })
+                            .await
+                            {
+                                Ok(sub) => {
+                                    self.subscription = Some(Arc::new(sub));
+                                    Ok(Value::Bool(true))
+                                }
+                                Err(e) => Err(e),
+                            }
+                        }
+                        (Err(e), _) => Err(e),
+                        _ => Err(DbError::new(ErrorCode::EventsDisabled, "Events disabled")),
+                    }
+                } else {
+                    invalid()
+                }
+            }
+            "UNSUBSCRIBE" if args.is_empty() => {
+                if let Some(sub) = self.subscription.take() {
+                    drop(sub);
+                    Ok(Value::Bool(true))
+                } else {
+                    Err(DbError::new(
+                        ErrorCode::ConnectionState,
+                        "No subscription context",
+                    ))
+                }
+            }
             "PING" => match args {
                 [] => Ok(Value::String("PONG".into())),
                 [Value::String(v)] => Ok(Value::String(v.clone())),
@@ -356,7 +540,7 @@ impl Session {
 
 /// 分别限制帧间空闲和半帧接收，取消后连接不再复用。
 /// Separately limits inter-frame idle time and partial reads; cancelled streams are never reused.
-async fn receive(stream: &mut TcpStream, config: &Config) -> Result<Option<Frame>, ReadError> {
+async fn receive(stream: &mut OwnedReadHalf, config: &Config) -> Result<Option<Frame>, ReadError> {
     let idle = config.server.idle_timeout_ms;
     // 只预读首字节，用于区分空闲时间与半帧接收期限。
     // Peek only to separate idle time from the deadline for a partially received frame.
@@ -389,7 +573,11 @@ async fn receive(stream: &mut TcpStream, config: &Config) -> Result<Option<Frame
 
 /// 完整编码后按有界块写出，所有块共用一个截止时间。
 /// Encodes fully then writes bounded chunks sharing one deadline.
-async fn send(stream: &mut TcpStream, frame: Frame, config: &Config) -> Result<(), ()> {
+async fn send(
+    stream: &mut (impl AsyncWrite + Unpin),
+    frame: Frame,
+    config: &Config,
+) -> Result<(), ()> {
     let limits = config.limits();
     let bytes = encode_frame(&frame, limits)
         .or_else(|error| {
@@ -440,6 +628,8 @@ mod tests {
             db: 0,
             last_id: 1,
             scan: linger_engine::ScanState::default(),
+            subscription: None,
+            events: None,
         };
         let request = Request::new("SET", vec![Value::String("queued".into()), Value::Null]);
         let (result, close, fatal) = session

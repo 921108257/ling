@@ -2,8 +2,10 @@
 //! Async Rust client; callers own the connection and database context, with no automatic request replay.
 
 use linger_protocol::{Body, Frame, Limits, ReadError, Request, encode_frame, read_frame};
-pub use linger_types::{DbError, ErrorCode, Float, Scalar, Value};
+pub use linger_types::{DbError, ErrorCode, Event, EventId, EventKind, Float, Scalar, Value};
+mod subscriber;
 use std::{collections::BTreeMap, net::SocketAddr, time::Duration};
+pub use subscriber::Subscriber;
 use tokio::{io::AsyncWriteExt, net::TcpStream, time::timeout};
 
 /// 连接、请求时限和编码预算；连接时拒绝零值或无法表示的时限。
@@ -73,6 +75,8 @@ pub enum LocalError {
     /// 连接已经关闭或请求编号耗尽。
     /// Connection closed or request numbers exhausted.
     Closed,
+    /// 订阅等待 ACK 时的有界事件队列耗尽；Subscription queue exhausted while awaiting an ACK response.
+    BufferFull,
 }
 
 impl Error {
@@ -209,6 +213,20 @@ impl Client {
         Ok(client)
     }
 
+    /// 在恢复订阅前显式校验旧流；变化时关闭连接，不创建新组。
+    /// Explicitly checks a saved stream before resubscribing; changes close the connection without creating a group.
+    pub fn require_event_stream(&mut self, expected: u128) -> Result<(), Error> {
+        let expected = Value::Bytes(expected.to_be_bytes().to_vec());
+        if self.hello.get("stream_id") != Some(&expected) {
+            self.stream.take();
+            return Err(Error::Server(DbError::new(
+                ErrorCode::StreamMismatch,
+                "Event stream changed",
+            )));
+        }
+        Ok(())
+    }
+
     /// 读取握手确认的服务端能力，不推断未公布的功能。
     /// Reads capabilities confirmed by the handshake without inferring unadvertised features.
     pub fn capabilities(&self) -> &BTreeMap<String, Value> {
@@ -245,10 +263,19 @@ impl Client {
             self.stream.take();
             return Err(Error::local(LocalError::Closed, false));
         };
+        let body = if request.command == "ACK" {
+            let [id] = request.arguments.as_slice() else {
+                return Err(Error::local(LocalError::InvalidRequest, false));
+            };
+            EventId::from_value(id).map_err(|_| Error::local(LocalError::InvalidRequest, false))?;
+            Body::Ack(id.clone())
+        } else {
+            Body::Request(request)
+        };
         let bytes = encode_frame(
             &Frame {
                 request_id: id,
-                body: Body::Request(request),
+                body,
             },
             self.options.limits,
         )

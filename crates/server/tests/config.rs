@@ -37,7 +37,7 @@ fn rejects_invalid_auth_limits_and_unsupported_fields() {
     config.server.max_connections = 0;
     assert!(config.validate().is_err());
     for text in [
-        "[events]\nenabled=true",
+        "[events]\nunknown=true",
         "[server]\nprot=6380",
         "[auth]\npassword=123",
         "[database]\ndatabases=1\ndatabases=2",
@@ -114,4 +114,39 @@ fn ttl_settings_enforce_precision_and_bounded_rounds() {
     config.ttl.maintenance_budget = 0;
     assert!(config.validate().is_err());
     assert!(toml::from_str::<Config>("[ttl]\ninterval_ms=1").is_err());
+}
+
+/// 事件配置组合和相对 Journal 目录在监听前确定。
+/// Event configuration combinations and relative Journal directories are resolved before listening.
+#[test]
+fn event_configuration_and_relative_directory() {
+    let mut c = Config::default();
+    c.events.mode = "reliable".into();
+    assert!(c.validate().is_err());
+    c.event_journal.dir = "journal".into();
+    c.validate().unwrap();
+    c.events.enabled = false;
+    assert!(c.validate().is_err());
+    c.events.enabled = true;
+    c.events.retry_interval_ms = 0;
+    assert!(c.validate().is_err());
+    c.events.retry_interval_ms = 1;
+    c.events.retention_days = u64::MAX;
+    assert!(c.validate().is_err());
+    c.events.retention_days = 7;
+    c.event_journal.group_commit_ms = 1001;
+    assert!(c.validate().is_err());
+    let dir = std::env::temp_dir().join(format!("linger-path-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("server.toml");
+    std::fs::write(
+        &path,
+        "[events]\nmode=\"reliable\"\n[event_journal]\ndir=\"journal\"\n",
+    )
+    .unwrap();
+    assert_eq!(
+        Config::load(&path).unwrap().event_journal.dir,
+        dir.join("journal")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
 }

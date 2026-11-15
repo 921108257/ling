@@ -379,3 +379,63 @@ async fn fragmented_and_coalesced_frames_and_truncated_eof() {
         Err(ReadError::Decode(_))
     ));
 }
+
+/// 公开事件类型读取冻结的 EVENT/ACK 黄金帧，极小业务值预算不影响封套。
+/// Public event types read frozen EVENT/ACK vectors; tiny business-value limits do not constrain envelopes.
+#[test]
+fn typed_events_match_existing_protocol_vectors() {
+    let limits = Limits {
+        value: linger_types::ValueLimits {
+            max_bytes: 1,
+            max_depth: 1,
+            max_key_bytes: 1,
+        },
+        ..Limits::default()
+    };
+    let event_frame = decode_frame(
+        &hex(include_str!("../../../tests/fixtures/protocol/frames.tsv")
+            .lines()
+            .find(|l| l.starts_with("event|"))
+            .unwrap()
+            .split_once('|')
+            .unwrap()
+            .1),
+        limits,
+    )
+    .unwrap();
+    let Body::Event(value) = event_frame.body else {
+        panic!()
+    };
+    let event = linger_types::Event::from_value(&value).unwrap();
+    assert_eq!(event.kind, linger_types::EventKind::Created);
+    assert_eq!(event.id.stream_id, 1);
+    assert_eq!(event.generation.epoch, 2);
+    assert_eq!(event.key, "k");
+    let round = encode_frame(
+        &Frame {
+            request_id: 0,
+            body: Body::Event(event.to_value()),
+        },
+        limits,
+    )
+    .unwrap();
+    let Body::Event(v) = decode_frame(&round, limits).unwrap().body else {
+        panic!()
+    };
+    assert_eq!(linger_types::Event::from_value(&v).unwrap(), event);
+    let id = linger_types::EventId {
+        stream_id: u128::MAX,
+        db: u16::MAX,
+        shard: u32::MAX,
+        sequence: u64::MAX,
+    };
+    assert_eq!(
+        linger_types::EventId::from_value(&id.to_value()).unwrap(),
+        id
+    );
+    let mut invalid = event.to_value();
+    if let Value::Map(m) = &mut invalid {
+        m.insert("revision".into(), Value::Int(1));
+    }
+    assert!(linger_types::Event::from_value(&invalid).is_err());
+}

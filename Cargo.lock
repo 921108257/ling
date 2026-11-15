@@ -261,6 +261,7 @@ dependencies = [
  "clap",
  "linger-client",
  "linger-engine",
+ "linger-events",
  "linger-protocol",
  "linger-types",
  "rand",
