@@ -7,8 +7,7 @@ use linger_types::{DbError, ErrorCode, Value};
 use std::collections::BTreeMap;
 use std::{sync::Arc, time::Duration};
 use tokio::{
-    io::{AsyncWrite, AsyncWriteExt},
-    net::{TcpStream, tcp::OwnedReadHalf},
+    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
     sync::{Semaphore, watch},
     time::{Instant, timeout, timeout_at},
 };
@@ -16,13 +15,18 @@ use tokio::{
 /// 按接收顺序处理请求，致命帧错误或关闭信号结束连接。
 /// Processes requests in receive order and closes on fatal framing errors or shutdown.
 pub(crate) async fn serve(
-    stream: TcpStream,
+    stream: linger_network::Stream,
     config: &Config,
     engine: &Arc<linger_engine::Engine>,
     slots: Arc<Semaphore>,
     mut shutdown: watch::Receiver<bool>,
+    runtime: Arc<crate::operations::Runtime>,
 ) {
-    let (mut reader, mut stream) = stream.into_split();
+    runtime
+        .clients
+        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let _connection = ConnectionCount(runtime.clone());
+    let (mut reader, mut stream) = tokio::io::split(stream);
     let (frames, mut incoming) = tokio::sync::mpsc::channel(1);
     let read_config = config.clone();
     let mut reading = tokio::task::JoinSet::new();
@@ -47,6 +51,7 @@ pub(crate) async fn serve(
         scan: linger_engine::ScanState::default(),
         subscription: None,
         events: engine.events().cloned(),
+        runtime: Some(runtime.clone()),
     };
     loop {
         if *shutdown.borrow() {
@@ -136,6 +141,49 @@ pub(crate) async fn serve(
             .await;
             break;
         }
+        let started = std::time::Instant::now();
+        let shutdown_requested = matches!(&frame.body, Body::Request(r) if r.command == "SHUTDOWN" && r.arguments.is_empty() && session.authenticated && session.subscription.is_none());
+        if let Body::BatchRequest(items) = &frame.body {
+            let body = if !session.authenticated {
+                Body::Response(Err(DbError::new(
+                    ErrorCode::Unauthenticated,
+                    "Authentication required",
+                )))
+            } else if session.subscription.is_some() {
+                Body::Response(Err(DbError::new(
+                    ErrorCode::ConnectionState,
+                    "Dedicated subscription connection",
+                )))
+            } else {
+                let items = items.clone();
+                let engine = engine.clone();
+                let config = config.clone();
+                let db = session.db;
+                match event_work(slots.clone(), &config.clone(), move || {
+                    crate::batch::execute(&engine, &config, db, items)
+                })
+                .await
+                {
+                    Ok(results) => Body::BatchResponse(results),
+                    Err(error) => Body::Response(Err(error)),
+                }
+            };
+            runtime.record(started, matches!(&body, Body::Response(Err(_))));
+            if send(
+                &mut stream,
+                Frame {
+                    request_id: frame.request_id,
+                    body,
+                },
+                config,
+            )
+            .await
+            .is_err()
+            {
+                break;
+            }
+            continue;
+        }
         let (result, close, fatal_error) = match frame.body {
             Body::Request(request) => {
                 session
@@ -185,12 +233,14 @@ pub(crate) async fn serve(
             }
             _ => unreachable!(),
         };
+        let accepted_shutdown = shutdown_requested && result == Ok(Value::Bool(true));
+        runtime.record(started, result.is_err());
         let body = if fatal_error {
             Body::Error(result.unwrap_err())
         } else {
             Body::Response(result)
         };
-        if send(
+        let sent = send(
             &mut stream,
             Frame {
                 request_id: frame.request_id,
@@ -199,9 +249,11 @@ pub(crate) async fn serve(
             config,
         )
         .await
-        .is_err()
-            || close
-        {
+        .is_err();
+        if accepted_shutdown {
+            runtime.stop.send_replace(true);
+        }
+        if sent || close {
             break;
         }
     }
@@ -257,6 +309,8 @@ fn fatal(id: u64, code: ErrorCode, message: &'static str) -> Frame {
 /// 连接独占状态；串行执行明确保证 AUTH / SELECT / QUIT 屏障。
 /// Connection-owned state; serial execution explicitly enforces AUTH, SELECT, and QUIT barriers.
 struct Session {
+    /// 运行控制面；Runtime control plane.
+    runtime: Option<Arc<crate::operations::Runtime>>,
     /// 是否完成唯一一次 HELLO。
     /// Whether the sole HELLO handshake completed.
     hello: bool,
@@ -385,6 +439,23 @@ impl Session {
                     invalid()
                 }
             },
+            "INFO" | "CONFIG" => {
+                let Some(runtime) = self.runtime.clone() else {
+                    return (invalid(), false, false);
+                };
+                let engine = engine.clone();
+                let args = args.to_vec();
+                let info = name == "INFO";
+                event_work(slots.clone(), config, move || {
+                    if info {
+                        runtime.info(&engine, &args)
+                    } else {
+                        runtime.configure(&args)
+                    }
+                })
+                .await
+            }
+            "SHUTDOWN" if args.is_empty() => Ok(Value::Bool(true)),
             "SUBSCRIBE" => {
                 let parsed = match args {
                     [Value::List(patterns)] => Some((patterns, None)),
@@ -540,25 +611,28 @@ impl Session {
 
 /// 分别限制帧间空闲和半帧接收，取消后连接不再复用。
 /// Separately limits inter-frame idle time and partial reads; cancelled streams are never reused.
-async fn receive(stream: &mut OwnedReadHalf, config: &Config) -> Result<Option<Frame>, ReadError> {
-    let idle = config.server.idle_timeout_ms;
-    // 只预读首字节，用于区分空闲时间与半帧接收期限。
-    // Peek only to separate idle time from the deadline for a partially received frame.
+async fn receive(
+    stream: &mut (impl AsyncRead + Unpin),
+    config: &Config,
+) -> Result<Option<Frame>, ReadError> {
     let mut first = [0];
-    let peek = if idle == 0 {
-        stream.peek(&mut first).await
+    let start = async { stream.read(&mut first).await };
+    let count = if config.server.idle_timeout_ms == 0 {
+        start.await
     } else {
-        match timeout(Duration::from_millis(idle), stream.peek(&mut first)).await {
-            Ok(value) => value,
+        match timeout(Duration::from_millis(config.server.idle_timeout_ms), start).await {
+            Ok(result) => result,
             Err(_) => return Ok(None),
         }
-    };
-    match peek {
-        Ok(0) => return Ok(None),
-        Ok(_) => {}
-        Err(error) => return Err(ReadError::Io(error)),
     }
-    let read = read_frame(stream, config.limits());
+    .map_err(ReadError::Io)?;
+    if count == 0 {
+        return Ok(None);
+    }
+    // 首字节回接至同一解码器，TCP/TLS 均不依赖 peek。
+    // Chain the first byte into the same decoder; neither TCP nor TLS depends on peek.
+    let mut complete = std::io::Cursor::new(first).chain(stream);
+    let read = read_frame(&mut complete, config.limits());
     if config.server.request_timeout_ms == 0 {
         read.await
     } else {
@@ -605,6 +679,18 @@ async fn send(
     Ok(())
 }
 
+/// 连接计数与任务生命周期一致，即使取消也会归还。
+/// Connection counts follow task lifetime and return even on cancellation.
+struct ConnectionCount(Arc<crate::operations::Runtime>);
+impl Drop for ConnectionCount {
+    /// 中止任务也更新连接数；Aborted tasks also update connection counts.
+    fn drop(&mut self) {
+        self.0
+            .clients
+            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 /// 执行调度的边界测试，不依赖制造昂贵命令或不稳定的网络竞争。
 /// Scheduling boundary tests without expensive commands or timing-sensitive network contention.
 #[cfg(test)]
@@ -630,6 +716,7 @@ mod tests {
             scan: linger_engine::ScanState::default(),
             subscription: None,
             events: None,
+            runtime: None,
         };
         let request = Request::new("SET", vec![Value::String("queued".into()), Value::Null]);
         let (result, close, fatal) = session

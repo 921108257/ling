@@ -3,12 +3,12 @@
 
 use linger_protocol::Limits;
 use linger_types::{DbError, ErrorCode};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{net::IpAddr, path::Path, time::Duration};
 
 /// 当前阶段支持的配置全集；默认值在加载后仍经过验证。
 /// Complete supported configuration for this stage; defaults are validated after loading.
-#[derive(Clone, Deserialize, Default)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
     /// 监听和连接预算。
@@ -17,6 +17,8 @@ pub struct Config {
     /// 实例级认证设置。
     /// Instance-wide authentication settings.
     pub auth: AuthConfig,
+    /// TLS 身份与信任；TLS identity and trust.
+    pub tls: TlsConfig,
     /// 数据库命名空间设置。
     /// Database namespace settings.
     pub database: DatabaseConfig,
@@ -35,10 +37,94 @@ pub struct Config {
     pub events: EventsConfig,
     /// Reliable 磁盘预算；Reliable disk budget.
     pub event_journal: EventJournalConfig,
+    /// 日志输出策略；Log output policy.
+    pub log: LogConfig,
+    /// Prometheus 监听策略；Prometheus listener policy.
+    pub metrics: MetricsConfig,
+    /// 重载来源，不属于公开配置字段；Reload source, not a public configuration field.
+    #[serde(skip)]
+    pub source: Option<std::path::PathBuf>,
+}
+
+/// 日志只包含稳定操作信息，不包含参数与凭据。
+/// Logs contain stable operational facts, never arguments or credentials.
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct LogConfig {
+    /// trace/debug/info/warn/error；Allowed severity level.
+    pub level: String,
+    /// text 或 json；Text or JSON.
+    pub format: String,
+    /// stdout 或 stderr；Standard output or standard error.
+    pub output: String,
+}
+impl Default for LogConfig {
+    /// 默认信息级文本输出至 stdout；Defaults to info text on stdout.
+    fn default() -> Self {
+        Self {
+            level: "info".into(),
+            format: "text".into(),
+            output: "stdout".into(),
+        }
+    }
+}
+/// 单独有界的指标端点，不暴露业务数据。
+/// Separate bounded metrics endpoint without business data.
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MetricsConfig {
+    /// 默认关闭；Disabled by default.
+    pub enabled: bool,
+    /// 默认回环地址；Loopback by default.
+    pub host: IpAddr,
+    /// 非零端口；Nonzero port.
+    pub port: u16,
+    /// 固定 HTTP GET 路径；Fixed HTTP GET path.
+    pub path: String,
+}
+impl Default for MetricsConfig {
+    /// 默认回环 9090 的 /metrics；Defaults to loopback port 9090 and /metrics.
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            host: "127.0.0.1".parse().unwrap(),
+            port: 9090,
+            path: "/metrics".into(),
+        }
+    }
+}
+
+/// 服务端 TLS；证书路径相对配置文件解析。
+/// Server TLS with identity paths resolved relative to the config file.
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct TlsConfig {
+    /// 启用时不再接受明文；Rejects plaintext when enabled.
+    pub enabled: bool,
+    /// PEM 证书链；PEM certificate chain.
+    pub cert_file: std::path::PathBuf,
+    /// PEM 私钥；PEM private key.
+    pub key_file: std::path::PathBuf,
+    /// 非空要求客户端证书；Nonempty requires client certificates.
+    pub ca_file: std::path::PathBuf,
+    /// tls1.2 或 tls1.3；Either tls1.2 or tls1.3.
+    pub min_version: String,
+}
+impl Default for TlsConfig {
+    /// 默认关闭，最低 TLS 1.2；Disabled by default, minimum TLS 1.2.
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            cert_file: Default::default(),
+            key_file: Default::default(),
+            ca_file: Default::default(),
+            min_version: "tls1.2".into(),
+        }
+    }
 }
 
 /// 启动固定的事件与消费策略；Event and consumer policy fixed at startup.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EventsConfig {
     /// 是否生成事件；Whether events are generated.
@@ -75,7 +161,7 @@ impl Default for EventsConfig {
     }
 }
 /// 仅 Reliable 打开的目录与容量；Directory and capacity opened only in Reliable mode.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EventJournalConfig {
     /// 相对配置文件目录解析；Resolved relative to the configuration file.
@@ -98,7 +184,7 @@ impl Default for EventJournalConfig {
 
 /// 精度固定为毫秒，维护工作量不改变逻辑到期边界。
 /// Precision is fixed at milliseconds; maintenance work limits never alter logical expiry boundaries.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct TtlConfig {
     /// 固定为 1，不提供近似过期精度开关。
@@ -121,7 +207,7 @@ impl Default for TtlConfig {
 
 /// 启动时确定的固定分片和业务资源配置。
 /// Fixed sharding and business resource settings resolved at startup.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EngineConfig {
     /// 0 按系统可用并行度解析；Zero resolves to system available parallelism.
@@ -155,7 +241,7 @@ impl Default for EngineConfig {
 
 /// 淘汰策略与采样数量；不接受未知策略或零采样数。
 /// Eviction policy and sample count; unknown policies and zero samples are rejected.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EvictionConfig {
     /// 精确小写策略名；Exact lowercase policy name.
@@ -177,7 +263,7 @@ impl Default for EvictionConfig {
 
 /// TCP 监听、连接数量、超时和单连接缓冲限制。
 /// TCP listening, connection count, timeout, and per-connection buffer limits.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ServerConfig {
     /// 监听 IP，默认回环地址。
@@ -239,7 +325,7 @@ impl Default for ServerConfig {
 // No Debug implementation: neither this structure nor parse errors may reveal credentials.
 /// 实例级可选密码认证；不派生 Debug，避免泄露凭据。
 /// Optional instance password authentication; no derived Debug to avoid credential exposure.
-#[derive(Clone, Deserialize, Default)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct AuthConfig {
     /// 是否要求客户端认证。
@@ -252,7 +338,7 @@ pub struct AuthConfig {
 
 /// 数据库命名空间数量及新连接默认选择。
 /// Database namespace count and default selection for new connections.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct DatabaseConfig {
     /// 命名空间数量，范围 1..=65536。
@@ -273,9 +359,9 @@ impl Default for DatabaseConfig {
     }
 }
 
-/// 协议帧与批量编码限制，不表示已支持批量执行。
-/// Frame and batch codec limits, not a claim of batch execution support.
-#[derive(Clone, Deserialize)]
+/// 协议帧与批量限制；批量仍须通过命令白名单及响应预算检查。
+/// Frame and batch limits; batches still require command admission and response budgets.
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ProtocolConfig {
     /// 完整帧上限，必须容纳最大方向负载及帧头。
@@ -310,20 +396,26 @@ impl Config {
     /// 加载 UTF-8 TOML 并校验；错误隐藏可能包含密码的原文。
     /// Loads UTF-8 TOML and validates it; errors omit source text that could contain passwords.
     pub fn load(path: &Path) -> Result<Self, DbError> {
+        let absolute = std::path::absolute(path).map_err(|_| invalid("Invalid config path"))?;
+        let path = absolute.as_path();
         let source =
             std::fs::read_to_string(path).map_err(|_| invalid("Cannot read configuration file"))?;
         // TOML 错误可能附带含 auth.password 的源片段，因此只返回安全说明。
         // TOML errors may include auth.password source excerpts, so return only a safe description.
         let mut config: Self = toml::from_str(&source)
             .map_err(|_| invalid("Invalid configuration syntax, field or type"))?;
-        if !config.event_journal.dir.as_os_str().is_empty()
-            && config.event_journal.dir.is_relative()
-        {
-            config.event_journal.dir = path
-                .parent()
-                .unwrap_or(Path::new("."))
-                .join(&config.event_journal.dir);
+        for item in [
+            &mut config.event_journal.dir,
+            &mut config.tls.cert_file,
+            &mut config.tls.key_file,
+            &mut config.tls.ca_file,
+        ] {
+            if !item.as_os_str().is_empty() && item.is_relative() {
+                *item = path.parent().unwrap_or(Path::new(".")).join(&*item);
+            }
         }
+        config.source =
+            Some(std::path::absolute(path).map_err(|_| invalid("Invalid config path"))?);
         config.validate()?;
         Ok(config)
     }
@@ -332,6 +424,41 @@ impl Config {
     /// Validates ranges and combinations before listening without allocating engine indexes.
     pub fn validate(&self) -> Result<(), DbError> {
         self.event_config()?.validate()?;
+        if !matches!(
+            self.log.level.as_str(),
+            "trace" | "debug" | "info" | "warn" | "error"
+        ) || !matches!(self.log.format.as_str(), "text" | "json")
+            || !matches!(self.log.output.as_str(), "stdout" | "stderr")
+        {
+            return Err(invalid("Invalid log settings"));
+        }
+        if self.metrics.port == 0
+            || !self.metrics.path.starts_with('/')
+            || self.metrics.path.len() > 1024
+            || self
+                .metrics
+                .path
+                .bytes()
+                .any(|b| b.is_ascii_whitespace() || b.is_ascii_control())
+            || (self.metrics.enabled
+                && self.metrics.port == self.server.port
+                && (self.metrics.host == self.server.host
+                    || self.metrics.host.is_unspecified()
+                    || self.server.host.is_unspecified()))
+        {
+            return Err(invalid("Invalid metrics listener"));
+        }
+        if !matches!(self.tls.min_version.as_str(), "tls1.2" | "tls1.3")
+            || (self.tls.enabled
+                && (self.tls.cert_file.as_os_str().is_empty()
+                    || self.tls.key_file.as_os_str().is_empty()))
+            || (!self.tls.enabled
+                && [&self.tls.cert_file, &self.tls.key_file, &self.tls.ca_file]
+                    .iter()
+                    .any(|p| !p.as_os_str().is_empty()))
+        {
+            return Err(invalid("Invalid TLS settings"));
+        }
         if self.ttl.precision_ms != 1 || self.ttl.maintenance_budget == 0 {
             return Err(invalid("Invalid TTL precision or maintenance budget"));
         }

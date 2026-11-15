@@ -12,6 +12,7 @@ pub(crate) async fn run(
     slots: Arc<Semaphore>,
     budget: usize,
     mut closing: watch::Receiver<bool>,
+    runtime: Option<Arc<crate::operations::Runtime>>,
 ) -> io::Result<()> {
     let mut maintenance = std::time::Instant::now();
     let mut delay = Duration::from_millis(1);
@@ -69,7 +70,9 @@ pub(crate) async fn run(
             {
                 delay = Duration::from_millis(100);
                 if previous_error != e.code {
-                    eprintln!("事件维护暂停：{}", e.code);
+                    if let Some(runtime) = &runtime {
+                        runtime.log("warn", &e.code);
+                    }
                     previous_error = e.code;
                 }
             }
@@ -108,6 +111,7 @@ mod tests {
             Arc::new(Semaphore::new(1)),
             1,
             receiver,
+            None,
         ));
         tokio::time::timeout(Duration::from_secs(2), async {
             while engine.memory_usage().unwrap() != 0 {
@@ -128,7 +132,7 @@ mod tests {
         let slots = Arc::new(Semaphore::new(0));
         let engine = Arc::new(Engine::new(linger_engine::Config::default(), 1).unwrap());
         let (closing, receiver) = watch::channel(false);
-        let task = tokio::spawn(run(engine, slots, 1, receiver));
+        let task = tokio::spawn(run(engine, slots, 1, receiver, None));
         tokio::time::sleep(Duration::from_millis(10)).await;
         closing.send_replace(true);
         tokio::time::timeout(Duration::from_secs(1), task)

@@ -1,12 +1,14 @@
 //! TCP 服务装配：分片所有权属于引擎，阻塞执行任务数量受控。
 //! TCP service assembly: the engine owns shards and blocking execution tasks are bounded.
 
+mod batch;
 mod config;
 mod connection;
 mod maintenance;
+mod operations;
 pub use config::{
     AuthConfig, Config, DatabaseConfig, EngineConfig, EventJournalConfig, EventsConfig,
-    EvictionConfig, ProtocolConfig, ServerConfig, TtlConfig,
+    EvictionConfig, LogConfig, MetricsConfig, ProtocolConfig, ServerConfig, TlsConfig, TtlConfig,
 };
 use std::{future::Future, io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
@@ -21,6 +23,8 @@ pub struct Server {
     /// 本实例唯一监听器。
     /// Listener owned exclusively by this instance.
     listener: TcpListener,
+    /// 监听前校验的 TLS 身份；TLS identity validated before listening.
+    tls: Option<tokio_rustls::TlsAcceptor>,
     /// 所有连接只读共享的启动配置。
     /// Startup configuration shared read-only by connections.
     config: Arc<Config>,
@@ -34,6 +38,7 @@ impl Server {
     /// Validates configuration, creates the engine, and binds the listener; invalid settings accept no requests.
     pub async fn bind(config: Config) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         config.validate()?;
+        let tls = make_tls(&config)?;
         let engine_config = config.engine_config()?;
         let events = Arc::new(linger_events::EventStore::open(
             config.event_config()?,
@@ -56,6 +61,7 @@ impl Server {
         let listener = socket.listen(config.server.backlog)?;
         Ok(Self {
             listener,
+            tls,
             config: Arc::new(config),
             engine,
         })
@@ -68,6 +74,7 @@ impl Server {
         config: Config,
     ) -> Result<Self, linger_types::DbError> {
         config.validate()?;
+        let tls = make_tls(&config)?;
         let engine_config = config.engine_config()?;
         let events = Arc::new(linger_events::EventStore::open(
             config.event_config()?,
@@ -82,6 +89,7 @@ impl Server {
         )?);
         Ok(Self {
             listener,
+            tls,
             config: Arc::new(config),
             engine,
         })
@@ -112,19 +120,50 @@ impl Server {
                 .min(self.config.server.max_connections),
         ));
         let (closing, receiver) = watch::channel(false);
+        let runtime = Arc::new(operations::Runtime::new(self.config.clone()));
         let mut background = JoinSet::new();
         background.spawn(maintenance::run(
             self.engine.clone(),
             slots.clone(),
             self.config.ttl.maintenance_budget,
             receiver.clone(),
+            Some(runtime.clone()),
         ));
+        let mut requested = runtime.stop.subscribe();
+        runtime.log(
+            "info",
+            &format!(
+                "linger-server {} listening {}: {} shards/database; events {}",
+                env!("CARGO_PKG_VERSION"),
+                self.listener.local_addr()?,
+                self.engine.shard_count(),
+                if self.config.events.enabled {
+                    self.config.events.mode.as_str()
+                } else {
+                    "disabled"
+                }
+            ),
+        );
+        if self.config.metrics.enabled {
+            let listener = TcpListener::bind(SocketAddr::new(
+                self.config.metrics.host,
+                self.config.metrics.port,
+            ))
+            .await?;
+            background.spawn(operations::serve_metrics(
+                listener,
+                runtime.clone(),
+                self.engine.clone(),
+                receiver.clone(),
+            ));
+        }
         let mut connections = JoinSet::new();
         tokio::pin!(shutdown);
         let result = loop {
             tokio::select! {
                 biased;
                 _ = &mut shutdown => break Ok(()),
+                _ = requested.changed() => break Ok(()),
                 Some(result) = background.join_next() => {
                     break match result {
                         Ok(Err(error)) => Err(error),
@@ -138,10 +177,24 @@ impl Server {
                     let (stream, _) = match accepted { Ok(value) => value, Err(e) => break Err(e) };
                     let Ok(permit) = semaphore.clone().try_acquire_owned() else { drop(stream); continue; };
                     let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone(); let slots = slots.clone();
-                    connections.spawn(async move { let _permit = permit; connection::serve(stream, &config, &engine, slots, receiver).await; });
+                    let tls = self.tls.clone();
+                    let runtime = runtime.clone();
+                    connections.spawn(async move {
+                        let _permit = permit;
+                        let stream: linger_network::Stream = if let Some(tls) = tls {
+                            let mut closing = receiver.clone();
+                            let handshake = tokio::time::timeout(Duration::from_millis(config.server.shutdown_timeout_ms), tls.accept(stream));
+                            tokio::select! {
+                                _ = closing.changed() => return,
+                                result = handshake => match result { Ok(Ok(s)) => Box::new(s), _ => return },
+                            }
+                        } else { Box::new(stream) };
+                        connection::serve(stream, &config, &engine, slots, receiver, runtime).await;
+                    });
                 }
             }
         };
+        runtime.log("info", "server draining");
         closing.send_replace(true);
         let drain = async {
             while connections.join_next().await.is_some() {}
@@ -159,6 +212,21 @@ impl Server {
             while connections.join_next().await.is_some() {}
             while background.join_next().await.is_some() {}
         }
+        runtime.log("info", "server stopped");
         result
     }
+}
+
+/// 在业务监听前拒绝不可用身份；Rejects unavailable identities before accepting business traffic.
+fn make_tls(config: &Config) -> Result<Option<tokio_rustls::TlsAcceptor>, linger_types::DbError> {
+    if !config.tls.enabled {
+        return Ok(None);
+    }
+    linger_network::server_tls(
+        &config.tls.cert_file,
+        &config.tls.key_file,
+        (!config.tls.ca_file.as_os_str().is_empty()).then_some(config.tls.ca_file.as_path()),
+        &config.tls.min_version,
+    )
+    .map(Some)
 }
