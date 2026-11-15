@@ -85,6 +85,9 @@ databases = 16
 shard_count = 4
 max_memory_bytes = 268435456
 
+[events]
+enabled = false
+
 [eviction]
 policy = "noeviction"
 sample_size = 5

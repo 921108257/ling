@@ -2,10 +2,16 @@
 //! Fixed-workload closed-loop benchmark; real TCP and direct engine results are labeled separately.
 
 use clap::Parser;
-use linger_client::{Client, Options, Value};
+use linger_client::{Client, ClientTls, Options, Value};
 use linger_engine::{Config, Engine};
 use rand::{Rng, SeedableRng, rngs::StdRng};
-use std::{collections::BTreeMap, net::SocketAddr, sync::Arc, time::Instant};
+use std::{
+    collections::BTreeMap,
+    net::SocketAddr,
+    path::PathBuf,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 use tokio::{
     sync::{Barrier, watch},
     task::JoinSet,
@@ -45,6 +51,30 @@ struct Args {
     /// 每数据库固定分片数；Fixed shard count per database.
     #[arg(long, default_value_t = 4)]
     shards: u32,
+    /// 固定测量秒数，零时使用 operations；Measurement seconds, or operations when zero.
+    #[arg(long, default_value_t = 0)]
+    seconds: u64,
+    /// 90% 请求集中到首 1% Key；Routes 90% of requests to the first 1% of keys.
+    #[arg(long)]
+    hot: bool,
+    /// GET 中明确未命中的百分比；Explicit miss percentage among GETs.
+    #[arg(long, default_value_t = 0)]
+    miss_percent: u8,
+    /// 每次写入重设的毫秒 TTL，零表示无 TTL；Renewed write TTL in milliseconds, zero disables TTL.
+    #[arg(long, default_value_t = 0)]
+    ttl_ms: u64,
+    /// 可选验证式 TLS 名称；Optional verified TLS server name.
+    #[arg(long)]
+    tls_server_name: Option<String>,
+    /// 自定义 CA；Custom CA.
+    #[arg(long, requires = "tls_server_name")]
+    tls_ca: Option<PathBuf>,
+    /// 无消费者 / 快消费者 / 每事件等待 20ms；None, fast, or 20ms-delayed consumer.
+    #[arg(long, default_value = "none", value_parser = ["none", "fast", "slow"])]
+    consumer: String,
+    /// 每客户端每秒最多操作数，零为闭环不限速；Per-client rate cap, zero runs uncapped closed-loop.
+    #[arg(long, default_value_t = 0)]
+    rate: u64,
 }
 
 /// 每个客户端拥有连接；引擎模式共享同一明确所有权实现。
@@ -90,54 +120,134 @@ async fn target(
         Target::Engine(engine.clone())
     } else {
         Target::Tcp(Box::new(
-            Client::connect(args.address, None, 0, Options::default()).await?,
+            Client::connect(
+                args.address,
+                None,
+                0,
+                Options {
+                    tls: args.tls_server_name.clone().map(|server_name| ClientTls {
+                        server_name,
+                        ca_file: args.tls_ca.clone(),
+                        cert_file: None,
+                        key_file: None,
+                    }),
+                    ..Options::default()
+                },
+            )
+            .await?,
         ))
     })
 }
 
-/// 单个客户端的原始纳秒样本和错误计数；计时中不排序、不打印。
-/// Raw nanosecond samples and error counts for one client; no sorting or printing in the timed loop.
+/// 有界对数直方图，上界分位数误差小于 3.2%，持续运行不保留逐请求样本。
+/// Bounded logarithmic histogram; upper-bound percentile error stays below 3.2% without per-request storage.
 #[derive(Default)]
 struct Samples {
-    /// 成功请求延迟；Successful-request latency.
-    ns: Vec<u64>,
+    /// 量化微秒上界与频数；Quantized microsecond upper bounds and counts.
+    histogram: BTreeMap<u64, u64>,
+    /// 合法响应次数，包含预期未命中；Valid responses including expected misses.
+    successes: u64,
     /// 所有错误分类；All failure categories.
     errors: BTreeMap<String, u64>,
+    /// TTL 负载下的缺失次数，单列而非掩盖；Missing TTL reads reported separately.
+    misses: u64,
+}
+impl Samples {
+    /// 每个二进制数量级分为 32 桶；Thirty-two buckets per binary order of magnitude.
+    fn record(&mut self, started: Instant) {
+        let us = started
+            .elapsed()
+            .as_micros()
+            .max(1)
+            .min(u128::from(u64::MAX)) as u64;
+        let shift = (63 - us.leading_zeros()).saturating_sub(5);
+        let width = 1u64 << shift;
+        let upper = us.saturating_add(width - 1) / width * width;
+        *self.histogram.entry(upper).or_default() += 1;
+        self.successes += 1;
+    }
+    /// 最近秩位于哪个桶即返回其上界；Returns the upper bound containing the nearest rank.
+    fn percentile(&self, per_mille: u64) -> Option<u64> {
+        let rank = (self.successes * per_mille).div_ceil(1000);
+        let mut count = 0;
+        self.histogram.iter().find_map(|(&upper, &n)| {
+            count += n;
+            (count >= rank && rank > 0).then_some(upper)
+        })
+    }
+    /// 合并计数而不合并分位数；Merges counts, never precomputed percentiles.
+    fn merge(&mut self, other: Self) {
+        self.successes += other.successes;
+        self.misses += other.misses;
+        for (bucket, count) in other.histogram {
+            *self.histogram.entry(bucket).or_default() += count;
+        }
+        for (error, count) in other.errors {
+            *self.errors.entry(error).or_default() += count;
+        }
+    }
 }
 
-/// 写入内容随序号变化，避免重复 SET 退化成无变化操作。
-/// Write payloads vary with sequence numbers so repeated SETs do not become no-ops.
+/// 写入内容持续变化；计时包含 SDK 队列和完整响应，限速等待在计时外。
+/// Writes keep changing; timing includes SDK queues and full responses but excludes rate pacing.
 async fn workload(
     target: &mut Target,
     args: &Args,
     worker: usize,
     operations: usize,
     seed: u64,
+    seconds: u64,
 ) -> Samples {
     let mut rng = StdRng::seed_from_u64(seed);
-    let mut samples = Samples {
-        ns: Vec::with_capacity(operations),
-        ..Samples::default()
-    };
-    for sequence in 0..operations {
-        let key = Value::String(format!("baseline:{:08}", rng.random_range(0..args.keys)));
+    let mut samples = Samples::default();
+    let phase = Instant::now();
+    let mut sequence = 0u64;
+    while if seconds == 0 {
+        sequence < operations as u64
+    } else {
+        phase.elapsed() < Duration::from_secs(seconds)
+    } {
+        if args.rate > 0 {
+            let due = phase + Duration::from_secs_f64(sequence as f64 / args.rate as f64);
+            tokio::time::sleep_until(due.into()).await;
+        }
+        let count = if args.hot && rng.random_range(0..100) < 90 {
+            (args.keys / 100).max(1)
+        } else {
+            args.keys
+        };
+        let index = rng.random_range(0..count);
         let write = rng.random_range(0..100) < args.write_percent;
-        let (name, values) = if write {
-            let stamp = ((worker as u64) << 48 | sequence as u64)
+        let missing = !write && rng.random_range(0..100) < args.miss_percent;
+        let key = Value::String(format!(
+            "{}:{index:08}",
+            if missing { "missing" } else { "baseline" }
+        ));
+        let values = if write {
+            let stamp = ((worker as u64) << 48 | sequence)
                 .wrapping_add(seed)
                 .to_le_bytes();
             let payload = stamp.into_iter().cycle().take(args.value_bytes).collect();
-            ("SET", vec![key, Value::Bytes(payload)])
+            let mut values = vec![key, Value::Bytes(payload)];
+            if args.ttl_ms > 0 {
+                values.extend([Value::String("PX".into()), Value::Int(args.ttl_ms as i64)]);
+            }
+            values
         } else {
-            ("GET", vec![key])
+            vec![key]
         };
         let started = Instant::now();
-        let result = target.execute(name, values).await;
-        let ns = started.elapsed().as_nanos().min(u128::from(u64::MAX)) as u64;
+        let result = target
+            .execute(if write { "SET" } else { "GET" }, values)
+            .await;
         match result {
-            Ok(Value::Bool(true)) if write => samples.ns.push(ns),
-            Ok(Value::Bytes(bytes)) if !write && bytes.len() == args.value_bytes => {
-                samples.ns.push(ns)
+            Ok(Value::Bool(true)) if write => samples.record(started),
+            Ok(Value::Bytes(bytes)) if !write && !missing && bytes.len() == args.value_bytes => {
+                samples.record(started)
+            }
+            Err(code) if !write && code == "ERR_KEY_NOT_FOUND" && (missing || args.ttl_ms > 0) => {
+                samples.misses += 1;
+                samples.record(started);
             }
             Ok(_) => {
                 *samples
@@ -147,15 +257,41 @@ async fn workload(
             }
             Err(error) => *samples.errors.entry(error).or_default() += 1,
         }
+        sequence += 1;
     }
     samples
 }
 
-/// 从排序的成功样本按最近秩提取分位数；零成功时返回 null。
-/// Uses nearest-rank percentiles of sorted successful samples; no successes returns null.
-fn percentile(ns: &[u64], per_mille: usize) -> Option<f64> {
-    ns.get((ns.len() * per_mille).div_ceil(1000).saturating_sub(1))
-        .map(|n| *n as f64 / 1000.0)
+/// INFO 观测真实受管字节，直接引擎单列；RSS 由驱动读取 /proc。
+/// INFO observes actual managed bytes, separately from direct engine state; the runner samples RSS.
+async fn memory(target: &mut Target) -> Result<Value, String> {
+    match target {
+        Target::Engine(engine) => Ok(Value::UInt(
+            engine.memory_usage().map_err(|e| e.code)? as u64
+        )),
+        Target::Tcp(_) => {
+            target
+                .execute("INFO", vec![Value::String("memory".into())])
+                .await
+        }
+    }
+}
+
+/// 仅转换 INFO 的诊断字段；数据负载仍保留原生 Value。
+/// Converts only INFO diagnostic fields; workload data remains native Value.
+fn observe(value: Value) -> serde_json::Value {
+    match value {
+        Value::Null => serde_json::Value::Null,
+        Value::Bool(v) => v.into(),
+        Value::UInt(v) => v.into(),
+        Value::Int(v) => v.into(),
+        Value::String(v) => v.into(),
+        Value::Map(v) => {
+            serde_json::Value::Object(v.into_iter().map(|(k, v)| (k, observe(v))).collect())
+        }
+        Value::List(v) => serde_json::Value::Array(v.into_iter().map(observe).collect()),
+        _ => unreachable!("INFO returned an unsupported diagnostic type"),
+    }
 }
 
 /// 验证实验资源规模，在计时前准备数据、连接与工作线程。
@@ -169,6 +305,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         || args.keys == 0
         || args.keys > 1000000
         || args.write_percent > 100
+        || args.miss_percent > 100
+        || args.seconds > 3600
+        || args.rate > 1000000
+        || args.ttl_ms > i64::MAX as u64
+        || (args.engine
+            && (args.seconds > 0
+                || args.consumer != "none"
+                || args.tls_server_name.is_some()
+                || args.ttl_ms > 0))
         || args.value_bytes == 0
         || args.value_bytes > 65536
         || args.warmup > 1000000
@@ -203,6 +348,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             )
             .await?;
     }
+    let initial_managed_bytes = engine.as_ref().map(|e| e.memory_usage()).transpose()?;
+    let preloaded_memory = observe(memory(&mut setup).await?);
+    let mut consumer = JoinSet::new();
+    let (stop_consumer, stopped) = watch::channel(false);
+    if args.consumer != "none" {
+        let Target::Tcp(client) = target(&args, &engine).await? else {
+            unreachable!()
+        };
+        let mut subscriber = client
+            .subscribe(vec!["baseline:*".into()], Some("benchmark"))
+            .await?;
+        let slow = args.consumer == "slow";
+        let mut stopped = stopped;
+        consumer.spawn(async move {
+            let mut count = 0u64;
+            let mut errors = BTreeMap::<String, u64>::new();
+            let mut age = BTreeMap::<u64,u64>::new();
+            loop {
+                tokio::select! {
+                    biased;
+                    _ = stopped.changed() => break,
+                    result = subscriber.next_event() => match result {
+                        Ok(event) => {
+                            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
+                            *age.entry(now.saturating_sub(event.timestamp_ms) / 10 * 10).or_default() += 1;
+                            if slow { tokio::time::sleep(Duration::from_millis(20)).await; }
+                            if let Err(e) = subscriber.ack(event.id).await { *errors.entry(e.to_string()).or_default() += 1; break; }
+                            count += 1;
+                        }
+                        Err(e) => { *errors.entry(e.to_string()).or_default() += 1; break; }
+                    }
+                }
+            }
+            (count, errors, age)
+        });
+    }
     drop(setup);
     let barrier = Arc::new(Barrier::new(args.clients + 1));
     let (start, ready) = watch::channel(false);
@@ -213,7 +394,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let mut ready = ready.clone();
         workers.spawn(async move {
             let seed = args.seed.wrapping_add(worker as u64);
-            let warmup = workload(&mut connection, &args, worker, args.warmup, seed).await;
+            let warmup = workload(&mut connection, &args, worker, args.warmup, seed, 0).await;
             barrier.wait().await;
             ready.changed().await.expect("benchmark start signal");
             let result = workload(
@@ -222,6 +403,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 worker,
                 args.operations,
                 seed ^ u64::MAX,
+                args.seconds,
             )
             .await;
             (warmup.errors, result)
@@ -234,20 +416,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut warmup_errors = BTreeMap::<String, u64>::new();
     while let Some(result) = workers.join_next().await {
         let (warm, samples) = result?;
-        all.ns.extend(samples.ns);
-        for (key, count) in samples.errors {
-            *all.errors.entry(key).or_default() += count;
-        }
+        all.merge(samples);
         for (key, count) in warm {
             *warmup_errors.entry(key).or_default() += count;
         }
     }
     let elapsed = started.elapsed().as_secs_f64();
-    all.ns.sort_unstable();
-    let mut histogram = BTreeMap::<u64, u64>::new();
-    for n in &all.ns {
-        *histogram.entry(n / 1000).or_default() += 1;
-    }
+    stop_consumer.send_replace(true);
+    let consumption = consumer.join_next().await.transpose()?;
+    let mut inspect = target(&args, &engine).await?;
+    let final_memory = observe(memory(&mut inspect).await?);
+    let event_stats = if args.engine {
+        None
+    } else {
+        Some(observe(
+            inspect
+                .execute("INFO", vec![Value::String("events".into())])
+                .await?,
+        ))
+    };
+    inspect.execute("FLUSHDB", vec![]).await?;
+    let deleted_memory = observe(memory(&mut inspect).await?);
+    // 留出驱动采样删除后的 RSS；Allow the runner to sample post-deletion RSS.
+    tokio::time::sleep(Duration::from_millis(100)).await;
     println!(
         "{}",
         serde_json::json!({
@@ -255,13 +446,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             "clients": args.clients, "pipeline": 1, "keys": args.keys, "value_bytes": args.value_bytes,
             "write_percent": args.write_percent, "seed": args.seed, "shards": args.shards,
             "operations_per_client": args.operations, "warmup_per_client": args.warmup,
-            "elapsed_seconds": elapsed, "successes": all.ns.len(),
-            "successes_per_second": all.ns.len() as f64 / elapsed,
+            "elapsed_seconds": elapsed, "successes": all.successes,
+            "successes_per_second": all.successes as f64 / elapsed,
             "errors": all.errors, "warmup_errors": warmup_errors,
-            "p50_us": percentile(&all.ns, 500), "p95_us": percentile(&all.ns, 950),
-            "p99_us": percentile(&all.ns, 990), "p999_us": percentile(&all.ns, 999),
-            "success_latency_us_histogram": histogram,
-            "managed_bytes": engine.as_ref().map(|e| e.memory_usage()).transpose()?,
+            "p50_us": all.percentile(500), "p95_us": all.percentile(950),
+            "p99_us": all.percentile(990), "p999_us": all.percentile(999),
+            "success_latency_us_histogram": all.histogram,
+            "histogram": "upper bounds; 32 subdivisions per power of two; <=3.2% rounding",
+            "seconds": args.seconds, "hot": args.hot, "miss_percent": args.miss_percent, "misses": all.misses,
+            "ttl_ms": args.ttl_ms, "tls": args.tls_server_name.is_some(), "rate_per_client": args.rate,
+            "preloaded_memory": preloaded_memory, "final_memory": final_memory, "deleted_memory": deleted_memory,
+            "event_stats": event_stats, "consumer": args.consumer, "consumption": consumption,
+            "managed_bytes": initial_managed_bytes,
         })
     );
     if !all.errors.is_empty() || !warmup_errors.is_empty() {
