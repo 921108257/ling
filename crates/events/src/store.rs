@@ -26,7 +26,7 @@ pub(crate) struct Progress {
     pub cursor: u64,
 }
 /// 水位后的匹配交付，乱序 ACK 仍占窗口。
-// A matching delivery beyond the watermark; out-of-order ACKs still occupy the window.
+/// A matching delivery beyond the watermark; out-of-order ACKs still occupy the window.
 #[derive(Clone)]
 pub(crate) struct Pending {
     /// 是否确认；Whether acknowledged.
@@ -66,6 +66,13 @@ impl Group {
         self.pending
             .retain(|&(s, seq), _| s != shard || seq > watermark);
     }
+    /// 含记录边界的最新状态磁盘占用；Latest-state disk usage including record framing.
+    fn disk_charge(&self, name: &str) -> usize {
+        36 + name.len()
+            + self.patterns.iter().map(|p| 4 + p.len()).sum::<usize>()
+            + self.progress.len() * 28
+            + self.pending.len() * 13
+    }
     /// 保守计费包含克隆候选所需空间；Conservative charge includes space for a cloned candidate.
     fn charge(&self, name: &str) -> usize {
         512 + name.len() * 2
@@ -93,6 +100,12 @@ pub struct Subscription {
 pub struct Stats {
     /// 本进程成功提交事件；Events committed in this process.
     pub committed: u64,
+    /// 按 EventKind 标签减一索引的提交数；Commit counts indexed by EventKind tag minus one.
+    pub by_kind: [u64; 6],
+    /// Journal 写入或同步错误数；Journal write or sync errors.
+    pub journal_errors: u64,
+    /// 最早保留事件的记账时间；Accounting time of the earliest retained event.
+    pub oldest_retained_ms: Option<u64>,
     /// Fast 缓冲丢弃数；Fast buffer drops.
     pub dropped: u64,
     /// 再次交付次数；Redelivery count.
@@ -103,6 +116,23 @@ pub struct Stats {
     pub groups: usize,
     /// 当前交付窗口项数；Current delivery-window entries.
     pub pending: usize,
+}
+/// 当前消费组的有界观测快照，不包含 Key 或 Value。
+/// Bounded observation snapshot for a consumer group, containing neither keys nor Values.
+#[derive(Clone, Debug)]
+pub struct GroupStats {
+    /// 稳定组名或临时编号；Stable group name or temporary number.
+    pub name: String,
+    /// 固定数据库；Fixed database.
+    pub db: u16,
+    /// 是否落后于保留下界；Whether progress is behind retention.
+    pub expired: bool,
+    /// 各分片连续确认水位；Contiguous acknowledged watermark per shard.
+    pub watermarks: Vec<(u32, u64)>,
+    /// 水位之后的总窗口，包括乱序 ACK；Total window beyond watermarks, including out-of-order ACKs.
+    pub pending: usize,
+    /// 本次进程最老未确认交付的年龄；Age of the oldest unacknowledged delivery in this process.
+    pub oldest_pending_ms: Option<u64>,
 }
 /// 互斥锁内的提交与消费状态；Commit and consumer state under the mutex.
 struct State {
@@ -157,9 +187,18 @@ impl EventStore {
         if dbs == 0
             || dbs > 65536
             || shards == 0
-            || u64::from(dbs) * u64::from(shards) * 64 > config.buffer_bytes as u64 / 4
+            || (config.enabled
+                && u64::from(dbs) * u64::from(shards) * 64 > config.buffer_bytes as u64 / 4)
         {
             return Err(err(ErrorCode::ConfigInvalid, "Invalid event topology"));
+        }
+        if config.reliable
+            && u64::from(dbs) * u64::from(shards) * 28 + 65 > config.max_bytes as u64 / 16
+        {
+            return Err(err(
+                ErrorCode::ConfigInvalid,
+                "Journal checkpoint reserve cannot fit topology",
+            ));
         }
         let (mut journal, stream) = if config.reliable {
             let (j, s) = Journal::open(&config, dbs, shards)?;
@@ -186,6 +225,7 @@ impl EventStore {
                 match record.first() {
                     Some(&codec::EVENTS) => {
                         for e in codec::read_events(record, stream)? {
+                            state.stats.oldest_retained_ms.get_or_insert(e.timestamp_ms);
                             if u32::from(e.id.db) >= dbs || e.id.shard >= shards {
                                 return Err(codec::corrupt());
                             }
@@ -228,7 +268,7 @@ impl EventStore {
                             }
                         }
                         for (&key, &seq) in &state.floors {
-                            if seq > state.tails.get(&key).copied().unwrap_or(0) {
+                            if seq == 0 || seq > state.tails.get(&key).copied().unwrap_or(0) {
                                 return Err(codec::corrupt());
                             }
                         }
@@ -257,7 +297,8 @@ impl EventStore {
         }
         for (name, g) in &state.groups {
             if !name.starts_with("n:")
-                || name.len() > 1026
+                || name.len() <= 2
+                || name.len() > 130
                 || g.patterns.windows(2).any(|p| p[0] >= p[1])
                 || g.patterns.iter().any(|p| validate_pattern(p).is_err())
                 || g.progress.iter().any(|(&shard, p)| {
@@ -267,6 +308,19 @@ impl EventStore {
             {
                 return Err(codec::corrupt());
             }
+        }
+        if config.reliable
+            && state
+                .groups
+                .iter()
+                .map(|(n, g)| g.disk_charge(n))
+                .sum::<usize>()
+                > config.max_bytes / 16
+        {
+            return Err(err(
+                ErrorCode::ConfigInvalid,
+                "Recovered groups exceed checkpoint reserve",
+            ));
         }
         state.journal = journal;
         Ok(Self {
@@ -292,6 +346,11 @@ impl EventStore {
     pub fn topology(&self) -> (u32, u32) {
         (self.dbs, self.shards)
     }
+    /// 事件候选的保守逻辑预算；Conservative logical budget for event candidates.
+    pub fn transaction_budget(&self) -> usize {
+        self.config.buffer_bytes / 4
+    }
+
     /// 提交完整事件集合，再在同一锁内发布状态；失败不调用发布回调。
     /// Commits a complete event set and publishes state under the same lock; errors never invoke the callback.
     pub fn commit<T>(&self, changes: &[Change], publish: impl FnOnce() -> T) -> Result<T, DbError> {
@@ -344,17 +403,22 @@ impl EventStore {
                     changes.iter().map(|c| c.timestamp_ms).max().unwrap_or(0),
                 )?;
             }
-            s.journal.as_mut().unwrap().append(&payload, false)?;
+            append_record(&mut s, &payload, false)?;
         }
         let result = publish();
         s.tails = tails;
         s.stats.committed = s.stats.committed.saturating_add(events.len() as u64);
+        for event in &events {
+            let n = &mut s.stats.by_kind[event.kind as usize - 1];
+            *n = n.saturating_add(1);
+            s.stats.oldest_retained_ms.get_or_insert(event.timestamp_ms);
+        }
         if !self.config.reliable {
             for event in events {
                 s.bytes += event_charge(&event);
                 s.fast.push_back(event);
             }
-            while s.bytes + group_bytes(&s.groups) > self.config.buffer_bytes {
+            while s.bytes > self.config.buffer_bytes / 2 {
                 drop_front(&mut s, true);
             }
         }
@@ -382,7 +446,7 @@ impl EventStore {
         if pattern_bytes > self.config.buffer_bytes / 4 {
             return Err(limit());
         }
-        if name.is_some_and(|n| n.is_empty() || n.len() > 1024) {
+        if name.is_some_and(|n| n.is_empty() || n.len() > 128) {
             return Err(err(ErrorCode::InvalidArgument, "Invalid group name"));
         }
         patterns.sort();
@@ -488,7 +552,7 @@ impl EventStore {
         if g.pending.len() >= self.config.max_pending {
             return Ok(None);
         }
-        let cursors: gather::Cursors = g
+        let cursors: BTreeMap<u32, u64> = g
             .progress
             .iter()
             .map(|(&shard, p)| (shard, p.cursor))
@@ -527,7 +591,9 @@ impl EventStore {
             g.advance(shard);
         }
         if changed {
-            check_group_budget(&s, &sub.group, &g, &self.config)?;
+            if check_group_budget(&s, &sub.group, &g, &self.config).is_err() {
+                return Ok(None);
+            }
             save_group(&mut s, &sub.group, &g, &self.config)?;
             s.groups.insert(sub.group.clone(), g);
         }
@@ -548,7 +614,11 @@ impl EventStore {
             .get(&sub.group)
             .cloned()
             .ok_or_else(|| err(ErrorCode::ConnectionState, "Subscription closed"))?;
-        if g.expired {
+        if g.expired
+            || g.progress
+                .iter()
+                .any(|(&shard, p)| s.floors.get(&(g.db, shard)).copied().unwrap_or(0) > p.watermark)
+        {
             return Err(err(
                 ErrorCode::OffsetExpired,
                 "Required event history expired",
@@ -584,7 +654,7 @@ impl EventStore {
     }
     /// 断线释放租约；临时组销毁，命名组等待其他连接接手。
     /// Disconnect releases leases; temporary groups vanish and named groups await another consumer.
-    pub fn disconnect(&self, sub: Subscription) {
+    pub fn disconnect(&self, sub: &Subscription) {
         if let Ok(mut s) = self.state.lock() {
             if sub.group.starts_with("t:") {
                 s.groups.remove(&sub.group);
@@ -604,8 +674,12 @@ impl EventStore {
         if self.config.reliable {
             compact(&mut s, &self.config, now_ms)
         } else {
-            let cutoff = now_ms.saturating_sub(self.config.retention_ms);
-            while s.fast.front().is_some_and(|e| e.timestamp_ms <= cutoff) {
+            let cutoff = now_ms.checked_sub(self.config.retention_ms);
+            while s
+                .fast
+                .front()
+                .is_some_and(|e| cutoff.is_some_and(|c| e.timestamp_ms <= c))
+            {
                 drop_front(&mut s, false)
             }
             Ok(())
@@ -620,16 +694,46 @@ impl EventStore {
         stats.journal_bytes = s.journal.as_ref().map_or(0, |j| j.bytes);
         Ok(stats)
     }
+    /// 观测租约与水位；恢复后的租约年龄未知，保持 None。
+    /// Observes leases and watermarks; recovered lease ages remain unknown as None.
+    pub fn group_stats(&self, now: Instant) -> Result<Vec<GroupStats>, DbError> {
+        let s = self.lock()?;
+        Ok(s.groups
+            .iter()
+            .map(|(name, g)| GroupStats {
+                name: name.clone(),
+                db: g.db,
+                pending: g.pending.len(),
+                expired: g.expired
+                    || g.progress.iter().any(|(&shard, p)| {
+                        s.floors.get(&(g.db, shard)).copied().unwrap_or(0) > p.watermark
+                    }),
+                watermarks: g
+                    .progress
+                    .iter()
+                    .map(|(&shard, p)| (shard, p.watermark))
+                    .collect(),
+                oldest_pending_ms: g
+                    .pending
+                    .values()
+                    .filter(|p| !p.acked)
+                    .filter_map(|p| p.sent)
+                    .min()
+                    .map(|sent| {
+                        now.saturating_duration_since(sent)
+                            .as_millis()
+                            .min(u128::from(u64::MAX)) as u64
+                    }),
+            })
+            .collect())
+    }
+
     /// 锁损坏明确失败；Poisoned ownership fails explicitly.
     fn lock(&self) -> Result<std::sync::MutexGuard<'_, State>, DbError> {
         self.state
             .lock()
             .map_err(|_| err(ErrorCode::JournalUnavailable, "Event state unavailable"))
     }
-}
-/// 类型别名保持扫描水位含义明确；Alias makes scan cursors explicit.
-mod gather {
-    pub type Cursors = std::collections::BTreeMap<u32, u64>;
 }
 /// 单事件保守占用；Conservative per-event memory.
 fn event_charge(e: &Event) -> usize {
@@ -646,6 +750,22 @@ fn check_group_budget(s: &State, key: &str, g: &Group, c: &Config) -> Result<(),
     if bytes > c.buffer_bytes / 2 {
         return Err(limit());
     }
+    if c.reliable {
+        let old = s.groups.get(key).map_or(0, |g| g.disk_charge(key));
+        let disk = s
+            .groups
+            .iter()
+            .map(|(n, g)| g.disk_charge(n))
+            .sum::<usize>()
+            - old
+            + g.disk_charge(key);
+        if disk > c.max_bytes / 16 {
+            return Err(err(
+                ErrorCode::JournalFull,
+                "Group checkpoint reserve exhausted",
+            ));
+        }
+    }
     Ok(())
 }
 /// 先持久化命名组状态，再发布内存；Persists named-group state before memory publication.
@@ -655,15 +775,27 @@ fn save_group(s: &mut State, name: &str, g: &Group, c: &Config) -> Result<(), Db
         if !s.journal.as_ref().unwrap().fits(record.len(), true) {
             compact(s, c, 0)?;
         }
-        s.journal.as_mut().unwrap().append(&record, true)?;
+        append_record(s, &record, true)?;
     }
     Ok(())
+}
+/// 同步错误与容量背压分开统计；Counts synchronization errors separately from capacity backpressure.
+fn append_record(s: &mut State, record: &[u8], control: bool) -> Result<(), DbError> {
+    let result = s.journal.as_mut().unwrap().append(record, control);
+    if result
+        .as_ref()
+        .is_err_and(|e| e.code == ErrorCode::CommitUnknown.as_str())
+    {
+        s.stats.journal_errors = s.stats.journal_errors.saturating_add(1);
+    }
+    result
 }
 /// 容量丢弃或期限删除只前移对应流下界；Drop or expiry advances only that stream's floor.
 fn drop_front(s: &mut State, dropped: bool) {
     if let Some(e) = s.fast.pop_front() {
         s.bytes -= event_charge(&e);
         s.floors.insert((e.id.db, e.id.shard), e.id.sequence);
+        s.stats.oldest_retained_ms = s.fast.front().map(|e| e.timestamp_ms);
         if dropped {
             s.stats.dropped = s.stats.dropped.saturating_add(1)
         }
@@ -673,7 +805,7 @@ fn drop_front(s: &mut State, dropped: bool) {
 fn read_after(
     s: &mut State,
     db: u16,
-    cursors: &gather::Cursors,
+    cursors: &BTreeMap<u32, u64>,
     limit_bytes: usize,
 ) -> Result<Vec<Event>, DbError> {
     let mut out = Vec::new();
@@ -733,7 +865,7 @@ fn find(s: &mut State, db: u16, shard: u32, sequence: u64) -> Result<Option<Even
 /// 原子重写检查点及仍在保留期内的完整事务，不拆开多分片事务。
 /// Atomically rewrites checkpoints and retained complete transactions without splitting cross-shard transactions.
 fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
-    let cutoff = now.saturating_sub(c.retention_ms);
+    let cutoff = now.checked_sub(c.retention_ms);
     let stream = s.stream;
     let mut floors = s.floors.clone();
     let j = s.journal.as_mut().unwrap();
@@ -741,7 +873,11 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
     j.visit(|r| {
         if r[0] == codec::EVENTS {
             let es = codec::read_events(r, stream)?;
-            if prefix && es.iter().all(|e| e.timestamp_ms <= cutoff) {
+            if prefix
+                && es
+                    .iter()
+                    .all(|e| cutoff.is_some_and(|c| e.timestamp_ms <= c))
+            {
                 for e in es {
                     floors
                         .entry((e.id.db, e.id.shard))
@@ -772,6 +908,7 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
         .map(|(n, g)| codec::group(n, g))
         .collect();
     let mut prefix = true;
+    let mut oldest = None;
     j.compact(&checkpoint.0, &states, |r| {
         if r[0] != codec::EVENTS {
             return Ok(false);
@@ -779,14 +916,18 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
         if prefix
             && codec::read_events(r, stream)?
                 .iter()
-                .all(|e| e.timestamp_ms <= cutoff)
+                .all(|e| cutoff.is_some_and(|c| e.timestamp_ms <= c))
         {
             Ok(false)
         } else {
             prefix = false;
+            if let Some(event) = codec::read_events(r, stream)?.first() {
+                oldest.get_or_insert(event.timestamp_ms);
+            }
             Ok(true)
         }
     })?;
+    s.stats.oldest_retained_ms = oldest;
     s.floors = floors;
     s.groups = groups;
     Ok(())

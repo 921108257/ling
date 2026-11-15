@@ -52,6 +52,8 @@ fn code<T: std::fmt::Debug>(result: Result<T, linger_types::DbError>, code: Erro
     assert_eq!(result.unwrap_err().code, code.as_str());
 }
 
+/// 独立字节固定磁盘字段宽度，所有截断均拒绝。
+/// Independent bytes freeze disk field widths and reject every truncated payload.
 #[test]
 fn independent_disk_vector_and_truncated_lengths() {
     // 手工定义字段，不调用生产编码器构造期望值；Fields are manual, not produced by the encoder under test.
@@ -78,11 +80,14 @@ fn independent_disk_vector_and_truncated_lengths() {
     };
     assert_eq!(codec::events(std::slice::from_ref(&e)), expected);
     assert_eq!(codec::read_events(&expected, 2).unwrap(), vec![e]);
+    assert!(codec::read_events(&[codec::EVENTS, 0, 0, 0, 0], 2).is_err());
     for end in 0..expected.len() {
         assert!(codec::read_events(&expected[..end], 2).is_err());
     }
 }
 
+/// 乱序 ACK 保留空洞，窗口由组内消费者共享，不同组独立。
+/// Out-of-order ACKs preserve holes; windows are shared within a group and isolated across groups.
 #[test]
 fn ack_holes_window_sharing_and_group_isolation() {
     let store = EventStore::open(
@@ -126,6 +131,8 @@ fn ack_holes_window_sharing_and_group_isolation() {
     );
 }
 
+/// 租约到期重投原身份，旧消费者晚 ACK 仍有效。
+/// Expired leases redeliver original IDs and late ACKs remain valid.
 #[test]
 fn lease_redelivery_and_late_ack_use_original_id() {
     let store = EventStore::open(
@@ -162,6 +169,8 @@ fn lease_redelivery_and_late_ack_use_original_id() {
     assert_eq!(store.stats().unwrap().redelivered, 1);
 }
 
+/// 恢复确认空洞并延续流身份和序号。
+/// Recovery preserves ACK holes and continues stream identity and sequences.
 #[test]
 fn reliable_recovery_keeps_holes_stream_and_sequences() {
     let dir = Directory::new();
@@ -196,6 +205,8 @@ fn reliable_recovery_keeps_holes_stream_and_sequences() {
     );
 }
 
+/// 模拟同步失败时不发布回调，禁止后续日志和 ACK。
+/// Simulated sync failure prevents publication and faults subsequent Journal writes and ACKs.
 #[test]
 fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
     let dir = Directory::new();
@@ -226,6 +237,8 @@ fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
     assert_eq!(store.next(&sub, Instant::now()).unwrap().unwrap().key, "b");
 }
 
+/// 仅不完整尾部可修复，完整损坏、目录锁与拓扑冲突明确失败。
+/// Only incomplete tails are repaired; corruption, locks, and topology conflicts fail explicitly.
 #[test]
 fn incomplete_tail_recovers_but_complete_corruption_and_wrong_topology_fail() {
     let dir = Directory::new();
@@ -249,9 +262,33 @@ fn incomplete_tail_recovers_but_complete_corruption_and_wrong_topology_fail() {
     let mut corrupt = valid;
     corrupt[48] ^= 1;
     fs::write(&path, corrupt).unwrap();
-    assert!(EventStore::open(dir.config(), 1, 1).is_err());
+    let error = EventStore::open(dir.config(), 1, 1).err().unwrap();
+    assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+    assert!(error.message.contains("byte offset 40"));
 }
 
+/// 完整且校验正确的空组名仍不符合恢复契约。
+/// A complete checksummed record with an empty group name still violates recovery contracts.
+#[test]
+fn empty_named_group_is_rejected_during_recovery() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    drop(store);
+    let bytes = fs::read(dir.0.join("journal.lgj")).unwrap();
+    let len = u32::from_be_bytes(bytes[40..44].try_into().unwrap()) as usize;
+    let (_, group) = codec::read_group(&bytes[48..48 + len]).unwrap();
+    let (mut journal, _) = journal::Journal::open(&dir.config(), 1, 1).unwrap();
+    journal.append(&codec::group("n:", &group), true).unwrap();
+    drop(journal);
+    code(
+        EventStore::open(dir.config(), 1, 1).map(|_| ()),
+        ErrorCode::JournalUnavailable,
+    );
+}
+
+/// 容量背压不缩短保留，检查点继续序号并标记过期组。
+/// Capacity backpressure preserves retention; checkpoints continue sequences and expire lagging groups.
 #[test]
 fn retention_compaction_and_capacity_backpressure_preserve_history() {
     let dir = Directory::new();
@@ -286,6 +323,8 @@ fn retention_compaction_and_capacity_backpressure_preserve_history() {
     assert_eq!(event.id.sequence, count + 1);
 }
 
+/// Fast 容量丢弃必须计数并报告旧消费位置失效。
+/// Fast capacity drops are counted and old offsets fail explicitly.
 #[test]
 fn fast_drops_are_counted_and_offsets_expire() {
     let store = EventStore::open(
@@ -310,4 +349,231 @@ fn fast_drops_are_counted_and_offsets_expire() {
             .subscribe(0, vec!["different".into()], Some("g"))
             .is_err()
     );
+}
+
+/// 中断多分片记录不会恢复其中一半。
+/// Interrupted multi-shard records never recover partially.
+#[test]
+fn interrupted_multi_shard_transaction_is_never_partly_recovered() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 2).unwrap();
+    let sub = store
+        .subscribe(0, vec!["*".into()], Some("atomic"))
+        .unwrap();
+    store
+        .commit(&[change("left", 0), change("right", 1)], || ())
+        .unwrap();
+    assert_eq!(
+        store.next(&sub, Instant::now()).unwrap().unwrap().key,
+        "left"
+    );
+    drop(store);
+    let path = dir.0.join("journal.lgj");
+    let bytes = fs::read(&path).unwrap();
+    let mut at = 40;
+    let mut transaction = 0;
+    while at < bytes.len() {
+        let len = u32::from_be_bytes(bytes[at..at + 4].try_into().unwrap()) as usize;
+        if bytes[at + 8] == codec::EVENTS {
+            transaction = at;
+            break;
+        }
+        at += len + 16;
+    }
+    assert!(transaction > 40);
+    // 中断在第二个事件之前，完整事务都应被截断；Interrupt before the second event and discard the complete transaction.
+    fs::write(&path, &bytes[..transaction + 8 + 5 + 64]).unwrap();
+    let store = EventStore::open(dir.config(), 1, 2).unwrap();
+    let sub = store
+        .subscribe(0, vec!["*".into()], Some("atomic"))
+        .unwrap();
+    assert!(store.next(&sub, Instant::now()).unwrap().is_none());
+    store.commit(&[change("new", 0)], || ()).unwrap();
+    assert_eq!(
+        store
+            .next(&sub, Instant::now())
+            .unwrap()
+            .unwrap()
+            .id
+            .sequence,
+        1
+    );
+}
+
+/// 正确 CRC 不能让重复流序号合法化。
+/// A valid CRC cannot legitimize duplicate stream sequences.
+#[test]
+fn complete_duplicate_sequence_is_rejected_even_with_valid_checksum() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    store.commit(&[change("key", 0)], || ()).unwrap();
+    drop(store);
+    let path = dir.0.join("journal.lgj");
+    let mut bytes = fs::read(&path).unwrap();
+    bytes.extend_from_within(40..);
+    fs::write(path, bytes).unwrap();
+    assert!(EventStore::open(dir.config(), 1, 1).is_err());
+}
+
+/// 组创建和 ACK 的同步失败也必须暴露结果未知。
+/// Sync failures during group creation and ACK must also expose unknown outcomes.
+#[test]
+fn ack_sync_failure_and_group_creation_failure_keep_unknown_outcomes() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    store.fail_next_sync();
+    code(
+        store.subscribe(0, vec!["*".into()], Some("g")).map(|_| ()),
+        ErrorCode::CommitUnknown,
+    );
+    drop(store);
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    let event = store.next(&sub, Instant::now()).unwrap().unwrap();
+    store.fail_next_sync();
+    code(store.ack(&sub, event.id), ErrorCode::CommitUnknown);
+    drop(store);
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    assert!(store.next(&sub, Instant::now()).unwrap().is_none());
+    store.ack(&sub, event.id).unwrap();
+}
+
+/// 断线重投遵循间隔，组增长不侵占事件队列。
+/// Disconnected redelivery honors its interval and group growth does not consume the event queue.
+#[test]
+fn disconnected_lease_and_group_growth_do_not_silently_drop_fast_events() {
+    let store = EventStore::open(
+        Config {
+            buffer_bytes: 65536,
+            max_pending: 8,
+            max_groups: 32,
+            retry_interval_ms: 10,
+            consumer_timeout_ms: 100,
+            ..Default::default()
+        },
+        1,
+        1,
+    )
+    .unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    store.commit(&[change("k", 0)], || ()).unwrap();
+    let now = Instant::now();
+    let first = store.next(&sub, now).unwrap().unwrap();
+    store.disconnect(&sub);
+    let next = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    assert!(
+        store
+            .next(&next, now + Duration::from_millis(9))
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        store
+            .next(&next, now + Duration::from_millis(10))
+            .unwrap()
+            .unwrap()
+            .id,
+        first.id
+    );
+    for n in 0..16 {
+        store
+            .subscribe(0, vec!["*".into()], Some(&format!("g{n}")))
+            .unwrap();
+    }
+    assert_eq!(store.stats().unwrap().dropped, 0);
+    store.ack(&next, first.id).unwrap();
+}
+
+/// 保留维护不把零时间误判为已超期。
+/// Retention maintenance never mistakes timestamp zero for expired history.
+#[test]
+fn maintenance_never_expires_timestamp_zero_before_retention() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    let mut c = change("zero", 0);
+    c.timestamp_ms = 0;
+    store.commit(&[c], || ()).unwrap();
+    store.maintain(0).unwrap();
+    assert_eq!(
+        store.next(&sub, Instant::now()).unwrap().unwrap().key,
+        "zero"
+    );
+}
+
+/// 真实文件权限变化拒绝重新打开，不创建替代流；Real permission changes reject reopen without creating a substitute stream.
+#[cfg(unix)]
+#[test]
+fn read_only_journal_refuses_startup() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    store.commit(&[change("k", 0)], || ()).unwrap();
+    drop(store);
+    let path = dir.0.join("journal.lgj");
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o400)).unwrap();
+    // root 可以绕过普通权限；仅在权限实际被执行的用户环境断言拒绝。
+    // Root may bypass ordinary permissions; assert rejection only when permissions are actually enforced.
+    if fs::OpenOptions::new().write(true).open(&path).is_err() {
+        assert!(EventStore::open(dir.config(), 1, 1).is_err());
+    }
+    fs::set_permissions(path, fs::Permissions::from_mode(0o600)).unwrap();
+}
+
+/// 可观测计数与消费水位不含业务内容；Observable counts and consumer watermarks contain no business contents.
+#[test]
+fn stats_keep_drop_sync_failures_and_group_progress_separate() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    let event = store.next(&sub, Instant::now()).unwrap().unwrap();
+    let groups = store.group_stats(Instant::now()).unwrap();
+    assert_eq!(groups[0].pending, 1);
+    assert_eq!(groups[0].watermarks, vec![(0, 0)]);
+    store.fail_next_sync();
+    assert!(store.ack(&sub, event.id).is_err());
+    let stats = store.stats().unwrap();
+    assert_eq!(stats.by_kind, [1, 0, 0, 0, 0, 0]);
+    assert_eq!(stats.journal_errors, 1);
+    assert_eq!(stats.dropped, 0);
+    assert_eq!(stats.oldest_retained_ms, Some(1000));
+}
+
+/// 事务提交回调结束前，独立消费者不能看到事件。
+/// Consumers cannot observe an event until its transaction publication callback finishes.
+#[test]
+fn consumer_visibility_waits_for_complete_publication() {
+    use std::sync::{Arc, mpsc};
+    let dir = Directory::new();
+    let store = Arc::new(EventStore::open(dir.config(), 1, 2).unwrap());
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    let (started, ready) = mpsc::channel();
+    let (release, wait) = mpsc::channel();
+    let writing = store.clone();
+    let writer = std::thread::spawn(move || {
+        writing
+            .commit(&[change("left", 0), change("right", 1)], || {
+                started.send(()).unwrap();
+                wait.recv().unwrap();
+            })
+            .unwrap();
+    });
+    ready.recv().unwrap();
+    let (got, done) = mpsc::channel();
+    let consuming = store.clone();
+    let reader = std::thread::spawn(move || {
+        let event = consuming.next(&sub, Instant::now()).unwrap().unwrap();
+        got.send(event).unwrap();
+    });
+    assert!(done.recv_timeout(Duration::from_millis(20)).is_err());
+    release.send(()).unwrap();
+    writer.join().unwrap();
+    assert_eq!(
+        done.recv_timeout(Duration::from_secs(2)).unwrap().key,
+        "left"
+    );
+    reader.join().unwrap();
 }

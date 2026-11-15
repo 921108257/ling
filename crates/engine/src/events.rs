@@ -6,6 +6,38 @@ use linger_events::Change;
 use linger_types::{DbError, EventKind};
 
 impl Transaction<'_> {
+    /// 大操作在复制事件 Key 前预留候选预算；Large operations reserve candidates before copying event keys.
+    pub(crate) fn preflight_events<'a>(
+        &self,
+        keys: impl Iterator<Item = (&'a str, usize)>,
+    ) -> Result<(), DbError> {
+        let Some(store) = self.engine.events.as_ref().filter(|s| s.enabled()) else {
+            return Ok(());
+        };
+        let mut bytes = 0usize;
+        for (key, count) in keys {
+            bytes = key
+                .len()
+                .checked_mul(2)
+                .and_then(|n| n.checked_add(256))
+                .and_then(|n| n.checked_mul(count))
+                .and_then(|n| bytes.checked_add(n))
+                .ok_or_else(|| {
+                    crate::support::error(
+                        linger_types::ErrorCode::LimitExceeded,
+                        "Event candidate budget exceeded",
+                    )
+                })?;
+            if bytes > store.transaction_budget() {
+                return Err(crate::support::error(
+                    linger_types::ErrorCode::LimitExceeded,
+                    "Event candidate budget exceeded",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     /// 不复制 Value，身份与时间均来自取得执行权后的观察。
     /// Never copies Values; identities and time come from the observation after ownership.
     pub(crate) fn event(

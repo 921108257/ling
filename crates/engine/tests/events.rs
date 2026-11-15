@@ -66,6 +66,8 @@ fn take(store: &EventStore, sub: &Subscription) -> Event {
     event
 }
 
+/// 六类事件遵守版本、无变化与移动语义。
+/// All six event kinds obey revision, no-op, and relocation semantics.
 #[test]
 fn six_kinds_revisions_noops_and_relocation_in_both_modes() {
     for reliable in [false, true] {
@@ -160,6 +162,8 @@ fn six_kinds_revisions_noops_and_relocation_in_both_modes() {
     }
 }
 
+/// 容量拒绝保留原子数据与待记账到期信息。
+/// Capacity rejection preserves atomic data and pending expiry accounting.
 #[test]
 fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
     let dir = Directory::new();
@@ -258,6 +262,8 @@ fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
     assert_eq!(e.scheduled_expirations().unwrap(), 0);
 }
 
+/// 交换分配新身份，清理保留到期原因。
+/// Swaps allocate new identities and flushes retain expiry reasons.
 #[test]
 fn swap_and_flush_assign_new_lifecycles_and_report_expired_reasons() {
     let events = Arc::new(EventStore::open(Default::default(), 2, 2).unwrap());

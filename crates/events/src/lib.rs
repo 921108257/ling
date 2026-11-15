@@ -6,7 +6,7 @@ mod journal;
 mod store;
 use linger_types::{DbError, ErrorCode, EventKind, Generation};
 use std::path::PathBuf;
-pub use store::{EventStore, Stats, Subscription};
+pub use store::{EventStore, GroupStats, Stats, Subscription};
 
 /// 启动固定的事件策略；Reliable 不允许静默降级。
 /// Fixed startup event policy; Reliable never silently falls back.

@@ -85,6 +85,12 @@ impl Transaction<'_> {
             _ => return Err(argument_error()),
         };
         let mut budget = self.engine.budget.lock().map_err(|_| unavailable())?;
+        self.preflight_events(
+            self.guards
+                .iter()
+                .filter(|(id, _)| name == "FLUSHALL" || self.engine.db_locations(db).contains(id))
+                .flat_map(|(_, index)| index.keys().map(|k| (k.as_str(), 1))),
+        )?;
         let mut events = Vec::new();
         if self.engine.events.as_ref().is_some_and(|s| s.enabled()) {
             for (id, index) in &self.guards {
@@ -149,6 +155,11 @@ impl Transaction<'_> {
             .checked_add((ac + bc) as u64)
             .ok_or_else(|| error(ErrorCode::Overflow, "Generation counter exhausted"))?;
         let mut counter = budget.creations;
+        self.preflight_events(
+            self.entries(a)
+                .chain(self.entries(b))
+                .map(|(k, _)| (k.as_str(), 3)),
+        )?;
         let mut incoming = std::collections::BTreeMap::new();
         for (origin, dest) in [(a, b), (b, a)] {
             for (key, entry) in self.entries(origin) {

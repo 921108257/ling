@@ -159,6 +159,12 @@ impl Transaction<'_> {
             prepared.push((target, change.key, next));
         }
         let victims = self.victims(&protected, &mut memory, &mut key_counts, budget.memory, now)?;
+        self.preflight_events(
+            prepared
+                .iter()
+                .map(|(_, k, _)| (k.as_str(), 2))
+                .chain(victims.iter().map(|(_, k)| (k.as_str(), 1))),
+        )?;
         let mut events = Vec::new();
         if self.engine.events.as_ref().is_some_and(|s| s.enabled()) {
             for (target, key, next) in &prepared {

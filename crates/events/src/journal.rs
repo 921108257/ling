@@ -37,6 +37,8 @@ pub(crate) struct Journal {
     max: usize,
     /// 不确定写入后禁止追加；No appends after an uncertain write.
     pub failed: bool,
+    /// 启动内存预算同时约束恢复分配；Startup memory budget also bounds recovery allocations.
+    record_limit: usize,
     /// 测试在完整写入后模拟同步失败；Tests simulate sync failure after a complete write.
     #[cfg(test)]
     pub fail_sync: bool,
@@ -45,7 +47,7 @@ impl Journal {
     /// 在开始接收请求前加锁、校验头和拓扑。
     /// Locks and validates the header and topology before accepting requests.
     pub fn open(config: &Config, dbs: u32, shards: u32) -> Result<(Self, u128), DbError> {
-        fs::create_dir_all(&config.directory).map_err(|_| unavailable())?;
+        create_directory(&config.directory)?;
         let lock = OpenOptions::new()
             .read(true)
             .write(true)
@@ -88,20 +90,21 @@ impl Journal {
             stream
         } else {
             if len < HEADER || len > config.max_bytes / 2 {
-                return Err(codec::corrupt());
+                return Err(at_offset(codec::corrupt(), 0));
             }
-            file.read_exact(&mut header).map_err(|_| codec::corrupt())?;
+            file.read_exact(&mut header)
+                .map_err(|_| at_offset(codec::corrupt(), 0))?;
             if &header[..8] != MAGIC
                 || crc32fast::hash(&header[..36])
                     != u32::from_be_bytes(header[36..40].try_into().unwrap())
             {
-                return Err(codec::corrupt());
+                return Err(at_offset(codec::corrupt(), 0));
             }
             let mut d = Decoder {
                 rest: &header[8..36],
             };
             if d.n(4)? != 1 {
-                return Err(codec::corrupt());
+                return Err(at_offset(codec::corrupt(), 0));
             }
             let stream = d.n(16)?;
             if d.n(4)? != dbs as u128 || d.n(4)? != shards as u128 {
@@ -120,6 +123,7 @@ impl Journal {
             bytes: len.max(HEADER),
             max: config.max_bytes,
             failed: false,
+            record_limit: codec::MAX_RECORD.min(config.buffer_bytes / 2),
             #[cfg(test)]
             fail_sync: false,
         };
@@ -152,8 +156,8 @@ impl Journal {
             let mut h = [0; 8];
             self.file.read_exact(&mut h).map_err(|_| unavailable())?;
             let n = u32::from_be_bytes(h[..4].try_into().unwrap()) as usize;
-            if n == 0 || n > codec::MAX_RECORD {
-                return Err(codec::corrupt());
+            if n == 0 || n > self.record_limit {
+                return Err(at_offset(codec::corrupt(), pos));
             }
             if n + 16 > total - pos {
                 self.truncate(pos)?;
@@ -170,9 +174,9 @@ impl Journal {
             if &trailer != COMMIT
                 || crc32fast::hash(&payload) != u32::from_be_bytes(h[4..].try_into().unwrap())
             {
-                return Err(codec::corrupt());
+                return Err(at_offset(codec::corrupt(), pos));
             }
-            apply(&payload)?;
+            apply(&payload).map_err(|error| at_offset(error, pos))?;
             pos += n + 16;
         }
         Ok(())
@@ -203,7 +207,7 @@ impl Journal {
         if self.failed {
             return Err(unavailable());
         }
-        if payload.len() > codec::MAX_RECORD {
+        if payload.len() > self.record_limit {
             return Err(err(
                 ErrorCode::LimitExceeded,
                 "Event transaction exceeds disk record limit",
@@ -324,4 +328,76 @@ fn write_record(file: &mut File, payload: &[u8]) -> std::io::Result<()> {
 /// 日志不可用，不能静默变为 Fast；Journal unavailable, never silently Fast.
 fn unavailable() -> DbError {
     err(ErrorCode::JournalUnavailable, "Event Journal unavailable")
+}
+
+/// 只暴露记录偏移，不泄露事件内容；Reports only the record offset without exposing event contents.
+fn at_offset(mut error: DbError, offset: usize) -> DbError {
+    error.message = format!("{} at byte offset {offset}", error.message);
+    error
+}
+
+/// 新目录项同步父目录，避免首次提交后目录身份仍未持久化。
+/// Syncs parents of new directories so initial commits cannot lose their directory identity.
+fn create_directory(path: &std::path::Path) -> Result<(), DbError> {
+    let mut missing = Vec::new();
+    let mut current = path;
+    loop {
+        match fs::metadata(current) {
+            Ok(metadata) if metadata.is_dir() => break,
+            Ok(_) => return Err(unavailable()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                missing.push(current.to_path_buf());
+                current = current
+                    .parent()
+                    .filter(|p| !p.as_os_str().is_empty())
+                    .unwrap_or(std::path::Path::new("."));
+            }
+            Err(_) => return Err(unavailable()),
+        }
+    }
+    for dir in missing.into_iter().rev() {
+        fs::create_dir(&dir).map_err(|_| unavailable())?;
+        let parent = dir
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(std::path::Path::new("."));
+        File::open(parent)
+            .and_then(|p| p.sync_all())
+            .map_err(|_| unavailable())?;
+    }
+    Ok(())
+}
+
+/// 真实 ENOSPC 设备只用于测试边界，不替代目录恢复测试。
+/// A real ENOSPC device exercises the I/O boundary without replacing directory recovery tests.
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+    use super::*;
+    /// 内核拒绝写入后必须报告未知并禁止重试追加。
+    /// Kernel write rejection must report unknown outcome and forbid subsequent appends.
+    #[test]
+    fn enospc_faults_the_journal_globally() {
+        let directory =
+            std::env::temp_dir().join(format!("linger-full-{:032x}", rand::random::<u128>()));
+        let config = Config {
+            reliable: true,
+            directory: directory.clone(),
+            ..Default::default()
+        };
+        let (mut journal, _) = Journal::open(&config, 1, 1).unwrap();
+        journal.file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open("/dev/full")
+            .unwrap();
+        let error = journal.append(&[1, 0, 0, 0, 0], false).unwrap_err();
+        assert_eq!(error.code, ErrorCode::CommitUnknown.as_str());
+        assert!(journal.failed);
+        assert_eq!(
+            journal.append(&[1, 0, 0, 0, 0], false).unwrap_err().code,
+            ErrorCode::JournalUnavailable.as_str()
+        );
+        drop(journal);
+        fs::remove_dir_all(directory).unwrap();
+    }
 }

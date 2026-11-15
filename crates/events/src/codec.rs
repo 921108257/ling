@@ -122,6 +122,9 @@ pub(crate) fn read_events(data: &[u8], stream: u128) -> Result<Vec<Event>, DbErr
         return Err(corrupt());
     }
     let n = d.count(60)?;
+    if n == 0 {
+        return Err(corrupt());
+    }
     let mut out = Vec::new();
     for _ in 0..n {
         let id = EventId {
