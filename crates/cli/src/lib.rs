@@ -334,6 +334,41 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
         return Err(ParseError);
     }
     let mut args = Vec::new();
+    if command == "ACK" {
+        let id = parse_event_id(&p.text()?)?;
+        p.end()?;
+        return Ok(Request::new(command, vec![id.to_value()]));
+    }
+    if command == "SUBSCRIBE" {
+        let mut patterns = Vec::new();
+        p.space();
+        while !p.rest().is_empty() {
+            p.charge(2 * std::mem::size_of::<Value>())?;
+            let quoted = p.rest().starts_with('"');
+            let token = p.text()?;
+            if !quoted && token.eq_ignore_ascii_case("GROUP") {
+                if patterns.is_empty() {
+                    return Err(ParseError);
+                }
+                let group = p.text()?;
+                p.end()?;
+                return Ok(Request::new(
+                    command,
+                    vec![
+                        Value::List(patterns),
+                        Value::String("GROUP".into()),
+                        Value::String(group),
+                    ],
+                ));
+            }
+            patterns.push(Value::String(token));
+            p.space();
+        }
+        if patterns.is_empty() {
+            return Err(ParseError);
+        }
+        return Ok(Request::new(command, vec![Value::List(patterns)]));
+    }
     p.space();
     while !p.rest().is_empty() {
         p.charge(2 * std::mem::size_of::<Value>())?;
@@ -430,4 +465,35 @@ pub fn display_value(value: &Value) -> String {
             format!("set([{}])", items.join(", "))
         }
     }
+}
+
+/// 无损显示复合事件身份；Losslessly displays a compound event identity.
+pub fn display_event_id(id: linger_types::EventId) -> String {
+    format!(
+        "{:032x}/{}/{}/{}",
+        id.stream_id, id.db, id.shard, id.sequence
+    )
+}
+/// 严格读取固定宽度 stream 与十进制坐标；Strictly parses a fixed-width stream and decimal coordinates.
+pub fn parse_event_id(text: &str) -> Result<linger_types::EventId, ParseError> {
+    let parts: Vec<_> = text.split('/').collect();
+    if parts.len() != 4
+        || parts[0].len() != 32
+        || !parts[0]
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        || parts[1..].iter().any(|s| !unsigned_decimal(s))
+    {
+        return Err(ParseError);
+    }
+    let id = linger_types::EventId {
+        stream_id: u128::from_str_radix(parts[0], 16).map_err(|_| ParseError)?,
+        db: parts[1].parse().map_err(|_| ParseError)?,
+        shard: parts[2].parse().map_err(|_| ParseError)?,
+        sequence: parts[3].parse().map_err(|_| ParseError)?,
+    };
+    if id.sequence == 0 {
+        return Err(ParseError);
+    }
+    Ok(id)
 }

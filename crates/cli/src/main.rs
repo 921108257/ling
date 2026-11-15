@@ -13,7 +13,7 @@ use std::{
 #[derive(Parser)]
 #[command(
     version,
-    about = "linger-cache-db 阶段 4 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
+    about = "linger-cache-db 阶段 5 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
 )]
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
@@ -38,6 +38,13 @@ struct Args {
     /// One text command; omission reads standard input line by line.
     #[arg(short = 'c', long)]
     command: Option<String>,
+    /// 订阅模式接收数量，零表示持续到中断；Events to receive in subscription mode; zero waits until interrupted.
+    #[arg(long, default_value_t = 0)]
+    count: usize,
+    /// 输出并刷新后自动 ACK；省略时逐条从 stdin 读取 ACK。
+    /// Automatically ACK after output and flush; otherwise read explicit ACKs from stdin.
+    #[arg(long)]
+    auto_ack: bool,
 }
 
 /// 将失败转为非零退出状态，不输出敏感输入。
@@ -71,6 +78,92 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
     )
     .await?;
     let mut success = true;
+    if let Some(source) = args.command.as_ref() {
+        let request = parse_command(source)?;
+        if request.command == "SUBSCRIBE" {
+            let mut arguments = request.arguments.into_iter();
+            let Some(linger_client::Value::List(patterns)) = arguments.next() else {
+                unreachable!()
+            };
+            let patterns = patterns
+                .into_iter()
+                .map(|p| match p {
+                    linger_client::Value::String(s) => s,
+                    _ => unreachable!(),
+                })
+                .collect();
+            let group = arguments.nth(1).map(|v| match v {
+                linger_client::Value::String(s) => s,
+                _ => unreachable!(),
+            });
+            let mut subscriber = client.subscribe(patterns, group.as_deref()).await?;
+            let mut received = 0;
+            let mut input = if args.auto_ack {
+                None
+            } else {
+                Some(subscription_input())
+            };
+            loop {
+                let event = tokio::select! {
+                    result=subscriber.next_event()=>result?,
+                    _=tokio::signal::ctrl_c()=>break
+                };
+                // 输出成功后才确认；下游应按 event_id 幂等处理。
+                // Acknowledge only after successful output; downstream processing should be idempotent by event_id.
+                println!(
+                    "{} {}",
+                    linger_cli::display_event_id(event.id),
+                    display_value(&event.to_value())
+                );
+                io::stdout().flush()?;
+                if let Some(input) = input.as_mut() {
+                    loop {
+                        let line = tokio::select! {
+                            line=input.recv()=>line,
+                            _=tokio::signal::ctrl_c()=>None
+                        };
+                        let Some(line) = line else {
+                            subscriber.close().await?;
+                            return Ok(true);
+                        };
+                        let request = match parse_command(&line) {
+                            Ok(r) => r,
+                            Err(e) => {
+                                eprintln!("{e}");
+                                continue;
+                            }
+                        };
+                        match request.command.as_str() {
+                            "ACK" => {
+                                let id = linger_client::EventId::from_value(&request.arguments[0])?;
+                                match subscriber.ack(id).await {
+                                    Ok(()) if id == event.id => break,
+                                    Ok(()) => {}
+                                    Err(e) => eprintln!("{e}"),
+                                }
+                            }
+                            "PING" if request.arguments.is_empty() => {
+                                subscriber.ping().await?;
+                            }
+                            "UNSUBSCRIBE" | "QUIT" if request.arguments.is_empty() => {
+                                subscriber.close().await?;
+                                return Ok(true);
+                            }
+                            _ => eprintln!("订阅连接仅接受 ACK、PING、UNSUBSCRIBE 或 QUIT"),
+                        }
+                    }
+                } else {
+                    subscriber.ack(event.id).await?;
+                }
+                received += 1;
+                if args.count != 0 && received >= args.count {
+                    break;
+                }
+            }
+            subscriber.close().await?;
+            return Ok(true);
+        }
+    }
     if let Some(source) = args.command {
         success = execute(&mut client, &source).await;
     } else {
@@ -140,4 +233,33 @@ async fn execute(client: &mut Client, source: &str) -> bool {
             false
         }
     }
+}
+
+/// 独立 stdin 线程与容量一的通道；不占用 Tokio 阻塞池等待人工输入。
+/// A separate stdin thread and capacity-one channel avoid occupying Tokio's blocking pool while awaiting input.
+fn subscription_input() -> tokio::sync::mpsc::Receiver<String> {
+    let (tx, rx) = tokio::sync::mpsc::channel(1);
+    std::thread::spawn(move || {
+        let stdin = io::stdin();
+        let mut input = stdin.lock();
+        loop {
+            let mut bytes = Vec::new();
+            match input.by_ref().take(65537).read_until(b'\n', &mut bytes) {
+                Ok(0) | Err(_) => break,
+                Ok(n) if n > 65536 => {
+                    eprintln!("订阅控制命令超过输入上限");
+                    break;
+                }
+                _ => {}
+            }
+            let Ok(line) = String::from_utf8(bytes) else {
+                eprintln!("命令必须是 UTF-8");
+                continue;
+            };
+            if tx.blocking_send(line).is_err() {
+                break;
+            }
+        }
+    });
+    rx
 }

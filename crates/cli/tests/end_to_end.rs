@@ -205,3 +205,79 @@ async fn cli_ttl_lifecycle_and_invalid_conditional_write() {
     stop.send(()).unwrap();
     task.await.unwrap();
 }
+
+/// 真实 CLI 用 SDK 消费，并仅在显式 ACK 后退出。
+/// The real CLI consumes through the SDK and exits only after an explicit ACK.
+#[tokio::test]
+async fn cli_subscription_requires_explicit_ack() {
+    use std::io::{BufRead, BufReader};
+    use std::time::Duration;
+    let (port, stop, task) = start(false).await;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_linger-cli"))
+        .args([
+            "--port",
+            &port.to_string(),
+            "--count",
+            "1",
+            "-c",
+            "SUBSCRIBE cli:* GROUP cli-test",
+        ])
+        .env_remove("LINGER_PASSWORD")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let output = child.stdout.take().unwrap();
+    let (sender, mut receiver) = tokio::sync::mpsc::channel(1);
+    let thread = std::thread::spawn(move || {
+        let mut reader = BufReader::new(output);
+        let mut line = String::new();
+        reader.read_line(&mut line).unwrap();
+        let _ = sender.blocking_send(line);
+    });
+    // 重复写入不同版本，避免以固定睡眠猜测订阅已经就绪。
+    // Write distinct versions until delivery instead of assuming readiness after a fixed sleep.
+    let address = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+    let mut writer = linger_client::Client::connect(address, None, 0, Default::default())
+        .await
+        .unwrap();
+    let line = tokio::time::timeout(Duration::from_secs(3), async {
+        for n in 0..200 {
+            writer
+                .execute(
+                    "SET",
+                    vec![
+                        linger_client::Value::String("cli:key".into()),
+                        linger_client::Value::UInt(n),
+                    ],
+                )
+                .await
+                .unwrap();
+            tokio::select! {
+                line=receiver.recv()=>return line.unwrap(),
+                _=tokio::time::sleep(Duration::from_millis(5))=>{}
+            }
+        }
+        panic!("No CLI event");
+    })
+    .await
+    .unwrap();
+    let id = line.split_whitespace().next().unwrap();
+    linger_cli::parse_event_id(id).unwrap();
+    assert!(child.try_wait().unwrap().is_none());
+    writeln!(input, "ACK {id}").unwrap();
+    drop(input);
+    let output = tokio::task::spawn_blocking(move || child.wait_with_output().unwrap())
+        .await
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    thread.join().unwrap();
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
