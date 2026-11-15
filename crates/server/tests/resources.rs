@@ -91,6 +91,33 @@ async fn bounded_memory_eviction_and_recovery() {
             panic!()
         };
         assert!(bytes <= 32768);
+        // 无法容纳的替换不能提前淘汰其他条目；An oversized replacement cannot evict other entries first.
+        code(
+            client
+                .execute(
+                    "SET",
+                    vec![
+                        Value::String("oversized".into()),
+                        Value::Bytes(vec![0; 65536]),
+                    ],
+                )
+                .await
+                .unwrap_err(),
+            "ERR_OUT_OF_MEMORY",
+        );
+        assert_eq!(
+            client.execute("DBSIZE", vec![]).await.unwrap(),
+            Value::UInt(keys)
+        );
+        if policy == "noeviction" {
+            assert_eq!(
+                client
+                    .execute("GET", vec![Value::String("key:0".into())])
+                    .await
+                    .unwrap(),
+                Value::Bytes(vec![42; 1024])
+            );
+        }
         client.execute("FLUSHDB", vec![]).await.unwrap();
         client
             .execute("SET", vec![Value::String("after".into()), Value::Null])
@@ -248,6 +275,86 @@ async fn journal_full_preserves_state_and_ack_capacity() {
         panic!()
     };
     assert!(bytes <= 1024 * 1024 / 2);
+    stop.send(()).unwrap();
+    task.await.unwrap().unwrap();
+}
+
+/// 慢读端不能永久占用连接；写超时回收后其他客户端继续工作。
+/// A stalled reader cannot retain a connection forever; write timeout reclaims it while peers keep working.
+#[tokio::test]
+async fn stalled_reader_releases_connection_without_blocking_peers() {
+    let mut config = Config::default();
+    config.server.max_connections = 4;
+    config.server.request_timeout_ms = 100;
+    config.server.write_buffer_bytes = 1024;
+    config.events.enabled = false;
+    let (address, stop, task) = start(config).await;
+    let mut client = Client::connect(address, None, 0, Options::default())
+        .await
+        .unwrap();
+    client
+        .execute(
+            "SET",
+            vec![
+                Value::String("large".into()),
+                Value::Bytes(vec![17; 512 * 1024]),
+            ],
+        )
+        .await
+        .unwrap();
+    let socket = tokio::net::TcpSocket::new_v4().unwrap();
+    socket.set_recv_buffer_size(1024).unwrap();
+    let mut slow = socket.connect(address).await.unwrap();
+    write_frame(
+        &mut slow,
+        &Frame {
+            request_id: 1,
+            body: Body::Request(Request::new("HELLO", vec![Value::UInt(1)])),
+        },
+        Limits::default(),
+    )
+    .await
+    .unwrap();
+    read_frame(&mut slow, Limits::default())
+        .await
+        .unwrap()
+        .unwrap();
+    for id in 2..66 {
+        write_frame(
+            &mut slow,
+            &Frame {
+                request_id: id,
+                body: Body::Request(Request::new("GET", vec![Value::String("large".into())])),
+            },
+            Limits::default(),
+        )
+        .await
+        .unwrap();
+    }
+    tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            let Value::Map(info) = client
+                .execute("INFO", vec![Value::String("clients".into())])
+                .await
+                .unwrap()
+            else {
+                panic!()
+            };
+            let Value::Map(clients) = &info["clients"] else {
+                panic!()
+            };
+            if clients["connected"] == Value::UInt(1) {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        client.ping(None).await.unwrap(),
+        Value::String("PONG".into())
+    );
     stop.send(()).unwrap();
     task.await.unwrap().unwrap();
 }

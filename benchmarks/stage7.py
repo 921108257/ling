@@ -56,6 +56,8 @@ def environment(args):
         "source_sha256": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                           for folder in ("crates", "sdks/rust", "benchmarks")
                           for p in (ROOT / folder).rglob("*") if p.suffix in (".rs", ".py", ".toml")},
+        "binary_sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                          for p in sorted((args.output / "bin").glob("*")) if p.is_file()},
         "build_profile": "Cargo release defaults; RUSTFLAGS=" + os.environ.get("RUSTFLAGS", ""),
         "affinity_cpus": sorted(os.sched_getaffinity(0)), "binding": "none",
         "topology": "same-host loopback; client/server share CPU; closed-loop; pipeline=1",
@@ -97,7 +99,9 @@ level="error"
     if mode == "reliable":
         config += '[event_journal]\ndir="journal"\nmax_bytes=67108864\n'
     command = [str(args.output / "bin/baseline"), "--address", f"127.0.0.1:{port}",
-               "--keys", "1000", "--warmup", "100", "--clients", "4", *flags]
+               "--warmup", "100", "--clients", "4", *flags]
+    if "--keys" not in flags:
+        command += ["--keys", "1000"]
     if "--engine" not in flags:
         command += ["--seconds", str(seconds)]
     else:

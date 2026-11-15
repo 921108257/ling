@@ -439,3 +439,44 @@ fn typed_events_match_existing_protocol_vectors() {
     }
     assert!(linger_types::Event::from_value(&invalid).is_err());
 }
+
+/// 固定种子的畸形输入烟测覆盖长度、标签与深度；不等同于持续模糊测试。
+/// Fixed-seed malformed-input smoke coverage targets lengths, tags, and depth; it is not continuous fuzzing.
+#[test]
+fn deterministic_mutation_smoke_is_bounded_and_panic_free() {
+    let limits = Limits {
+        max_frame_bytes: 4096,
+        max_request_bytes: 2048,
+        max_response_bytes: 2048,
+        ..Limits::default()
+    };
+    let seeds: Vec<Vec<u8>> = include_str!("../../../tests/fixtures/protocol/frames.tsv")
+        .lines()
+        .filter(|line| !line.starts_with('#') && !line.is_empty())
+        .map(|line| hex(line.split_once('|').unwrap().1))
+        .collect();
+    let mut rng = 0x4c475f20261115u64;
+    let mut errors = 0;
+    for iteration in 0..20000 {
+        // xorshift 仅用于可复现输入，绝不用于密码或协议身份。
+        // xorshift only reproduces test inputs, never credentials or protocol identities.
+        let mut next = || {
+            rng ^= rng << 13;
+            rng ^= rng >> 7;
+            rng ^= rng << 17;
+            rng
+        };
+        let mut bytes = seeds[iteration % seeds.len()].clone();
+        for _ in 0..1 + next() % 5 {
+            let index = next() as usize % bytes.len();
+            bytes[index] ^= next() as u8;
+        }
+        if iteration % 3 == 0 {
+            let n = next() as usize % bytes.len();
+            bytes.truncate(n);
+        }
+        errors += usize::from(decode_frame(&bytes, limits).is_err());
+        let _ = decode_value(&bytes, limits);
+    }
+    assert!(errors > 10000);
+}

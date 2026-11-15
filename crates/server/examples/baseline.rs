@@ -139,8 +139,8 @@ async fn target(
     })
 }
 
-/// 有界对数直方图，上界分位数误差小于 3.2%，持续运行不保留逐请求样本。
-/// Bounded logarithmic histogram; upper-bound percentile error stays below 3.2% without per-request storage.
+/// 有界对数直方图，分位数先取整微秒，再按小于 3.2% 的桶量化，持续运行不保留逐请求样本。
+/// Bounded logarithmic histogram; integer-microsecond percentiles use under 3.2% bucket rounding without per-request storage.
 #[derive(Default)]
 struct Samples {
     /// 量化微秒上界与频数；Quantized microsecond upper bounds and counts.
@@ -452,7 +452,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             "p50_us": all.percentile(500), "p95_us": all.percentile(950),
             "p99_us": all.percentile(990), "p999_us": all.percentile(999),
             "success_latency_us_histogram": all.histogram,
-            "histogram": "upper bounds; 32 subdivisions per power of two; <=3.2% rounding",
+            "histogram": "floor to integer microseconds, then bucket upper bound; 32 subdivisions per power of two; <=3.2% bucket rounding",
             "seconds": args.seconds, "hot": args.hot, "miss_percent": args.miss_percent, "misses": all.misses,
             "ttl_ms": args.ttl_ms, "tls": args.tls_server_name.is_some(), "rate_per_client": args.rate,
             "preloaded_memory": preloaded_memory, "final_memory": final_memory, "deleted_memory": deleted_memory,
