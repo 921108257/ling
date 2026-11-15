@@ -2,7 +2,7 @@
 
 ## 当前状态与阅读顺序
 
-本项目已完成阶段 6 客户端与运维原型：有 Rust workspace、共享类型、协议、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK、CLI、契约测试及阶段 3 基础性能测量。已支持跨分片协调、跨库管理、游标、淘汰与毫秒 TTL 设置、查询和有界回收；Fast / Reliable 六类事件、消费组、ACK、重投与保留恢复；固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志与 Prometheus。单连接串行执行，三语言已接入共享字节及命令用例。阶段 7 的性能、长期压力和资源耗尽验收尚未完成。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
+本项目已完成阶段 7 本机性能与资源验收，版本仍为 0.1.0 预览：有 Rust workspace、共享类型、协议、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK、CLI、契约测试及阶段 3 / 7 性能测量。已支持跨分片协调、跨库管理、游标、淘汰与毫秒 TTL 设置、查询和有界回收；Fast / Reliable 六类事件、消费组、ACK、重投与保留恢复；固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志与 Prometheus。单连接串行执行，三语言已接入共享字节及命令用例。阶段 7 已交付 18 类场景矩阵、Fast / Reliable 各 10 分钟持续运行、TTL 观察和资源耗尽契约；未做 Redis 8 对比、多日压力或物理断电验证，稳定发布仍需目标部署环境评估。实际入口见 README，完整规划仍不代表现有能力。仅报告实际运行的验证结果，不为示意目录创建空工程或虚构启动命令。
 
 开始工作先读 [docs/architecture.md](docs/architecture.md)。根据任务继续读专项规范：类型读 data-model，命令读 commands，网络读 protocol，生命周期读 ttl，可靠性读 events / persistence，客户端读 sdk，配置读 config，验收读 testing / roadmap。路径均位于 docs 下。
 

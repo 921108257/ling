@@ -64,7 +64,8 @@ def environment(args):
         "redis_version": capture("redis-server", "--version"),
         "redis_comparison": "not run; installed Redis is not the required Redis 8",
         "arguments": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
-        "sample_seconds": 1, "cpu_scope": "whole process including preload, warmup and cleanup",
+        "resource_sampling_seconds": {"duration_below_30_seconds": 0.02, "duration_at_least_30_seconds": 1},
+        "cpu_scope": "whole process including preload, warmup and cleanup",
         "reliable": "fsync every transaction; 7-day retention; no cached-value or TTL recovery",
     }
 
@@ -168,6 +169,7 @@ def main():
     parser.add_argument("--soak-seconds", type=int, default=600)
     parser.add_argument("--only", default="")
     parser.add_argument("--soak-only", action="store_true")
+    parser.add_argument("--soak-mode", choices=("both", "fast", "reliable"), default="both")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 10 or not 1 <= args.seconds <= 60 or not 1 <= args.soak_seconds <= 3600:
         parser.error("invalid repeat or duration budget")
@@ -191,7 +193,8 @@ def main():
                     results.append(run_case(args, name, mode, flags, args.seconds, repeat))
                     (args.output / "results.json").write_text(json.dumps(results, indent=2) + "\n")
     if args.soak_only or not args.only:
-        for mode in ("fast", "reliable"):
+        modes = ("fast", "reliable") if args.soak_mode == "both" else (args.soak_mode,)
+        for mode in modes:
             results.append(run_case(args, f"soak-{mode}", mode,
                                     ["--write-percent", "50", "--ttl-ms", "1000", "--hot", "--rate", "20"], args.soak_seconds, 1))
             (args.output / "results.json").write_text(json.dumps(results, indent=2) + "\n")

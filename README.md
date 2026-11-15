@@ -2,7 +2,7 @@
 
 独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型、固定分片和多数据库；已支持毫秒 TTL、Fast 事件与可选 Reliable Journal。
 
-**当前为 0.1.0 阶段 6 客户端与运维预览原型。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
+**当前为 0.1.0 预览原型，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
 
 每个 (数据库, Shard) 拥有独立索引与锁，多 Key 命令按固定顺序取得全部执行权后整体发布。可配置全实例受管内存、每库 Key 配额及 noeviction / lru / lfu / random / ttl-first 策略；受管内存不等于进程 RSS。启用淘汰且配置容量上限时，当前写入保守取得全实例执行权。ttl-first 选择最早到期的活跃条目，无期限候选时拒绝写入。
 
@@ -128,7 +128,7 @@ cargo run -p linger-cli -- -c 'SET order:1 null PX 60000'
 
 输出首列为 `stream/db/shard/sequence`，处理成功后在订阅终端输入 `ACK <首列ID>`。`UNSUBSCRIBE` 退出并保留命名组；Ctrl+C / 断线后重连同组可重投未确认事件。需要输出即确认时显式加 `--auto-ack`，例如 `--count 1 --auto-ack -c 'SUBSCRIBE order:* GROUP workers'`。Rust 使用 `Client::subscribe`、`Subscriber::next_event` 与显式 `ack(event.id)`，见 [SDK](docs/sdk.md)。
 
-当前维护约每秒检查、按完整事务前缀压缩，消费顺序扫描磁盘；未测量其吞吐，不作为生产性能保证。
+当前维护约每秒检查、按完整事务前缀压缩；消费从运行时记录游标继续顺序扫描，压缩和重启后按逻辑水位恢复。[阶段 7 实测](docs/testing.md#阶段-7-本机验收)包含消费积压、Fast 丢弃及 Reliable 成本，不作为生产性能保证。
 
 ## 验证
 
@@ -144,7 +144,20 @@ python3 tests/sdk_contracts.py
 
 测试覆盖独立黄金字节、10 种 Value、数值与容器边界、失败无部分修改、资源限额、跨分片原子观察、锁顺序、跨库身份与期限保留、游标弱一致性、淘汰失败原子性、异步回收计费、可控时钟下的 TTL 边界 / 校时 / 续期 / 旧任务校验 / 过期竞争，以及真实 TCP / CLI 调用。源码、测试和基准工具使用中英双语注释；公开接口缺少 rustdoc 会使构建失败。Journal 测试包含同步失败、截断、校验损坏、容量与真实进程强制终止恢复，消费覆盖 ACK 空洞、组与租约、TCP 半帧和 CLI 显式确认。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
 
-Linux 下运行 `python3 benchmarks/run.py target/benchmarks/my-run` 可重现 release 引擎和 TCP 的 GET / SET / 混合负载，每项默认三次；输出目录必须不存在。实验使用独立进程和临时端口，记录硬件、配置、种子、错误、分位数、CPU 与 RSS。阶段 3 的历史实测不包含后来新增的 TTL、事件、TLS 与运维开销，结果及边界见 [测试与基准](docs/testing.md#阶段-3-基础测量)。长期压力和完整性能验收留在阶段 7。
+Linux 下运行 `python3 benchmarks/run.py target/benchmarks/my-run` 可重现 release 引擎和 TCP 的 GET / SET / 混合负载，每项默认三次；输出目录必须不存在。实验使用独立进程和临时端口，记录硬件、配置、种子、错误、分位数、CPU 与 RSS。阶段 3 的历史实测不包含后来新增的 TTL、事件、TLS 与运维开销，结果及边界见 [测试与基准](docs/testing.md#阶段-3-基础测量)。
+
+阶段 7 提供下列实际入口，输出目录同样必须不存在：
+
+```sh
+# 18 类场景各 3 次，并追加 Fast / Reliable 各 600 秒持续运行
+python3 benchmarks/stage7.py target/benchmarks/stage7
+# 只运行持续实验，可显式改变时长（1—3600 秒）
+python3 benchmarks/stage7.py target/benchmarks/soak --soak-only --soak-seconds 600
+# Fast / Reliable 各 30 轮真实 TCP 的 TTL 可见性与回收观察
+python3 benchmarks/lifecycle.py target/benchmarks/ttl
+```
+
+工具保存固定二进制副本、源码摘要、完整配置、请求延迟直方图及 CPU / RSS / Journal 采样。支持 `--only get,mixed,reliable-consumer` 筛选场景；筛选后不自动追加持续运行。仅复测一种持续负载时使用 `--soak-only --soak-mode reliable`（或 `fast`）。实际数据、消费落后及环境限制见 [阶段 7 本机验收](docs/testing.md#阶段-7-本机验收)。十分钟持续运行不等于多日压力或稳定版发布认证。
 
 ## 从哪里开始
 
