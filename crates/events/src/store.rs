@@ -685,6 +685,19 @@ impl EventStore {
     pub fn maintain(&self, now_ms: u64) -> Result<(), DbError> {
         let mut s = self.lock()?;
         if self.config.reliable {
+            if s.journal.as_ref().is_some_and(|j| j.failed) {
+                return Err(err(ErrorCode::JournalUnavailable, "Event Journal faulted"));
+            }
+            // 没有可到期的前缀时不扫描和重写整个日志；容量路径仍按需压缩控制记录。
+            // Skip full scans and rewrites without an eligible prefix; capacity paths still compact control records.
+            let cutoff = now_ms.checked_sub(self.config.retention_ms);
+            if !s
+                .stats
+                .oldest_retained_ms
+                .is_some_and(|oldest| cutoff.is_some_and(|cutoff| oldest <= cutoff))
+            {
+                return Ok(());
+            }
             compact(&mut s, &self.config, now_ms)
         } else {
             let cutoff = now_ms.checked_sub(self.config.retention_ms);

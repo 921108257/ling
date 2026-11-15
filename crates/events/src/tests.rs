@@ -540,6 +540,7 @@ fn stats_keep_drop_sync_failures_and_group_progress_separate() {
     assert_eq!(stats.journal_errors, 1);
     assert_eq!(stats.dropped, 0);
     assert_eq!(stats.oldest_retained_ms, Some(1000));
+    code(store.maintain(0), ErrorCode::JournalUnavailable);
 }
 
 /// 事务提交回调结束前，独立消费者不能看到事件。
@@ -643,4 +644,37 @@ fn control_capacity_compaction_does_not_republish_stale_read_offset() {
     assert!(store.next(&sub, Instant::now()).unwrap().is_none());
     assert_eq!(store.stats().unwrap().pending, 0);
     assert!(store.stats().unwrap().journal_bytes <= 1024 * 1024 / 2);
+}
+
+/// 未达到保留期限的维护不改写日志；到期后仍压缩并保留后继事件。
+/// Maintenance leaves unexpired journals untouched, then compacts due prefixes while retaining successors.
+#[test]
+fn maintenance_only_rewrites_when_retention_can_advance() {
+    let dir = Directory::new();
+    let mut config = dir.config();
+    config.retention_ms = 1000;
+    let store = EventStore::open(config.clone(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+    let mut first = change("first", 0);
+    first.timestamp_ms = 0;
+    store.commit(&[first], || ()).unwrap();
+    let mut second = change("second", 0);
+    second.timestamp_ms = 500;
+    store.commit(&[second], || ()).unwrap();
+    let path = dir.0.join("journal.lgj");
+    let before = fs::read(&path).unwrap();
+    store.maintain(999).unwrap();
+    assert_eq!(fs::read(&path).unwrap(), before);
+    assert_eq!(store.stats().unwrap().oldest_retained_ms, Some(0));
+    store.maintain(1000).unwrap();
+    assert_eq!(store.stats().unwrap().oldest_retained_ms, Some(500));
+    code(store.next(&sub, Instant::now()), ErrorCode::OffsetExpired);
+    drop(store);
+    let store = EventStore::open(config, 1, 1).unwrap();
+    assert_eq!(store.stats().unwrap().oldest_retained_ms, Some(500));
+    let retained = fs::read(&path).unwrap();
+    store.maintain(1499).unwrap();
+    assert_eq!(fs::read(&path).unwrap(), retained);
+    store.maintain(1500).unwrap();
+    assert_eq!(store.stats().unwrap().oldest_retained_ms, None);
 }
