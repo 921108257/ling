@@ -486,7 +486,7 @@ impl EventStore {
                     )
                 })
                 .collect();
-            let g = Group {
+            let mut g = Group {
                 db,
                 patterns,
                 progress,
@@ -496,7 +496,7 @@ impl EventStore {
                 scan_offset: 40,
             };
             check_group_budget(&s, &key, &g, &self.config)?;
-            save_group(&mut s, &key, &g, &self.config)?;
+            save_group(&mut s, &key, &mut g, &self.config)?;
             s.groups.insert(key.clone(), g);
         }
         s.consumer = consumer;
@@ -605,7 +605,7 @@ impl EventStore {
             if check_group_budget(&s, &sub.group, &g, &self.config).is_err() {
                 return Ok(None);
             }
-            save_group(&mut s, &sub.group, &g, &self.config)?;
+            save_group(&mut s, &sub.group, &mut g, &self.config)?;
         }
         // 只更新运行时读游标不产生持久变更，也不跳过尚未交付的同记录事件。
         // Advancing a runtime read cursor is not a durable change and skips no undelivered record items.
@@ -661,7 +661,7 @@ impl EventStore {
             .ok_or_else(|| err(ErrorCode::InvalidAck, "Event was never delivered"))?;
         pending.acked = true;
         g.advance(id.shard);
-        save_group(&mut s, &sub.group, &g, &self.config)?;
+        save_group(&mut s, &sub.group, &mut g, &self.config)?;
         s.groups.insert(sub.group.clone(), g);
         Ok(())
     }
@@ -782,11 +782,14 @@ fn check_group_budget(s: &State, key: &str, g: &Group, c: &Config) -> Result<(),
     Ok(())
 }
 /// 先持久化命名组状态，再发布内存；Persists named-group state before memory publication.
-fn save_group(s: &mut State, name: &str, g: &Group, c: &Config) -> Result<(), DbError> {
+fn save_group(s: &mut State, name: &str, g: &mut Group, c: &Config) -> Result<(), DbError> {
     if g.named && c.reliable {
         let record = codec::group(name, g);
         if !s.journal.as_ref().unwrap().fits(record.len(), true) {
             compact(s, c, 0)?;
+            // 本次候选尚未插入组表，也必须丢弃压缩前的物理偏移。
+            // This candidate is not in the group table yet and must discard its pre-compaction offset too.
+            g.scan_offset = 40;
         }
         append_record(s, &record, true)?;
     }

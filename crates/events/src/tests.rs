@@ -620,3 +620,27 @@ fn sequential_reader_preserves_filtered_siblings_and_compaction_recovery() {
     store.ack(&sub, retry.id).unwrap();
     assert!(store.next(&sub, Instant::now()).unwrap().is_none());
 }
+
+/// ACK 空间触发的压缩同样重置尚未发布候选的物理游标。
+/// Compaction triggered by ACK space also resets unpublished candidates' physical cursors.
+#[test]
+fn control_capacity_compaction_does_not_republish_stale_read_offset() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store
+        .subscribe(0, vec!["*".into()], Some("capacity"))
+        .unwrap();
+    for n in 0..2500 {
+        store
+            .commit(&[change(&format!("k{n:04}"), 0)], || ())
+            .unwrap();
+    }
+    for n in 0..2500 {
+        let event = store.next(&sub, Instant::now()).unwrap().unwrap();
+        assert_eq!(event.key, format!("k{n:04}"));
+        store.ack(&sub, event.id).unwrap();
+    }
+    assert!(store.next(&sub, Instant::now()).unwrap().is_none());
+    assert_eq!(store.stats().unwrap().pending, 0);
+    assert!(store.stats().unwrap().journal_bytes <= 1024 * 1024 / 2);
+}
