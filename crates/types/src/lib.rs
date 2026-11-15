@@ -2,6 +2,8 @@
 //! Shared data contracts, independent of networking, clients, and storage.
 
 mod error;
+mod event;
+pub use event::{Event, EventKind};
 mod value;
 
 pub use error::{DbError, ErrorCode};

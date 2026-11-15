@@ -1,0 +1,16 @@
+# 事件与 Journal，不依赖引擎、网络或 SDK。
+# Events and Journal, independent of engine, networking, and SDKs.
+[package]
+name = "linger-events"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+linger-types.workspace = true
+rand.workspace = true
+fs2.workspace = true
+crc32fast.workspace = true
+
+[lints]
+workspace = true

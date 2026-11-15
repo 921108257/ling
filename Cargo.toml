@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/types", "crates/protocol", "crates/server", "crates/engine", "sdks/rust", "crates/cli"]
+members = ["crates/types", "crates/protocol", "crates/server", "crates/engine", "crates/events", "sdks/rust", "crates/cli"]
 resolver = "3"
 
 [workspace.package]
@@ -13,6 +13,9 @@ linger-protocol = { path = "crates/protocol" }
 linger-client = { path = "sdks/rust" }
 linger-server = { path = "crates/server" }
 linger-engine = { path = "crates/engine" }
+linger-events = { path = "crates/events" }
+fs2 = "0.4"
+crc32fast = "1"
 rand = "0.9"
 tokio = { version = "1.48", features = ["io-util", "net", "rt-multi-thread", "macros", "signal", "sync", "time"] }
 serde = { version = "1", features = ["derive"] }
