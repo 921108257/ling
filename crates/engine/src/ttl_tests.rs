@@ -328,7 +328,7 @@ fn renewal_is_bounded_and_stale_tasks_cannot_delete_current_state() {
     assert!(
         !e.lock(vec![id])
             .unwrap()
-            .expire_task(&old, clock.now().unwrap().monotonic)
+            .expire_task(&old, clock.now().unwrap())
             .unwrap()
     );
     assert_eq!(run(&e, "GET", &[s("k")]), Value::Int(1000));
@@ -344,7 +344,7 @@ fn renewal_is_bounded_and_stale_tasks_cannot_delete_current_state() {
     assert!(
         !e.lock(vec![id])
             .unwrap()
-            .expire_task(&before_recreate, clock.now().unwrap().monotonic)
+            .expire_task(&before_recreate, clock.now().unwrap())
             .unwrap()
     );
     assert_eq!(run(&e, "GET", &[s("k")]), Value::Int(7));
@@ -561,7 +561,7 @@ fn expiry_validates_every_identity_and_deadline_component() {
         assert!(
             !e.lock(vec![id])
                 .unwrap()
-                .expire_task(&task, clock.now().unwrap().monotonic)
+                .expire_task(&task, clock.now().unwrap())
                 .unwrap()
         );
         assert_eq!(e.scheduled_expirations().unwrap(), 1);

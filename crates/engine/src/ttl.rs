@@ -140,13 +140,31 @@ impl Transaction<'_> {
             .guards
             .binary_search_by_key(&id, |(id, _)| *id)
             .expect("TTL shard locked");
-        budget.schedule(id, key, Some(old), (!immediate).then_some(metadata));
-        if immediate {
-            self.guards[pos].1.remove(key);
-            budget.memory -= bytes;
-        } else {
-            self.guards[pos].1.get_mut(key).unwrap().metadata = metadata;
+        let events = [self.event(
+            db,
+            key,
+            if immediate { old } else { metadata },
+            if immediate {
+                linger_types::EventKind::Expired
+            } else {
+                linger_types::EventKind::TtlChanged
+            },
+            time,
+        )];
+        let store = self.engine.events.as_ref();
+        let publish = || {
+            budget.schedule(id, key, Some(old), (!immediate).then_some(metadata));
+            if immediate {
+                self.guards[pos].1.remove(key);
+                budget.memory -= bytes;
+            } else {
+                self.guards[pos].1.get_mut(key).unwrap().metadata = metadata;
+            }
+            result
+        };
+        match store {
+            Some(s) => s.commit(&events, publish),
+            None => Ok(publish()),
         }
-        Ok(result)
     }
 }

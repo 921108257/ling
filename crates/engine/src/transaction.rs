@@ -1,7 +1,7 @@
 //! 已取得分片执行权后的查找和提交；预算锁总在分片锁之后。
 //! Lookups and commits after shard ownership; budget locks always follow shard locks.
 
-use crate::{Entry, Metadata, Transaction, entry_size, support::*, unavailable};
+use crate::{Entry, Metadata, TimeSnapshot, Transaction, entry_size, support::*, unavailable};
 use linger_types::{DbError, ErrorCode, Generation, Value};
 use std::{cell::Cell, collections::BTreeMap, time::Instant};
 
@@ -56,8 +56,9 @@ impl Transaction<'_> {
         &mut self,
         db: u16,
         effect: Effect,
-        now: Instant,
+        time: TimeSnapshot,
     ) -> Result<Value, DbError> {
+        let now = time.monotonic;
         if effect.changes.is_empty() {
             return Ok(effect.result);
         }
@@ -158,52 +159,86 @@ impl Transaction<'_> {
             prepared.push((target, change.key, next));
         }
         let victims = self.victims(&protected, &mut memory, &mut key_counts, budget.memory, now)?;
-        // 受害者和写入共用一次发布；预算不足时不会提前删除任何 Key。
-        // Victims and writes share publication; insufficient budgets never delete keys early.
-        for (target, key) in victims {
-            let id = self
-                .engine
-                .location(target, &key)
-                .expect("validated victim");
-            let pos = self
-                .guards
-                .binary_search_by_key(&id, |(id, _)| *id)
-                .expect("victim shard locked");
-            budget.schedule(
-                id,
-                &key,
-                self.guards[pos].1.get(&key).map(|e| e.metadata),
-                None,
-            );
-            self.guards[pos].1.remove(&key);
-        }
-        for (target, key, entry) in prepared {
-            let id = self
-                .engine
-                .location(target, &key)
-                .expect("validated target");
-            let pos = self
-                .guards
-                .binary_search_by_key(&id, |(id, _)| *id)
-                .expect("shard not locked");
-            let index = &mut self.guards[pos].1;
-            budget.schedule(
-                id,
-                &key,
-                index.get(&key).map(|e| e.metadata),
-                entry.as_ref().map(|e| e.metadata),
-            );
-            match entry {
-                Some(entry) => {
-                    index.insert(key, entry);
-                }
-                None => {
-                    index.remove(&key);
-                }
+        let mut events = Vec::new();
+        if self.engine.events.as_ref().is_some_and(|s| s.enabled()) {
+            for (target, key, next) in &prepared {
+                self.describe(
+                    *target,
+                    key,
+                    self.index(*target, key).get(key),
+                    next.as_ref(),
+                    time,
+                    &mut events,
+                );
+            }
+            for (target, key) in &victims {
+                let old = self.index(*target, key).get(key).unwrap();
+                events.push(self.event(
+                    *target,
+                    key,
+                    old.metadata,
+                    if old.metadata.deadline.is_some_and(|d| now >= d.monotonic) {
+                        linger_types::EventKind::Expired
+                    } else {
+                        linger_types::EventKind::Evicted
+                    },
+                    time,
+                ));
             }
         }
-        budget.creations = creations;
-        budget.memory = memory;
-        Ok(effect.result)
+        let store = self.engine.events.as_ref();
+        let publish = || {
+            // 受害者和写入共用一次发布；预算不足时不会提前删除任何 Key。
+            // Victims and writes share publication; insufficient budgets never delete keys early.
+            for (target, key) in victims {
+                let id = self
+                    .engine
+                    .location(target, &key)
+                    .expect("validated victim");
+                let pos = self
+                    .guards
+                    .binary_search_by_key(&id, |(id, _)| *id)
+                    .expect("victim shard locked");
+                budget.schedule(
+                    id,
+                    &key,
+                    self.guards[pos].1.get(&key).map(|e| e.metadata),
+                    None,
+                );
+                self.guards[pos].1.remove(&key);
+            }
+            for (target, key, entry) in prepared {
+                let id = self
+                    .engine
+                    .location(target, &key)
+                    .expect("validated target");
+                let pos = self
+                    .guards
+                    .binary_search_by_key(&id, |(id, _)| *id)
+                    .expect("shard not locked");
+                let index = &mut self.guards[pos].1;
+                budget.schedule(
+                    id,
+                    &key,
+                    index.get(&key).map(|e| e.metadata),
+                    entry.as_ref().map(|e| e.metadata),
+                );
+                match entry {
+                    Some(entry) => {
+                        index.insert(key, entry);
+                    }
+                    None => {
+                        index.remove(&key);
+                    }
+                }
+            }
+            budget.creations = creations;
+            budget.memory = memory;
+            effect.result
+        };
+        match store {
+            Some(store) => store.commit(&events, publish),
+            None => Ok(publish()),
+        }
     }
 }

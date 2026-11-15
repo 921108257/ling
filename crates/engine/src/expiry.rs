@@ -1,7 +1,7 @@
 //! 有界到期索引：每条目最多一项，变更时同步替换，维护先取候选再按正常锁序重验。
 //! Bounded expiry index: one item per entry, replaced on mutations and rechecked under normal lock order.
 
-use crate::{Budget, Engine, Metadata, Transaction, unavailable};
+use crate::{Budget, Engine, Metadata, TimeSnapshot, Transaction, unavailable};
 use linger_types::DbError;
 use std::time::Instant;
 
@@ -106,7 +106,7 @@ impl Engine {
             let mut tx = self.lock(vec![task.location])?;
             // 等待期间可能发生续期、重建或迁移，因此取得执行权后再次取时间和身份。
             // Renewal, recreation, or relocation may happen while waiting, so resample and recheck after ownership.
-            reclaimed += usize::from(tx.expire_task(&task, self.clock.now()?.monotonic)?);
+            reclaimed += usize::from(tx.expire_task(&task, self.clock.now()?)?);
         }
         Ok(reclaimed)
     }
@@ -115,24 +115,48 @@ impl Engine {
 impl Transaction<'_> {
     /// 过期不增加修订；过时任务只能移除自身，不能触碰新生命周期的记录。
     /// Expiry never increments revisions; a stale task can remove only itself, never a newer lifecycle's timer.
-    pub(crate) fn expire_task(&mut self, task: &ExpiryTask, now: Instant) -> Result<bool, DbError> {
-        if now < task.when {
+    pub(crate) fn expire_task(
+        &mut self,
+        task: &ExpiryTask,
+        time: TimeSnapshot,
+    ) -> Result<bool, DbError> {
+        if time.monotonic < task.when {
             return Ok(false);
         }
         let position = self
             .guards
             .binary_search_by_key(&task.location, |(id, _)| *id)
             .unwrap();
-        let index = &mut self.guards[position].1;
-        let matches = index
+        let index = &self.guards[position].1;
+        let metadata = index
             .get(&task.key)
-            .is_some_and(|e| task.matches(e.metadata));
+            .filter(|e| task.matches(e.metadata))
+            .map(|e| e.metadata);
         let mut budget = self.engine.budget.lock().map_err(|_| unavailable())?;
-        budget.expirations.remove(task);
-        if matches {
-            let entry = index.remove(&task.key).unwrap();
-            budget.memory -= entry.bytes;
+        let events = metadata
+            .map(|m| {
+                self.event(
+                    (task.location / self.config.shard_count as usize) as u16,
+                    &task.key,
+                    m,
+                    linger_types::EventKind::Expired,
+                    time,
+                )
+            })
+            .into_iter()
+            .collect::<Vec<_>>();
+        let store = self.engine.events.as_ref();
+        let mut publish = || {
+            budget.expirations.remove(task);
+            if metadata.is_some() {
+                let entry = self.guards[position].1.remove(&task.key).unwrap();
+                budget.memory -= entry.bytes;
+            }
+            metadata.is_some()
+        };
+        match store {
+            Some(s) => s.commit(&events, publish),
+            None => Ok(publish()),
         }
-        Ok(matches)
     }
 }

@@ -5,6 +5,7 @@ mod administration;
 mod clock;
 pub use clock::{Clock, SystemClock, TimeSnapshot};
 mod containers;
+mod events;
 mod eviction;
 mod expiry;
 mod generic;
@@ -180,6 +181,9 @@ impl Drop for Retired {
 pub struct Engine {
     /// 启动配置，分片数已解析；Startup settings with the shard count resolved.
     config: Config,
+    /// 可选事件提交边界，始终在分片及预算锁之后取得。
+    /// Optional event commit boundary, always acquired after shard and budget locks.
+    events: Option<Arc<linger_events::EventStore>>,
     /// 按 (db, shard) 排列的独立所有权单元；Independent ownership units in (db, shard) order.
     shards: Vec<Mutex<Index>>,
     /// 进程内路由哈希种子；Process-local routing hash seed.
@@ -220,13 +224,29 @@ impl Engine {
 
     /// 注入双时钟以验证时间边界；与默认构造执行相同的预算校验。
     /// Injects a dual clock for time-boundary verification with the same budget checks as the default constructor.
-    pub fn with_clock(
+    pub fn with_clock(config: Config, epoch: u128, clock: Arc<dyn Clock>) -> Result<Self, DbError> {
+        Self::with_events(config, epoch, clock, None)
+    }
+
+    /// 装配事件存储并验证固定拓扑；不从事件恢复缓存。
+    /// Attaches an event store with matching fixed topology, without restoring cached values.
+    pub fn with_events(
         mut config: Config,
         epoch: u128,
         clock: Arc<dyn Clock>,
+        events: Option<Arc<linger_events::EventStore>>,
     ) -> Result<Self, DbError> {
         config.validate()?;
         config.shard_count = config.resolved_shards();
+        if events
+            .as_ref()
+            .is_some_and(|s| s.topology() != (config.databases, config.shard_count))
+        {
+            return Err(error(
+                ErrorCode::ConfigInvalid,
+                "Event topology differs from engine",
+            ));
+        }
         let count = config.databases as usize * config.shard_count as usize;
         let mut shards = Vec::new();
         shards
@@ -235,6 +255,7 @@ impl Engine {
         shards.extend((0..count).map(|_| Mutex::new(Index::new())));
         Ok(Self {
             config,
+            events,
             shards,
             hash: RandomState::new(),
             epoch,
@@ -255,6 +276,12 @@ impl Engine {
     /// Returns managed memory; retains the stage 2 API, with poison indicating an internal failure.
     pub fn managed_bytes(&self) -> usize {
         self.memory_usage().expect("engine budget lock poisoned")
+    }
+
+    /// 当前可选事件句柄；不允许运行时切换模式。
+    /// Current optional event handle; mode cannot change at runtime.
+    pub fn events(&self) -> Option<&Arc<linger_events::EventStore>> {
+        self.events.as_ref()
     }
 
     /// 当前实际分片数，启动后不变。
@@ -293,6 +320,9 @@ impl Engine {
         let mut tx = self.lock(locations)?;
         let time = self.clock.now()?;
         let now = time.monotonic;
+        if !read_only(&name) {
+            tx.account_expired(time)?;
+        }
         if matches!(
             name.as_str(),
             "EXPIRE"
@@ -308,7 +338,7 @@ impl Engine {
             return tx.ttl(db, &name, args, time, response_bytes);
         }
         if matches!(name.as_str(), "FLUSHDB" | "FLUSHALL" | "SWAPDB") {
-            return tx.administration(db, &name, args, now, response_bytes);
+            return tx.administration(db, &name, args, time, response_bytes);
         }
         let effect =
             match name.as_str() {
@@ -321,7 +351,7 @@ impl Engine {
                 _ => tx.container(db, &name, args, now, response_bytes)?,
             };
         response_size(&effect.result, response_bytes, self.config.value)?;
-        tx.publish(db, effect, now)
+        tx.publish(db, effect, time)
     }
 
     /// 从内部单调基准换算热度毫秒，饱和而不回绕。
