@@ -1,7 +1,9 @@
 //! 真实 TCP 服务契约：连接状态、共享引擎、并发与预算失败。
 //! Real TCP service contracts: connection state, shared engine, concurrency, and budget failures.
 
-use linger_protocol::{Body, Frame, Limits, Request, encode_frame, read_frame, write_frame};
+use linger_protocol::{
+    Body, Frame, Limits, ReadError, Request, encode_frame, read_frame, write_frame,
+};
 use linger_server::{Config, Server};
 use linger_types::Value;
 use tokio::{
@@ -67,6 +69,22 @@ fn assert_error(body: Body, code: &str, fatal: bool) {
     }
 }
 
+/// 关闭可表现为 EOF 或 TCP 重置；超时、其他错误或额外帧仍违反关闭契约。
+/// Closure may appear as EOF or TCP reset; timeouts, other errors, and extra frames still fail.
+async fn assert_closed(stream: &mut TcpStream) {
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        read_frame(stream, Limits::default()),
+    )
+    .await
+    .expect("Connection did not close before the deadline");
+    match result {
+        Ok(None) => {}
+        Err(ReadError::Io(error)) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        other => panic!("Expected EOF or connection reset, received {other:?}"),
+    }
+}
+
 /// 握手能力、命令错误和 QUIT 关闭行为符合协议。
 /// Handshake capabilities, command errors, and QUIT closure follow the protocol.
 #[tokio::test]
@@ -116,12 +134,7 @@ async fn hello_capabilities_and_command_errors_and_quit() {
         call(&mut stream, 8, "QUIT", vec![]).await,
         Body::Response(Ok(Value::Bool(true)))
     );
-    assert!(
-        read_frame(&mut stream, Limits::default())
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_closed(&mut stream).await;
     stop.send(()).unwrap();
     task.await.unwrap();
 }
@@ -172,12 +185,7 @@ async fn authentication_and_select_barriers_follow_receive_order() {
             }))
         );
     }
-    assert!(
-        read_frame(&mut stream, Limits::default())
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_closed(&mut stream).await;
     stop.send(()).unwrap();
     task.await.unwrap();
 }
@@ -193,12 +201,7 @@ async fn rejects_prehello_wrong_versions_and_reused_ids() {
     ] {
         let mut stream = TcpStream::connect(addr).await.unwrap();
         assert_error(call(&mut stream, 1, name, arg).await, code, true);
-        assert!(
-            read_frame(&mut stream, Limits::default())
-                .await
-                .unwrap()
-                .is_none()
-        );
+        assert_closed(&mut stream).await;
     }
     let mut stream = TcpStream::connect(addr).await.unwrap();
     let mut bytes = encode_frame(
@@ -217,12 +220,7 @@ async fn rejects_prehello_wrong_versions_and_reused_ids() {
         "ERR_UNSUPPORTED_VERSION",
         true,
     );
-    assert!(
-        read_frame(&mut stream, Limits::default())
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_closed(&mut stream).await;
     let mut stream = TcpStream::connect(addr).await.unwrap();
     call(&mut stream, 1, "HELLO", vec![Value::UInt(1)]).await;
     assert_error(
@@ -271,12 +269,7 @@ async fn semantic_errors_keep_connection_and_structural_errors_close_it() {
         "ERR_PROTOCOL",
         true,
     );
-    assert!(
-        read_frame(&mut stream, Limits::default())
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_closed(&mut stream).await;
     stop.send(()).unwrap();
     task.await.unwrap();
 }
@@ -307,12 +300,7 @@ async fn response_budget_and_shutdown_with_live_connection() {
         .await
         .unwrap()
         .unwrap();
-    assert!(
-        read_frame(&mut stream, Limits::default())
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_closed(&mut stream).await;
 }
 
 /// 连接满载拒绝新连接，半帧超时释放已有连接。
@@ -326,27 +314,9 @@ async fn partial_frame_deadline_and_connection_limit() {
     let mut first = TcpStream::connect(addr).await.unwrap();
     call(&mut first, 1, "HELLO", vec![Value::UInt(1)]).await;
     let mut second = TcpStream::connect(addr).await.unwrap();
-    assert!(
-        tokio::time::timeout(
-            std::time::Duration::from_secs(1),
-            read_frame(&mut second, Limits::default())
-        )
-        .await
-        .unwrap()
-        .unwrap()
-        .is_none()
-    );
+    assert_closed(&mut second).await;
     first.write_all(b"L").await.unwrap();
-    assert!(
-        tokio::time::timeout(
-            std::time::Duration::from_secs(1),
-            read_frame(&mut first, Limits::default())
-        )
-        .await
-        .unwrap()
-        .unwrap()
-        .is_none()
-    );
+    assert_closed(&mut first).await;
     stop.send(()).unwrap();
     task.await.unwrap();
 }

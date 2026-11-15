@@ -68,8 +68,10 @@ async fn reliable_ack_holes_recover_and_cache_starts_empty() {
     let mut config = Config::default();
     config.engine.shard_count = 1;
     config.events.mode = "reliable".into();
-    config.events.consumer_timeout_ms = 20;
-    config.events.retry_interval_ms = 10;
+    // 本例验证重启后的 ACK 空洞恢复，避免慢磁盘把初次投递与合法的超时重投交错。
+    // This tests ACK-hole recovery after restart, not retry timing on a slow CI disk.
+    config.events.consumer_timeout_ms = 30_000;
+    config.events.retry_interval_ms = 30_000;
     config.event_journal.dir = dir.0.clone();
     let (address, stop, task) = start(config.clone()).await;
     let mut writer = client(address).await;
