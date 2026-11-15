@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import socket
+import shutil
 import subprocess
 import sys
 import time
@@ -95,7 +96,7 @@ level="error"
 '''
     if mode == "reliable":
         config += '[event_journal]\ndir="journal"\nmax_bytes=67108864\n'
-    command = [str(ROOT / "target/release/examples/baseline"), "--address", f"127.0.0.1:{port}",
+    command = [str(args.output / "bin/baseline"), "--address", f"127.0.0.1:{port}",
                "--keys", "1000", "--warmup", "100", "--clients", "4", *flags]
     if "--engine" not in flags:
         command += ["--seconds", str(seconds)]
@@ -112,7 +113,7 @@ level="error"
     with (directory / "server.log").open("w") as log, (directory / "result.json").open("w") as output, (directory / "stderr").open("w") as errors:
         try:
             if "--engine" not in flags:
-                server = subprocess.Popen([str(ROOT / "target/release/linger-server"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
+                server = subprocess.Popen([str(args.output / "bin/linger-server"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
                 deadline = time.monotonic() + 10
                 while True:
                     if server.poll() is not None:
@@ -169,6 +170,11 @@ def main():
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
     subprocess.run(["cargo", "build", "--release", "-p", "linger-server", "--bin", "linger-server", "--example", "baseline"], cwd=ROOT, check=True)
+    (args.output / "bin").mkdir()
+    # 固定二进制副本，实验期间重建不能改变后续场景的版本。
+    # Freeze binary copies so concurrent rebuilds cannot change later scenarios' revisions.
+    shutil.copy2(ROOT / "target/release/linger-server", args.output / "bin/linger-server")
+    shutil.copy2(ROOT / "target/release/examples/baseline", args.output / "bin/baseline")
     (args.output / "environment.json").write_text(json.dumps(environment(args), ensure_ascii=False, indent=2) + "\n")
     selected = set(args.only.split(",")) if args.only else {name for name, _, _ in CASES}
     if selected - {name for name, _, _ in CASES}:
