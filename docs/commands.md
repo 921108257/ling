@@ -1,10 +1,10 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 6 已完成本文公开命令、普通 Batch 和运维入口；阶段 7 已完成本机性能与资源验收，当前为 0.1.2 预发布版本，稳定发布需目标环境评估。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)，客户端操作见 [cli.md](cli.md)。名称相似不意味着兼容 Redis。
+本文列出 ling 支持的命令、返回值、错误和原子性。类型见 [数据模型](data-model.md)，编码见 [通信协议](protocol.md)，客户端操作见 [CLI 指南](cli.md)。ling 不兼容 Redis 协议或命令行为。
 
 ## 当前支持范围
 
-| 类别 | 阶段 6 已开放 |
+| 类别 | 支持的命令 |
 |---|---|
 | 连接 | HELLO、AUTH、SELECT、PING、QUIT |
 | 通用 | SET（含 EX / PX / EXAT / PXAT，可选 NX 或 XX）、GET、GETSET、MGET、MSET、DEL、EXISTS、TYPE、DBSIZE |
@@ -159,7 +159,7 @@ FGET 的整个 Key 缺失或类型错误时整条命令失败，不伪造成字�
 
 | 命令 | 返回与行为 |
 |---|---|
-| `HELLO version` | 协议能力 Map；连接初始化，首版只支持版本 UInt(1) |
+| `HELLO version` | 协议能力 Map；连接初始化，当前版本只支持版本 UInt(1) |
 | `AUTH password` | Bool(true)；失败 `ERR_AUTH_FAILED`，密码不回显 |
 | `SELECT db` | Bool(true)；切换连接数据库，越界报错 |
 | `PING [message]` | 默认 String("PONG")；携带 String 时原样返回 |
@@ -169,7 +169,7 @@ FGET 的整个 Key 缺失或类型错误时整条命令失败，不伪造成字�
 | `FLUSHDB [ASYNC]` / `FLUSHALL [ASYNC]` | Bool(true)；原子逻辑清空，ASYNC 仅延后物理释放 |
 | `SWAPDB db1 db2` | Bool(true)；原子交换全部活跃数据及期限，同库为无操作 |
 | `CONFIG GET pattern` | Map；匹配配置项名，隐藏密码与密钥内容 |
-| `CONFIG SET key value` | Bool(true)；首版仅 log.level 可动态修改 |
+| `CONFIG SET key value` | Bool(true)；当前版本仅 log.level 可动态修改 |
 | `CONFIG RELOAD` | Bool(true)；全部校验后仅应用允许动态修改项；出现静态项变化则整次拒绝 |
 | `SHUTDOWN` | 确认已接受关闭请求后停止接入并排空，受关闭期限约束 |
 
@@ -190,11 +190,11 @@ CONFIG GET 的 pattern 按字节匹配标准扁平字段名，支持 `*` 与 `?`
 
 SWAPDB 仅交换缓存数据，不交换事件流、组、历史或数据库编号。迁入目标库的每条数据取得目标 generation，原期限不变；事件按各目标最终状态描述：活跃目标替换为 UPDATED，空目标为 CREATED，只移出为 DELETED，已到期条目保留 EXPIRED 原因；期限实际变化另有 TTL_CHANGED。这与 events 的目标覆盖规则一致，不把同名替换拆为删除和创建。Reliable 在一个事务中提交这些事件，允许该操作耗时或因容量限制拒绝。
 
-当前阶段的 FLUSH ASYNC 在返回前移出全部索引；待释放条目持续计入受管内存，直至后台物理释放，期间新写入可能因预算不足被拒绝。回收队列满或线程不可用时同步释放，不承诺 ASYNC 一定低延迟。Reliable 在逻辑移除前同步完整清库事务；ASYNC 仅延后物理释放。
+FLUSH ASYNC 在返回前移出全部索引；待释放条目持续计入受管内存，直至后台物理释放，期间新写入可能因预算不足被拒绝。回收队列满或线程不可用时同步释放，不承诺 ASYNC 一定低延迟。Reliable 在逻辑移除前同步完整清库事务；ASYNC 仅延后物理释放。
 
-首版没有 SAVE、SHUTDOWN NOSAVE、DEBUG SLEEP / JMAP。调试钩子如测试需要可在测试环境实现，不作为公开生产协议。
+不支持 SAVE、SHUTDOWN NOSAVE、DEBUG SLEEP / JMAP。
 
-AUTH、SELECT、QUIT、HELLO 与管理命令的连接权限、屏障和订阅限制见协议规范。认证是实例级权限，首版没有按数据库或命令的 ACL。
+AUTH、SELECT、QUIT、HELLO 与管理命令的连接权限、屏障和订阅限制见协议规范。认证是实例级权限，当前版本没有按数据库或命令的 ACL。
 
 ## 订阅
 
@@ -204,7 +204,7 @@ CLI 将未引用的 GROUP 识别为末尾组选项；作为 pattern 的 GROUP �
 
 CLI 以 `-c 'SUBSCRIBE ...'` 进入订阅模式，默认逐条从 stdin 读取 ACK，可输入 PING / UNSUBSCRIBE / QUIT；`--auto-ack` 才会在输出刷新后确认，`--count N` 在 N 条处理后退出（0 为持续消费）。当前不在普通逐行输入中切换为异步订阅。
 
-`ACK event_id` 在 CLI / SDK 中确认复合事件 ID，在线上映射为 ACK 帧；成功 Bool(true)。没有订阅上下文、错误 stream、未曾交付给当前组或临时会话的事件不得确认。Reliable 命名组的成功 ACK 表示状态已持久化；临时会话只确认内存交付。组与保留语义见 [events.md](events.md)。首版不支持部分 UNSUBSCRIBE。
+`ACK event_id` 在 CLI / SDK 中确认复合事件 ID，在线上映射为 ACK 帧；成功 Bool(true)。没有订阅上下文、错误 stream、未曾交付给当前组或临时会话的事件不得确认。Reliable 命名组的成功 ACK 表示状态已持久化；临时会话只确认内存交付。组与保留语义见 [events.md](events.md)。当前版本不支持部分 UNSUBSCRIBE。
 
 ## 遍历与匹配
 
@@ -216,7 +216,7 @@ COUNT 默认 100，为正数工作量提示，单页最多处理 10,000 个工�
 
 ## CLI 值语法
 
-客户端本地 `HELP` / `HELP command` 和 `--cheatsheet` 提供速查，不发送数据库请求，不扩展协议命令。单命令帮助无需建立连接；普通逐行输入的 HELP 由 CLI 本地处理，`--batch` 中出现 HELP 则整批不提交。帮助语言与使用示例见 [cli.md](cli.md#先查帮助)。
+客户端本地 `HELP` 显示简短主题目录，`HELP containers` 显示容器分类，`HELP containers list` 列出 List 命令及简述。`HELP SET` 查看完整命令说明，`HELP SET syntax|options|examples|related|description|types` 查看指定部分；`ling-cli help SET examples` 和 `ling-cli --help SET examples` 提供相同入口。`--cheatsheet` 显示完整命令参考。这些帮助不发送数据库请求，不扩展协议命令。单命令帮助无需建立连接；普通逐行输入的 HELP 由 CLI 本地处理，`--batch` 中出现 HELP 则整批不提交。帮助语言与使用示例见 [cli.md](cli.md#先查帮助)。
 
 命令行分词保留引号与括号内空白。Key / 字段 / 选项可用无空白裸词或双引号 String；Value 位置只接受以下带类型语法，不猜测裸数字类型：
 
@@ -245,7 +245,7 @@ GET "nothing"
 
 ## 错误码
 
-错误码是稳定 String，说明文本不作为业务判断条件。以下为首版注册表；实现不得自行添加同义错误码：
+错误码是稳定 String，说明文本不作为业务判断条件：
 
 | 错误码 | 含义 |
 |---|---|

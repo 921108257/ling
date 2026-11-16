@@ -1,8 +1,34 @@
 # 安装、服务与升级
 
-ling 当前为 0.1.2 预发布版本。新产物使用 `ling` 名称；旧 Release 不会被本次源码修改自动更新。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
+ling 当前为 0.1.3 预发布版本。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
 
 安装器默认注册并启动后台服务，默认监听 `127.0.0.1:6380`，事件模式为 Fast。服务使用专用工作目录，不读取用户终端当前目录的配置。需要自定义配置或已有实例占用端口时，先跳过自动启动，修改配置后再启动。Reliable 限制见 [architecture.md](architecture.md) 和 [persistence.md](persistence.md)。
+
+## 命令行更新
+
+从 0.1.3 起，可使用 `ling update` 更新服务端和客户端。0.1.2 及更早版本请先按下方平台说明安装 0.1.3。
+
+```sh
+ling update --check
+ling update
+ling update --version 0.1.3
+ling update --stable --check
+ling help update
+```
+
+`--check` 仅检查版本，不下载或安装。默认选择最新的已发布版本，包含预发布版本；`--stable` 仅选择稳定版。`--version` 固定目标版本，不允许降级；没有更新时不会重新安装。版本按语义版本比较。更新从 ling 官方 GitHub Releases 下载与本机系统、架构和安装方式匹配的资产，校验大小和 `SHA256SUMS` 后才安装。网络失败或校验失败不会修改已安装程序。遇到 GitHub 请求限制时，可稍后重试或设置 `LING_GITHUB_TOKEN`；令牌仅用于官方 GitHub API 请求，不会写入更新计划或诊断。
+
+Linux / macOS 的系统安装需要管理员权限：
+
+```sh
+sudo ling update
+```
+
+系统安装使用原生安装器，保留已有工作配置和状态目录，并按安装器约定停止、更新和启动服务。便携包只更新 `ling`、`ling-cli`；AppImage 更新原始 AppImage 文件。便携进程由你自行停止和重新启动，文件占用时更新会失败。未识别为官方安装包或便携包的安装方式，请按其原安装方式升级。
+
+Windows 在下载校验后退出当前命令，再继续安装，以释放程序文件。出现管理员权限提示时请确认。命令输出结果文件路径；使用 `Get-Content '<结果文件路径>'` 查看 `status`，`success` 表示完成，`failed` 表示失败，`scheduled` 表示尚未完成。`unknown` 表示需要检查安装器和已安装版本，不要直接重复更新。交接成功不等于安装完成。完成后使用 `ling --version`、`ling-cli --version` 确认版本。便携更新失败且 `rollback_complete` 为 `false` 时，请保留结果文件所在目录，并重新安装官方发行包。
+
+更新可能重启服务。缓存值与 TTL 在重启后不恢复；Reliable 仅恢复保留窗口内已提交事件及消费元数据。
 
 ## Windows x86_64
 
@@ -105,4 +131,4 @@ ling-cli -c 'PING'
 
 从旧项目名迁移时，旧的 `linger-server` / `linger-cli` 和安装目录不会自动转换；脚本请改用 `ling` / `ling-cli`。Rust 包改为 `ling-*`；Java `io.linger.cache`、Go `linger.local/cache` 和现有 Prometheus `linger_*` 指标保留兼容名称。CLI 优先读取 `LING_PASSWORD`，缺失时兼容 `LINGER_PASSWORD`。
 
-更名未改变协议或 Journal 格式。升级和重启后缓存值与 TTL 仍为空；仅 Reliable 已提交事件及消费元数据在保留边界内恢复。更换 Journal 目录可能改变流身份，不要把同名消费组视为原进度。多日压力、目标部署环境安装验收及正式版签名仍需在 1.0.0 前完成，见 [路线图](roadmap.md)。
+更名未改变协议或 Journal 格式。升级和重启后缓存值与 TTL 为空；仅 Reliable 已提交事件及消费元数据在保留边界内恢复。更换 Journal 目录可能改变流身份，不要把同名消费组视为原进度。

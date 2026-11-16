@@ -1,18 +1,18 @@
 # 二进制通信协议
 
-> 状态：版本 1 的帧与 Value 编码已由 Rust 编解码器和共享黄金用例冻结。业务命令及事件运行能力按 [roadmap.md](roadmap.md) 分阶段实现；存在编码不表示已经支持执行。
+本文定义 ling 二进制协议版本 1 的帧、Value 编码和连接状态。支持的命令及参数见 [命令参考](commands.md)。
 
 范围见 [architecture.md](architecture.md)，值语义见 [data-model.md](data-model.md)，命令参数和完整错误码见 [commands.md](commands.md)。本文只定义传输与封装，不以 Redis 协议为兼容目标。
 
-自阶段 2 起，只对命令签名中实际存储或参与值运算的参数应用业务 Value 限额，例如 SET 的 value、FSET 的各字段值；Key / 字段 / 选项由命令层按其签名验证。请求参数 List、MGET / FGET 的逐项结果 Map 等封套不消耗业务值深度和大小预算，但仍受帧总量、封套深度及分配预算约束。这是既定 v1 编码的校验语义，没有重新分配标签或修改黄金字节。
+只对命令签名中实际存储或参与值运算的参数应用业务 Value 限额，例如 SET 的 value、FSET 的各字段值；Key / 字段 / 选项由命令层按其签名验证。请求参数 List、MGET / FGET 的逐项结果 Map 等封套不消耗业务值深度和大小预算，但仍受帧总量、封套深度及分配预算约束。
 
 ## 连接与版本
 
-底层为有序 TCP 字节流，可直接使用 TLS 包装；启用 TLS 时先完成 TLS 握手，再发送本协议。首版不支持压缩、明文连接内升级 TLS 或 Embedded 通道。
+底层为有序 TCP 字节流，可直接使用 TLS 包装；启用 TLS 时先完成 TLS 握手，再发送本协议。当前版本不支持压缩、明文连接内升级 TLS 或 Embedded 通道。
 
-客户端首个应用帧必须是普通 `REQUEST HELLO`，参数为单个 `UInt(1)`。头部 Version 与 HELLO 参数都必须为 1；首版仅接受这一版本，不宣称支持多版本自动降级。
+客户端首个应用帧必须是普通 `REQUEST HELLO`，参数为单个 `UInt(1)`。头部 Version 与 HELLO 参数都必须为 1；当前版本仅接受这一版本，不宣称支持多版本自动降级。
 
-HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`events: Bool`、`reliable_events: Bool`、`stream_id: Bytes(16) | Null`。版本文本取实际构建版本，不能硬编码规划文档版本。两个能力字段说明当前实例已启用的模式；事件禁用时 stream_id 为 Null。重连订阅前 SDK 比较保存的 stream_id，不同则上报 ERR_STREAM_MISMATCH 并等待调用方显式重置，不静默新建同名组。
+HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`events: Bool`、`reliable_events: Bool`、`stream_id: Bytes(16) | Null`。server_version 为服务端版本。两个能力字段说明当前实例已启用的模式；事件禁用时 stream_id 为 Null。重连订阅前 SDK 比较保存的 stream_id，不同则上报 ERR_STREAM_MISMATCH 并等待调用方显式重置，不静默新建同名组。
 
 不支持的帧版本返回 `ERROR ERR_UNSUPPORTED_VERSION` 后关闭。HELLO 前的其他请求拒绝并关闭。完成 HELLO 后，启用认证的实例在认证成功前仅接受 `AUTH`、`PING`、`QUIT`；未认证业务命令返回 `ERR_UNAUTHENTICATED`。
 
@@ -27,7 +27,7 @@ HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`event
 | 0 | 2 | Magic | `0x4C47`，即 ASCII `LG` |
 | 2 | 1 | Version | `0x01` |
 | 3 | 1 | Frame Type | 下表定义 |
-| 4 | 2 | Flags | 首版仅定义 bit 0 |
+| 4 | 2 | Flags | 当前版本仅定义 bit 0 |
 | 6 | 8 | Request ID | 请求关联号；推送和传输心跳为 0 |
 | 14 | 4 | Payload Length | 不含帧头的字节数 |
 | 18 | 指定长度 | Payload | 必须恰好符合对应帧类型的编码 |
@@ -41,7 +41,7 @@ HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`event
 | HEARTBEAT | `0x05` | 任一端发送的传输活跃通知 |
 | ERROR | `0x06` | 服务端致命协议错误，随后关闭连接 |
 
-Flags 的 `0x0001` 表示 BATCH，仅允许用于 REQUEST / RESPONSE。其他位必须为 0；首版不得将保留位解释为压缩或其他能力。普通响应、EVENT、ACK、HEARTBEAT 和 ERROR 的 Flags 均为 0。
+Flags 的 `0x0001` 表示 BATCH，仅允许用于 REQUEST / RESPONSE。其他位必须为 0；当前版本不得将保留位解释为压缩或其他能力。普通响应、EVENT、ACK、HEARTBEAT 和 ERROR 的 Flags 均为 0。
 
 客户端 REQUEST / ACK 共用同一 Request ID 序列，从 1 开始逐次加 1，连接内不得复用；到达 `u64` 上限后重建连接。RESPONSE 原样带回关联 ID。EVENT / HEARTBEAT 使用 0；ERROR 可使用已知的关联 ID，否则为 0。
 
@@ -184,6 +184,7 @@ TCP 半包和粘包是正常情况：累积完整 18 字节头，再按长度读
 00 05 00 00 00 04 50 4f 4e 47
 ```
 
-共享用例位于 [tests/fixtures/protocol](../tests/fixtures/protocol)：`values.tsv` 覆盖全部 Value 与边界，`frames.tsv` 覆盖 HELLO、PING/PONG、ERROR、Batch、EVENT、ACK、HEARTBEAT，`invalid-values.tsv` 标注错误码及是否致命。每行使用 `|` 分隔，十六进制中的空白仅供阅读，`#` 行为注释。Map / Set 顺序不属于冻结内容，按语义比较。Rust 测试同时检查独立期望字节及所有分包位置；Java / Go 复用同一套文件。`commands.tsv` 另外保存命令参数与预期成功 Value / 稳定错误码，三种 SDK 均连接真实服务端验证。阶段 6 未改变版本 1 的类型标签或帧格式。
 
-不得重分配已使用标记、悄然改变单位或复用保留位；不兼容变更必须提升协议版本。
+完整字节向量见 [协议用例](../tests/fixtures/protocol)。Map / Set 的编码顺序不固定，应按语义比较。
+
+协议版本 1 的现有类型标签、单位和保留位保持兼容；不兼容变更需要提升协议版本。

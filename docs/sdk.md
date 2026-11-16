@@ -1,6 +1,6 @@
 # CLI 与官方 SDK
 
-> 状态：阶段 6 已实现 Rust / Java / Go 原生客户端、CLI、固定库连接池、TLS、Batch 与专用订阅；阶段 7 已完成本机验收，当前为 0.1.2 预发布版本。单连接串行执行；稳定发布仍需目标部署环境评估。
+ling 提供 Rust、Java、Go 原生客户端和 CLI，支持固定数据库连接池、TLS、普通 Batch 与专用订阅。单连接串行执行，并发请求通过多个连接提供。
 
 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / batch / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求。`Client::subscribe` 消耗普通连接，返回固定数据库的 `Subscriber`，提供 `next_event / ack / ping / close`；交错事件进入有界队列，不隐式丢弃或确认。空闲读取发送 HEARTBEAT，取消等待关闭连接，命名组由调用方显式重连。重连后先调用 `Client::require_event_stream(expected)` 校验保存的流身份；变化时关闭连接并报告 ERR_STREAM_MISMATCH，不创建替代组。`Options.tls` 使用 `ClientTls` 设置服务端名称、可选 CA 及成对客户端身份。`Pool::new / acquire / execute / close` 和 `PoolOptions` 提供有界容量与排队期限，`PooledClient` 持有固定库租约。
 
@@ -18,25 +18,20 @@ Go 模块 `sdks/go` 的路径为 `linger.local/cache`，最低 Go 1.22，仅使�
 
 Java / Go 默认连接超时 5 秒、请求超时 30 秒；Java 显式设置必须为正，Go 的零值采用默认、负值拒绝。两者固定限制 Payload / Value 为 64 MiB、解码分配预算 128 MiB、业务容器深度 8、协议封套深度 12，服务端配置更大不会自动放宽客户端限制。订阅交错队列最多 1024 项且不超过 32 MiB；超限报错并关闭，不静默丢事件。
 
-在仓库根目录编译 Java、在模块内检查 Go：
+在仓库根目录编译 Java SDK：
 
 ```sh
 mkdir -p target/java-sdk
 javac -Xlint:all -Werror -d target/java-sdk sdks/java/src/main/java/io/linger/cache/*.java
-cd sdks/go
-go vet ./...
-go test ./...
 ```
 
-没有 `LINGER_TEST_ADDR` 时独立语言测试会跳过真实服务用例；完整验收入口为仓库根目录的 `python3 tests/sdk_contracts.py`，自动运行 TCP 与双向 TLS 两种模式、Go race 和 Java 契约。测试证书与私钥只供本地验收，不用于部署。
+## 客户端与服务端
 
-## 范围与职责
+所有客户端通过 [通信协议](protocol.md) 连接独立服务，不提供 Embedded API 或 TypeScript SDK。
 
-首版交付 CLI、Rust、Java、Go 客户端；TypeScript 留待后续版本。所有客户端通过 [protocol.md](protocol.md) 连接独立服务，不提供 Embedded API。
+CLI 直接使用 Rust SDK。Java 与 Go 使用各自语言的原生网络实现，不依赖 JNI、cgo 或其他 FFI 包装。
 
-CLI 优先交付，并直接复用 Rust SDK。Java 与 Go 使用各自语言的原生网络实现，不通过 JNI、cgo 或其他 FFI 包装 Rust。它们共享类型、命令、协议和验收用例，不要求共享可执行代码。
-
-规范的职责分别是：[architecture.md](architecture.md) 定义范围，[commands.md](commands.md) 定义命令，[data-model.md](data-model.md) 定义值，[protocol.md](protocol.md) 定义传输。CLI 是可操作的验收参考；遇到实现差异时，修正实现或正式修订规范，不能以 CLI 的偶然行为覆盖契约。
+命令、类型和返回值见 [命令参考](commands.md) 与 [数据模型](data-model.md)。
 
 各 SDK 负责连接生命周期、TLS 与认证、值编解码、请求匹配、超时、批量提交、事件订阅和 ACK。当前三种 SDK 均不自动重连或重放请求；池中的失效连接丢弃后，下次租用可以新建连接。服务端负责数据语义、原子修改、TTL、事件提交及资源限制，SDK 不以读改写模拟服务端原子命令。
 
@@ -61,7 +56,7 @@ Java 的 UInt 必须验证范围 `0..=2^64-1`。Go 的 Scalar 包装必须包含
 
 Rust 的 Float 也不能直接假设具备适用的 `Eq` / `Hash`，需在 Scalar 层实现 NaN 拒绝和正负零归一化。所有语言使用 [data-model.md](data-model.md) 的类型敏感相等规则，不能继承语言默认数值提升规则。
 
-后续 TypeScript SDK 应使用 `bigint` 表达 Int / UInt，不能经 JavaScript `number` 中转 64 位整数。所有 SDK 不得通过通用 JSON 编解码丢失类型或精度。
+与其他系统交换数据时，应使用可精确表示 64 位整数的类型，避免通过通用 JSON 数值丢失 Int / UInt 的精度。Bytes、Set 等类型也需要保留类型标签。
 
 ## 成功、空值与错误
 
@@ -125,9 +120,9 @@ Rust 的单值读取在语义上为 `Result<Value, Error>`。成功的 `Value::N
 
 ## CLI 约定
 
-CLI 覆盖首版公开命令与订阅能力，负责文本解析、类型展示和错误展示；它不实现独立于 Rust SDK 的网络或数据库语义。
+CLI 覆盖当前版本公开命令与订阅能力，负责文本解析、类型展示和错误展示；它不实现独立于 Rust SDK 的网络或数据库语义。
 
-`ling --help`、`ling-cli --help`、`ling-cli --cheatsheet` 与 `ling-cli -c 'HELP [command]'` 在连接服务器前处理。普通逐行输入的 HELP 也在本地处理；Batch 拒绝本地 HELP，且整批不提交。HELP 不是协议命令，不改变服务端公开命令清单。
+`ling --help` 与 CLI 帮助均在连接服务器前处理。`HELP` / `ling-cli help` 显示简短主题目录，`HELP containers` 显示容器分类，`HELP containers list` 列出 List 命令及简述；`HELP SET` 显示完整命令说明。`HELP SET syntax|options|examples|related|description|types` 可查看单独部分，`ling-cli help SET examples`、`ling-cli --help SET examples` 与 `ling-cli -c 'HELP SET examples'` 等价。`ling-cli --cheatsheet` 显示完整命令参考。普通逐行输入的 HELP 也在本地处理；Batch 拒绝本地 HELP，且整批不提交。HELP 不是协议命令，不改变服务端公开命令清单。
 
 帮助支持 `en-US`、`zh-CN`、`ko-KR`、`ja-JP`、`ru-RU`、`de-DE`、`fr-FR`；按 `--lang`、`LING_LANG`、`LC_ALL`、`LC_MESSAGES`、`LANG`、操作系统语言依次选择，未匹配回退 `en-US`。`C` / `POSIX` 使用英语，繁体中文不自动映射简体中文。帮助选项、说明与速查可本地化；协议命令名、类型字面量、数值与存储内容不受影响。详细操作见 [cli.md](cli.md)。
 
@@ -136,13 +131,3 @@ Value 使用显式类型字面量，如 `int(1)`、`uint(1)`、`float(1.0)`、`b
 输出区分 Null、不存在、空字符串、空 Bytes 及空容器。显示 64 位整数时保持精度；String 与 Bytes、Int 与 UInt 必须可辨识。非交互调用通过退出状态区分成功和失败，错误文本不能伪装为正常 Value。
 
 命令行与日志不得回显认证密码。CLI 的方便用法不能绕过服务器资源限制，也不建立隐藏的默认值转换。
-
-## 验收要求
-
-各语言共享协议字节用例、10 种 Value 的往返用例、命令成功与错误用例。CLI 与 Rust 共用传输实现，Java / Go 通过同一服务端契约验证，不能只做各自的自编码自解码测试。
-
-本地帮助需覆盖七语言、环境与显式语言优先级、未知系统语言回退、无服务器和无认证时可查帮助，以及普通输入 HELP 不发请求、Batch 含 HELP 不执行任何项。帮助目录应覆盖全部已开放命令，签名与 [commands.md](commands.md) 一致。
-
-重点覆盖：Null 与不存在、最大 UInt、NaN 拒绝、Float 正负零、Bytes 集合成员、响应乱序、同 Key 顺序、选库屏障、迟到响应、写入结果未知和关闭后任务释放。
-
-事件测试覆盖显式 ACK、重复投递、断线恢复、回调失败、过期 offset 和订阅取消。能力完成度按命令与模式分别记录；任何语言尚未支持的能力要明确标注，不允许以空实现宣称覆盖。

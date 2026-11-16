@@ -1,73 +1,95 @@
 # ling
 
-ling（原 linger-cache-db）是独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型、固定分片和多数据库；已支持毫秒 TTL、Fast 事件与可选 Reliable Journal。
+ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 种强类型值、毫秒 TTL、多数据库和事件订阅。服务端命令为 `ling`，客户端为 `ling-cli`。
 
-[官网与文档](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令浏览器](https://921108257.github.io/ling/commands/)
+[官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-**当前为 0.1.2 预发布版本，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
+当前版本为 **0.1.3 预发布版**。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
-每个 (数据库, Shard) 拥有独立索引与锁，多 Key 命令按固定顺序取得全部执行权后整体发布。可配置全实例受管内存、每库 Key 配额及 noeviction / lru / lfu / random / ttl-first 策略；受管内存不等于进程 RSS。启用淘汰且配置容量上限时，当前写入保守取得全实例执行权。ttl-first 选择最早到期的活跃条目，无期限候选时拒绝写入。
+## 安装
 
-已支持 SET EX / PX / EXAT / PXAT、EXPIRE 系列、PERSIST 和四种 TTL 查询；逻辑到期不依赖后台回收。默认启用有界 Fast 事件，可选 Reliable 持久化事件与消费元数据；缓存和 TTL 重启后仍为空。支持验证证书的 TLS / 双向 TLS、三种 SDK 的固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志和可选 Prometheus。单连接串行执行，并发通过多连接提供；普通 Batch 不提供事务或整体回滚。
+从 [Releases](https://github.com/921108257/ling/releases) 下载匹配系统和 CPU 架构的安装包。使用同页的 `SHA256SUMS` 校验下载文件。
 
-## 下载安装包
+| 平台 | 架构 | 安装包 | 便携包 |
+|---|---|---|---|
+| Windows | x86_64 | Setup EXE | ZIP |
+| macOS | Intel x86_64、Apple Silicon ARM64 | PKG | tar.gz |
+| Linux | x86_64、ARM64 | DEB、RPM | AppImage、tar.gz |
 
-在 [Releases](https://github.com/921108257/ling/releases) 下载预览安装包；私有仓库需要访问权限。新的包名统一为 `ling_<版本>_<平台>_<架构>`，包含服务端 `ling`、客户端 `ling-cli`、配置示例以及安装/CLI/配置/持久化文档。既有 `0.1.0` Release 中的旧名资产不会因源码更名自动更新。
+安装器默认注册并启动系统服务；升级保留已有配置，卸载保留用户配置和状态。便携包需要手动启动服务。Windows 安装器未签名，macOS PKG 未签名或公证。服务管理、配置路径、升级和卸载步骤见 [安装指南](docs/install.md)。
 
-| 平台 | 架构 | 安装包与服务 |
-|---|---|---|
-| Windows | x86_64 | Setup EXE 默认注册并启动 `ling` 服务；ZIP 为便携包 |
-| macOS | Intel x86_64、Apple Silicon ARM64 | PKG 注册 LaunchDaemon；tar.gz 为便携包 |
-| Linux | x86_64、ARM64 | DEB / RPM 注册 systemd；AppImage / tar.gz 为便携包 |
+## 第一次读写
 
-完整安装、服务管理、升级与卸载见 [安装指南](docs/install.md)。安装器保留已有配置，卸载保留用户配置和 Journal。便携包不会自动注册服务。发布页的 `SHA256SUMS` 用于校验下载文件；安装器尚未完成 Windows 签名与 macOS 公证。
+安装系统服务后，打开新终端连接。使用便携包时，先在另一个终端运行包内的 `ling` 可执行文件。
 
-安装服务后，在新终端验证：
+```sh
+ling-cli -c 'PING'
+ling-cli
+```
+
+PING 返回 `"PONG"`。进入 `ling>` 提示符后输入：
+
+```text
+SET greeting "Hello, ling"
+GET greeting
+SET counter int(0)
+INCRBY counter 2
+SET session null PX 5000 NX
+PTTL session
+PERSIST session
+HELP SET
+QUIT
+```
+
+`GET greeting` 返回 `"Hello, ling"`，`INCRBY` 返回 `int(2)`。Value 保留类型：`null` 是成功值，Key 不存在则返回 `ERR_KEY_NOT_FOUND`。容器需要先用 SET 创建，类型专用命令不会隐式创建 Key。
+
+默认地址为 `127.0.0.1:6380`、数据库为 `0`。连接其他实例或数据库：
+
+```sh
+ling-cli --host 127.0.0.1 --port 6380 --db 1
+```
+
+CLI 的 `--host` 接受 IP 地址，TLS 证书名称通过 `--tls-server-name` 指定。执行错误会使退出码非零；写入发送后的断线或超时可能表示结果未知，应先核实结果再决定是否重试。
+
+## 在终端查帮助
+
+帮助可以离线查看：
 
 ```sh
 ling --help
 ling-cli --help
+ling-cli help
+ling-cli help containers list
+ling-cli help SET examples
 ling-cli --cheatsheet
-ling-cli -c 'HELP SET'
-ling-cli -c 'PING'
 ```
 
-`ling` 是服务端入口，`ling-cli` 是数据库命令行。帮助和速查均可离线使用；交互终端输入 `HELP` 或 `HELP <命令>` 即可查阅，无需另开浏览器。完整用法与命令速查见 [CLI 指南](docs/cli.md)。
+`HELP` 显示简短主题目录，`HELP containers` 继续查看容器分类，`HELP containers list` 列出 List 命令及简述。`HELP SET` 展示完整命令说明，`HELP SET examples` 只看示例；`syntax`、`options`、`related`、`description`、`types` 可单独查看对应部分。终端外可用 `ling-cli help SET examples` 或 `ling-cli --help SET examples`，完整命令参考使用 `--cheatsheet`。帮助和诊断支持简体中文、美式英语、韩语、日语、俄语、德语和法语；按 `--lang` → `LING_LANG` → `LC_ALL` → `LC_MESSAGES` → `LANG` → 本机语言选择，未匹配时使用美式英语。例如 `ling-cli --lang zh-CN --help`。
 
-帮助自动选择简体中文、美式英文、韩语、日语、俄语、德语或法语，未匹配时默认美式英语。优先级为 `--lang` → `LING_LANG` → `LC_ALL` → `LC_MESSAGES` → `LANG` → 本机语言。例如 `ling --lang ja-JP --help`、`ling-cli --lang zh-CN --cheatsheet`。语言选择只影响本地帮助，不改变协议或稳定错误码。
+## 更新
 
-**Windows 当前仅支持 Fast 事件；Reliable 配置在文件操作和监听前返回 `ERR_CONFIG_INVALID`，不会降级为 Fast。** Linux / macOS 保留 Reliable 支持；其恢复边界仍是已提交事件和消费元数据，缓存值与 TTL 不恢复。
-
-[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预发布 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。本次版本标签为 `v0.1.2`，对应 GitHub Prerelease；后续发布同样先更新版本，再推送匹配标签。
-
-## 构建与试用
-
-需要 Rust 2024 工具链，Cargo 声明最低版本为 1.85。以下命令在仓库根目录执行：
+从 0.1.3 起可直接检查和安装更新：
 
 ```sh
-cargo build --workspace
-cargo run -p ling-server --bin ling
+ling update --check
+ling update
+ling update --version 0.1.3
+ling update --stable
 ```
 
-服务端默认监听 `127.0.0.1:6380`。另开终端调用 CLI：
+默认包含预发布版，`--stable` 只选择正式版；指定版本不能降级。Linux / macOS 的系统安装包使用 `sudo ling update` 安装更新，检查更新不需要 sudo。**0.1.2 尚无内置更新，请先手动安装 0.1.3。**
+
+Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。便携更新替换 `ling` 和 `ling-cli`，保留配置；手动启动的进程需自行停止并重新启动。详细步骤见 [安装指南](docs/install.md)。
+
+## 配置与认证
+
+前台运行 `ling` 时，优先读取当前目录的 `ling.toml`，其次读取兼容文件 `linger.toml`，均不存在则使用默认配置。也可显式指定：
 
 ```sh
-cargo run -p ling-cli -- -c 'PING'
-cargo run -p ling-cli -- -c 'SET counter int(0)'
-cargo run -p ling-cli -- -c 'INCRBY counter 2'
-cargo run -p ling-cli -- -c 'SET session null PX 5000 NX'
-cargo run -p ling-cli -- -c 'PTTL session'
-cargo run -p ling-cli -- -c 'PERSIST session'
-cargo run -p ling-cli -- -c 'COPY counter copied DB 1'
-cargo run -p ling-cli -- --db 1 -c 'SCAN 0 COUNT 100'
-cargo run -p ling-cli -- -c 'SET profile map({"name": "Lin", "visits": uint(1)})'
-cargo run -p ling-cli -- -c 'FGET profile name visits'
-printf 'SET nothing null\nGET nothing\nQUIT\n' | cargo run -p ling-cli
+ling --config /path/to/ling.toml
 ```
 
-PING 输出 `"PONG"`，INCRBY 输出 `int(2)`；存储的 Null 输出 `null`，缺失 Key 则以独立错误和非零退出码表达。CLI 连接时自动完成 HELLO、可选 AUTH 和 SELECT；输入中的任何失败都会使最终退出码非零。Ctrl-C / SIGTERM 停止服务并关闭连接。SDK 不自动重放请求，发送后的断线或超时可通过 `outcome_unknown()` 判断不确定性。
-
-无 `--config` 时服务端优先读取当前目录的 `ling.toml`，没有时兼容旧名 `linger.toml`，均不存在则使用默认配置。系统服务使用安装指南中的固定配置路径。已接受 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组配置，完整默认值见 [config.md](docs/config.md)。可通过 `--config <path>` 指定文件，例如：
+系统服务使用固定配置路径，见 [安装指南](docs/install.md)。配置示例：
 
 ```toml
 [server]
@@ -76,69 +98,19 @@ port = 6380
 
 [auth]
 enabled = true
-password = "replace-me"
+password = "replace-with-your-password"
 
 [engine]
 shard_count = 4
 max_memory_bytes = 268435456
 max_keys = 100000
-
-[eviction]
-policy = "lru"
-sample_size = 5
-
-[ttl]
-precision_ms = 1
-maintenance_budget = 1024
 ```
 
-启用认证后，通过环境变量 `LING_PASSWORD` 向 CLI 提供同一密码；未设置时兼容 `LINGER_PASSWORD`。配置规则与当前限制见 [config.md](docs/config.md)。
+认证启用后，在客户端环境中设置 `LING_PASSWORD`，未设置时兼容 `LINGER_PASSWORD`。CLI 不接受密码命令行参数。TLS、淘汰、日志与 Prometheus 配置见 [配置参考](docs/config.md)；只有日志级别可以动态修改，其他配置需要重启。
 
-## 批量、TLS 与运维
+## 选择事件模式
 
-`--batch` 将标准输入提交为一个协议 Batch，最多 1000 条、64 MiB 文本；任一结果失败时退出码非零。默认多行输入仍为逐行独立请求。Batch 不允许连接、管理、订阅和遍历命令，准入失败整批不执行：
-
-```sh
-printf 'SET first null\nGET first\nGET absent\n' | cargo run -p ling-cli -- --batch
-cargo run -p ling-cli -- -c 'INFO events'
-cargo run -p ling-cli -- -c 'CONFIG GET log.*'
-cargo run -p ling-cli -- -c 'CONFIG SET log.level debug'
-cargo run -p ling-cli -- -c 'CONFIG RELOAD'
-cargo run -p ling-cli -- -c 'SHUTDOWN'
-```
-
-RELOAD 从启动配置文件重新加载，仅允许日志级别变化；任何静态项变化整体拒绝。没有配置来源时不能 RELOAD。CONFIG GET 隐藏密码；INFO 返回类型化 Map，受管内存与 RSS 分开。
-
-启用 TLS 时配置服务端身份，文件路径相对配置文件；`ca_file` 非空时还要求客户端证书：
-
-```toml
-[tls]
-enabled = true
-cert_file = "certs/server.pem"
-key_file = "certs/server-key.pem"
-min_version = "tls1.2"
-
-[log]
-level = "info"
-format = "json"
-output = "stdout"
-
-[metrics]
-enabled = true
-host = "127.0.0.1"
-port = 9090
-path = "/metrics"
-```
-
-```sh
-cargo run -p ling-cli -- --tls-server-name cache.example.com --tls-ca certs/ca.pem -c 'PING'
-```
-
-省略 `--tls-ca` 时使用内置公共根；双向 TLS 另加成对的 `--tls-cert` 和 `--tls-key`。始终验证服务端名称与证书。指标为独立 HTTP 端点，默认关闭；启用后可在 `http://127.0.0.1:9090/metrics` 读取请求、时延、内存、TTL、事件及 Journal 指标，不带 Key / Value 标签。
-
-## 事件订阅
-
-事件默认 Fast，缓冲溢出会丢弃并计数；跨重启消费需要在配置中加入：
+默认 Fast 使用有界内存队列，溢出时可能丢弃事件。Linux / macOS 可配置 Reliable，将已提交事件和命名消费组进度保存在 Journal 中：
 
 ```toml
 [events]
@@ -149,20 +121,30 @@ dir = "journal"
 max_bytes = 1073741824
 ```
 
-目录相对配置文件解析，同目录只允许一个实例；复用要求数据库数与实际分片数一致，建议显式固定 `engine.shard_count`。Reliable 逐事务 fsync，容量不足拒绝新变更，不提前丢弃保留期内事件。
+相对目录按配置文件位置解析。Reliable 需要支持文件与目录同步的文件系统，默认保留 7 天；可能重复投递，业务处理成功后显式 ACK。窗口外的消费位置会报错，缓存值与 TTL 不随 Journal 恢复。Windows 的 Reliable 配置返回 `ERR_CONFIG_INVALID`。完整用法见 [事件订阅](docs/events.md) 和 [持久化](docs/persistence.md)。
 
-先在一个终端订阅，再在另一个写入：
+## 使用参考
 
-```bash
-cargo run -p ling-cli -- -c 'SUBSCRIBE order:* GROUP workers'
-cargo run -p ling-cli -- -c 'SET order:1 null PX 60000'
+| 主题 | 文档 |
+|---|---|
+| 命令与类型 | [CLI 指南](docs/cli.md) · [命令参考](docs/commands.md) · [数据模型](docs/data-model.md) |
+| 过期与事件 | [TTL](docs/ttl.md) · [订阅与 ACK](docs/events.md) · [持久化](docs/persistence.md) |
+| 部署与运维 | [安装与服务](docs/install.md) · [配置](docs/config.md) |
+| 应用接入 | [Rust、Java、Go SDK](docs/sdk.md) · [通信协议](docs/protocol.md) |
+
+ling 使用自定义二进制协议，不兼容 Redis；仅支持独立单机服务，不提供 Embedded API、集群、复制或缓存数据恢复。项目原名为 linger-cache-db，Java 包 `io.linger.cache` 和 Go 模块 `linger.local/cache` 保留兼容名称。
+
+<details>
+<summary>贡献者：源码构建、测试与文档维护</summary>
+
+需要 Rust 2024 工具链，最低 Rust 1.85。在仓库根目录构建并启动服务：
+
+```sh
+cargo build --workspace
+cargo run -p ling-server --bin ling
 ```
 
-输出首列为 `stream/db/shard/sequence`，处理成功后在订阅终端输入 `ACK <首列ID>`。`UNSUBSCRIBE` 退出并保留命名组；Ctrl+C / 断线后重连同组可重投未确认事件。需要输出即确认时显式加 `--auto-ack`，例如 `--count 1 --auto-ack -c 'SUBSCRIBE order:* GROUP workers'`。Rust 使用 `Client::subscribe`、`Subscriber::next_event` 与显式 `ack(event.id)`，见 [SDK](docs/sdk.md)。
-
-当前维护约每秒检查、按完整事务前缀压缩；消费从运行时记录游标继续顺序扫描，压缩和重启后按逻辑水位恢复。[阶段 7 实测](docs/testing.md#阶段-7-本机验收)包含消费积压、Fast 丢弃及 Reliable 成本，不作为生产性能保证。
-
-## 验证
+另一个终端运行 `cargo run -p ling-cli`。仓库检查命令：
 
 ```sh
 cargo fmt --all -- --check
@@ -172,28 +154,9 @@ RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 python3 tests/sdk_contracts.py
 ```
 
-最后一项需要 Go 1.22+、JDK 17、OpenSSL 和 Python 3：自动构建 Rust 服务端，分别在 TCP 与双向 TLS 下运行 Go race 检查和 Java 契约。Java 使用 `javac -Xlint:all -Werror`，不依赖 Maven / Gradle；Go 仅使用标准库，SDK 入口与独立编译方式见 [sdk.md](docs/sdk.md)。测试 TLS 身份仅供本地契约使用。
+跨语言测试还需要 Go 1.22+、JDK 17、OpenSSL 和 Python 3。测试入口、性能数据与测量条件见 [测试与基准](docs/testing.md)；协作前阅读 [AGENTS.md](AGENTS.md)、[架构](docs/architecture.md)、[路线图](docs/roadmap.md) 和 [决策记录](docs/decisions.md)。
 
-测试覆盖独立黄金字节、10 种 Value、数值与容器边界、失败无部分修改、资源限额、跨分片原子观察、锁顺序、跨库身份与期限保留、游标弱一致性、淘汰失败原子性、异步回收计费、可控时钟下的 TTL 边界 / 校时 / 续期 / 旧任务校验 / 过期竞争，以及真实 TCP / CLI 调用。源码、测试和基准工具使用中英双语注释；公开接口缺少 rustdoc 会使构建失败。Journal 测试包含同步失败、截断、校验损坏、容量与真实进程强制终止恢复，消费覆盖 ACK 空洞、组与租约、TCP 半帧和 CLI 显式确认。共享协议数据位于 [tests/fixtures/protocol](tests/fixtures/protocol)。
-
-Linux 下运行 `python3 benchmarks/run.py target/benchmarks/my-run` 可重现 release 引擎和 TCP 的 GET / SET / 混合负载，每项默认三次；输出目录必须不存在。实验使用独立进程和临时端口，记录硬件、配置、种子、错误、分位数、CPU 与 RSS。阶段 3 的历史实测不包含后来新增的 TTL、事件、TLS 与运维开销，结果及边界见 [测试与基准](docs/testing.md#阶段-3-基础测量)。
-
-阶段 7 提供下列实际入口，输出目录同样必须不存在：
-
-```sh
-# 18 类场景各 3 次，并追加 Fast / Reliable 各 600 秒持续运行
-python3 benchmarks/stage7.py target/benchmarks/stage7
-# 只运行持续实验，可显式改变时长（1—3600 秒）
-python3 benchmarks/stage7.py target/benchmarks/soak --soak-only --soak-seconds 600
-# Fast / Reliable 各 30 轮真实 TCP 的 TTL 可见性与回收观察
-python3 benchmarks/lifecycle.py target/benchmarks/ttl
-```
-
-工具保存固定二进制副本、源码摘要、完整配置、请求延迟直方图及 CPU / RSS / Journal 采样。支持 `--only get,mixed,reliable-consumer` 筛选场景；筛选后不自动追加持续运行。仅复测一种持续负载时使用 `--soak-only --soak-mode reliable`（或 `fast`）。实际数据、消费落后及环境限制见 [阶段 7 本机验收](docs/testing.md#阶段-7-本机验收)。十分钟持续运行不等于多日压力或稳定版发布认证。
-
-## 官网文档构建
-
-官网从仓库中的规范和 CLI 命令目录构建，源码位于 `site/`。需要 Node.js 24，在仓库根目录执行：
+官网需要 Node.js 24，在仓库根目录执行：
 
 ```sh
 cd site
@@ -202,24 +165,6 @@ npm run build
 npm run check
 ```
 
-生成的静态站位于 `site/dist`。线上站点使用 `/ling/` 基础路径；[Pages 工作流](.github/workflows/pages.yml) 在 `main` 的相关内容更新后构建、检查并部署，PR 仅构建和检查。网站的版本与功能范围以当前仓库规范为准。
+静态文件输出到 `site/dist`，线上基础路径为 `/ling/`。[Pages 工作流](.github/workflows/pages.yml) 检查并部署官网；[发行工作流](.github/workflows/release.yml) 对匹配 Cargo 版本的标签构建安装包并创建预发布 Release。
 
-## 从哪里开始
-
-先读 [架构与范围](docs/architecture.md)，再按任务阅读专项规范：
-
-| 主题 | 文档 |
-|---|---|
-| 值类型与命令 | [数据模型](docs/data-model.md) · [命令契约](docs/commands.md) |
-| 网络与客户端 | [协议](docs/protocol.md) · [CLI 与 SDK](docs/sdk.md) |
-| 生命周期与可靠性 | [TTL](docs/ttl.md) · [事件](docs/events.md) · [持久化边界](docs/persistence.md) |
-| 运维与配置 | [安装与服务](docs/install.md) · [CLI 指南](docs/cli.md) · [配置规范](docs/config.md) |
-| 实施与验收 | [路线图](docs/roadmap.md) · [测试与基准](docs/testing.md) |
-| 设计取舍 | [决策记录](docs/decisions.md) |
-| 仓库协作规则 | [AGENTS.md](AGENTS.md) |
-
-首个稳定版聚焦单机缓存服务，不包含 Redis 兼容、Embedded API、多节点集群或缓存数据恢复。Reliable 指已落盘事件在保留期内可恢复，**不表示缓存值持久化**。
-
-CLI 优先，并与 Rust SDK 共享实现；Java、Go 实现相同协议。性能提升是待测目标，目前不宣称优于 Redis 或生产可用。
-
-后续实现与阶段验收见 [路线图](docs/roadmap.md)，完整 v1.0 契约仍以专项文档为准。
+</details>

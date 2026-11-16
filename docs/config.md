@@ -1,8 +1,8 @@
 # 配置规范
 
-> 状态：v0.3 配置契约，阶段 6 已实现下述十二组配置。下面的默认配置可整体使用。默认文件路径为 `ling.toml`，以 `--config <path>` 指定其他文件。
+默认配置文件为 `ling.toml`，使用 `ling --config <path>` 指定其他文件。下面的默认配置可整体使用。
 
-已实现 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组配置及其下列字段。无 `--config` 时优先读取工作目录的 `ling.toml`，没有时兼容旧名 `linger.toml`，均不存在则采用默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。配置错误不会输出原文件片段，以防泄露密码。
+配置包含 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组。无 `--config` 时优先读取工作目录的 `ling.toml`，没有时兼容旧名 `linger.toml`，均不存在则采用默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。配置错误不会输出原文件片段，以防泄露密码。
 
 Windows 当前仅支持 Fast 模式；设置 `events.mode="reliable"` 会在打开 Journal 或监听端口前返回 `ERR_CONFIG_INVALID`，提示该平台尚不支持 Reliable。不会自动改用 Fast，也不会为此创建 Journal 目录。Linux / macOS 可按 [persistence.md](persistence.md) 的文件系统要求启用 Reliable。
 
@@ -102,14 +102,14 @@ path = "/metrics"
 | tls | enabled 时证书和私钥必须可读且匹配；min_version 只接受 tls1.2 / tls1.3 |
 | auth | enabled 时 password 必须非空；未启用认证但提供密码也拒绝，避免配置意图被忽略 |
 | database | databases 为 1..65536；default_db 小于 databases |
-| engine | v1.0：shard_count 为 0 或 1..u32::MAX，0 按系统可用并行度确定；启动日志记录实际值，拓扑资源不足拒绝启动 |
+| engine | shard_count 为 0 或 1..u32::MAX，0 按系统可用并行度确定；启动日志记录实际值，拓扑资源不足拒绝启动 |
 | engine 限额 | max_memory_bytes / max_keys 为 0 表示不限制；其他大小项必须为正；max_nest_depth 为 1..64 |
 | eviction | 仅精确小写 noeviction / lru / lfu / random / ttl-first；sample_size 为正且不超过 128 MiB / (4 × size_of(usize)) |
-| ttl | precision_ms 首版固定为 1，不接受其他值；maintenance_budget 为正整数 |
+| ttl | precision_ms 当前版本固定为 1，不接受其他值；maintenance_budget 为正整数 |
 | events | mode 仅 fast / reliable；保留天数、缓冲、在途窗口、组上限、租约和重投间隔均为正整数 |
-| event_journal | Reliable 必须给出非空可写目录，max_bytes 至少 1 MiB；group_commit_ms 为 0..1000，0 表示不主动等待组提交 |
+| event_journal | Reliable 必须给出非空可写目录，max_bytes 至少 1 MiB；group_commit_ms 为 0..1000 的最大主动等待预算；当前逐事务同步，不主动等待 |
 | protocol | 帧大小至少 18，且最多 18 + u32::MAX；批量大小为 1..u32::MAX，受请求大小共同限制 |
-| log | level 为 trace/debug/info/warn/error；format 为 text/json；output 为 stdout/stderr，首版不自管文件轮转 |
+| log | level 为 trace/debug/info/warn/error；format 为 text/json；output 为 stdout/stderr，当前版本不自管文件轮转 |
 | metrics | enabled 时 host 可绑定、port 为有效非零端口且不与业务监听冲突；path 为以 / 开头的固定路径 |
 
 `events.enabled=false` 时必须使用 mode="fast" 且 Journal dir 为空，订阅返回 `ERR_EVENTS_DISABLED`。Fast 模式也要求 Journal dir 为空，不打开或清理原 Reliable 目录。Reliable 的目录独占、格式兼容与恢复失败规则见 [persistence.md](persistence.md)。
@@ -122,7 +122,7 @@ TLS 使用 rustls；开启后该端口只接受 TLS。证书与私钥在绑定�
 
 Prometheus 是独立的明文 HTTP GET 端点，默认关闭。最多 16 个并发请求，头部最多 4096 字节、单次处理期限 5 秒；仅匹配 `metrics.path`。采样可能等待引擎执行权，超时会关闭连接。输出请求 / 错误 / 连接计数、请求时延固定桶、受管内存、TTL 队列、事件分类与聚合、Journal 字节与错误，不包含密码、Key、Value 或组名标签。此端点不承载业务协议的 AUTH / TLS，按配置监听地址部署。
 
-配置文件中的相对证书、私钥和 Journal 路径均相对于配置文件所在目录解析；默认路径选择由入口完成后保持一致。环境变量插值、远程配置中心和命令行覆盖每个字段均不在首版范围。
+配置文件中的相对证书、私钥和 Journal 路径均相对于配置文件所在目录解析；默认路径选择由入口完成后保持一致。环境变量插值、远程配置中心和命令行覆盖每个字段均不在当前版本范围。
 
 ## 请求、响应与解码预算
 
@@ -138,7 +138,7 @@ Prometheus 是独立的明文 HTTP GET 端点，默认关闭。最多 16 个并�
 
 ## 内存和 Key 配额
 
-`engine.max_memory_bytes` 是全实例缓存索引、Key、Value、条目元数据及到期索引预留空间的受管内存预算；不是每数据库配额，不包括网络缓冲、事件缓冲、Journal 页缓存、分配器碎片及程序本身。必须分别报告受管字节与进程 RSS。每个条目预留一个定时项及其树节点的保守空间，即使尚无 TTL；设置或移除 TTL 不改变该预留计费。阶段 3 的历史每 Key 字节数不适用于这一新模型。
+`engine.max_memory_bytes` 是全实例缓存索引、Key、Value、条目元数据及到期索引预留空间的受管内存预算；不是每数据库配额，不包括网络缓冲、事件缓冲、Journal 页缓存、分配器碎片及程序本身。必须分别报告受管字节与进程 RSS。每个条目预留一个定时项及其树节点的保守空间，即使尚无 TTL；设置或移除 TTL 不改变该预留计费。
 
 `engine.max_keys` 是单数据库活跃 Key 上限。到期条目不算活跃 Key，但待记账条目仍占受管内存，不能通过逻辑过期绕开内存预算。新写入预留容量，不能只在分配后检查。
 
@@ -148,7 +148,7 @@ FLUSH ASYNC 退役索引在物理释放后才归还受管预算；清空后立�
 |---|---|
 | noeviction | 不主动淘汰活跃 Key，超过预算拒绝扩大内存的写入 |
 | lru | 全实例候选中采样近似最近最少访问 Key，不承诺精确全局 LRU |
-| lfu | 采样近似低频 Key；计数饱和与衰减需要确定且可测试，不影响数据语义 |
+| lfu | 采样近似低频 Key；计数使用饱和与衰减，不影响数据语义 |
 | random | 随机选择活跃 Key，不要求密码学随机 |
 | ttl-first | 优先最早到期的有 TTL 活跃 Key；无候选时按 noeviction 拒绝 |
 
@@ -156,13 +156,13 @@ FLUSH ASYNC 退役索引在物理释放后才归还受管预算；清空后立�
 
 受害 Key 所在 Shard 必须加入本次完整执行权集合。先选择候选，再按全局顺序取得目标与受害 Shard 并重验；候选改变时释放后重新取得完整集合，不能持有目标锁再逆序追加受害锁。
 
-当前采用保守方案：启用淘汰且存在内存或 Key 上限时，写入在选候选前直接取得全实例执行权，不执行逆序追加。noeviction 下带每库 Key 配额的写入取得全库执行权；普通单 Key 无配额写入只锁目标分片。后续可依据基准优化锁范围，但不降低原子性。LRU / LFU 从活跃候选均匀采样；LFU 为饱和计数、每单调分钟右移一位衰减。普通条目读取（含元数据与条件检查）更新热度，KEYS / SCAN 不加热，热度不改变 revision。ttl-first 选择全部有期限候选中最早的一项；期限由已开放的 TTL 命令设置，无期限候选时按 noeviction 拒绝。
+当前采用保守方案：启用淘汰且存在内存或 Key 上限时，写入在选候选前直接取得全实例执行权，不执行逆序追加。noeviction 下带每库 Key 配额的写入取得全库执行权；普通单 Key 无配额写入只锁目标分片。LRU / LFU 从活跃候选均匀采样；LFU 为饱和计数、每单调分钟右移一位衰减。普通条目读取（含元数据与条件检查）更新热度，KEYS / SCAN 不加热，热度不改变 revision。ttl-first 选择全部有期限候选中最早的一项；期限由已开放的 TTL 命令设置，无期限候选时按 noeviction 拒绝。
 
 ## TTL 与事件容量
 
 precision_ms 固定为 1；它表示逻辑比较精度，不是回收或事件投递延迟承诺。maintenance_budget 默认为 1024 且必须为正，是每轮后台维护最多检查的候选数；读路径始终独立检查到期。一个后台循环每轮先等待 1 毫秒，再取得与请求共享的有界阻塞执行许可；批次完成后才派发下一轮。关闭时停止派发，已经开始的阻塞维护不能被强制回滚。
 
-时间轮大小、层数和 tick 是内部算法参数，尚无基准证明需要，首版不作为公开配置。必须覆盖全部合法期限，不能因为时间轮跨度不足静默丢失远期任务。
+后台调度算法不提供时间轮大小、层数或 tick 配置。合法期限均遵循相同的逻辑到期规则。
 
 Fast 队列占 buffer_bytes 至多一半，其余预留消费元数据；队列满时丢弃最早事件并计数，不阻止正常缓存写入；未 ACK 交付也可能因容量或保留超期变成恢复错误，不提供可靠保证。Fast 不运行磁盘 Journal；命名组也只在本次进程内存在。
 
@@ -174,7 +174,7 @@ Journal 容量包含元数据、事务、检查点和轮转预留。预算不足
 
 ## 运行时变更
 
-首版唯一动态配置为 `log.level`。CONFIG SET 使用其实际 String 值；其他项返回 `ERR_CONFIG_IMMUTABLE`。修改只影响当前进程，不回写文件。
+当前版本唯一动态配置为 `log.level`。CONFIG SET 使用其实际 String 值；其他项返回 `ERR_CONFIG_IMMUTABLE`。修改只影响当前进程，不回写文件。
 
 CONFIG RELOAD 重新读取当前配置文件，先全部校验，再比较静态项；任何静态项变化则整体拒绝，原配置继续生效。仅 log.level 发生变化才应用，无变化也成功。不能部分应用后再报错。
 
@@ -182,6 +182,6 @@ CONFIG RELOAD 重新读取当前配置文件，先全部校验，再比较静态
 
 CONFIG GET 返回标准字段名与当前有效值，包括自动解析后的实际 shard_count。密码固定显示 `<redacted>`，不返回私钥内容；证书和密钥文件路径可显示。INFO / 日志也遵守脱敏要求。
 
-数据库数量、Shard 数量、认证、TLS、限额、保留策略和事件模式均需重启。重启不代表自动恢复缓存数据。此收紧替代 v0.2 中尚未定义安全切换流程的热更新列表。
+数据库数量、Shard 数量、认证、TLS、限额、保留策略和事件模式均需重启。重启不代表自动恢复缓存数据。
 
 重启修改数据库数或实际 Shard 数不能复用旧 Reliable Journal；旧目录绑定原拓扑，需新目录与新 stream_id。详见持久化规范。编码允许的大上限不代表可突破机器内存，解析与资源预检失败应明确拒绝启动。

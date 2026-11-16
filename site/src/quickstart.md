@@ -4,7 +4,7 @@
 
 ## 安装并连接
 
-前往 [下载页](https://github.com/921108257/ling/releases/tag/v0.1.2)，选择与你的系统和 CPU 架构匹配的安装包。可以先用同页的 `SHA256SUMS` 校验文件。
+前往 [下载页](https://github.com/921108257/ling/releases/tag/v0.1.3)，选择与你的系统和 CPU 架构匹配的安装包。可以先用同页的 `SHA256SUMS` 校验文件。
 
 | 系统 | 安装方式 | 服务 |
 | --- | --- | --- |
@@ -78,14 +78,31 @@ String、Bytes、Int、UInt、Float 都保持自己的类型。所有十种值�
 
 ```text
 HELP
+HELP containers
+HELP containers list
 HELP SET
-HELP SCAN
+HELP SET examples
 QUIT
 ```
 
-帮助在本地显示，即使服务没有启动也可使用。终端外可执行 `ling-cli --cheatsheet`；用 `ling-cli --lang zh-CN --help` 显式选择简体中文。CLI 支持七种帮助语言，未匹配的系统语言回退到美式英语。
+帮助在本地显示，即使服务没有启动也可使用。`HELP` 先显示简短主题目录，按主题逐层查看；命令名后加 `syntax`、`options`、`examples`、`related`、`description` 或 `types` 可只看一个部分。终端外可执行 `ling-cli help SET examples` 或 `ling-cli --help SET examples`；完整命令参考使用 `ling-cli --cheatsheet`。用 `ling-cli --lang zh-CN --help` 显式选择简体中文。CLI 支持七种帮助语言，未匹配的系统语言回退到美式英语。
 
-出现错误时，先读错误码和说明，再参考随附的用法示例与相关命令。稳定错误码用于定位问题；涉及写入的超时或断线可能意味着结果未知，不应直接重试。
+出现错误时，先读错误码和说明，再参考随附的用法示例与相关命令。使用错误码定位问题；写入发生超时或断线时，先核实执行结果再决定是否重试。
+
+## 更新 ling
+
+0.1.3 起支持内置更新：
+
+```sh
+ling update --check
+ling update
+ling update --version 0.1.3
+ling update --stable
+```
+
+默认选择更新的预发布版或正式版；`--stable` 只选择正式版，显式指定版本不能降级。Linux / macOS 系统安装包需用 `sudo ling update` 安装；检查更新无需 sudo。0.1.2 用户需先手动安装 0.1.3，之后才能使用这些命令。
+
+Windows 将更新交给后台进程后退出，须查看输出路径中的 `result.json` 完成结果，并用 `ling --version` 确认安装成功。便携更新替换两个程序并保留配置，手动启动的进程需要自行停止并重新启动。服务和各平台的完整升级步骤见 [安装与服务](../../docs/install.md)。
 
 ## 接下来做什么
 
