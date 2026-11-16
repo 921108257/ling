@@ -3,6 +3,23 @@
 
 use ling_server::Config;
 
+/// 安装包默认配置遵循 Fast / Journal 互斥契约，避免服务安装后立即退出。
+/// Packaged defaults honor the Fast/Journal exclusion so installed services do not immediately exit.
+#[test]
+fn packaged_defaults_are_valid_fast_configurations() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for path in [
+        "packaging/ling.toml",
+        "packaging/linux/ling.toml",
+        "packaging/macos/ling.toml",
+    ] {
+        let config =
+            Config::load(&root.join(path)).unwrap_or_else(|error| panic!("{path}: {error}"));
+        assert_eq!(config.events.mode, "fast");
+        assert!(config.event_journal.dir.as_os_str().is_empty());
+    }
+}
+
 /// 默认值与 u16 数据库编号边界均经验证。
 /// Validates defaults and u16 database namespace boundaries.
 #[test]

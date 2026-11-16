@@ -10,5 +10,7 @@ shard_count = 4
 [events]
 mode = "fast"
 
-[event_journal]
-dir = "/var/lib/ling/journal"
+# Fast 模式禁止指定 Journal 目录；切换 Reliable 时再配置此路径。
+# Fast forbids a Journal directory; configure this path only when enabling Reliable.
+# [event_journal]
+# dir = "/var/lib/ling/journal"
