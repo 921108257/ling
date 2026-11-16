@@ -105,13 +105,13 @@ impl fmt::Display for Diagnostic {
         write!(f, "{}: {}", self.code, self.message())?;
         if self.unknown {
             write!(f, " {}", self.language.text([
-                "The request may have committed. Do not replay it automatically; verify its result first.",
-                "请求可能已经提交。禁止自动重放；请先核实执行结果。",
-                "요청이 커밋되었을 수 있습니다. 자동 재실행하지 말고 먼저 결과를 확인하세요.",
-                "リクエストはコミット済みの可能性があります。自動再実行せず、先に結果を確認してください。",
-                "Запрос мог быть выполнен. Не повторяйте автоматически; сначала проверьте результат.",
-                "Die Anfrage wurde möglicherweise ausgeführt. Nicht automatisch wiederholen; zuerst Ergebnis prüfen.",
-                "La requête a peut-être été validée. Ne la rejouez pas automatiquement ; vérifiez son résultat.",
+                "Execution outcome unknown. The request may have committed. Do not replay it automatically; verify its result first.",
+                "执行结果未知。请求可能已经提交。禁止自动重放；请先核实执行结果。",
+                "실행 결과를 알 수 없습니다. 요청이 커밋되었을 수 있습니다. 자동 재실행하지 말고 먼저 결과를 확인하세요.",
+                "実行結果は不明です。リクエストはコミット済みの可能性があります。自動再実行せず、先に結果を確認してください。",
+                "Результат выполнения неизвестен. Запрос мог быть выполнен. Не повторяйте автоматически; сначала проверьте результат.",
+                "Ausführungsergebnis unbekannt. Die Anfrage wurde möglicherweise ausgeführt. Nicht automatisch wiederholen; zuerst Ergebnis prüfen.",
+                "Résultat d’exécution inconnu. La requête a peut-être été validée. Ne la rejouez pas automatiquement ; vérifiez son résultat.",
             ]))?;
         }
         let examples = self.language.text([

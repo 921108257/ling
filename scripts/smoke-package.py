@@ -31,6 +31,9 @@ def main():
     env = os.environ.copy()
     env.pop("LING_PASSWORD", None)
     env.pop("LINGER_PASSWORD", None)
+    # 错误断言显式选择语言，不依赖 CI 主机地区。
+    # Select the diagnostic language explicitly instead of relying on the CI locale.
+    env["LING_LANG"] = "en-US"
     with tempfile.TemporaryDirectory(prefix="ling-package-") as directory:
         root = Path(directory)
         config = root / "ling.toml"

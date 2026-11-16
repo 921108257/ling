@@ -51,6 +51,7 @@ fn diagnostic_context_and_unknown_outcome_are_safe() {
         Context::Command("SET"),
     )
     .to_string();
+    assert!(text.contains("outcome unknown"));
     assert!(text.contains("may have committed"));
     assert!(text.contains("Do not replay"));
     let text = Diagnostic::new(
