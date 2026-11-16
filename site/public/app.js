@@ -33,6 +33,7 @@ tabs.forEach((tab, index) => {
 const dialog = document.querySelector('.search-dialog');
 const searchInput = document.querySelector('#doc-search');
 const results = document.querySelector('#search-results');
+let revealCommand = () => {};
 let searchData;
 let searchPromise;
 async function loadSearch() {
@@ -51,7 +52,7 @@ function renderSearch() {
   if (!terms.length) { const p = document.createElement('p'); p.className = 'search-empty'; p.textContent = '输入关键词，查找文档与命令。'; results.append(p); return; }
   const found = searchData.map(entry => ({ entry, score: terms.reduce((score, term) => score + (entry.title.toLowerCase().includes(term) ? 10 : entry.text.toLowerCase().includes(term) ? 1 : 0), 0) })).filter(({ entry }) => terms.every(term => `${entry.title} ${entry.text}`.toLowerCase().includes(term))).sort((a, b) => b.score - a.score).slice(0, 16);
   if (!found.length) { const p = document.createElement('p'); p.className = 'search-empty'; p.textContent = '没有匹配结果，试试命令名或更简短的关键词。'; results.append(p); }
-  for (const { entry } of found) { const a = document.createElement('a'); a.className = 'search-result'; a.href = entry.href; const group = document.createElement('span'); group.textContent = entry.group; const title = document.createElement('strong'); title.textContent = entry.title; const excerpt = document.createElement('p'); const lower = entry.text.toLowerCase(); const index = lower.indexOf(terms[0]); excerpt.textContent = entry.text.slice(Math.max(0, index - 20), Math.max(0, index - 20) + 110); a.append(group, title, excerpt); results.append(a); }
+  for (const { entry } of found) { const a = document.createElement('a'); a.className = 'search-result'; a.href = entry.href; a.addEventListener('click', () => { dialog.close(); const target = new URL(a.href); if (target.pathname === location.pathname && target.hash) revealCommand(target.hash); }); const group = document.createElement('span'); group.textContent = entry.group; const title = document.createElement('strong'); title.textContent = entry.title; const excerpt = document.createElement('p'); const lower = entry.text.toLowerCase(); const index = lower.indexOf(terms[0]); excerpt.textContent = entry.text.slice(Math.max(0, index - 20), Math.max(0, index - 20) + 110); a.append(group, title, excerpt); results.append(a); }
 }
 document.querySelector('.search-trigger').addEventListener('click', openSearch);
 document.querySelector('.search-close').addEventListener('click', () => dialog.close());
@@ -72,7 +73,8 @@ if (commandInput) {
   function filterCommands() { const terms = commandInput.value.toLowerCase().trim().split(/\s+/).filter(Boolean); let count = 0; cards.forEach(card => { const visible = (selected === '全部' || card.dataset.group === selected) && terms.every(term => `${card.dataset.search} ${card.dataset.group}`.toLowerCase().includes(term)); card.hidden = !visible; count += Number(visible); }); document.querySelector('.command-count').textContent = `${count} 组命令`; document.querySelector('.command-empty').hidden = count !== 0; }
   commandInput.addEventListener('input', filterCommands);
   filters.forEach(button => button.addEventListener('click', () => { selected = button.dataset.filter; filters.forEach(item => item.setAttribute('aria-pressed', String(item === button))); filterCommands(); }));
-  window.addEventListener('hashchange', () => { selected = '全部'; commandInput.value = ''; filters.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === selected))); filterCommands(); document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView(); });
+  revealCommand = hash => { selected = '全部'; commandInput.value = ''; filters.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === selected))); filterCommands(); document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView(); };
+  window.addEventListener('hashchange', () => revealCommand(location.hash));
 }
 if ('IntersectionObserver' in window) {
   const links = [...document.querySelectorAll('.toc a[href^="#"]')];
