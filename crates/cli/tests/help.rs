@@ -222,6 +222,22 @@ fn batch_help_is_rejected_before_connecting() {
     assert!(!error.contains("prior"));
 }
 
+/// 内置详情的所有示例都使用真实 CLI 语法，占位事件 ID 单独排除。
+/// Every detail example uses actual CLI syntax, apart from the explicit event-ID placeholder.
+#[test]
+fn built_in_help_examples_use_real_cli_grammar() {
+    for row in include_str!("../../cli-help/src/command-layout.tsv").lines() {
+        let columns: Vec<_> = row.split('\t').collect();
+        for source in columns[3].split("\\n") {
+            if source.starts_with("ling-cli ") || source == "ACK EVENT_ID" {
+                continue;
+            }
+            ling_cli::parse_command(source)
+                .unwrap_or_else(|_| panic!("invalid built-in help example for {}", columns[0]));
+        }
+    }
+}
+
 /// 新密码变量优先，旧变量仅在新变量缺失时生效。
 /// The new password variable takes precedence; legacy credentials only fill its absence.
 #[tokio::test]

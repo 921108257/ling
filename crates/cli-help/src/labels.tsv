@@ -1,0 +1,59 @@
+usage	Usage:	用法：	사용법:	使い方：	Использование:	Verwendung:	Utilisation :
+default	Default	默认值	기본값	既定値	По умолчанию	Standard	Valeur par défaut
+connection	Connection	连接	연결	接続	Подключение	Verbindung	Connexion
+address	Address	地址	주소	接続先	Адрес	Adresse	Adresse
+database	Database	数据库	데이터베이스	データベース	База данных	Datenbank	Base de données
+timeout	Timeout	超时	시간 제한	タイムアウト	Тайм-аут	Zeitlimit	Délai
+security	Security	安全	보안	セキュリティ	Безопасность	Sicherheit	Sécurité
+tls	TLS certificates	TLS 证书	TLS 인증서	TLS 証明書	Сертификаты TLS	TLS-Zertifikate	Certificats TLS
+authentication	Authentication	认证	인증	認証	Аутентификация	Authentifizierung	Authentification
+execution	Execution	执行	실행	実行	Выполнение	Ausführung	Exécution
+single	Single command	单命令	단일 명령	単一コマンド	Одна команда	Einzelbefehl	Commande unique
+batch	Batch input	批量输入	일괄 입력	一括入力	Пакетный ввод	Stapeleingabe	Entrée par lot
+subscription	Subscriptions	订阅	구독	購読	Подписки	Abonnements	Abonnements
+reference	Local reference	本地参考	로컬 참조	ローカル参照	Локальная справка	Lokale Referenz	Référence locale
+language	Language	语言	언어	言語	Язык	Sprache	Langue
+help	Help and version	帮助与版本	도움말 및 버전	ヘルプとバージョン	Справка и версия	Hilfe und Version	Aide et version
+server	Server	服务端	서버	サーバー	Сервер	Server	Serveur
+configuration	Configuration	配置	설정	設定	Конфигурация	Konfiguration	Configuration
+examples	Examples	示例	예제	使用例	Примеры	Beispiele	Exemples
+startup	Startup	启动	시작	起動	Запуск	Start	Démarrage
+lookup	Look up help	查询帮助	도움말 조회	ヘルプの参照	Поиск справки	Hilfe nachschlagen	Consulter l’aide
+syntax	Syntax	语法	문법	構文	Синтаксис	Syntax	Syntaxe
+description	Description	说明	설명	説明	Описание	Beschreibung	Description
+types	Types and boundaries	类型与边界	타입 및 경계	型と制約	Типы и границы	Typen und Grenzen	Types et limites
+related	Related commands	相关命令	관련 명령	関連コマンド	Связанные команды	Verwandte Befehle	Commandes associées
+data	Data	数据	데이터	データ	Данные	Daten	Données
+readwrite	Read and write	读写	읽기 및 쓰기	読み書き	Чтение и запись	Lesen und Schreiben	Lecture et écriture
+identity	Identity and existence	身份与存在性	식별 및 존재	名前と存在	Имена и наличие	Namen und Existenz	Noms et existence
+transfer	Rename and transfer	更名与迁移	이름 변경 및 이동	名前変更と移動	Переименование и перенос	Umbenennen und Übertragen	Renommage et transfert
+scan	Find and scan	查找与遍历	검색 및 탐색	検索と走査	Поиск и обход	Suchen und Durchlaufen	Recherche et parcours
+expiry	Expiration (TTL)	到期时间（TTL）	만료 (TTL)	有効期限（TTL）	Срок действия (TTL)	Ablaufzeit (TTL)	Expiration (TTL)
+setexpiry	Set and remove expiry	设置与移除期限	만료 설정 및 해제	期限の設定と解除	Установка и снятие срока	Frist setzen und entfernen	Définir et retirer l’expiration
+queryexpiry	Query expiry	查询期限	만료 조회	期限の照会	Запрос срока	Frist abfragen	Consulter l’expiration
+scalar	Numbers and text	数值与文本	수치 및 텍스트	数値とテキスト	Числа и текст	Zahlen und Text	Nombres et texte
+numbers	Numbers	数值	수치	数値	Числа	Zahlen	Nombres
+text	String and Bytes	String 与 Bytes	String 및 Bytes	String と Bytes	String и Bytes	String und Bytes	String et Bytes
+containers	Containers	容器	컨테이너	コンテナー	Контейнеры	Container	Conteneurs
+list	List	List 列表	List 목록	List リスト	Список List	List-Liste	Liste List
+map	Map	Map 映射	Map 맵	Map マップ	Отображение Map	Map-Zuordnung	Table Map
+set	Set	Set 集合	Set 집합	Set 集合	Множество Set	Set-Menge	Ensemble Set
+administration	Administration	管理	관리	管理	Администрирование	Verwaltung	Administration
+session	Connection state	连接状态	연결 상태	接続状態	Состояние соединения	Verbindungsstatus	État de connexion
+operations	Operations	运维	운영	運用	Эксплуатация	Betrieb	Exploitation
+events	Events	事件	이벤트	イベント	События	Ereignisse	Événements
+consume	Receive and acknowledge	接收与确认	수신 및 확인	受信と確認	Приём и подтверждение	Empfangen und Bestätigen	Recevoir et confirmer
+notes	Usage notes	使用说明	사용 안내	利用上の注意	Примечания	Hinweise	Notes d’utilisation
+values	Typed values	类型化值	타입이 있는 값	型付きの値	Типизированные значения	Typisierte Werte	Valeurs typées
+semantics	Execution boundaries	执行边界	실행 경계	実行上の制約	Границы выполнения	Ausführungsgrenzen	Limites d’exécution
+more	Full documentation	完整文档	전체 문서	完全なドキュメント	Полная документация	Vollständige Dokumentation	Documentation complète
+auth_note	Set LING_PASSWORD in the process environment. Legacy LINGER_PASSWORD is a fallback; never put passwords in startup arguments.	通过进程环境设置 LING_PASSWORD；兼容旧 LINGER_PASSWORD。不要将密码放入启动参数。	프로세스 환경에 LING_PASSWORD를 설정하세요. 이전 LINGER_PASSWORD도 지원합니다. 시작 인수에 암호를 넣지 마세요.	プロセス環境で LING_PASSWORD を設定します。旧 LINGER_PASSWORD も利用可能です。起動引数にパスワードを含めないでください。	Задайте LING_PASSWORD в окружении; LINGER_PASSWORD остаётся резервным. Не передавайте пароль в аргументах запуска.	LING_PASSWORD in der Prozessumgebung setzen; LINGER_PASSWORD bleibt als Rückfall. Keine Passwörter in Startargumenten.	Définir LING_PASSWORD dans l’environnement ; LINGER_PASSWORD reste accepté en repli. Aucun mot de passe dans les arguments.
+value_note	Value arguments use explicit types. Fixed indices, counts, TTL and database numbers use decimal integers. Int, UInt, Float, String and Bytes stay distinct.	Value 参数须保留显式类型；固定索引、计数、TTL 和库号使用十进制整数。Int、UInt、Float、String 与 Bytes 不隐式转换。	Value는 명시적 타입을 사용합니다. 인덱스, 개수, TTL, DB 번호는 십진 정수입니다. 타입은 암시적으로 변환되지 않습니다.	Value は明示的な型を使います。添字、件数、TTL、DB 番号は十進整数です。型の暗黙変換はありません。	Value требует явного типа. Индексы, количества, TTL и номера БД — десятичные целые. Типы не преобразуются неявно.	Value benötigt explizite Typen. Indizes, Anzahlen, TTL und DB-Nummern sind dezimale Ganzzahlen. Keine implizite Typumwandlung.	Value exige un type explicite. Indices, nombres, TTL et numéros de base sont des entiers décimaux. Aucune conversion implicite.
+boundary_note	Missing keys are errors unless specified. Typed mutations require an existing key. Batch is not a transaction. A timeout after sending can leave the outcome unknown.	除另有说明外，Key 缺失报错。类型专用修改要求 Key 已存在。Batch 不是事务；发送后超时可能表示结果未知。	명시된 예외 외에 없는 키는 오류입니다. 타입별 변경에는 기존 키가 필요합니다. Batch는 트랜잭션이 아니며 전송 후 시간 초과 시 결과가 불명확할 수 있습니다.	明記された例外を除き、キーの欠落はエラーです。型別更新には既存キーが必要です。Batch はトランザクションではなく、送信後のタイムアウトでは結果が不明な場合があります。	Отсутствие ключа обычно является ошибкой. Типизированное изменение требует ключа. Batch — не транзакция. После отправки тайм-аут может оставить результат неизвестным.	Fehlende Schlüssel sind normalerweise Fehler. Typisierte Änderungen benötigen vorhandene Schlüssel. Batch ist keine Transaktion. Timeout nach Senden kann ein unbekanntes Ergebnis bedeuten.	Une clé absente est normalement une erreur. Les mutations typées exigent une clé existante. Batch n’est pas une transaction. Après envoi, un délai dépassé peut laisser le résultat inconnu.
+expiry_note	TTL queries: -1 means no expiry, -2 means missing. SCAN requires the same connection and filters across pages.	TTL 查询中 -1 表示无期限，-2 表示缺失。SCAN 续页必须使用同一连接和筛选条件。	TTL 조회: -1은 만료 없음, -2는 키 없음. SCAN 페이지는 같은 연결과 필터를 사용해야 합니다.	TTL 照会では -1 が期限なし、-2 がキーなしです。SCAN の続きは同一接続とフィルターを使います。	В TTL-запросах -1 означает отсутствие срока, -2 — ключа. Страницы SCAN требуют того же соединения и фильтров.	TTL-Abfragen: -1 ohne Frist, -2 fehlt. SCAN benötigt über alle Seiten dieselbe Verbindung und Filter.	TTL : -1 signifie sans expiration, -2 clé absente. SCAN exige la même connexion et les mêmes filtres entre pages.
+event_note	Use -c for SUBSCRIBE; ACK is explicit by default. Fast may drop events. Reliable restores retained committed events, not cached values or TTL.	SUBSCRIBE 通过 -c 启动，默认显式 ACK。Fast 可能丢事件；Reliable 仅恢复保留期内已提交事件，不恢复缓存值和 TTL。	SUBSCRIBE는 -c로 실행하며 기본적으로 명시적 ACK를 사용합니다. Fast는 이벤트를 잃을 수 있습니다. Reliable은 보존된 커밋 이벤트만 복구하며 값과 TTL은 복구하지 않습니다.	SUBSCRIBE は -c で実行し、既定では明示的に ACK します。Fast はイベントを失う可能性があります。Reliable は保持されたコミット済みイベントのみ復元し、値と TTL は復元しません。	SUBSCRIBE запускается через -c; ACK по умолчанию явный. Fast может терять события. Reliable восстанавливает сохранённые подтверждённые события, но не значения и TTL.	SUBSCRIBE mit -c starten; ACK standardmäßig explizit. Fast kann Ereignisse verlieren. Reliable stellt aufbewahrte bestätigte Ereignisse wieder her, keine Werte oder TTL.	SUBSCRIBE utilise -c ; ACK explicite par défaut. Fast peut perdre des événements. Reliable restaure les événements validés conservés, ni les valeurs ni les TTL.
+server_note	Default: 127.0.0.1:6380 and Fast events. Restart clears cached values and TTL. Windows currently rejects Reliable mode.	默认监听 127.0.0.1:6380，事件为 Fast。重启清空缓存值和 TTL；Windows 当前拒绝 Reliable 模式。	기본값은 127.0.0.1:6380과 Fast 이벤트입니다. 재시작 시 값과 TTL이 사라지며 Windows는 현재 Reliable을 지원하지 않습니다.	既定値は 127.0.0.1:6380 と Fast イベントです。再起動で値と TTL は消去され、Windows は現在 Reliable を拒否します。	По умолчанию 127.0.0.1:6380 и Fast. Перезапуск очищает значения и TTL. Windows сейчас отклоняет Reliable.	Standard: 127.0.0.1:6380 und Fast. Neustart leert Werte und TTL. Windows lehnt Reliable derzeit ab.	Par défaut : 127.0.0.1:6380 et Fast. Un redémarrage efface les valeurs et TTL. Windows refuse actuellement Reliable.
+sequence_note	Commands below are entered in the same ling-cli session; create the typed key before its mutation.	以下命令在同一个 ling-cli 会话依次输入；类型专用修改前先创建相应 Key。	아래 명령은 같은 ling-cli 세션에서 순서대로 입력하며 타입별 변경 전에 키를 생성합니다.	以下は同じ ling-cli セッションで順に入力します。型別更新の前にキーを作成します。	Команды ниже вводятся по порядку в одном сеансе ling-cli; сначала создайте типизированный ключ.	Folgende Befehle nacheinander in derselben ling-cli-Sitzung eingeben; typisierten Schlüssel zuerst anlegen.	Saisir les commandes ci-dessous dans une même session ling-cli ; créer d’abord la clé typée.
+protocol_example	Protocol initialization is performed by the CLI. For normal use, supply credentials through LING_PASSWORD and let the CLI connect.	协议初始化由 CLI 自动执行。日常使用通过 LING_PASSWORD 提供凭据，由 CLI 建连。	프로토콜 초기화는 CLI가 자동 수행합니다. 일반 사용 시 LING_PASSWORD로 자격 증명을 설정하세요.	プロトコル初期化は CLI が自動実行します。通常は LING_PASSWORD で認証情報を指定して接続します。	CLI инициализирует протокол автоматически. Обычно задайте LING_PASSWORD и подключитесь через CLI.	CLI initialisiert das Protokoll automatisch. Für normalen Zugriff LING_PASSWORD setzen und verbinden.	Le CLI initialise automatiquement le protocole. Pour l’usage courant, définir LING_PASSWORD puis se connecter.
+ack_example	Copy the full event ID printed by the subscription and replace EVENT_ID below. Run ACK inside that subscription.	复制订阅输出的完整事件 ID，替换下方 EVENT_ID，并在该订阅中执行 ACK。	구독에 출력된 전체 ID로 아래 EVENT_ID를 바꾸고 해당 구독에서 ACK를 실행하세요.	購読出力の完全な ID で EVENT_ID を置き換え、同じ購読で ACK を実行します。	Замените EVENT_ID полным ID из вывода и выполните ACK в том же сеансе подписки.	EVENT_ID durch die vollständige ausgegebene ID ersetzen und ACK im selben Abonnement ausführen.	Remplacer EVENT_ID par l’ID complet affiché puis exécuter ACK dans cet abonnement.
+config_example	CONFIG RELOAD requires a startup configuration file and rejects static changes.	CONFIG RELOAD 要求存在启动配置文件，并拒绝静态项变化。	CONFIG RELOAD에는 시작 설정 파일이 필요하며 정적 변경은 거부됩니다.	CONFIG RELOAD には起動時設定ファイルが必要で、静的設定の変更は拒否されます。	CONFIG RELOAD требует исходного файла конфигурации и отклоняет статические изменения.	CONFIG RELOAD benötigt eine Startkonfigurationsdatei und lehnt statische Änderungen ab.	CONFIG RELOAD exige un fichier de configuration initial et refuse les changements statiques.

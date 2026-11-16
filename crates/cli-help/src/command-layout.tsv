@@ -1,0 +1,84 @@
+HELP	reference	lookup	HELP SET
+HELLO	administration	session	ling-cli -c 'PING'
+AUTH	administration	session	ling-cli -c 'PING'
+SELECT	administration	session	SELECT 1
+PING	administration	session	PING "hello"
+QUIT	administration	session	QUIT
+SET	data	readwrite	SET session null PX 5000 NX\nGET session
+GET	data	readwrite	SET greeting "hello"\nGET greeting
+GETSET	data	readwrite	SET counter int(1)\nGETSET counter int(2)
+MGET	data	readwrite	MSET first null second uint(2)\nMGET first second absent
+MSET	data	readwrite	MSET first null second uint(2)
+DEL	data	identity	SET temporary null\nDEL temporary
+EXISTS	data	identity	SET greeting "hello"\nEXISTS greeting absent
+TYPE	data	identity	SET greeting "hello"\nTYPE greeting
+RENAME	data	transfer	SET source "hello"\nRENAME source target
+RENAMENX	data	transfer	SET source "hello"\nRENAMENX source target
+COPY	data	transfer	SET source "hello"\nCOPY source copied DB 1
+MOVE	data	transfer	SET source "hello"\nMOVE source 1
+KEYS	data	scan	KEYS user:*
+SCAN	data	scan	SCAN 0 MATCH user:* COUNT 100 TYPE String
+RANDOMKEY	data	scan	SET sample null\nRANDOMKEY
+EXPIRE	expiry	setexpiry	SET session null\nEXPIRE session 60
+PEXPIRE	expiry	setexpiry	SET session null\nPEXPIRE session 5000
+EXPIREAT	expiry	setexpiry	SET session null\nEXPIREAT session 0
+PEXPIREAT	expiry	setexpiry	SET session null\nPEXPIREAT session 0
+PERSIST	expiry	setexpiry	SET session null PX 5000\nPERSIST session
+TTL	expiry	queryexpiry	SET session null EX 60\nTTL session
+PTTL	expiry	queryexpiry	SET session null PX 5000\nPTTL session
+EXPIRETIME	expiry	queryexpiry	SET session null EX 60\nEXPIRETIME session
+PEXPIRETIME	expiry	queryexpiry	SET session null PX 5000\nPEXPIRETIME session
+INCR	scalar	numbers	SET counter int(0)\nINCR counter
+DECR	scalar	numbers	SET counter int(0)\nDECR counter
+INCRBY	scalar	numbers	SET counter int(0)\nINCRBY counter 2
+DECRBY	scalar	numbers	SET counter int(0)\nDECRBY counter 2
+INCRFLOAT	scalar	numbers	SET ratio float(1.5)\nINCRFLOAT ratio float(0.5)
+APPEND	scalar	text	SET greeting "hello"\nAPPEND greeting " world"
+STRLEN	scalar	text	SET greeting "hello"\nSTRLEN greeting
+BLEN	scalar	text	SET payload bytes(0x0001ff)\nBLEN payload
+LPUSH	containers	list	SET queue list([])\nLPUSH queue "first" int(2)
+RPUSH	containers	list	SET queue list([])\nRPUSH queue "first" int(2)
+LPOP	containers	list	SET queue list(["first", int(2)])\nLPOP queue 1
+RPOP	containers	list	SET queue list(["first", int(2)])\nRPOP queue 1
+LRANGE	containers	list	SET queue list(["first", int(2)])\nLRANGE queue 0 -1
+LINDEX	containers	list	SET queue list(["first", int(2)])\nLINDEX queue -1
+LSET	containers	list	SET queue list(["first", int(2)])\nLSET queue 0 "updated"
+LLEN	containers	list	SET queue list(["first", int(2)])\nLLEN queue
+LREM	containers	list	SET queue list(["first", int(2)])\nLREM queue 0 int(2)
+LTRIM	containers	list	SET queue list(["first", int(2)])\nLTRIM queue 0 0
+FSET	containers	map	SET profile map({})\nFSET profile name "Lin" visits uint(1)
+FSETNX	containers	map	SET profile map({})\nFSETNX profile name "Lin"
+FGET	containers	map	SET profile map({"name": "Lin"})\nFGET profile name absent
+FDEL	containers	map	SET profile map({"name": "Lin"})\nFDEL profile name
+FEXISTS	containers	map	SET profile map({"name": null})\nFEXISTS profile name
+FKEYS	containers	map	SET profile map({"name": "Lin"})\nFKEYS profile
+FVALS	containers	map	SET profile map({"name": "Lin"})\nFVALS profile
+FGETALL	containers	map	SET profile map({"name": "Lin"})\nFGETALL profile
+FLEN	containers	map	SET profile map({"name": "Lin"})\nFLEN profile
+FMERGE	containers	map	SET profile map({"name": "Lin"})\nFMERGE profile map({"visits": uint(1)})
+SADD	containers	set	SET tags set([])\nSADD tags "cache" uint(1)
+SREM	containers	set	SET tags set(["cache", uint(1)])\nSREM tags uint(1)
+SISMEMBER	containers	set	SET tags set(["cache"])\nSISMEMBER tags "cache"
+SMISMEMBER	containers	set	SET tags set(["cache"])\nSMISMEMBER tags "cache" uint(1)
+SMEMBERS	containers	set	SET tags set(["cache"])\nSMEMBERS tags
+SCARD	containers	set	SET tags set(["cache"])\nSCARD tags
+SUNION	containers	set	MSET left set([int(1)]) right set([int(2)])\nSUNION left right
+SINTER	containers	set	MSET left set([int(1)]) right set([int(1), int(2)])\nSINTER left right
+SDIFF	containers	set	MSET left set([int(1), int(2)]) right set([int(2)])\nSDIFF left right
+SUNIONSTORE	containers	set	MSET left set([int(1)]) right set([int(2)])\nSUNIONSTORE result left right
+SINTERSTORE	containers	set	MSET left set([int(1)]) right set([int(1), int(2)])\nSINTERSTORE result left right
+SDIFFSTORE	containers	set	MSET left set([int(1), int(2)]) right set([int(2)])\nSDIFFSTORE result left right
+SRANDMEMBER	containers	set	SET tags set(["cache", uint(1)])\nSRANDMEMBER tags -3
+SPOP	containers	set	SET tags set(["cache", uint(1)])\nSPOP tags 1
+DBSIZE	administration	database	DBSIZE
+FLUSHDB	administration	database	FLUSHDB ASYNC
+FLUSHALL	administration	database	FLUSHALL ASYNC
+SWAPDB	administration	database	SWAPDB 0 1
+INFO	administration	operations	INFO memory
+CONFIG GET	administration	operations	CONFIG GET log.*
+CONFIG SET	administration	operations	CONFIG SET log.level debug
+CONFIG RELOAD	administration	operations	CONFIG RELOAD
+SHUTDOWN	administration	operations	SHUTDOWN
+SUBSCRIBE	events	consume	ling-cli -c 'SUBSCRIBE order:* GROUP workers'
+ACK	events	consume	ACK EVENT_ID
+UNSUBSCRIBE	events	consume	UNSUBSCRIBE

@@ -116,6 +116,8 @@ fn translation_tables_are_complete() {
     for (catalog, expected) in [
         (include_str!("../src/commands.tsv"), 9),
         (include_str!("../src/flags.tsv"), 8),
+        (include_str!("../src/labels.tsv"), 8),
+        (include_str!("../src/command-layout.tsv"), 4),
     ] {
         let mut names = BTreeSet::new();
         for line in catalog.lines() {
