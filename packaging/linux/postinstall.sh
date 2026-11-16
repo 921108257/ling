@@ -21,6 +21,11 @@ if [ -d /run/systemd/system ]; then
         # Type=simple 可能先成功后退出，拒绝立即启动失败。
         # Type=simple can exit just after activation; reject immediate startup failure.
         sleep 2
-        systemctl is-active --quiet ling.service
+        if ! systemctl is-active --quiet ling.service; then
+            # 保留启动诊断而不输出配置内容；Keep startup diagnostics without printing configuration.
+            systemctl status ling.service --no-pager || true
+            journalctl -u ling.service --no-pager -n 30 || true
+            exit 1
+        fi
     fi
 fi
