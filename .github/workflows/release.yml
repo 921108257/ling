@@ -46,6 +46,18 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: cargo fmt --all -- --check
+      - name: Validate packaging sources
+        run: |
+          for script in packaging/linux/*.sh packaging/linux/AppRun packaging/macos/*.sh packaging/macos/preinstall packaging/macos/postinstall; do
+            bash -n "$script"
+          done
+          python3 - <<'PY'
+          import plistlib
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          plistlib.loads(Path('packaging/macos/io.ling.cache.plist').read_bytes())
+          ET.parse('packaging/windows/ling-service.xml')
+          PY
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - run: cargo doc --locked --workspace --no-deps
         env:
@@ -136,44 +148,36 @@ jobs:
       - name: Test Windows Fast mode and explicit Reliable rejection
         if: runner.os == 'Windows'
         run: |
-          cargo test --locked --target "$TARGET" -p linger-types -p linger-protocol -p linger-network
-          cargo test --locked --target "$TARGET" -p linger-cli --test grammar
-          cargo test --locked --target "$TARGET" -p linger-cli --test end_to_end
-          cargo test --locked --target "$TARGET" -p linger-server --test config
-          cargo test --locked --target "$TARGET" -p linger-events --lib windows_reliable_rejected_without_creating_directory
+          cargo test --locked --target "$TARGET" -p ling-types -p ling-protocol -p ling-network
+          cargo test --locked --target "$TARGET" -p ling-cli --test grammar
+          cargo test --locked --target "$TARGET" -p ling-cli --test end_to_end
+          cargo test --locked --target "$TARGET" -p ling-cli --test help
+          cargo test --locked --target "$TARGET" -p ling-server --test help
+          cargo test --locked --target "$TARGET" -p ling-cli-help
+          cargo test --locked --target "$TARGET" -p ling-server --test config
+          cargo test --locked --target "$TARGET" -p ling-events --lib windows_reliable_rejected_without_creating_directory
       - name: Build server and CLI
-        run: cargo build --locked --release --target "$TARGET" -p linger-server -p linger-cli
+        run: cargo build --locked --release --target "$TARGET" -p ling-server -p ling-cli
       - name: Build and verify Linux packages
         if: runner.os == 'Linux'
         run: |
           bash packaging/linux/build.sh
-          sudo dpkg -i "dist/linger-cache-db_${VERSION}_linux_${ARCH}.deb"
-          python3 scripts/smoke-package.py --server /usr/bin/linger-server --cli /usr/bin/linger-cli
-          sudo dpkg -r linger-cache-db
-          sudo rpm -i --nodeps "dist/linger-cache-db_${VERSION}_linux_${ARCH}.rpm"
-          python3 scripts/smoke-package.py --server /usr/bin/linger-server --cli /usr/bin/linger-cli
-          sudo rpm -e linger-cache-db
-          python3 scripts/smoke-package.py --appimage "dist/linger-cache-db_${VERSION}_linux_${ARCH}.AppImage"
+          bash packaging/linux/verify.sh
+          python3 scripts/smoke-package.py --appimage "dist/ling_${VERSION}_linux_${ARCH}.AppImage"
       - name: Build and verify macOS packages
         if: runner.os == 'macOS'
         run: |
           bash packaging/macos/build.sh
-          sudo installer -pkg "dist/linger-cache-db_${VERSION}_macos_${ARCH}.pkg" -target /
-          python3 scripts/smoke-package.py --server /usr/local/bin/linger-server --cli /usr/local/bin/linger-cli
+          bash packaging/macos/verify.sh
       - name: Build and verify Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           ./packaging/windows/build.ps1 -Version $env:VERSION
-          $installer = (Resolve-Path "dist/linger-cache-db_$($env:VERSION)_windows_x86_64_setup.exe").Path
-          $installed = Join-Path $env:RUNNER_TEMP 'linger-installed'
-          $installProcess = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installed`"" -Wait -PassThru
-          if ($installProcess.ExitCode -ne 0) { throw 'Installer execution failed' }
-          python scripts/smoke-package.py --server "$installed/bin/linger-server.exe" --cli "$installed/bin/linger-cli.exe"
-          if ($LASTEXITCODE -ne 0) { throw 'Installed binaries failed smoke test' }
+          ./packaging/windows/verify.ps1 -Version $env:VERSION
       - uses: actions/upload-artifact@v4
         with:
-          name: linger-cache-db-${{ matrix.platform }}-${{ matrix.arch }}
+          name: ling-${{ matrix.platform }}-${{ matrix.arch }}
           path: dist/*
           if-no-files-found: error
           retention-days: 14
@@ -191,7 +195,7 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Verify assets and publish private prerelease
+      - name: Verify assets and publish prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.checks.outputs.version }}

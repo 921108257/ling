@@ -1,0 +1,14 @@
+# 原生安装包的服务配置；升级保留 /etc/ling/ling.toml。
+# Native service defaults; upgrades preserve /etc/ling/ling.toml.
+[server]
+host = "127.0.0.1"
+port = 6380
+
+[engine]
+shard_count = 4
+
+[events]
+mode = "fast"
+
+[event_journal]
+dir = "/var/lib/ling/journal"

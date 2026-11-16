@@ -1,0 +1,7 @@
+#!/bin/sh
+# 升级前停止已注册的服务，保持配置和数据目录。
+# Stop an existing service before upgrade, preserving configuration and state.
+set -eu
+if launchctl print system/io.ling.cache >/dev/null 2>&1; then
+    launchctl bootout system/io.ling.cache
+fi

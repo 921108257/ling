@@ -1,0 +1,14 @@
+# 原生服务配置；升级保留已有文件。
+# Native service defaults; upgrades preserve the existing file.
+[server]
+host = "127.0.0.1"
+port = 6380
+
+[engine]
+shard_count = 4
+
+[events]
+mode = "fast"
+
+[event_journal]
+dir = "/usr/local/var/lib/ling/journal"

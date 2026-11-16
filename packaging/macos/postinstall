@@ -1,0 +1,36 @@
+#!/bin/sh
+# 创建独立的隐藏服务账户，已有配置永不覆盖。
+# Create a dedicated hidden service account without overwriting configuration.
+set -eu
+if ! dscl . -read /Users/_ling >/dev/null 2>&1; then
+    account_id=400
+    while dscl . -list /Users UniqueID | awk '{print $2}' | grep -qx "$account_id" ||
+          dscl . -list /Groups PrimaryGroupID | awk '{print $2}' | grep -qx "$account_id"; do
+        account_id=$((account_id + 1))
+        [ "$account_id" -lt 500 ] || { echo 'No free system account ID' >&2; exit 1; }
+    done
+    dscl . -create /Groups/_ling
+    dscl . -create /Groups/_ling PrimaryGroupID "$account_id"
+    dscl . -create /Users/_ling
+    dscl . -create /Users/_ling UniqueID "$account_id"
+    dscl . -create /Users/_ling PrimaryGroupID "$account_id"
+    dscl . -create /Users/_ling UserShell /usr/bin/false
+    dscl . -create /Users/_ling NFSHomeDirectory /usr/local/var/lib/ling
+    dscl . -create /Users/_ling IsHidden 1
+    dscl . -create /Users/_ling Password '*'
+fi
+install -d -m 0750 -o root -g _ling /usr/local/etc/ling
+install -d -m 0750 -o _ling -g _ling /usr/local/var/lib/ling
+if [ ! -e /usr/local/etc/ling/ling.toml ]; then
+    install -m 0640 -o root -g _ling /usr/local/share/ling/ling.service.toml /usr/local/etc/ling/ling.toml
+fi
+# 预先创建此标记可仅安装，稍后再手动启动。
+# Pre-create this marker to install now and start manually later.
+if [ ! -e /usr/local/etc/ling/no-autostart ]; then
+    launchctl enable system/io.ling.cache
+    launchctl bootstrap system /Library/LaunchDaemons/io.ling.cache.plist
+    # bootstrap 成功并不代表子进程存活。
+    # Successful bootstrap alone does not prove that the child is alive.
+    sleep 2
+    launchctl print system/io.ling.cache | grep -q 'state = running'
+fi

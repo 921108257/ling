@@ -1,10 +1,10 @@
-# linger-cache-db 架构与范围
+# ling 架构与范围
 
-> 版本：v0.3 设计基线。阶段 1—7 本机实现与验收已完成，0.1.0 仍为预览；稳定发布需目标环境评估。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
+> 版本：v0.3 设计基线。阶段 1—7 本机实现与验收已完成，当前 0.1.0 仍为预发布版本；稳定发布需目标环境评估。本文由最初的 v0.2 项目规划整理而来；关键澄清记录见 [decisions.md](decisions.md)。
 
 ## 项目定位
 
-linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协议访问的内存缓存数据库。核心方向是 Remote-first、Shard Ownership 和 Memory-first。
+ling（原名 linger-cache-db）是以 Rust 编写、独立部署、通过自定义二进制协议访问的内存缓存数据库。核心方向是 Remote-first、Shard Ownership 和 Memory-first。
 
 目标是以清晰的强类型、原子命令、可验证的 TTL 和可选可靠事件，降低业务接入与并发处理成本。高吞吐、低延迟、低单 Key 内存占用是研发目标；阶段 7 的本机测量及阶段 3 历史基线见 [testing.md](testing.md#阶段-7-本机验收)，不能据此宣称已超过 Redis 或已经可用于生产。
 
@@ -13,6 +13,8 @@ linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协�
 当前已有 Rust workspace、10 种共享 Value、协议编解码、固定分片引擎、TCP / TLS 服务、Rust / Java / Go SDK、CLI 与契约测试。支持隔离数据库、通用与容器命令、跨库复制 / 移动、遍历、清库 / 交换、五种淘汰策略及毫秒 TTL 生命周期；完整已开放清单见 [commands.md](commands.md)。支持六类事件、默认有界 Fast、可选同步 Reliable Journal、专用订阅、消费组、ACK、重投与保留清理，以及固定库连接池、普通 Batch、INFO / CONFIG / SHUTDOWN、日志和可选 Prometheus。构建与启动入口见 [README](../README.md)，本文计划目录仅按实际职责建立。
 
 当前跨平台发行覆盖 Windows、macOS 和 Linux 的服务端与 CLI。Windows 支持默认 Fast 模式；Reliable Journal 尚未实现所需的目录同步与原子替换持久化路径，配置验证以 `ERR_CONFIG_INVALID` 明确拒绝，不创建 Journal 目录或静默降级。Linux / macOS 的 Reliable 仍要求底层文件系统支持 [persistence.md](persistence.md) 的同步语义；跨平台构建与烟测不等于稳定版验收。
+
+对外服务端命令为 `ling`，客户端为 `ling-cli`，Rust 包使用 `ling-*` 名称。更名不修改协议版本、类型标签或 Journal 格式；Java 包 `io.linger.cache`、Go 模块 `linger.local/cache` 保留兼容身份。CLI 密码使用 `LING_PASSWORD`，兼容旧的 `LINGER_PASSWORD`。帮助支持七种语言并在本地选择，`HELP` 是客户端入口而非新增数据库协议命令；用法见 [cli.md](cli.md)。系统安装包的服务注册、升级与卸载约定见 [install.md](install.md)，便携包不自动改变系统服务。
 
 当前使用每个 (db, shard) 独占的有序索引与 Mutex，按全局顺序取得全部执行权后采样时间；预算 / 身份提交锁永远在分片锁之后取得，事件提交锁最后取得；消费者不反向取得引擎锁。候选结果通过类型、大小、响应、容量和身份检查后整体发布，多连接读不到原子命令中间状态。单 Key 读取可在独立分片并行；有每库 Key 配额的写入锁全库，启用淘汰且有限额的写入暂保守锁全实例，以避免逆序追加受害分片。此性能取舍需后续测量后再优化。
 
@@ -24,14 +26,14 @@ linger-cache-db 是以 Rust 编写、独立部署、通过自定义二进制协�
 
 | 能力 | v1.0 边界 |
 |---|---|
-| 部署 | 单进程、单节点服务器；TCP，可选 TLS 和密码认证 |
+| 部署 | 单进程、单节点服务器；TCP，可选 TLS 和密码认证；平台安装包与服务生命周期 |
 | 数据 | 10 种 Value，UTF-8 Key，默认 16 个隔离数据库 |
 | 并发 | 固定数量 Shard；一个 Shard 一个明确所有者；同机跨 Shard 协调 |
 | 命令 | [commands.md](commands.md) 的首版命令及错误语义 |
 | TTL | 毫秒精度；相对、绝对期限及移除；读路径严格过滤过期值 |
 | 事件 | 六类生命周期事件；默认 Fast；可选 Reliable、组消费、ACK、重投 |
 | 持久化 | Reliable 事件及消费元数据；缓存值和 TTL 重启后不恢复 |
-| 客户端 | CLI 优先；Rust、Java、Go；统一协议与契约用例 |
+| 客户端 | CLI 优先，内置速查及七语言本地帮助；Rust、Java、Go；统一协议与契约用例 |
 | 资源与运维 | 有界请求/队列/内存/日志；noeviction、采样 LRU/LFU、random、ttl-first；日志与指标 |
 
 v1.0 明确不包含：
@@ -57,6 +59,8 @@ v1.0 明确不包含：
 | [events.md](events.md) | 事件、组、ACK、保留与重投 |
 | [persistence.md](persistence.md) | Journal 提交、恢复、磁盘故障 |
 | [sdk.md](sdk.md) | CLI 与语言客户端职责 |
+| [cli.md](cli.md) | 客户端操作、命令速查、帮助与排错 |
+| [install.md](install.md) | 跨平台安装、系统服务、升级与卸载 |
 | [config.md](config.md) | 配置名称、默认值、校验、重启要求 |
 | [testing.md](testing.md) | 正确性、故障与性能验收 |
 | [roadmap.md](roadmap.md) | 实施顺序与阶段完成条件 |

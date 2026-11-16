@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Linger Cache DB
+Name=ling
 Comment=Typed in-memory cache database (preview)
-Exec=linger-server
-Icon=linger-cache-db
+Exec=ling
+Icon=ling
 Terminal=true
 Categories=Development;Database;

@@ -1,0 +1,20 @@
+<service>
+  <id>ling</id>
+  <name>ling</name>
+  <description>Typed in-memory cache database. Cached values and TTLs are not persisted.</description>
+  <executable>%BASE%\ling.exe</executable>
+  <arguments>--config "%ProgramData%\ling\ling.toml"</arguments>
+  <workingdirectory>%ProgramData%\ling\state</workingdirectory>
+  <startmode>Automatic</startmode>
+  <serviceaccount>
+    <domain>NT AUTHORITY</domain>
+    <user>LocalService</user>
+  </serviceaccount>
+  <stoptimeout>15 sec</stoptimeout>
+  <onfailure action="restart" delay="5 sec" />
+  <logpath>%ProgramData%\ling\logs</logpath>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+</service>

@@ -1,0 +1,21 @@
+[Unit]
+Description=ling cache database
+After=network.target
+
+[Service]
+Type=simple
+User=ling
+Group=ling
+WorkingDirectory=/var/lib/ling
+ExecStart=/usr/bin/ling --config /etc/ling/ling.toml
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ling
+
+[Install]
+WantedBy=multi-user.target

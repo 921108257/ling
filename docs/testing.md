@@ -6,7 +6,7 @@
 
 ## 三语言客户端验收
 
-完整 Rust workspace 与下述 Reliable 驱动适用于 Linux / macOS；Windows 当前不支持 Reliable，不在该平台将整套 Journal 测试列为通过。Windows 发行验证运行不依赖 Journal 的类型、协议、网络与 CLI 逻辑契约，以及原生 release 服务端 / CLI 的 Fast TCP 烟测。`cargo test --locked -p linger-server --test config` 验证平台配置边界；Windows 另运行 `cargo test --locked -p linger-events --lib windows_reliable_rejected_without_creating_directory`，验证 Fast 事件提交及 Reliable 在创建目录前明确返回 `ERR_CONFIG_INVALID`。这些是验证入口，只有实际执行成功才计入通过结果。
+完整 Rust workspace 与下述 Reliable 驱动适用于 Linux / macOS；Windows 当前不支持 Reliable，不在该平台将整套 Journal 测试列为通过。Windows 发行验证运行不依赖 Journal 的类型、协议、网络与 CLI 逻辑契约，以及原生 release 服务端 / CLI 的 Fast TCP 烟测。`cargo test --locked -p ling-server --test config` 验证平台配置边界；Windows 另运行 `cargo test --locked -p ling-events --lib windows_reliable_rejected_without_creating_directory`，验证 Fast 事件提交及 Reliable 在创建目录前明确返回 `ERR_CONFIG_INVALID`。这些是验证入口，只有实际执行成功才计入通过结果。
 
 在仓库根目录执行：
 
@@ -25,6 +25,22 @@ python3 tests/sdk_contracts.py
 优先覆盖用户可观察契约和实际故障边界，不用与实现逐行同构的测试代替行为验证。纯文案改动检查链接和一致性即可；类型、协议、TTL、跨 Shard 与可靠提交是非平凡共享行为，必须有针对性测试。
 
 先运行受影响的测试及必需格式/lint，结果足够后停止。没有工具或环境时记录具体限制，不凭空填写通过状态。
+
+## 命名、本地帮助与安装验收
+
+产品更名后的测试与构建使用 `ling-*` Rust 包及 `ling` / `ling-cli` 可执行文件。更名不得改变共享协议黄金字节、错误注册表或 Journal 恢复行为；Java 包与 Go 模块保留兼容身份。CLI 密码需验证 `LING_PASSWORD` 优先、旧 `LINGER_PASSWORD` 回退，并确保错误不回显凭据。
+
+本地帮助验证入口为 `cargo test -p ling-cli-help` 以及 CLI 对应契约测试，至少包含：
+
+- 七种语言的选项说明、帮助标题和速查入口；命令目录覆盖所有已开放命令，签名符合 [commands.md](commands.md)。
+- `--lang`、`LING_LANG`、`LC_ALL`、`LC_MESSAGES`、`LANG` 与系统语言优先级；空值处理、`C` / `POSIX`、不支持语言及繁体中文的英语回退。
+- 服务器未启动、端口不可用或认证未提供时，`ling --help`、`ling-cli --help`、`--cheatsheet`、单命令 HELP 仍成功且不创建网络连接。
+- 普通逐行输入的 HELP 在本地处理，不发送协议请求；Batch 含 HELP 时整批不执行；错误帮助主题不伪装成成功数据库 Value。
+- CLI 指南中的类型、TTL、数值、List / Map / Set 示例可解析，并通过真实网络保持严格类型和错误退出语义。
+
+系统安装必须在各自原生环境验证，不在开发者本机随意注册服务。对 DEB / RPM、macOS PKG 和 Windows 安装器分别验证首次安装、服务注册 / 启停 / 重启、PING、同版本重装或升级、卸载；检查配置不被覆盖、卸载后服务已注销且用户配置 / Journal 未删除。便携包不应在解压或显示帮助时改变系统服务。发行流水线和 [install.md](install.md) 是实际入口；CI 脚本存在不等于已通过原生安装验收，未执行平台需明确列出。
+
+完整稳定版还需目标环境多日压力、物理断电及语义可比的 Redis 8 测量；本次本地帮助和打包验证不替代这些结果，发布顺序见 [roadmap.md](roadmap.md#100-发布准备)。
 
 ## 最小正确性矩阵
 

@@ -1,10 +1,12 @@
 # CLI 与官方 SDK
 
-> 状态：阶段 6 已实现 Rust / Java / Go 原生客户端、CLI、固定库连接池、TLS、Batch 与专用订阅，仍为预览版本。单连接串行执行；稳定版压力与性能验收留在阶段 7。
+> 状态：阶段 6 已实现 Rust / Java / Go 原生客户端、CLI、固定库连接池、TLS、Batch 与专用订阅；阶段 7 已完成本机验收，仍为 0.1.0 预览版本。单连接串行执行；稳定发布仍需目标部署环境评估。
 
 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / batch / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求。`Client::subscribe` 消耗普通连接，返回固定数据库的 `Subscriber`，提供 `next_event / ack / ping / close`；交错事件进入有界队列，不隐式丢弃或确认。空闲读取发送 HEARTBEAT，取消等待关闭连接，命名组由调用方显式重连。重连后先调用 `Client::require_event_stream(expected)` 校验保存的流身份；变化时关闭连接并报告 ERR_STREAM_MISMATCH，不创建替代组。`Options.tls` 使用 `ClientTls` 设置服务端名称、可选 CA 及成对客户端身份。`Pool::new / acquire / execute / close` 和 `PoolOptions` 提供有界容量与排队期限，`PooledClient` 持有固定库租约。
 
-`crates/cli` 直接复用 Rust SDK，支持单命令或标准输入逐行执行已开放命令；连接会先自动初始化，交互中再次 HELLO 会得到连接状态错误。认证密码可由 `LINGER_PASSWORD` 提供，不支持密码命令行开关。String 使用双引号转义显示；任意 Value 位置使用显式类型字面量，索引、计数和增减步长按照命令签名解析成 Int / UInt。COPY 的 DB、MOVE / SWAPDB 的库号、SCAN 的 cursor / COUNT 均编码为 UInt。EXPIRE 系列的时间参数和 SET 到期选项的数值以十进制输入，编码为 Int（例如 `SET session null PX 5000 NX`）；不做 UInt 或 String 隐式转换。TTL 查询按 Int 展示，保留 -1 / -2 哨兵值；SCAN 续页须在同一连接保留筛选参数，不可每页启动新 CLI 进程。十种 Value 均可通过 CLI 存取，示例见 [README](../README.md)。未知命令交给服务端返回错误，不在 CLI 内模拟执行。`-c 'SUBSCRIBE ...'` 默认逐条从 stdin 读取 ACK；仅加 `--auto-ack` 时在输出刷新后自动确认。`--count N` 限制处理数量，事件首列显示无损 ID，随后为类型化 Map。`--batch` 从 stdin 收集最多 1000 条、64 MiB 文本后提交单个 Batch，不能与 `-c` 共用；保留逐项错误并使退出码非零。TLS 通过 `--tls-server-name`、`--tls-ca`、`--tls-cert`、`--tls-key` 配置。
+`crates/cli` 的 `ling-cli` 直接复用 Rust SDK，支持单命令或标准输入逐行执行已开放命令；连接会先自动初始化，交互中再次 HELLO 会得到连接状态错误。认证密码由 `LING_PASSWORD` 提供，未设置时兼容 `LINGER_PASSWORD`，不支持密码命令行开关。String 使用双引号转义显示；任意 Value 位置使用显式类型字面量，索引、计数和增减步长按照命令签名解析成 Int / UInt。COPY 的 DB、MOVE / SWAPDB 的库号、SCAN 的 cursor / COUNT 均编码为 UInt。EXPIRE 系列的时间参数和 SET 到期选项的数值以十进制输入，编码为 Int（例如 `SET session null PX 5000 NX`）；不做 UInt 或 String 隐式转换。TTL 查询按 Int 展示，保留 -1 / -2 哨兵值；SCAN 续页须在同一连接保留筛选参数，不可每页启动新 CLI 进程。十种 Value 均可通过 CLI 存取，操作与速查见 [cli.md](cli.md)。未知数据库命令交给服务端返回错误，不在 CLI 内模拟执行；本地 `HELP` 单独处理。`-c 'SUBSCRIBE ...'` 默认逐条从 stdin 读取 ACK；仅加 `--auto-ack` 时在输出刷新后自动确认。`--count N` 限制处理数量，事件首列显示无损 ID，随后为类型化 Map。`--batch` 从 stdin 收集最多 1000 条、64 MiB 文本后提交单个 Batch，不能与 `-c` 共用；保留逐项错误并使退出码非零。TLS 通过 `--tls-server-name`、`--tls-ca`、`--tls-cert`、`--tls-key` 配置。
+
+Rust 包更名为 `ling-*`；Java 包 `io.linger.cache` 与 Go 模块 `linger.local/cache` 保留兼容名称。产品更名不重分配协议类型、错误码或磁盘标签。
 
 `Options` 的连接和请求超时必须大于零。`Error::Server` 保留服务端错误码；`Error::Local` 区分连接、超时、协议、本地参数和关闭错误，`outcome_unknown()` 表达发送后的不确定性。超时、断线或取消网络等待会关闭该连接；默认不重放请求。成功认证和 SELECT 逐次等待响应，业务请求不越过连接屏障。已发送 ID 不复用，旧 ID 响应丢弃，0 或未发送 ID 的普通响应使连接失步并关闭。
 
@@ -125,6 +127,10 @@ Rust 的单值读取在语义上为 `Result<Value, Error>`。成功的 `Value::N
 
 CLI 覆盖首版公开命令与订阅能力，负责文本解析、类型展示和错误展示；它不实现独立于 Rust SDK 的网络或数据库语义。
 
+`ling --help`、`ling-cli --help`、`ling-cli --cheatsheet` 与 `ling-cli -c 'HELP [command]'` 在连接服务器前处理。普通逐行输入的 HELP 也在本地处理；Batch 拒绝本地 HELP，且整批不提交。HELP 不是协议命令，不改变服务端公开命令清单。
+
+帮助支持 `en-US`、`zh-CN`、`ko-KR`、`ja-JP`、`ru-RU`、`de-DE`、`fr-FR`；按 `--lang`、`LING_LANG`、`LC_ALL`、`LC_MESSAGES`、`LANG`、操作系统语言依次选择，未匹配回退 `en-US`。`C` / `POSIX` 使用英语，繁体中文不自动映射简体中文。帮助选项、说明与速查可本地化；协议命令名、类型字面量、数值与存储内容不受影响。详细操作见 [cli.md](cli.md)。
+
 Value 使用显式类型字面量，如 `int(1)`、`uint(1)`、`float(1.0)`、`bytes(0x0102)`、`"text"`、`null`、`true`、`list([...])`、`map({...})`、`set([...])`。具体参数及完整语法见命令规范。
 
 输出区分 Null、不存在、空字符串、空 Bytes 及空容器。显示 64 位整数时保持精度；String 与 Bytes、Int 与 UInt 必须可辨识。非交互调用通过退出状态区分成功和失败，错误文本不能伪装为正常 Value。
@@ -134,6 +140,8 @@ Value 使用显式类型字面量，如 `int(1)`、`uint(1)`、`float(1.0)`、`b
 ## 验收要求
 
 各语言共享协议字节用例、10 种 Value 的往返用例、命令成功与错误用例。CLI 与 Rust 共用传输实现，Java / Go 通过同一服务端契约验证，不能只做各自的自编码自解码测试。
+
+本地帮助需覆盖七语言、环境与显式语言优先级、未知系统语言回退、无服务器和无认证时可查帮助，以及普通输入 HELP 不发请求、Batch 含 HELP 不执行任何项。帮助目录应覆盖全部已开放命令，签名与 [commands.md](commands.md) 一致。
 
 重点覆盖：Null 与不存在、最大 UInt、NaN 拒绝、Float 正负零、Bytes 集合成员、响应乱序、同 Key 顺序、选库屏障、迟到响应、写入结果未知和关闭后任务释放。
 

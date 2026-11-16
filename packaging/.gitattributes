@@ -1,0 +1,5 @@
+# Unix 安装钩子必须保持 LF；Unix installation hooks must retain LF line endings.
+*.sh text eol=lf
+AppRun text eol=lf
+preinstall text eol=lf
+postinstall text eol=lf

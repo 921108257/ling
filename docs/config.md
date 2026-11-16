@@ -1,8 +1,8 @@
 # 配置规范
 
-> 状态：v0.3 配置契约，阶段 6 已实现下述十二组配置。下面的默认配置可整体使用。默认文件路径为 `linger.toml`，以 `--config <path>` 指定其他文件。
+> 状态：v0.3 配置契约，阶段 6 已实现下述十二组配置。下面的默认配置可整体使用。默认文件路径为 `ling.toml`，以 `--config <path>` 指定其他文件。
 
-已实现 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组配置及其下列字段。无 `--config` 时读取工作目录的 `linger.toml`，文件不存在则采用默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。配置错误不会输出原文件片段，以防泄露密码。
+已实现 `server`、`tls`、`auth`、`database`、`engine`、`eviction`、`ttl`、`events`、`event_journal`、`protocol`、`log`、`metrics` 十二组配置及其下列字段。无 `--config` 时优先读取工作目录的 `ling.toml`，没有时兼容旧名 `linger.toml`，均不存在则采用默认值；显式路径读取失败会退出。默认事件 Fast；Reliable 必须配置目录。配置错误不会输出原文件片段，以防泄露密码。
 
 Windows 当前仅支持 Fast 模式；设置 `events.mode="reliable"` 会在打开 Journal 或监听端口前返回 `ERR_CONFIG_INVALID`，提示该平台尚不支持 Reliable。不会自动改用 Fast，也不会为此创建 Journal 目录。Linux / macOS 可按 [persistence.md](persistence.md) 的文件系统要求启用 Reliable。
 
