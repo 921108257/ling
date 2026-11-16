@@ -1,10 +1,13 @@
-ling 0.1.1 预发布版本（Prerelease）。项目由 linger-cache-db 正式更名为 ling，本次更新聚焦命令行使用与安装体验，仍不代表 1.0.0 稳定版验收。完整用法见仓库 README、docs/cli.md 和 docs/install.md。
+ling 0.1.2 预发布版本（Prerelease）。本次更新完善七语言命令行帮助与诊断，并增加官网文档和命令浏览器；仍不代表 1.0.0 稳定版验收。[官网与快速上手](https://921108257.github.io/ling/)、[CLI 指南](https://921108257.github.io/ling/docs/cli/)及[安装指南](https://921108257.github.io/ling/docs/install/)提供完整用法。
 
-- 服务端命令改为 `ling`，客户端改为 `ling-cli`，Rust 包统一为 `ling-*`。协议和 Journal 格式不变；Java / Go 的兼容名称保留。
-- `ling --help` 与 `ling-cli --help` 按本机语言自动选择简体中文、美式英语、韩语、日语、俄语、德语或法语，未支持的语言回退美式英语；可用 `--lang` 显式选择。
-- 新增离线 `--cheatsheet`、`HELP` 与 `HELP <命令>`，补齐完整 CLI 指南。帮助无需连接数据库，普通交互会提示速查入口。
-- 原生安装器默认注册并启动 Windows 服务、macOS LaunchDaemon 或 Linux systemd 服务，可跳过；升级保留已有配置，卸载保留用户配置和状态。
-- CLI 优先使用 `LING_PASSWORD`，兼容 `LINGER_PASSWORD`；手动启动服务优先读取 `ling.toml`，兼容旧名 `linger.toml`。
+- `ling --help`、`ling-cli --help` 和命令速查按功能分组，以标题、缩进和示例展示层级。`HELP <命令>` 补充类型与边界、使用示例和相关命令；离线帮助无需连接数据库。
+- 服务端和客户端统一展示稳定错误码、本地化说明、使用示例和相关命令；诊断不回显用户输入的 Key、Value、密码或原始配置内容。发送后无法确认执行结果时保留“结果未知”提示，不自动重放请求。
+- 帮助和本地诊断支持简体中文、美式英语、韩语、日语、俄语、德语和法语。按显式 `--lang`、语言环境变量及本机语言选择，未匹配时回退美式英语；命令名、类型字面量和协议错误码不翻译。
+- 新增官网首页、快速上手、安装与服务、CLI 和规范文档导航，以及可搜索的命令浏览器。内容从仓库规范和 CLI 命令目录构建，由 GitHub Pages 工作流检查并发布；网站文档当前为中文，七语言支持指本地命令行。
+
+沿用 0.1.1 的命名与安装行为：服务端为 `ling`，客户端为 `ling-cli`，Rust 包为 `ling-*`；Java / Go 保留兼容名称。协议和 Journal 格式未变。CLI 优先使用 `LING_PASSWORD`，兼容 `LINGER_PASSWORD`；手动启动服务优先读取 `ling.toml`，兼容旧名 `linger.toml`。
+
+原生安装器默认注册并启动 Windows 服务、macOS LaunchDaemon 或 Linux systemd 服务，可跳过；升级保留已有配置，卸载保留用户配置和状态。
 
 安装包：
 
