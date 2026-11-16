@@ -1,6 +1,6 @@
 # CLI 与官方 SDK
 
-> 状态：阶段 6 已实现 Rust / Java / Go 原生客户端、CLI、固定库连接池、TLS、Batch 与专用订阅；阶段 7 已完成本机验收，仍为 0.1.0 预览版本。单连接串行执行；稳定发布仍需目标部署环境评估。
+> 状态：阶段 6 已实现 Rust / Java / Go 原生客户端、CLI、固定库连接池、TLS、Batch 与专用订阅；阶段 7 已完成本机验收，当前为 0.1.2 预发布版本。单连接串行执行；稳定发布仍需目标部署环境评估。
 
 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / batch / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求。`Client::subscribe` 消耗普通连接，返回固定数据库的 `Subscriber`，提供 `next_event / ack / ping / close`；交错事件进入有界队列，不隐式丢弃或确认。空闲读取发送 HEARTBEAT，取消等待关闭连接，命名组由调用方显式重连。重连后先调用 `Client::require_event_stream(expected)` 校验保存的流身份；变化时关闭连接并报告 ERR_STREAM_MISMATCH，不创建替代组。`Options.tls` 使用 `ClientTls` 设置服务端名称、可选 CA 及成对客户端身份。`Pool::new / acquire / execute / close` 和 `PoolOptions` 提供有界容量与排队期限，`PooledClient` 持有固定库租约。
 

@@ -2,7 +2,9 @@
 
 ling（原 linger-cache-db）是独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型、固定分片和多数据库；已支持毫秒 TTL、Fast 事件与可选 Reliable Journal。
 
-**当前为 0.1.1 预发布版本，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
+[官网与文档](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令浏览器](https://921108257.github.io/ling/commands/)
+
+**当前为 0.1.2 预发布版本，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
 
 每个 (数据库, Shard) 拥有独立索引与锁，多 Key 命令按固定顺序取得全部执行权后整体发布。可配置全实例受管内存、每库 Key 配额及 noeviction / lru / lfu / random / ttl-first 策略；受管内存不等于进程 RSS。启用淘汰且配置容量上限时，当前写入保守取得全实例执行权。ttl-first 选择最早到期的活跃条目，无期限候选时拒绝写入。
 
@@ -36,7 +38,7 @@ ling-cli -c 'PING'
 
 **Windows 当前仅支持 Fast 事件；Reliable 配置在文件操作和监听前返回 `ERR_CONFIG_INVALID`，不会降级为 Fast。** Linux / macOS 保留 Reliable 支持；其恢复边界仍是已提交事件和消费元数据，缓存值与 TTL 不恢复。
 
-[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预发布 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。本次版本标签为 `v0.1.1`，对应 GitHub Prerelease；后续发布同样先更新版本，再推送匹配标签。
+[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预发布 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。本次版本标签为 `v0.1.2`，对应 GitHub Prerelease；后续发布同样先更新版本，再推送匹配标签。
 
 ## 构建与试用
 
@@ -188,6 +190,19 @@ python3 benchmarks/lifecycle.py target/benchmarks/ttl
 ```
 
 工具保存固定二进制副本、源码摘要、完整配置、请求延迟直方图及 CPU / RSS / Journal 采样。支持 `--only get,mixed,reliable-consumer` 筛选场景；筛选后不自动追加持续运行。仅复测一种持续负载时使用 `--soak-only --soak-mode reliable`（或 `fast`）。实际数据、消费落后及环境限制见 [阶段 7 本机验收](docs/testing.md#阶段-7-本机验收)。十分钟持续运行不等于多日压力或稳定版发布认证。
+
+## 官网文档构建
+
+官网从仓库中的规范和 CLI 命令目录构建，源码位于 `site/`。需要 Node.js 24，在仓库根目录执行：
+
+```sh
+cd site
+npm ci
+npm run build
+npm run check
+```
+
+生成的静态站位于 `site/dist`。线上站点使用 `/ling/` 基础路径；[Pages 工作流](.github/workflows/pages.yml) 在 `main` 的相关内容更新后构建、检查并部署，PR 仅构建和检查。网站的版本与功能范围以当前仓库规范为准。
 
 ## 从哪里开始
 

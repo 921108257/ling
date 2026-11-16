@@ -1,6 +1,6 @@
 # 命令契约
 
-> 状态：v0.3 命令契约。阶段 6 已完成本文公开命令、普通 Batch 和运维入口；阶段 7 已完成本机性能与资源验收，仍为 0.1.0 预览，稳定发布需目标环境评估。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)，客户端操作见 [cli.md](cli.md)。名称相似不意味着兼容 Redis。
+> 状态：v0.3 命令契约。阶段 6 已完成本文公开命令、普通 Batch 和运维入口；阶段 7 已完成本机性能与资源验收，当前为 0.1.2 预发布版本，稳定发布需目标环境评估。类型见 [data-model.md](data-model.md)，编码见 [protocol.md](protocol.md)，客户端操作见 [cli.md](cli.md)。名称相似不意味着兼容 Redis。
 
 ## 当前支持范围
 
