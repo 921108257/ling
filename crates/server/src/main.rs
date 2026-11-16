@@ -1,24 +1,42 @@
 //! 服务端命令行入口、配置加载和优雅关闭信号。
 //! Server command-line entry point, configuration loading, and graceful shutdown signals.
 
-use clap::Parser;
+use clap::{CommandFactory, Parser, Subcommand};
 use ling_cli_help::{Context, Diagnostic, Language};
 use ling_server::{Config, Server};
 use std::path::PathBuf;
 
+mod update;
+
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
 #[derive(Parser)]
-#[command(name = "ling", version)]
+#[command(name = "ling", version, disable_help_subcommand = true)]
 struct Args {
     /// 本地帮助语言，默认按系统语言选择。
     /// Local help language, detected from the system by default.
-    #[arg(long)]
+    #[arg(long, global = true)]
     lang: Option<String>,
     /// 可选配置路径，缺省尝试工作目录 ling.toml，再兼容 linger.toml。
     /// Optional config path; tries ling.toml, then legacy linger.toml in the working directory.
     #[arg(long)]
     config: Option<PathBuf>,
+    /// 本机管理命令；Local administration commands.
+    #[command(subcommand)]
+    command: Option<LocalCommand>,
+}
+
+/// 无需启动数据库的本机管理入口。
+/// Local administration that does not start a database.
+#[derive(Subcommand)]
+enum LocalCommand {
+    /// 下载、校验并应用官方更新；Download, verify and apply an official update.
+    Update(update::Args),
+    /// 按主题查看帮助；Show help for a topic.
+    Help {
+        /// 帮助主题；Help topic.
+        topic: Vec<String>,
+    },
 }
 
 /// 将失败转为非零退出状态，不输出敏感输入。
@@ -35,6 +53,33 @@ async fn main() {
 /// Assembles configuration and runtime resources and cleans up connections before exit.
 async fn run() -> Result<(), Diagnostic> {
     let (args, language) = ling_cli_help::parse_localized::<Args>(true);
+    match args.command {
+        Some(LocalCommand::Update(options)) => {
+            return tokio::task::spawn_blocking(move || update::run(options, language))
+                .await
+                .map_err(|_| Diagnostic::new(language, "LOCAL_UPDATE_INSTALL", Context::Update))?;
+        }
+        Some(LocalCommand::Help { topic }) => {
+            let mut command = ling_cli_help::localize(Args::command(), language, true);
+            let help = match topic.as_slice() {
+                [] => command.render_help(),
+                [topic] if topic.eq_ignore_ascii_case("update") => command
+                    .find_subcommand_mut("update")
+                    .expect("update subcommand")
+                    .render_help(),
+                _ => {
+                    return Err(Diagnostic::new(
+                        language,
+                        "LOCAL_HELP_TOPIC",
+                        Context::Server,
+                    ));
+                }
+            };
+            print!("{help}");
+            return Ok(());
+        }
+        None => {}
+    }
     let config = match args.config {
         Some(path) => Config::load(&path)
             .map_err(|error| Diagnostic::new(language, &error.code, Context::Server))?,

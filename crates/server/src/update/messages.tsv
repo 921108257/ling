@@ -1,0 +1,11 @@
+checking	Checking for updates…	正在检查更新…	업데이트 확인 중…	更新を確認しています…	Проверка обновлений…	Suche nach Updates…	Recherche de mises à jour…
+current	Installed:	已安装：	설치됨:	インストール済み:	Установлено:	Installiert:	Version installée :
+available	Available:	可用版本：	사용 가능:	利用可能:	Доступно:	Verfügbar:	Version disponible :
+latest	This installation is up to date.	当前已是最新版本。	최신 버전입니다.	最新バージョンです。	Установлена актуальная версия.	Diese Installation ist aktuell.	Cette installation est à jour.
+check_hint	Run ling update to install this version.	运行 ling update 安装此版本。	ling update를 실행하여 설치하세요.	ling update を実行してインストールします。	Для установки выполните ling update.	Zum Installieren ling update ausführen.	Exécutez ling update pour installer cette version.
+downloading	Downloading:	正在下载：	다운로드 중:	ダウンロード中:	Загрузка:	Lade herunter:	Téléchargement :
+verified	Package SHA-256 verified.	安装包 SHA-256 校验通过。	패키지 SHA-256 확인 완료.	パッケージの SHA-256 を検証しました。	SHA-256 пакета проверен.	SHA-256 des Pakets geprüft.	SHA-256 du paquet vérifié.
+installing	Installing the update…	正在安装更新…	업데이트 설치 중…	更新をインストールしています…	Установка обновления…	Update wird installiert…	Installation de la mise à jour…
+complete	Updated to	已更新至	업데이트 완료:	更新しました:	Обновлено до	Aktualisiert auf	Mise à jour vers
+scheduled	The update will continue after this command exits. Approve the Windows administrator prompt if shown. Check the result file for completion.	本命令退出后继续更新。如出现 Windows 管理员提示，请确认。完成状态见结果文件。	명령 종료 후 업데이트가 계속됩니다. Windows 관리자 요청이 표시되면 승인하세요. 결과 파일에서 완료 상태를 확인하세요.	このコマンド終了後に更新を続行します。Windows の管理者確認が表示されたら承認してください。完了状態は結果ファイルを確認してください。	Обновление продолжится после завершения команды. При появлении запроса администратора Windows подтвердите его. Статус завершения указан в файле результата.	Das Update läuft nach Befehlsende weiter. Bestätigen Sie gegebenenfalls die Windows-Administratorabfrage. Der Abschluss steht in der Ergebnisdatei.	La mise à jour continuera après cette commande. Acceptez la demande administrateur Windows si elle apparaît. Consultez le fichier de résultat pour vérifier la fin.
+result	Result file:	结果文件：	결과 파일:	結果ファイル:	Файл результата:	Ergebnisdatei:	Fichier de résultat :

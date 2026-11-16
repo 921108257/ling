@@ -80,3 +80,89 @@ fn invalid_config_and_bind_failures_are_sanitized() {
     error(output, "LOCAL_STARTUP", "Usage examples");
     std::fs::remove_file(path).unwrap();
 }
+
+/// 更新入口在配置之前执行；不可达代理防止错误路径依赖外部网络。
+/// Updates run before config loading; unreachable proxies keep error paths independent of external networking.
+fn updater(locale: &str) -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_ling"));
+    command
+        .args([
+            "--lang",
+            locale,
+            "--config",
+            "private-update-config-does-not-exist.toml",
+            "update",
+        ])
+        .env_remove("LING_LANG")
+        .env_remove("LC_MESSAGES")
+        .env_remove("LANG")
+        .env("LC_ALL", "C")
+        .env("HTTP_PROXY", "http://127.0.0.1:0")
+        .env("HTTPS_PROXY", "http://127.0.0.1:0")
+        .env("ALL_PROXY", "http://127.0.0.1:0")
+        .env("http_proxy", "http://127.0.0.1:0")
+        .env("https_proxy", "http://127.0.0.1:0")
+        .env("all_proxy", "http://127.0.0.1:0")
+        .env("NO_PROXY", "")
+        .env("no_proxy", "");
+    command
+}
+
+/// 非法版本和降级在任何网络进度输出前拒绝，七语诊断保留正确更新指导。
+/// Invalid versions and downgrades fail before network progress output, retaining update guidance in seven locales.
+#[test]
+fn invalid_update_versions_fail_before_download_and_config_loading() {
+    for (locale, examples) in [
+        ("en-US", "Usage examples"),
+        ("zh-CN", "使用示例"),
+        ("ko-KR", "사용 예"),
+        ("ja-JP", "使用例"),
+        ("ru-RU", "Примеры использования"),
+        ("de-DE", "Anwendungsbeispiele"),
+        ("fr-FR", "Exemples d’utilisation"),
+    ] {
+        for version in ["private-update-version-secret", "0.0.0", "v0.0.0"] {
+            let output = updater(locale)
+                .args(["--version", version, "--check"])
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(1));
+            let text = error(output, "LOCAL_UPDATE_VERSION", examples);
+            assert!(text.contains("ling update --check"));
+            assert!(text.contains("ling help update"));
+            assert!(!text.contains("private-update"));
+            assert!(!text.contains("ling --config"));
+        }
+    }
+}
+
+/// clap 更新参数错误使用更新上下文，不显示秘密参数或数据库连接示例。
+/// Clap update-argument failures use update guidance without echoing secrets or database connection examples.
+#[test]
+fn invalid_update_arguments_keep_update_context_in_every_language() {
+    for (locale, examples) in [
+        ("en-US", "Usage examples"),
+        ("zh-CN", "使用示例"),
+        ("ko-KR", "사용 예"),
+        ("ja-JP", "使用例"),
+        ("ru-RU", "Примеры использования"),
+        ("de-DE", "Anwendungsbeispiele"),
+        ("fr-FR", "Exemples d’utilisation"),
+    ] {
+        for arguments in [
+            vec!["--version"],
+            vec!["--private-update-option", "private-update-argument-secret"],
+            vec!["--check=private-update-argument-secret"],
+            vec!["private-update-argument-secret"],
+        ] {
+            let output = updater(locale).args(arguments).output().unwrap();
+            assert_eq!(output.status.code(), Some(2));
+            let text = error(output, "LOCAL_ARGUMENT", examples);
+            assert!(text.contains("ling update --check"), "{text}");
+            assert!(text.contains("ling help update"), "{text}");
+            assert!(!text.contains("private-update"));
+            assert!(!text.contains("ling-cli"));
+            assert!(!text.contains("ling --config"));
+        }
+    }
+}

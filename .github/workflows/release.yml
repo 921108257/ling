@@ -155,6 +155,7 @@ jobs:
           cargo test --locked --target "$TARGET" -p ling-cli --test diagnostics
           cargo test --locked --target "$TARGET" -p ling-server --test help
           cargo test --locked --target "$TARGET" -p ling-server --test diagnostics
+          cargo test --locked --target "$TARGET" -p ling-server --bin ling
           cargo test --locked --target "$TARGET" -p ling-cli-help
           cargo test --locked --target "$TARGET" -p ling-server --test config
           cargo test --locked --target "$TARGET" -p ling-events --lib windows_reliable_rejected_without_creating_directory

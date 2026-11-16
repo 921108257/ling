@@ -11,6 +11,7 @@ description: |
   Standalone typed in-memory cache database and command-line client (preview).
   Reliable mode persists events and consumer metadata, not cached values or TTLs.
 scripts:
+  preinstall: packaging/linux/preinstall.sh
   postinstall: packaging/linux/postinstall.sh
   preremove: packaging/linux/preremove.sh
   postremove: packaging/linux/postremove.sh
