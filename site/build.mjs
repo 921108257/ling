@@ -35,7 +35,7 @@ const pages = [
   ['decisions', '设计决策', '贡献者参考', 'docs/decisions.md', '设计取舍和兼容性说明。'],
 ].map(([id, title, group, file, description]) => ({ id, title, group, file, description, route: `docs/${id}/`, reference: group === '贡献者参考' }));
 const readerPages = pages.filter(page => !page.reference);
-const sourceRoutes = new Map(pages.map(page => [resolve(root, page.file), page.route]));
+const sourceRoutes = new Map(pages.map(page => [resolve(root, page.file), page.reference ? `${github}/blob/main/${page.file}` : url(page.route)]));
 const highlighter = await createHighlighter({ themes: ['github-light', 'github-dark'], langs: ['bash', 'rust', 'go', 'java', 'json', 'toml', 'typescript', 'powershell', 'xml', 'yaml', 'python'] });
 const search = [];
 
@@ -43,7 +43,7 @@ function rewriteLink(href, source) {
   if (!href || /^(https?:|mailto:|#)/.test(href)) return href;
   const [path, hash] = href.split('#');
   const absolute = resolve(dirname(source), decodeURIComponent(path));
-  if (sourceRoutes.has(absolute)) return url(sourceRoutes.get(absolute)) + (hash ? `#${hash}` : '');
+  if (sourceRoutes.has(absolute)) return sourceRoutes.get(absolute) + (hash ? `#${hash}` : '');
   const repoPath = relative(root, absolute).replaceAll('\\', '/');
   if (repoPath.startsWith('../')) throw new Error(`Link leaves repository: ${href}`);
   return `${github}/${extname(repoPath) ? 'blob' : 'tree'}/main/${repoPath}${hash ? `#${hash}` : ''}`;
@@ -84,7 +84,7 @@ function header(active) {
   return `<header class="site-header"><div class="header-inner"><a class="brand" href="${url()}">${mark}<span>ling</span></a><span class="version">${esc(version)} pre</span><nav class="top-nav" aria-label="主导航"><a${active === 'docs' ? ' aria-current="page"' : ''} href="${url('docs/quickstart/')}">文档</a><a${active === 'commands' ? ' aria-current="page"' : ''} href="${url('commands/')}">命令速查</a><a href="${github}/releases">下载</a></nav><div class="header-tools"><button type="button" class="search-trigger" aria-label="搜索文档"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.5"/></svg><span>搜索文档</span><kbd>/</kbd></button><button type="button" class="theme-toggle icon-button" aria-label="切换深浅主题">◐</button><a class="github-link" href="${github}" aria-label="GitHub 源码"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .8a11.3 11.3 0 0 0-3.57 22c.56.1.77-.24.77-.54v-2.1c-3.14.68-3.8-1.34-3.8-1.34-.52-1.3-1.26-1.66-1.26-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.72 2.64 1.22 3.29.94.1-.73.4-1.22.72-1.5-2.51-.28-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.44.11-3 0 0 .95-.3 3.1 1.16a10.8 10.8 0 0 1 5.64 0c2.16-1.46 3.1-1.16 3.1-1.16.62 1.56.23 2.71.12 3 .72.8 1.16 1.8 1.16 3.04 0 4.35-2.65 5.32-5.17 5.6.41.36.77 1.04.77 2.1v3.08c0 .3.2.65.78.54A11.3 11.3 0 0 0 12 .8Z"/></svg></a></div><button type="button" class="menu-toggle icon-button" aria-label="打开文档导航" aria-expanded="false">☰</button></div></header>`;
 }
 function sidebar(current) {
-  const navigation = pages.find(page => page.id === current)?.reference ? pages : readerPages;
+  const navigation = readerPages;
   return `<aside class="sidebar" id="docs-sidebar" aria-label="文档目录"><a class="sidebar-home" href="${url()}">ling 文档</a>${[...new Set(navigation.map(page => page.group))].map(group => `<section class="nav-group"><h2>${group}</h2>${navigation.filter(page => page.group === group).map(page => `<a href="${url(page.route)}"${page.id === current ? ' aria-current="page"' : ''}>${page.title}</a>`).join('')}</section>`).join('')}<a class="sidebar-release" href="${github}/releases/tag/v${version}"><span class="status-dot"></span> ${esc(version)} 预发布说明</a></aside>`;
 }
 function footer() { return `<footer class="site-footer"><a class="brand" href="${url()}">${mark}<span>ling</span></a><p>类型明确，边界清晰。</p><div><a href="${github}">GitHub</a><a href="${url('docs/install/')}">安装与服务</a><a href="${github}/issues">反馈问题</a></div><span>ling ${esc(version)} pre</span></footer>`; }
@@ -96,19 +96,24 @@ await mkdir(resolve(out, 'assets'), { recursive: true });
 await cp('public', resolve(out, 'assets'), { recursive: true });
 
 for (const page of pages) {
+  if (page.reference) {
+    const destination = sourceRoutes.get(resolve(root, page.file));
+    await save(page.route, `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="在 GitHub 查看${esc(page.title)}。"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=${esc(destination)}"><link rel="canonical" href="${esc(destination)}"><title>正在前往 GitHub · ling</title></head><body><main id="main"><p>此文档位于 GitHub。<a href="${esc(destination)}" rel="noreferrer">继续查看${esc(page.title)}</a>。</p></main></body></html>`);
+    continue;
+  }
   const fileSource = await readFile(resolve(root, page.file), 'utf8');
   const source = page.id === 'overview' ? fileSource.replace(/<details>[\s\S]*?<\/details>/g, '') : fileSource;
   const { html, headings } = renderMarkdown(source, resolve(root, page.file));
-  const sequence = page.reference ? pages.filter(item => item.reference) : readerPages;
+  const sequence = readerPages;
   const index = sequence.indexOf(page);
   const next = sequence[index + 1]; const previous = sequence[index - 1];
   const content = `<div class="docs-layout">${sidebar(page.id)}<main id="main" class="document"><div class="breadcrumb">${esc(page.group)} <span>/</span> ${esc(page.title)}</div><article class="prose">${html}</article><nav class="doc-pagination" aria-label="文档翻页">${previous ? `<a href="${url(previous.route)}"><small>上一篇</small>${previous.title}</a>` : '<span></span>'}${next ? `<a href="${url(next.route)}"><small>下一篇</small>${next.title}</a>` : ''}</nav></main><aside class="toc" aria-label="本页目录"><span>本页内容</span>${headings.map(h => `<a class="depth-${h.depth}" href="#${esc(h.id)}">${esc(h.text)}</a>`).join('')}<a class="back-top" href="#main">返回顶部 ↑</a></aside></div>`;
   await save(page.route, shell({ ...page, content, classes: 'docs-page' }));
   const plain = source.replace(/```[^\n]*\n[\s\S]*?```/g, ' ').replace(/[#*`>|\[\]]/g, ' ').replace(/\s+/g, ' ');
-  if (!page.reference) search.push({ title: page.title, group: page.group, text: plain, href: url(page.route) });
+  search.push({ title: page.title, group: page.group, text: plain, href: url(page.route) });
   // 章节也加入索引，定位到正文而非仅找到长页面。
   // Index sections to land within long reference pages.
-  for (const heading of headings.filter(h => !page.reference && h.depth === 2)) search.push({ title: heading.text, group: page.title, text: heading.text, href: url(page.route) + `#${heading.id}` });
+  for (const heading of headings.filter(h => h.depth === 2)) search.push({ title: heading.text, group: page.title, text: heading.text, href: url(page.route) + `#${heading.id}` });
 }
 
 const commands = (await readFile(resolve(root, 'crates/cli-help/src/commands.tsv'), 'utf8')).trim().split(/\r?\n/).map(line => {

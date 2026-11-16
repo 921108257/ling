@@ -32,8 +32,26 @@ const home = pages.get(resolve(root, 'index.html'));
 assert(home.includes('十种值，清楚表达。'));
 const reference = pages.get(resolve(root, 'commands/index.html'));
 for (const command of ['SET','SCAN','SUNIONSTORE','SHUTDOWN','ACK']) assert(reference.includes(`>${command}<`) || reference.includes(command), `Missing ${command}`);
+// 历史地址只转向仓库，不在官网呈现开发记录。
+// Historical routes only redirect to the repository without publishing development records.
+const historicalRoutes = ['testing', 'roadmap', 'decisions'];
+for (const route of historicalRoutes) {
+  const file = resolve(root, `docs/${route}/index.html`);
+  const html = pages.get(file);
+  const destination = `https://github.com/921108257/ling/blob/main/docs/${route}.md`;
+  assert(html, `Missing historical redirect: ${route}`);
+  assert(html.includes('<meta name="robots" content="noindex">'), `Historical route must not be indexed: ${route}`);
+  assert(html.includes(`<meta http-equiv="refresh" content="0; url=${destination}">`), `Invalid historical redirect: ${route}`);
+  assert(html.includes(`<a href="${destination}"`), `Missing redirect fallback: ${route}`);
+  assert(!html.includes('<article') && !html.includes('class="sidebar"'), `Historical content must stay on GitHub: ${route}`);
+  for (const [otherFile, otherHtml] of pages) {
+    if (otherFile !== file) assert(!otherHtml.includes(`href="${base}docs/${route}/`), `Product link uses historical route: ${route}`);
+  }
+}
 const search = JSON.parse(await readFile(resolve(root, 'search.json'), 'utf8'));
 assert(search.length > 100, 'Expected sections and commands in search');
-for (const entry of search) { const [path, hash] = entry.href.split('#'); const html = pages.get(resolve(root, path.slice(base.length), 'index.html')); assert(html, `Invalid search route: ${entry.href}`); if(hash) assert(html.includes(`id="${hash}"`), `Invalid search anchor: ${entry.href}`); }
+for (const entry of search) { const [path, hash] = entry.href.split('#'); assert(!historicalRoutes.some(route => path === `${base}docs/${route}/`), `Historical route is searchable: ${entry.href}`); const html = pages.get(resolve(root, path.slice(base.length), 'index.html')); assert(html, `Invalid search route: ${entry.href}`); if(hash) assert(html.includes(`id="${hash}"`), `Invalid search anchor: ${entry.href}`); }
 assert(files.some(path => path.endsWith('sitemap.xml')));
+const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
+for (const route of historicalRoutes) assert(!sitemap.includes(`/docs/${route}/`), `Historical route is in sitemap: ${route}`);
 console.log(`Checked ${pages.size} HTML pages, ${links} local links and ${search.length} search entries.`);
