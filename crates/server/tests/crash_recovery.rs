@@ -92,9 +92,25 @@ async fn kill_preserves_atomic_journal_and_ack_hole_without_restoring_values() {
         )
         .await
         .unwrap();
-    let first = sub.next_event().await.unwrap();
-    let second = sub.next_event().await.unwrap();
-    sub.ack(second.id).await.unwrap();
+    let mut expected = Vec::new();
+    for _ in 0..8 {
+        let id = sub.next_event().await.unwrap().id;
+        assert!(!expected.contains(&id));
+        expected.push(id);
+    }
+    // 在同一分片内留下较早的未确认事件，确保确实产生 ACK 空洞。
+    // Leave an earlier event unacknowledged in the same shard to create a real ACK hole.
+    let acked = expected
+        .iter()
+        .position(|id| id.sequence > 1)
+        .map(|index| expected.swap_remove(index))
+        .unwrap();
+    assert!(
+        expected
+            .iter()
+            .any(|id| id.db == acked.db && id.shard == acked.shard && id.sequence < acked.sequence)
+    );
+    sub.ack(acked).await.unwrap();
     process.0.kill().unwrap();
     process.0.wait().unwrap();
     drop(writer);
@@ -126,15 +142,17 @@ async fn kill_preserves_atomic_journal_and_ack_hole_without_restoring_values() {
         .subscribe(vec!["*".into()], Some("kill-test"))
         .await
         .unwrap();
-    let replay = sub.next_event().await.unwrap();
-    assert_eq!(replay.id, first.id);
-    sub.ack(replay.id).await.unwrap();
-    let mut delivered = 2;
-    while delivered < 8 {
-        let e = sub.next_event().await.unwrap();
-        assert_ne!(e.id, second.id);
-        sub.ack(e.id).await.unwrap();
-        delivered += 1;
+    // 跨分片不保证消费顺序；逐一核对未确认的原始 ID，拒绝缺失、重复或额外事件。
+    // Cross-shard delivery is unordered; match every unacknowledged original ID exactly once.
+    while !expected.is_empty() {
+        let replay = sub.next_event().await.unwrap();
+        assert_ne!(replay.id, acked);
+        let index = expected
+            .iter()
+            .position(|id| *id == replay.id)
+            .expect("Unexpected or duplicate replayed event");
+        expected.swap_remove(index);
+        sub.ack(replay.id).await.unwrap();
     }
     process.0.kill().unwrap();
     process.0.wait().unwrap();
