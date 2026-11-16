@@ -90,7 +90,7 @@ jobs:
             rustflags: ''
           - platform: macos
             arch: aarch64
-            runner: macos-15
+            runner: macos-26
             target: aarch64-apple-darwin
             rustflags: ''
           - platform: windows
