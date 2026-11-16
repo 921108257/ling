@@ -96,9 +96,12 @@ fn example(output: &mut String, commands: &str, indent: usize) {
 /// Displays defined option names, defaults and descriptions on separate lines.
 fn flags(output: &mut String, command: &Command, ids: &[&str], language: Language) {
     for id in ids {
-        let Some(arg) = command.get_arguments().find(|arg| arg.get_id() == *id) else {
+        let arg = command.get_arguments().find(|arg| arg.get_id() == *id);
+        // 全局语言选项在 clap 构建时才传播到子命令，预渲染仍展示它。
+        // Global language flags propagate during clap build, after help is pre-rendered.
+        if arg.is_none() && *id != "lang" {
             continue;
-        };
+        }
         let signature = match *id {
             "host" => "--host <IP>",
             "port" => "--port <PORT>",
@@ -113,6 +116,9 @@ fn flags(output: &mut String, command: &Command, ids: &[&str], language: Languag
             "count" => "--count <N>",
             "auto_ack" => "--auto-ack",
             "config" => "--config <FILE>",
+            "check" => "--check",
+            "target_version" => "--version <VERSION>",
+            "stable" => "--stable",
             "lang" => "--lang <LOCALE>",
             "cheatsheet" => "--cheatsheet",
             "help" => "-h, --help",
@@ -123,7 +129,7 @@ fn flags(output: &mut String, command: &Command, ids: &[&str], language: Languag
         if let Some(description) = flag_help(id, language) {
             prose(output, description, 6);
         }
-        let defaults = arg.get_default_values();
+        let defaults = arg.map(|arg| arg.get_default_values()).unwrap_or_default();
         if !defaults.is_empty() && !matches!(*id, "batch" | "auto_ack" | "cheatsheet") {
             writeln!(
                 output,
@@ -150,13 +156,57 @@ pub(super) fn startup(command: &Command, language: Language, server: bool) -> St
         &command.get_about().expect("help introduction").to_string(),
         0,
     );
+    if command.get_name() == "update" {
+        heading(&mut output, "usage", language, 0);
+        example(&mut output, "ling update [OPTIONS]", 2);
+        heading(&mut output, "options", language, 0);
+        flags(
+            &mut output,
+            command,
+            &["check", "target_version", "stable", "lang", "help"],
+            language,
+        );
+        prose(&mut output, label("update_note", language), 2);
+        heading(&mut output, "examples", language, 0);
+        example(
+            &mut output,
+            "ling update --check\\nling update\\nling update --stable",
+            2,
+        );
+        return output;
+    }
+    if command.get_name() == "help" {
+        heading(&mut output, "usage", language, 0);
+        example(
+            &mut output,
+            if server {
+                "ling help [TOPIC ...]"
+            } else {
+                "ling-cli help [TOPIC ...]"
+            },
+            2,
+        );
+        heading(&mut output, "options", language, 0);
+        flags(&mut output, command, &["lang", "help"], language);
+        heading(&mut output, "examples", language, 0);
+        example(
+            &mut output,
+            if server {
+                "ling help update"
+            } else {
+                "ling-cli help\\nling-cli help containers list\\nling-cli help SET examples"
+            },
+            2,
+        );
+        return output;
+    }
     heading(&mut output, "usage", language, 0);
     example(
         &mut output,
         if server {
             "ling [OPTIONS]"
         } else {
-            "ling-cli [OPTIONS]"
+            "ling-cli [OPTIONS]\\nling-cli help [TOPIC ...]\\nling-cli --help [TOPIC ...]"
         },
         2,
     );
@@ -219,7 +269,11 @@ pub(super) fn startup(command: &Command, language: Language, server: bool) -> St
     heading(&mut output, "lookup", language, 2);
     example(
         &mut output,
-        "ling-cli --cheatsheet\\nling-cli -c 'HELP SET'",
+        if server {
+            "ling update\\nling help update\\nling-cli help"
+        } else {
+            "ling-cli help\\nling-cli help containers list\\nling-cli help SET examples\\nling-cli --cheatsheet"
+        },
         4,
     );
     heading(&mut output, "more", language, 0);
@@ -256,6 +310,61 @@ const GROUPS: &[(&str, &[&str])] = &[
     ("administration", &["session", "database", "operations"]),
     ("events", &["consume"]),
 ];
+
+/// 目录只列下一层入口；分组键不翻译，避免用户猜测输入。
+/// Lists only the next level; group keys remain stable across locales.
+fn directory(language: Language, group: Option<(&str, &[&str])>) -> String {
+    let mut output = String::new();
+    let title = group.map_or("directory", |(name, _)| name);
+    writeln!(output, "{}", label(title, language)).expect("String formatting");
+    prose(&mut output, label("browse_note", language), 0);
+    output.push('\n');
+    match group {
+        Some((name, subgroups)) => {
+            for subgroup in subgroups {
+                prose(
+                    &mut output,
+                    &format!("HELP {name} {subgroup} — {}", label(subgroup, language)),
+                    2,
+                );
+            }
+        }
+        None => {
+            for (name, _) in GROUPS {
+                prose(
+                    &mut output,
+                    &format!("HELP {name} — {}", label(name, language)),
+                    2,
+                );
+            }
+        }
+    }
+    output.push('\n');
+    example(&mut output, "HELP SET\\nHELP SET examples", 2);
+    prose(&mut output, label("full_reference", language), 2);
+    output
+}
+
+/// 子组只列本组命令；完整签名和示例由下一层按需提供。
+/// Lists only commands in a subgroup; signatures and examples belong to the next level.
+fn subgroup(language: Language, group: &str, subgroup: &str) -> String {
+    let mut output = format!(
+        "{} / {}\n",
+        label(group, language),
+        label(subgroup, language)
+    );
+    prose(&mut output, label("command_note", language), 0);
+    for (names, _, description) in entries(language) {
+        let name = names.split(',').next().unwrap();
+        let (item_group, item_subgroup, _) = metadata(name);
+        if group == item_group && subgroup == item_subgroup {
+            output.push('\n');
+            prose(&mut output, &names.replace(',', ", "), 2);
+            prose(&mut output, description, 4);
+        }
+    }
+    output
+}
 
 /// 渲染一条目录签名，替代项拆行但保留语法文本。
 /// Renders a catalog signature, splitting command alternatives without changing syntax.
@@ -375,14 +484,47 @@ fn argument_types(name: &str) -> &'static str {
     }
 }
 
-/// 单命令帮助提供语法、解释、类型、顺序示例和相关命令。
-/// Command help provides syntax, explanation, types, sequential examples and related commands.
+/// 可单独查询的稳定章节名，不随帮助语言改变。
+/// Stable section names can be requested independently in every locale.
+const SECTIONS: &[&str] = &[
+    "syntax",
+    "description",
+    "options",
+    "types",
+    "examples",
+    "related",
+];
+
+/// 分层查询优先匹配目录路径，命令和章节保持大小写不敏感。
+/// Resolves directory paths first, then case-insensitive command and section names.
 pub(super) fn detail(language: Language, topic: &str) -> Option<String> {
-    let topic = topic
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_ascii_uppercase();
+    let mut words: Vec<_> = topic.split_whitespace().collect();
+    if words.is_empty() {
+        return Some(directory(language, None));
+    }
+    if let Some((group, subgroups)) = GROUPS
+        .iter()
+        .find(|(group, _)| group.eq_ignore_ascii_case(words[0]))
+    {
+        return match words.as_slice() {
+            [_] => Some(directory(language, Some((group, subgroups)))),
+            [_, key] => subgroups
+                .iter()
+                .find(|subgroup| subgroup.eq_ignore_ascii_case(key))
+                .map(|key| subgroup(language, group, key)),
+            _ => None,
+        };
+    }
+    let section = words.last().and_then(|word| {
+        SECTIONS
+            .iter()
+            .copied()
+            .find(|section| section.eq_ignore_ascii_case(word))
+    });
+    if section.is_some() {
+        words.pop();
+    }
+    let topic = words.join(" ").to_ascii_uppercase();
     let selected: Vec<_> = entries(language)
         .filter(|(names, _, _)| {
             names.split(',').any(|name| name == topic)
@@ -392,6 +534,12 @@ pub(super) fn detail(language: Language, topic: &str) -> Option<String> {
     if selected.is_empty() {
         return None;
     }
+    let requested = [section.unwrap_or_default()];
+    let selected_sections = if section.is_some() {
+        &requested[..]
+    } else {
+        SECTIONS
+    };
     let mut output = format!("{topic}\n");
     for (names, source, description) in selected {
         let name = if names.split(',').any(|name| name == topic) {
@@ -400,44 +548,77 @@ pub(super) fn detail(language: Language, topic: &str) -> Option<String> {
             names
         };
         let (group, subgroup, sample) = metadata(name);
-        heading(&mut output, group, language, 0);
-        heading(&mut output, subgroup, language, 2);
-        heading(&mut output, "syntax", language, 2);
-        signature(&mut output, selected_signature(source, name), 4);
-        heading(&mut output, "description", language, 2);
-        prose(&mut output, description, 4);
-        heading(&mut output, "types", language, 2);
-        prose(&mut output, argument_types(name), 4);
-        heading(&mut output, "examples", language, 2);
-        if matches!(name, "HELLO" | "AUTH") {
-            prose(&mut output, label("protocol_example", language), 4);
-        } else if name == "ACK" {
-            prose(&mut output, label("ack_example", language), 4);
-        } else if name != "SUBSCRIBE" {
-            prose(&mut output, label("sequence_note", language), 4);
-            if name == "CONFIG RELOAD" {
-                prose(&mut output, label("config_example", language), 4);
+        if section.is_none() {
+            heading(&mut output, group, language, 0);
+            heading(&mut output, subgroup, language, 2);
+        } else if topic == "CONFIG" {
+            prose(&mut output, name, 0);
+        }
+        for selected_section in selected_sections {
+            heading(&mut output, selected_section, language, 2);
+            match *selected_section {
+                "syntax" => signature(&mut output, selected_signature(source, name), 4),
+                "description" => prose(&mut output, description, 4),
+                "options" => prose(&mut output, command_options(name, language), 4),
+                "types" => prose(&mut output, argument_types(name), 4),
+                "examples" => {
+                    if matches!(name, "HELLO" | "AUTH") {
+                        prose(&mut output, label("protocol_example", language), 4);
+                    } else if name == "ACK" {
+                        prose(&mut output, label("ack_example", language), 4);
+                    } else if name != "SUBSCRIBE" {
+                        prose(&mut output, label("sequence_note", language), 4);
+                        if name == "CONFIG RELOAD" {
+                            prose(&mut output, label("config_example", language), 4);
+                        }
+                    }
+                    example(&mut output, sample, 4);
+                }
+                "related" => {
+                    let related: Vec<_> = include_str!("command-layout.tsv")
+                        .lines()
+                        .filter_map(|line| {
+                            let fields: Vec<_> = line.split('\t').collect();
+                            (fields[1] == group && fields[2] == subgroup && fields[0] != name)
+                                .then_some(fields[0])
+                        })
+                        .collect();
+                    if related.is_empty() {
+                        example(&mut output, "HELP SET\\nHELP SCAN", 4);
+                    } else {
+                        prose(&mut output, &related.join(", "), 4);
+                    }
+                }
+                _ => unreachable!("known help section"),
             }
         }
-        example(&mut output, sample, 4);
-        heading(&mut output, "related", language, 2);
-        let related: Vec<_> = include_str!("command-layout.tsv")
-            .lines()
-            .filter_map(|line| {
-                let fields: Vec<_> = line.split('\t').collect();
-                (fields[1] == group && fields[2] == subgroup && fields[0] != name)
-                    .then_some(fields[0])
-            })
-            .collect();
-        if related.is_empty() {
-            example(&mut output, "HELP SET\\nHELP SCAN", 4);
-        } else {
-            prose(&mut output, &related.join(", "), 4);
-        }
     }
-    heading(&mut output, "more", language, 0);
-    example(&mut output, "docs/commands.md\\ndocs/cli.md", 2);
+    if section.is_none() {
+        heading(&mut output, "sections", language, 0);
+        prose(&mut output, label("section_note", language), 2);
+        prose(&mut output, &SECTIONS.join(" | "), 2);
+        example(&mut output, &format!("HELP {topic} examples"), 2);
+        heading(&mut output, "more", language, 0);
+        example(&mut output, "docs/commands.md\\ndocs/cli.md", 2);
+    }
     Some(output)
+}
+
+/// 有可选参数的命令提供本地化边界，其他命令明确没有可选参数。
+/// Commands with optional arguments provide localized boundaries; others explicitly have none.
+fn command_options(name: &str, language: Language) -> &'static str {
+    include_str!("command-options.tsv")
+        .lines()
+        .find_map(|line| {
+            let mut cells = line.split('\t');
+            cells
+                .next()?
+                .split(',')
+                .any(|key| key == name)
+                .then(|| cells.nth(language as usize))
+                .flatten()
+        })
+        .unwrap_or_else(|| label("no_options", language))
 }
 
 /// 所有帮助共享的语义提示也按主组和子组拆分。

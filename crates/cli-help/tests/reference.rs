@@ -100,7 +100,7 @@ fn all_languages_cover_public_commands() {
             assert!(help.contains("docs/commands.md"));
         }
         assert!(command_help(language, "SAVE").is_none());
-        assert!(command_help(language, "").is_none());
+        assert!(command_help(language, "").is_some());
         assert_eq!(
             command_help(language, "  config   get "),
             command_help(language, "CONFIG GET")
@@ -118,6 +118,7 @@ fn translation_tables_are_complete() {
         (include_str!("../src/flags.tsv"), 8),
         (include_str!("../src/labels.tsv"), 8),
         (include_str!("../src/command-layout.tsv"), 4),
+        (include_str!("../src/command-options.tsv"), 8),
     ] {
         let mut names = BTreeSet::new();
         for line in catalog.lines() {

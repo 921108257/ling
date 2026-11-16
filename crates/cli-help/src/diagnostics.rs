@@ -12,6 +12,8 @@ pub enum Context {
     Client,
     /// 服务端配置或启动；Server configuration or startup.
     Server,
+    /// 本机软件更新；Local software update.
+    Update,
     /// 批量输入；Batch input.
     Batch,
     /// 专用订阅连接；Dedicated subscription connection.
@@ -272,6 +274,10 @@ fn one_edit_apart(a: &[u8], b: &[u8]) -> bool {
 /// Static examples contain no user data; unknown contexts offer only safe help and connectivity entries.
 fn guidance(context: Context) -> (&'static str, &'static str) {
     match context {
+        Context::Update => (
+            "ling update --check\n  ling update\n  ling update --version 0.1.3",
+            "ling help update; ling --version",
+        ),
         Context::Option("--port") => ("ling-cli --port 6380 -c 'PING'", "ling-cli --help; PING"),
         Context::Option("--host") => (
             "ling-cli --host 127.0.0.1 -c 'PING'",
@@ -327,7 +333,11 @@ fn guidance(context: Context) -> (&'static str, &'static str) {
 /// Extracts an allowlisted option from clap context without argument values or free-form error text.
 pub fn argument_diagnostic(language: Language, error: &clap::Error, server: bool) -> Diagnostic {
     use clap::error::{ContextKind, ContextValue};
-    let context = if server {
+    let update = server
+        && matches!(error.get(ContextKind::Usage), Some(ContextValue::StyledStr(usage)) if usage.to_string().split_whitespace().any(|word| word == "update"));
+    let context = if update {
+        Context::Update
+    } else if server {
         Context::Server
     } else {
         Context::Client
@@ -355,10 +365,14 @@ pub fn argument_diagnostic(language: Language, error: &clap::Error, server: bool
     Diagnostic::new(
         language,
         "LOCAL_ARGUMENT",
-        known
-            .into_iter()
-            .find(|known| Some(*known) == option)
-            .map_or(context, Context::Option),
+        if update {
+            context
+        } else {
+            known
+                .into_iter()
+                .find(|known| Some(*known) == option)
+                .map_or(context, Context::Option)
+        },
     )
 }
 

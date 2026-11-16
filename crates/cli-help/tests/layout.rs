@@ -96,7 +96,7 @@ fn startup_help_has_two_levels_and_spacing_in_every_language() {
         assert!(help.contains("    --host <IP>\n      "));
         assert!(help.contains("LING_PASSWORD"));
         assert!(help.contains("ling-cli -c 'PING'"));
-        assert!(help.contains("ling-cli -c 'HELP SET'"));
+        assert!(help.contains("ling-cli help SET examples"));
         assert!(!help.contains('\u{1b}'));
         assert!(!help.lines().any(|line| line.chars().count() > 72));
     }
@@ -117,7 +117,7 @@ fn server_help_has_subgroups_and_real_startup_examples() {
         assert!(help.contains("    --config <FILE>\n      "));
         assert!(help.contains("    --lang <LOCALE>\n      "));
         assert!(help.contains("ling --config /path/to/ling.toml"));
-        assert!(help.contains("ling-cli --cheatsheet"));
+        assert!(help.contains("ling help update"));
         assert!(!help.contains("--tls-server-name"));
     }
 }
@@ -197,5 +197,148 @@ fn command_details_keep_types_examples_and_related_commands() {
         assert!(reference.contains("    LPOP key [count]\n    RPOP key [count]"));
         assert!(reference.contains("    SET key value [EX seconds | PX ms | EXAT unix_sec | PXAT"));
         assert!(!reference.contains('\u{1b}'));
+    }
+}
+
+/// HELP 逐层展开，目录不会提前输出全部命令的签名和说明。
+/// HELP expands one level at a time without printing every command signature and description.
+#[test]
+fn directory_and_group_paths_are_compact_in_every_language() {
+    for language in LANGUAGES {
+        let directory = command_help(language, "").unwrap();
+        assert!(directory.lines().count() < 30);
+        assert!(directory.contains("HELP containers"));
+        assert!(!directory.contains("SET key value"));
+        assert!(!directory.contains("LPOP"));
+        assert!(directory.contains("ling-cli --cheatsheet"));
+        for (group, subgroups) in [
+            ("reference", &["lookup"][..]),
+            ("data", &["readwrite", "identity", "transfer", "scan"][..]),
+            ("expiry", &["setexpiry", "queryexpiry"][..]),
+            ("scalar", &["numbers", "text"][..]),
+            ("containers", &["list", "map", "set"][..]),
+            ("administration", &["session", "database", "operations"][..]),
+            ("events", &["consume"][..]),
+        ] {
+            let help = command_help(language, group).unwrap();
+            for subgroup in subgroups {
+                assert!(help.contains(&format!("HELP {group} {subgroup}")));
+                assert!(command_help(language, &format!("{group} {subgroup}")).is_some());
+            }
+        }
+        let list = command_help(language, "containers list").unwrap();
+        assert!(list.contains("LPUSH, RPUSH"));
+        assert!(!list.contains("FGET"));
+        assert!(!list.contains("LPUSH key value"));
+        assert!(
+            command_help(language, "containers set")
+                .unwrap()
+                .contains("SADD")
+        );
+        assert!(command_help(language, "set").unwrap().starts_with("SET\n"));
+        assert_eq!(
+            command_help(language, "DATA READWRITE"),
+            command_help(language, "data readwrite")
+        );
+        for unknown in ["containers unknown", "containers list extra", "data syntax"] {
+            assert!(command_help(language, unknown).is_none());
+        }
+    }
+}
+
+/// 章节查询只显示所选章节，并保留多词命令名和可选参数边界。
+/// Focused help shows only one section while retaining multiword command names and option boundaries.
+#[test]
+fn focused_sections_exclude_unrequested_content_in_every_language() {
+    for language in LANGUAGES {
+        let syntax = command_help(language, "SET syntax").unwrap();
+        assert!(syntax.contains("SET key value"));
+        assert!(!syntax.contains("SET session null"));
+        assert!(!syntax.contains("docs/cli.md"));
+        let options = command_help(language, "SET options").unwrap();
+        let option_words = options.split_whitespace().collect::<Vec<_>>().join(" ");
+        for option in [
+            "EX seconds",
+            "PX ms",
+            "EXAT unix_sec",
+            "PXAT unix_ms",
+            "NX",
+            "XX",
+        ] {
+            assert!(
+                option_words.contains(option),
+                "{}: {option}",
+                language.code()
+            );
+        }
+        assert!(!options.contains("SET key value"));
+        assert!(!options.contains("SET session null"));
+        let examples = command_help(language, "SET examples").unwrap();
+        assert!(examples.contains("SET session null PX 5000 NX"));
+        assert!(!examples.contains("key: String"));
+        let related = command_help(language, "SET related").unwrap();
+        assert!(related.contains("GET, GETSET"));
+        assert!(!related.contains("SET session null"));
+        assert!(
+            command_help(language, "CONFIG GET syntax")
+                .unwrap()
+                .contains("CONFIG GET pattern")
+        );
+        assert!(
+            command_help(language, "CONFIG examples")
+                .unwrap()
+                .contains("CONFIG RELOAD")
+        );
+        for name in ["SET", "GET", "HELP", "SCAN", "CONFIG GET"] {
+            for section in [
+                "syntax",
+                "description",
+                "options",
+                "types",
+                "examples",
+                "related",
+            ] {
+                assert!(command_help(language, &format!("{name} {section}")).is_some());
+            }
+        }
+        assert!(command_help(language, "SET unknown-section").is_none());
+    }
+}
+
+/// 服务更新子命令使用相同的七语帮助，不泄漏 clap 默认英语布局。
+/// Service update subcommands use the same seven-language help instead of the default clap layout.
+#[test]
+fn explicit_update_subcommand_is_localized_recursively() {
+    let mut translations = BTreeSet::new();
+    for language in LANGUAGES {
+        let command = Command::new("ling")
+            .version("0.1.3")
+            .disable_help_subcommand(true)
+            .subcommand(
+                Command::new("update")
+                    .arg(Arg::new("check").long("check").action(ArgAction::SetTrue))
+                    .arg(Arg::new("target_version").long("version"))
+                    .arg(Arg::new("stable").long("stable").action(ArgAction::SetTrue)),
+            );
+        let mut localized = localize(command, language, true);
+        let direct = localized
+            .find_subcommand_mut("update")
+            .unwrap()
+            .render_help()
+            .to_string();
+        let error = localized
+            .try_get_matches_from(["ling", "update", "--help"])
+            .unwrap_err();
+        assert_eq!(error.kind(), clap::error::ErrorKind::DisplayHelp);
+        assert_eq!(direct, error.to_string());
+        for item in [
+            "ling update [OPTIONS]",
+            "--check",
+            "--version <VERSION>",
+            "--stable",
+        ] {
+            assert!(direct.contains(item));
+        }
+        assert!(translations.insert(direct));
     }
 }

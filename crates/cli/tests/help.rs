@@ -62,6 +62,10 @@ fn local_help_is_available_without_a_server() {
         vec!["--cheatsheet"],
         vec!["-c", "HELP"],
         vec!["-c", "HELP SET"],
+        vec!["help"],
+        vec!["help", "containers", "list"],
+        vec!["help", "SET", "examples"],
+        vec!["--help", "SET", "options"],
     ] {
         let text = successful_text(
             cli()
@@ -80,6 +84,72 @@ fn local_help_is_available_without_a_server() {
     let set = successful_text(cli().args(["-c", "HELP SET"]).output().unwrap());
     for term in ["SET", "PX", "NX", "XX"] {
         assert!(set.contains(term), "SET help omits {term}");
+    }
+}
+
+/// 终端命令、带主题的开关和交互式 HELP 共享逐层内容与七种语言。
+/// Terminal commands, help flags with topics and interactive HELP share hierarchical content in seven locales.
+#[test]
+fn terminal_and_interactive_help_share_the_same_topics() {
+    for language in [
+        "en-US", "zh-CN", "ko-KR", "ja-JP", "ru-RU", "de-DE", "fr-FR",
+    ] {
+        for topic in [
+            "",
+            "containers",
+            "containers list",
+            "SET",
+            "SET options",
+            "SET examples",
+            "CONFIG GET syntax",
+        ] {
+            let words: Vec<_> = topic.split_whitespace().collect();
+            let mut terminal = cli();
+            terminal.args(["--lang", language, "help"]).args(&words);
+            let expected = successful_text(terminal.output().unwrap());
+            assert_eq!(
+                successful_text(
+                    cli()
+                        .args(["--lang", language, "-c", &format!("HELP {topic}")])
+                        .output()
+                        .unwrap()
+                ),
+                expected
+            );
+            if !words.is_empty() {
+                let mut flag = cli();
+                flag.arg("--help").args(&words).args(["--lang", language]);
+                assert_eq!(successful_text(flag.output().unwrap()), expected);
+            }
+        }
+    }
+    let directory = successful_text(cli().arg("help").output().unwrap());
+    assert!(directory.lines().count() < 30);
+    assert!(!directory.contains("SET key value"));
+    assert_eq!(
+        successful_text(cli().args(["-c", "HELP"]).output().unwrap()),
+        directory
+    );
+}
+
+/// 未知目录和章节不回显输入，帮助也不与写入或 Batch 混用。
+/// Unknown paths and sections never echo input, and help cannot be combined with writes or Batch.
+#[test]
+fn terminal_help_rejects_unknown_topics_and_execution_conflicts() {
+    for args in [
+        vec!["help", "private-help-topic-7f418"],
+        vec!["--help", "private-help-topic-7f418"],
+        vec!["help", "SET", "private-help-topic-7f418"],
+        vec!["-c", "SET private-help-topic-7f418 null", "help", "SET"],
+        vec!["--batch", "help", "SET"],
+        vec!["--cheatsheet", "help", "SET"],
+    ] {
+        let output = cli().args(args).output().unwrap();
+        assert!(!output.status.success());
+        assert!(output.stdout.is_empty());
+        let error = String::from_utf8(output.stderr).unwrap();
+        assert!(!error.contains("private-help-topic-7f418"));
+        assert!(!error.contains("LOCAL_CONNECT"));
     }
 }
 

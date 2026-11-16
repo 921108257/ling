@@ -9,12 +9,13 @@ pub use diagnostics::{Context, Diagnostic, argument_diagnostic};
 /// 先识别语言覆盖再解析本地化参数，命令字符串不会被当作启动选项扫描。
 /// Probes the language override before localized parsing without scanning command-string contents as flags.
 pub fn parse_localized<T: clap::Parser>(server: bool) -> (T, Language) {
-    let arguments: Vec<_> = std::env::args_os().collect();
+    let mut arguments: Vec<_> = std::env::args_os().collect();
     // 跳过已知选项的完整参数值，错误选项不截断后续语言选择。
     // Skip complete values of known options; invalid options do not hide a later locale override.
     let definition = T::command();
     let mut values = arguments.iter().skip(1);
     let mut explicit = None;
+    let mut local_subcommand = None;
     while let Some(value) = values.next() {
         let Some(value) = value.to_str() else {
             continue;
@@ -41,9 +42,12 @@ pub fn parse_localized<T: clap::Parser>(server: bool) -> (T, Language) {
             })
         {
             values.next();
+        } else if local_subcommand.is_none() && !value.starts_with('-') {
+            local_subcommand = Some(value.to_owned());
         }
     }
     let language = Language::detect(explicit.as_deref());
+    normalize_topic_help(&definition, &mut arguments);
     let matches = localize(T::command(), language, server)
         .try_get_matches_from(arguments)
         .unwrap_or_else(|error| {
@@ -53,7 +57,12 @@ pub fn parse_localized<T: clap::Parser>(server: bool) -> (T, Language) {
             ) {
                 error.exit();
             }
-            eprintln!("{}", argument_diagnostic(language, &error, server));
+            let diagnostic = if server && local_subcommand.as_deref() == Some("update") {
+                Diagnostic::new(language, "LOCAL_ARGUMENT", Context::Update)
+            } else {
+                argument_diagnostic(language, &error, server)
+            };
+            eprintln!("{diagnostic}");
             std::process::exit(2);
         });
     let parsed = T::from_arg_matches(&matches).unwrap_or_else(|error| {
@@ -61,6 +70,48 @@ pub fn parse_localized<T: clap::Parser>(server: bool) -> (T, Language) {
         std::process::exit(2);
     });
     (parsed, language)
+}
+
+/// 带主题的帮助开关复用本地 help 子命令，选项值内的文本不参与转换。
+/// Routes help flags with topics through a local help subcommand without scanning option values.
+fn normalize_topic_help(command: &Command, arguments: &mut [std::ffi::OsString]) {
+    if command.find_subcommand("help").is_none() {
+        return;
+    }
+    let mut index = 1;
+    while index < arguments.len() {
+        let Some(value) = arguments[index].to_str() else {
+            index += 1;
+            continue;
+        };
+        if value == "--" || command.find_subcommand(value).is_some() {
+            break;
+        }
+        if matches!(value, "--help" | "-h") {
+            if arguments
+                .get(index + 1)
+                .and_then(|value| value.to_str())
+                .is_some_and(|value| !value.starts_with('-'))
+            {
+                arguments[index] = "help".into();
+            }
+            break;
+        }
+        if !value.contains('=')
+            && command.get_arguments().any(|argument| {
+                argument.get_action().takes_values()
+                    && (argument
+                        .get_long()
+                        .is_some_and(|name| value.strip_prefix("--") == Some(name))
+                        || argument
+                            .get_short()
+                            .is_some_and(|name| value == format!("-{name}")))
+            })
+        {
+            index += 1;
+        }
+        index += 1;
+    }
 }
 
 /// 七种帮助语言；不改变命令、类型或协议。
@@ -157,7 +208,27 @@ impl Language {
 /// `server` 为 true 时展示服务端介绍，否则展示 CLI 介绍。
 /// `server` selects the server introduction instead of the CLI introduction.
 pub fn localize(command: Command, language: Language, server: bool) -> Command {
-    let about = if server {
+    let about = if command.get_name() == "update" {
+        language.text([
+            "Check for or install a Ling release",
+            "检查或安装 Ling 发行版本",
+            "Ling 릴리스 확인 또는 설치",
+            "Ling リリースの確認またはインストール",
+            "Проверить или установить выпуск Ling",
+            "Ling-Version prüfen oder installieren",
+            "Rechercher ou installer une version de Ling",
+        ])
+    } else if command.get_name() == "help" {
+        language.text([
+            "Browse local help",
+            "浏览本地帮助",
+            "로컬 도움말 탐색",
+            "ローカルヘルプを参照",
+            "Просмотр локальной справки",
+            "Lokale Hilfe durchsuchen",
+            "Parcourir l’aide locale",
+        ])
+    } else if server {
         language.text([
             "Ling — standalone typed memory cache database (preview)",
             "Ling — 独立部署的强类型内存缓存数据库（预览版）",
@@ -178,7 +249,8 @@ pub fn localize(command: Command, language: Language, server: bool) -> Command {
             "Client en ligne de commande Ling",
         ])
     };
-    let command = command
+    let has_version = command.get_version().is_some();
+    let mut command = command
         .disable_help_flag(true)
         .disable_version_flag(true)
         .arg(
@@ -186,12 +258,6 @@ pub fn localize(command: Command, language: Language, server: bool) -> Command {
                 .short('h')
                 .long("help")
                 .action(ArgAction::Help),
-        )
-        .arg(
-            Arg::new("version")
-                .short('V')
-                .long("version")
-                .action(ArgAction::Version),
         )
         .about(about)
         .long_about(about)
@@ -201,7 +267,16 @@ pub fn localize(command: Command, language: Language, server: bool) -> Command {
             } else {
                 arg
             }
-        });
+        })
+        .mut_subcommands(|child| localize(child, language, server));
+    if has_version {
+        command = command.arg(
+            Arg::new("version")
+                .short('V')
+                .long("version")
+                .action(ArgAction::Version),
+        );
+    }
     let rendered = layout::startup(&command, language, server);
     command.override_help(rendered)
 }
@@ -219,13 +294,13 @@ fn flag_help(id: &str, language: Language) -> Option<&'static str> {
 /// 交互式入口提示；Interactive entry-point hint.
 pub fn interactive_hint(language: Language) -> &'static str {
     language.text([
-        "Type HELP for the command reference, HELP SET for details, or QUIT to exit.\nLocal help works offline. Use --lang to choose the help language.",
-        "输入 HELP 查看命令速查，HELP SET 查看详情，QUIT 退出。\n本地帮助无需连接服务；使用 --lang 指定帮助语言。",
-        "HELP로 명령 참조, HELP SET으로 상세 정보를 확인하고 QUIT로 종료하세요.\n로컬 도움말은 오프라인에서도 제공됩니다. 언어 선택: --lang",
-        "HELP でコマンド早見表、HELP SET で詳細を表示し、QUIT で終了します。\nローカルヘルプはオフラインで利用できます。言語の指定: --lang",
-        "Введите HELP для списка команд, HELP SET для подробностей, QUIT для выхода.\nЛокальная справка работает без подключения. Язык: --lang",
-        "HELP zeigt die Befehlsübersicht, HELP SET die Details, QUIT beendet den Client.\nDie lokale Hilfe funktioniert offline. Sprache wählen: --lang",
-        "Tapez HELP pour la référence, HELP SET pour les détails, QUIT pour quitter.\nL’aide locale fonctionne hors ligne. Choisissez la langue avec --lang.",
+        "Type HELP for the directory, HELP SET for details, or QUIT to exit.\nLocal help works offline. Use --lang to choose the help language.",
+        "输入 HELP 查看目录，HELP SET 查看详情，QUIT 退出。\n本地帮助无需连接服务；使用 --lang 指定帮助语言。",
+        "HELP로 목록, HELP SET으로 상세 정보를 확인하고 QUIT로 종료하세요.\n로컬 도움말은 오프라인에서도 제공됩니다. 언어 선택: --lang",
+        "HELP で目次、HELP SET で詳細を表示し、QUIT で終了します。\nローカルヘルプはオフラインで利用できます。言語の指定: --lang",
+        "Введите HELP для оглавления, HELP SET для подробностей, QUIT для выхода.\nЛокальная справка работает без подключения. Язык: --lang",
+        "HELP zeigt das Verzeichnis, HELP SET die Details, QUIT beendet den Client.\nDie lokale Hilfe funktioniert offline. Sprache wählen: --lang",
+        "Tapez HELP pour le sommaire, HELP SET pour les détails, QUIT pour quitter.\nL’aide locale fonctionne hors ligne. Choisissez la langue avec --lang.",
     ])
 }
 
@@ -275,10 +350,10 @@ pub fn cheatsheet(language: Language) -> String {
     layout::reference(language)
 }
 
-/// 按大小写不敏感的命令名查找分组帮助；未知主题返回 None。
-/// Looks up grouped help by case-insensitive command name; unknown topics return None.
-/// 支持 CONFIG 与其子命令；不在错误中回显输入。
-/// Supports CONFIG and its subcommands without echoing input in diagnostics.
+/// 按大小写不敏感的分组、子组、命令或命令章节查找本地帮助。
+/// Looks up local help by case-insensitive group, subgroup, command or command section.
+/// 空主题返回短目录；支持 CONFIG 子命令，未知主题返回 None。
+/// An empty topic returns the short directory; CONFIG subcommands are supported; unknown topics return None.
 pub fn command_help(language: Language, topic: &str) -> Option<String> {
     layout::detail(language, topic)
 }

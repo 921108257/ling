@@ -1,7 +1,7 @@
 //! CLI 入口；网络语义复用 Rust SDK，本地帮助无需连接。
 //! CLI entry point; network semantics reuse the Rust SDK and local help needs no connection.
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use ling_cli::{display_value, parse_command};
 use ling_cli_help::{Context, Diagnostic, Language};
 use ling_client::{Client, Options};
@@ -12,14 +12,18 @@ use std::{
 };
 
 #[derive(Parser)]
-#[command(name = "ling-cli", version)]
+#[command(name = "ling-cli", version, disable_help_subcommand = true)]
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
 struct Args {
     /// 本地帮助语言，默认按系统语言选择。
     /// Local help language, detected from the system by default.
-    #[arg(long)]
+    #[arg(long, global = true)]
     lang: Option<String>,
+    /// 无网络访问的终端帮助入口。
+    /// Offline help entry point from the terminal.
+    #[command(subcommand)]
+    action: Option<Action>,
     /// 离线显示全部命令速查。
     /// Shows the complete command reference offline.
     #[arg(long, conflicts_with_all = ["command", "batch"])]
@@ -69,6 +73,19 @@ struct Args {
     batch: bool,
 }
 
+/// 终端本地命令，与交互式 HELP 共享同一目录。
+/// Terminal-only commands share the same catalog as interactive HELP.
+#[derive(Subcommand)]
+enum Action {
+    /// 按分组、命令或章节显示本地帮助。
+    /// Shows local help by group, command or section.
+    Help {
+        /// 空参数显示目录，其余参数依次选择帮助层级。
+        /// No arguments show the directory; further arguments select help levels.
+        topic: Vec<String>,
+    },
+}
+
 /// 将失败转为非零退出状态，不输出敏感输入。
 /// Converts failures to nonzero exit status without printing sensitive inputs.
 #[tokio::main]
@@ -87,6 +104,12 @@ async fn main() {
 /// Assembles configuration and runtime resources and cleans up connections before exit.
 async fn run() -> Result<bool, Diagnostic> {
     let (args, language) = ling_cli_help::parse_localized::<Args>(false);
+    if let Some(Action::Help { topic }) = &args.action {
+        if args.command.is_some() || args.batch || args.cheatsheet {
+            return Err(Diagnostic::new(language, "LOCAL_ARGUMENT", Context::Client));
+        }
+        return help_topic(&topic.join(" "), language);
+    }
     if args.cheatsheet {
         output(&ling_cli_help::cheatsheet(language), language)?;
         return Ok(true);
@@ -368,17 +391,6 @@ fn local_help(source: &str, language: Language) -> Option<bool> {
             return Some(false);
         }
     };
-    if request.arguments.is_empty() {
-        return Some(
-            match output(&ling_cli_help::cheatsheet(language), language) {
-                Ok(()) => true,
-                Err(error) => {
-                    eprintln!("{error}");
-                    false
-                }
-            },
-        );
-    }
     let topic = request
         .arguments
         .iter()
@@ -388,22 +400,22 @@ fn local_help(source: &str, language: Language) -> Option<bool> {
         })
         .collect::<Vec<_>>()
         .join(" ");
-    match ling_cli_help::command_help(language, &topic) {
-        Some(help) => Some(match output(&help, language) {
-            Ok(()) => true,
-            Err(error) => {
-                eprintln!("{error}");
-                false
-            }
-        }),
-        None => {
-            eprintln!(
-                "{}",
-                Diagnostic::new(language, "LOCAL_HELP_TOPIC", Context::Command("HELP"))
-            );
-            Some(false)
+    Some(match help_topic(&topic, language) {
+        Ok(success) => success,
+        Err(error) => {
+            eprintln!("{error}");
+            false
         }
-    }
+    })
+}
+
+/// 三种帮助入口使用同一结果和诊断，不回显未知主题。
+/// All three help entry points share output and diagnostics without echoing unknown topics.
+fn help_topic(topic: &str, language: Language) -> Result<bool, Diagnostic> {
+    let help = ling_cli_help::command_help(language, topic)
+        .ok_or_else(|| Diagnostic::new(language, "LOCAL_HELP_TOPIC", Context::Command("HELP")))?;
+    output(&help, language)?;
+    Ok(true)
 }
 
 /// 帮助先在本地执行，首条业务命令才触发连接。

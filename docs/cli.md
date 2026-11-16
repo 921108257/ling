@@ -1,6 +1,6 @@
 # ling-cli 使用与命令速查
 
-`ling` 启动数据库服务，`ling-cli` 是通过 Rust SDK 连接服务的命令行客户端。当前版本为 0.1.2 预发布版本。安装、后台服务、升级与卸载见 [安装指南](install.md)；本页介绍客户端的实际用法。命令的完整错误、原子性和返回值契约见 [commands.md](commands.md)。
+`ling` 启动数据库服务，`ling-cli` 是通过 Rust SDK 连接服务的命令行客户端。当前版本为 0.1.3 预发布版本。安装、后台服务、升级与卸载见 [安装指南](install.md)；本页介绍客户端的实际用法。命令的完整错误、原子性和返回值契约见 [commands.md](commands.md)。
 
 ## 先查帮助
 
@@ -9,13 +9,34 @@
 ```sh
 ling --help
 ling-cli --help
+ling-cli help
+ling-cli help containers
+ling-cli help containers list
+ling-cli help SET examples
+ling-cli --help SET options
 ling-cli --cheatsheet
 ling-cli -c 'HELP'
 ling-cli -c 'HELP SET'
 ling-cli --lang zh-CN --cheatsheet
 ```
 
-`HELP` 显示命令速查，`HELP <命令>` 显示该命令的语法、说明、类型与边界、示例和相关命令。进入 `ling-cli` 后也可输入 `HELP` 或 `HELP SCAN`；帮助由客户端处理，不发给服务器，不改变数据库。普通标准输入可包含帮助行，`--batch` 中不允许 `HELP`，发现后整批不提交。
+`ling-cli help` 和交互式 `HELP` 显示短目录。先选分组，再选子组或命令；只有明确使用 `--cheatsheet` 才显示全部命令速查。以下三种写法使用相同内容，均不连接服务：`ling-cli help SET examples`、`ling-cli --help SET examples`、`ling-cli -c 'HELP SET examples'`。
+
+| 查询 | 显示内容 |
+|---|---|
+| `HELP` | 数据、TTL、数值与文本、容器、管理、事件等分组入口 |
+| `HELP containers` | `list` / `map` / `set` 子组入口 |
+| `HELP containers list` | List 子组的命令和简短说明 |
+| `HELP SET` | SET 的完整详情和可查章节 |
+| `HELP SET syntax` | 仅语法 |
+| `HELP SET options` | 仅可选参数、默认值和互斥规则 |
+| `HELP SET examples` | 仅使用示例 |
+| `HELP SET related` | 仅相关命令 |
+| `HELP CONFIG GET syntax` | 多词命令的指定章节 |
+
+分组路径为 `reference lookup`、`data readwrite/identity/transfer/scan`、`expiry setexpiry/queryexpiry`、`scalar numbers/text`、`containers list/map/set`、`administration session/database/operations`、`events consume`。斜杠表示可选的子组，不直接输入。分组键、命令名和章节名大小写不敏感，保持英文；`HELP set` 指 SET 命令，Set 集合子组需输入 `HELP containers set`。章节支持 `syntax`、`description`、`options`、`types`、`examples`、`related`。
+
+帮助由客户端处理，不发给服务器，不改变数据库。普通标准输入可包含帮助行，`--batch` 中不允许 `HELP`，发现后整批不提交。终端 `help` 子命令不能与 `-c`、`--batch` 或 `--cheatsheet` 混用。
 
 帮助使用主组、缩进子组和组间空行，不依赖终端颜色。启动选项按“连接 → 地址 / 数据库 / 超时”“安全 → 认证 / TLS”“执行 → 单命令 / 批量 / 订阅”“本地参考 → 语言 / 帮助”组织；命令速查按数据、TTL、数值与文本、容器、管理、事件组织，容器下再分 List / Map / Set。说明文字按窄终端折行，示例命令单独保留，便于复制。命令示例需要已有类型时会先列 SET 初始化；ACK 的 EVENT_ID 是占位符，需要替换成订阅输出的完整事件 ID。
 
@@ -25,6 +46,18 @@ ling-cli --lang zh-CN --cheatsheet
 ling --lang ja-JP --help
 ling-cli --lang de-DE --help
 ```
+
+## 检查更新
+
+从 0.1.3 开始，更新入口位于服务端程序 `ling`，可先查看帮助和可用版本：
+
+```sh
+ling help update
+ling update --check
+ling update --stable --check
+```
+
+`--check` 只检查，不下载安装包；默认选择也包含预发布版本，`--stable` 只选择正式发行版。`ling update` 安装选中的更新；`ling update --version <版本>` 指定版本且不允许降级。0.1.2 没有此入口，需先用发行包手动安装 0.1.3 或更高版本。Windows 更新由后台工作进程继续执行，命令返回不表示安装完成；检查输出路径中的 `result.json`，确认状态为 `success`，`failed` 表示失败；`scheduled` 尚未完成，`unknown` 需要手动核实。权限、服务重启和平台安装细节见 [安装指南](install.md)。
 
 ## 连接与执行
 
@@ -55,7 +88,7 @@ ling-cli --db 1 -c 'GET greeting'
 | `--tls-cert <FILE>`、`--tls-key <FILE>` | 成对提供的客户端证书和私钥，用于双向 TLS |
 | `--lang <LOCALE>` | 指定本地帮助语言 |
 | `--cheatsheet` | 显示本地命令速查并退出 |
-| `-h, --help` | 显示命令行帮助并退出 |
+| `-h, --help [TOPIC ...]` | 无主题显示启动参数；有主题时按分组、命令或章节查询帮助 |
 | `-V, --version` | 显示版本并退出 |
 
 CLI 自动完成 HELLO、可选 AUTH 和 SELECT。省略 `-c` 可在同一连接连续输入命令，以 `QUIT` 结束。不要在初始化后的连接重新执行 HELLO；它是协议初始化命令，会得到连接状态错误。
