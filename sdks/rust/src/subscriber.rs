@@ -9,7 +9,7 @@ use tokio::{io::WriteHalf, sync::mpsc, task::JoinSet};
 /// A bounded reader preserves partial frames and aborts with the read half on drop.
 struct Connection {
     /// 独占写端；Exclusive writer.
-    writer: WriteHalf<linger_network::Stream>,
+    writer: WriteHalf<ling_network::Stream>,
     /// 最多预读一帧；At most one prefetched frame.
     incoming: mpsc::Receiver<Result<Frame, Error>>,
     /// Drop 自动取消读取；Drop automatically cancels reading.

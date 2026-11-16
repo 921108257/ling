@@ -1,17 +1,17 @@
 [package]
-name = "linger-client"
+name = "ling-client"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-linger-types.workspace = true
-linger-protocol.workspace = true
-linger-network.workspace = true
+ling-types.workspace = true
+ling-protocol.workspace = true
+ling-network.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
-linger-server.workspace = true
+ling-server.workspace = true
 
 [lints]
 workspace = true

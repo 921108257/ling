@@ -29,10 +29,11 @@ def main():
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
     env = os.environ.copy()
+    env.pop("LING_PASSWORD", None)
     env.pop("LINGER_PASSWORD", None)
-    with tempfile.TemporaryDirectory(prefix="linger-package-") as directory:
+    with tempfile.TemporaryDirectory(prefix="ling-package-") as directory:
         root = Path(directory)
-        config = root / "linger.toml"
+        config = root / "ling.toml"
         config.write_text(
             f'[server]\nhost="127.0.0.1"\nport={port}\n'
             '[engine]\nshard_count=2\n', encoding="utf-8"

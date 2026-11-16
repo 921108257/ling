@@ -1,8 +1,8 @@
 //! CLI 文本契约：类型标签、完整整数精度和明确参数边界。
 //! CLI text contracts: type tags, full integer precision, and explicit argument boundaries.
 
-use linger_cli::{display_value, parse_command, parse_value};
-use linger_types::{Float, Scalar, Value};
+use ling_cli::{display_value, parse_command, parse_value};
+use ling_types::{Float, Scalar, Value};
 use std::collections::{BTreeMap, HashSet};
 
 /// 十种 Value 的展示可逆，保留整数、Bytes 和 Float 区别。
@@ -215,20 +215,20 @@ fn ttl_signatures_preserve_signed_time_arguments() {
 /// Subscription mode encodes multiple filters as one List and preserves group names.
 #[test]
 fn subscription_arguments_use_protocol_list() {
-    let request = linger_cli::parse_command("SUBSCRIBE order:* user:? GROUP workers").unwrap();
+    let request = ling_cli::parse_command("SUBSCRIBE order:* user:? GROUP workers").unwrap();
     assert_eq!(
         request.arguments,
         vec![
-            linger_types::Value::List(vec![
-                linger_types::Value::String("order:*".into()),
-                linger_types::Value::String("user:?".into())
+            ling_types::Value::List(vec![
+                ling_types::Value::String("order:*".into()),
+                ling_types::Value::String("user:?".into())
             ]),
-            linger_types::Value::String("GROUP".into()),
-            linger_types::Value::String("workers".into())
+            ling_types::Value::String("GROUP".into()),
+            ling_types::Value::String("workers".into())
         ]
     );
-    assert!(linger_cli::parse_command("SUBSCRIBE").is_err());
-    assert!(linger_cli::parse_command("SUBSCRIBE * GROUP").is_err());
+    assert!(ling_cli::parse_command("SUBSCRIBE").is_err());
+    assert!(ling_cli::parse_command("SUBSCRIBE * GROUP").is_err());
 }
 
 /// CLI 事件 ID 保留全部整数精度，GROUP 的引用消除歧义。
@@ -236,20 +236,20 @@ fn subscription_arguments_use_protocol_list() {
 #[test]
 fn event_id_and_quoted_group_pattern() {
     let text = "ffffffffffffffffffffffffffffffff/65535/4294967295/18446744073709551615";
-    let id = linger_cli::parse_event_id(text).unwrap();
-    assert_eq!(linger_cli::display_event_id(id), text);
-    let ack = linger_cli::parse_command(&format!("ACK {text}")).unwrap();
+    let id = ling_cli::parse_event_id(text).unwrap();
+    assert_eq!(ling_cli::display_event_id(id), text);
+    let ack = ling_cli::parse_command(&format!("ACK {text}")).unwrap();
     assert_eq!(ack.arguments, vec![id.to_value()]);
     for bad in [
         "1/0/0/1",
         "00000000000000000000000000000001/0/0/0",
         "00000000000000000000000000000001/65536/0/1",
     ] {
-        assert!(linger_cli::parse_event_id(bad).is_err());
+        assert!(ling_cli::parse_event_id(bad).is_err());
     }
-    let request = linger_cli::parse_command("SUBSCRIBE \"GROUP\" GROUP workers").unwrap();
+    let request = ling_cli::parse_command("SUBSCRIBE \"GROUP\" GROUP workers").unwrap();
     assert_eq!(
         request.arguments[0],
-        linger_types::Value::List(vec![linger_types::Value::String("GROUP".into())])
+        ling_types::Value::List(vec![ling_types::Value::String("GROUP".into())])
     );
 }

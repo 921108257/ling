@@ -2,8 +2,8 @@
 //! Per-connection state, authentication, and database barriers; network waits never hold the engine lock.
 
 use crate::Config;
-use linger_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
+use ling_types::{DbError, ErrorCode, Value};
 use std::collections::BTreeMap;
 use std::{sync::Arc, time::Duration};
 use tokio::{
@@ -15,9 +15,9 @@ use tokio::{
 /// 按接收顺序处理请求，致命帧错误或关闭信号结束连接。
 /// Processes requests in receive order and closes on fatal framing errors or shutdown.
 pub(crate) async fn serve(
-    stream: linger_network::Stream,
+    stream: ling_network::Stream,
     config: &Config,
-    engine: &Arc<linger_engine::Engine>,
+    engine: &Arc<ling_engine::Engine>,
     slots: Arc<Semaphore>,
     mut shutdown: watch::Receiver<bool>,
     runtime: Arc<crate::operations::Runtime>,
@@ -48,7 +48,7 @@ pub(crate) async fn serve(
         authenticated: !config.auth.enabled,
         db: config.database.default_db,
         last_id: 0,
-        scan: linger_engine::ScanState::default(),
+        scan: ling_engine::ScanState::default(),
         subscription: None,
         events: engine.events().cloned(),
         runtime: Some(runtime.clone()),
@@ -214,7 +214,7 @@ pub(crate) async fn serve(
                 let result = match (
                     session.subscription.as_ref(),
                     session.events.as_ref(),
-                    linger_types::EventId::from_value(&value),
+                    ling_types::EventId::from_value(&value),
                 ) {
                     (Some(sub), Some(store), Ok(id)) => {
                         let (sub, store) = (sub.clone(), store.clone());
@@ -324,19 +324,19 @@ struct Session {
     /// Last accepted request number, preventing reuse.
     last_id: u64,
     /// 当前连接唯一游标，断线即释放；Connection-owned cursor, released on disconnect.
-    scan: linger_engine::ScanState,
+    scan: ling_engine::ScanState,
     /// 专用连接拥有的消费身份；Consumption identity owned by this dedicated connection.
     subscription: Option<Arc<Consumer>>,
     /// 事件句柄保证取消时释放租约；Event handle releases leases on cancellation.
-    events: Option<Arc<linger_events::EventStore>>,
+    events: Option<Arc<ling_events::EventStore>>,
 }
 /// 订阅结果自带释放责任，包括阻塞任务完成前连接已取消的情况。
 /// Subscription results own cleanup, including connection cancellation before blocking tasks complete.
 struct Consumer {
     /// 消费令牌；Consumption token.
-    token: linger_events::Subscription,
+    token: ling_events::Subscription,
     /// 保证释放时存储仍存活；Keeps storage alive until cleanup.
-    store: Arc<linger_events::EventStore>,
+    store: Arc<ling_events::EventStore>,
 }
 impl Drop for Consumer {
     /// 最后一个在途操作释放后归还租约；Releases leases after the last in-flight operation.
@@ -351,7 +351,7 @@ impl Session {
         &mut self,
         request: Request,
         config: &Config,
-        engine: &Arc<linger_engine::Engine>,
+        engine: &Arc<ling_engine::Engine>,
         slots: Arc<Semaphore>,
     ) -> (Result<Value, DbError>, bool, bool) {
         let name = request.command.as_str();
@@ -533,7 +533,7 @@ impl Session {
             "SELECT" => match args {
                 [Value::UInt(db)] if *db < u64::from(config.database.databases) => {
                     if self.db != *db as u16 {
-                        self.scan = linger_engine::ScanState::default();
+                        self.scan = ling_engine::ScanState::default();
                     }
                     self.db = *db as u16;
                     Ok(Value::Bool(true))
@@ -705,7 +705,7 @@ mod tests {
         config.engine.shard_count = 2;
         config.server.request_timeout_ms = 1;
         let engine =
-            Arc::new(linger_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
+            Arc::new(ling_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
         let slots = Arc::new(Semaphore::new(1));
         let occupied = slots.clone().acquire_owned().await.unwrap();
         let mut session = Session {
@@ -713,7 +713,7 @@ mod tests {
             authenticated: true,
             db: 0,
             last_id: 1,
-            scan: linger_engine::ScanState::default(),
+            scan: ling_engine::ScanState::default(),
             subscription: None,
             events: None,
             runtime: None,

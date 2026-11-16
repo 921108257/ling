@@ -1,7 +1,7 @@
 //! 单个 TTL 维护循环，与请求共享有界执行许可，关闭时停止派发。
 //! One TTL maintenance loop shares bounded execution permits with requests and stops dispatching at shutdown.
 
-use linger_engine::Engine;
+use ling_engine::Engine;
 use std::{io, sync::Arc, time::Duration};
 use tokio::sync::{Semaphore, watch};
 
@@ -45,8 +45,8 @@ pub(crate) async fn run(
                     let now = std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
                         .map_err(|_| {
-                            linger_types::DbError::new(
-                                linger_types::ErrorCode::Busy,
+                            ling_types::DbError::new(
+                                ling_types::ErrorCode::Busy,
                                 "System clock unavailable",
                             )
                         })?;
@@ -84,13 +84,13 @@ pub(crate) async fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use linger_types::Value;
+    use ling_types::Value;
 
     /// 即使没有网络请求，后台仍会回收条目与其预算。
     /// Background work reclaims entries and their budget even without network requests.
     #[tokio::test]
     async fn idle_server_reclaims_expired_memory() {
-        let engine = Arc::new(Engine::new(linger_engine::Config::default(), 1).unwrap());
+        let engine = Arc::new(Engine::new(ling_engine::Config::default(), 1).unwrap());
         engine
             .execute(
                 0,
@@ -130,7 +130,7 @@ mod tests {
     #[tokio::test]
     async fn shutdown_interrupts_waiting_for_a_permit() {
         let slots = Arc::new(Semaphore::new(0));
-        let engine = Arc::new(Engine::new(linger_engine::Config::default(), 1).unwrap());
+        let engine = Arc::new(Engine::new(ling_engine::Config::default(), 1).unwrap());
         let (closing, receiver) = watch::channel(false);
         let task = tokio::spawn(run(engine, slots, 1, receiver, None));
         tokio::time::sleep(Duration::from_millis(10)).await;

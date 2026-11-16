@@ -21,7 +21,7 @@ mod ttl;
 #[cfg(test)]
 mod ttl_tests;
 
-use linger_types::{DbError, ErrorCode, Generation, Value, ValueLimits};
+use ling_types::{DbError, ErrorCode, Generation, Value, ValueLimits};
 use std::{
     cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet, hash_map::RandomState},
@@ -183,7 +183,7 @@ pub struct Engine {
     config: Config,
     /// 可选事件提交边界，始终在分片及预算锁之后取得。
     /// Optional event commit boundary, always acquired after shard and budget locks.
-    events: Option<Arc<linger_events::EventStore>>,
+    events: Option<Arc<ling_events::EventStore>>,
     /// 按 (db, shard) 排列的独立所有权单元；Independent ownership units in (db, shard) order.
     shards: Vec<Mutex<Index>>,
     /// 进程内路由哈希种子；Process-local routing hash seed.
@@ -234,7 +234,7 @@ impl Engine {
         mut config: Config,
         epoch: u128,
         clock: Arc<dyn Clock>,
-        events: Option<Arc<linger_events::EventStore>>,
+        events: Option<Arc<ling_events::EventStore>>,
     ) -> Result<Self, DbError> {
         config.validate()?;
         config.shard_count = config.resolved_shards();
@@ -280,7 +280,7 @@ impl Engine {
 
     /// 当前可选事件句柄；不允许运行时切换模式。
     /// Current optional event handle; mode cannot change at runtime.
-    pub fn events(&self) -> Option<&Arc<linger_events::EventStore>> {
+    pub fn events(&self) -> Option<&Arc<ling_events::EventStore>> {
         self.events.as_ref()
     }
 
@@ -543,7 +543,7 @@ fn read_only(name: &str) -> bool {
 /// Envelopes and actual business values use separate budgets without changing tags.
 fn validate_arguments(name: &str, args: &[Value], limits: ValueLimits) -> Result<(), DbError> {
     for (index, value) in args.iter().enumerate() {
-        value.validate(if linger_types::is_value_argument(name, index) {
+        value.validate(if ling_types::is_value_argument(name, index) {
             limits
         } else {
             ValueLimits {

@@ -7,7 +7,7 @@ use crate::{
     err,
     journal::Journal,
 };
-use linger_types::{DbError, ErrorCode, Event, EventId};
+use ling_types::{DbError, ErrorCode, Event, EventId};
 use std::{
     collections::{BTreeMap, VecDeque},
     sync::Mutex,
@@ -691,10 +691,9 @@ impl EventStore {
             // 没有可到期的前缀时不扫描和重写整个日志；容量路径仍按需压缩控制记录。
             // Skip full scans and rewrites without an eligible prefix; capacity paths still compact control records.
             let cutoff = now_ms.checked_sub(self.config.retention_ms);
-            if !s
-                .stats
+            if s.stats
                 .oldest_retained_ms
-                .is_some_and(|oldest| cutoff.is_some_and(|cutoff| oldest <= cutoff))
+                .is_none_or(|oldest| cutoff.is_none_or(|cutoff| oldest > cutoff))
             {
                 return Ok(());
             }

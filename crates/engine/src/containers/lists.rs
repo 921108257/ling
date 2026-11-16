@@ -1,7 +1,7 @@
 //! List 负索引与闭区间在宽整数中换算。
 //! List negative indices and inclusive ranges use wide arithmetic.
 use crate::{Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::{collections::HashSet, ops::Range, time::Instant};
 
 /// 转换已有位置；Converts an existing position.

@@ -1,8 +1,8 @@
 //! 控制面真实网络验收：重载整体拒绝、脱敏、指标、批量预算和关闭。
 //! Real-network operations contracts: atomic reload rejection, redaction, metrics, batch budgets, and shutdown.
 
-use linger_client::{Client, Options, Request, Value};
-use linger_server::{Config, Server};
+use ling_client::{Client, Options, Request, Value};
+use ling_server::{Config, Server};
 use std::{path::PathBuf, time::Duration};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},

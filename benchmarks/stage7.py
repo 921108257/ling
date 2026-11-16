@@ -118,7 +118,7 @@ level="error"
     with (directory / "server.log").open("w") as log, (directory / "result.json").open("w") as output, (directory / "stderr").open("w") as errors:
         try:
             if "--engine" not in flags:
-                server = subprocess.Popen([str(args.output / "bin/linger-server"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
+                server = subprocess.Popen([str(args.output / "bin/ling"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
                 deadline = time.monotonic() + 10
                 while True:
                     if server.poll() is not None:
@@ -175,11 +175,11 @@ def main():
         parser.error("invalid repeat or duration budget")
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
-    subprocess.run(["cargo", "build", "--release", "-p", "linger-server", "--bin", "linger-server", "--example", "baseline"], cwd=ROOT, check=True)
+    subprocess.run(["cargo", "build", "--release", "-p", "ling-server", "--bin", "ling", "--example", "baseline"], cwd=ROOT, check=True)
     (args.output / "bin").mkdir()
     # 固定二进制副本，实验期间重建不能改变后续场景的版本。
     # Freeze binary copies so concurrent rebuilds cannot change later scenarios' revisions.
-    shutil.copy2(ROOT / "target/release/linger-server", args.output / "bin/linger-server")
+    shutil.copy2(ROOT / "target/release/ling", args.output / "bin/ling")
     shutil.copy2(ROOT / "target/release/examples/baseline", args.output / "bin/baseline")
     (args.output / "environment.json").write_text(json.dumps(environment(args), ensure_ascii=False, indent=2) + "\n")
     selected = set(args.only.split(",")) if args.only else {name for name, _, _ in CASES}

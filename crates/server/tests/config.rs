@@ -1,7 +1,7 @@
 //! 启动配置契约：范围、未知字段和凭据脱敏。
 //! Startup configuration contracts: ranges, unknown fields, and credential redaction.
 
-use linger_server::Config;
+use ling_server::Config;
 
 /// 默认值与 u16 数据库编号边界均经验证。
 /// Validates defaults and u16 database namespace boundaries.

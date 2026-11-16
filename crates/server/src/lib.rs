@@ -30,7 +30,7 @@ pub struct Server {
     config: Arc<Config>,
     /// 分片锁由引擎协调，网络层只持有共享句柄。
     /// The engine coordinates shard locks; networking holds only a shared handle.
-    engine: Arc<linger_engine::Engine>,
+    engine: Arc<ling_engine::Engine>,
 }
 
 impl Server {
@@ -40,15 +40,15 @@ impl Server {
         config.validate()?;
         let tls = make_tls(&config)?;
         let engine_config = config.engine_config()?;
-        let events = Arc::new(linger_events::EventStore::open(
+        let events = Arc::new(ling_events::EventStore::open(
             config.event_config()?,
             engine_config.databases,
             engine_config.resolved_shards(),
         )?);
-        let engine = Arc::new(linger_engine::Engine::with_events(
+        let engine = Arc::new(ling_engine::Engine::with_events(
             engine_config,
             rand::random(),
-            Arc::new(linger_engine::SystemClock),
+            Arc::new(ling_engine::SystemClock),
             Some(events),
         )?);
         let socket = if config.server.host.is_ipv4() {
@@ -72,19 +72,19 @@ impl Server {
     pub fn from_listener(
         listener: TcpListener,
         config: Config,
-    ) -> Result<Self, linger_types::DbError> {
+    ) -> Result<Self, ling_types::DbError> {
         config.validate()?;
         let tls = make_tls(&config)?;
         let engine_config = config.engine_config()?;
-        let events = Arc::new(linger_events::EventStore::open(
+        let events = Arc::new(ling_events::EventStore::open(
             config.event_config()?,
             engine_config.databases,
             engine_config.resolved_shards(),
         )?);
-        let engine = Arc::new(linger_engine::Engine::with_events(
+        let engine = Arc::new(ling_engine::Engine::with_events(
             engine_config,
             rand::random(),
-            Arc::new(linger_engine::SystemClock),
+            Arc::new(ling_engine::SystemClock),
             Some(events),
         )?);
         Ok(Self {
@@ -133,7 +133,7 @@ impl Server {
         runtime.log(
             "info",
             &format!(
-                "linger-server {} listening {}: {} shards/database; events {}",
+                "ling {} listening {}: {} shards/database; events {}",
                 env!("CARGO_PKG_VERSION"),
                 self.listener.local_addr()?,
                 self.engine.shard_count(),
@@ -181,7 +181,7 @@ impl Server {
                     let runtime = runtime.clone();
                     connections.spawn(async move {
                         let _permit = permit;
-                        let stream: linger_network::Stream = if let Some(tls) = tls {
+                        let stream: ling_network::Stream = if let Some(tls) = tls {
                             let mut closing = receiver.clone();
                             let handshake = tokio::time::timeout(Duration::from_millis(config.server.shutdown_timeout_ms), tls.accept(stream));
                             tokio::select! {
@@ -218,11 +218,11 @@ impl Server {
 }
 
 /// 在业务监听前拒绝不可用身份；Rejects unavailable identities before accepting business traffic.
-fn make_tls(config: &Config) -> Result<Option<tokio_rustls::TlsAcceptor>, linger_types::DbError> {
+fn make_tls(config: &Config) -> Result<Option<tokio_rustls::TlsAcceptor>, ling_types::DbError> {
     if !config.tls.enabled {
         return Ok(None);
     }
-    linger_network::server_tls(
+    ling_network::server_tls(
         &config.tls.cert_file,
         &config.tls.key_file,
         (!config.tls.ca_file.as_os_str().is_empty()).then_some(config.tls.ca_file.as_path()),

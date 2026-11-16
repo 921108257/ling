@@ -1,8 +1,8 @@
 //! 存储命令的可观察契约，不依赖网络或真实时间等待。
 //! Observable storage contracts, independent of networking and wall-clock sleeps.
 
-use linger_engine::{Config, Engine};
-use linger_types::{Float, Scalar, Value, ValueLimits};
+use ling_engine::{Config, Engine};
+use ling_types::{Float, Scalar, Value, ValueLimits};
 use std::collections::{BTreeMap, HashSet};
 
 /// 文本参数帮助函数；Builds a textual argument.

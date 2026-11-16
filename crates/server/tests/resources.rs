@@ -1,9 +1,9 @@
 //! 真实 TCP 资源耗尽与恢复验收；仅耗尽实例配置预算，不耗尽宿主机资源。
 //! Real TCP resource exhaustion and recovery; exhausts instance budgets, never host resources.
 
-use linger_client::{Client, Error, Options, Value};
-use linger_protocol::{Body, Frame, Limits, Request, encode_frame, read_frame, write_frame};
-use linger_server::{Config, Server};
+use ling_client::{Client, Error, Options, Value};
+use ling_protocol::{Body, Frame, Limits, Request, encode_frame, read_frame, write_frame};
+use ling_server::{Config, Server};
 use std::{path::PathBuf, time::Duration};
 use tokio::{
     io::AsyncWriteExt,

@@ -1,8 +1,8 @@
 //! 测试证书仅用于本地契约，包含公开测试私钥，禁止部署使用。
 //! Fixtures contain public test private keys for local contracts only; never deploy them.
 
-use linger_client::{Client, ClientTls, Options, Value};
-use linger_server::{Config, Server};
+use ling_client::{Client, ClientTls, Options, Value};
+use ling_server::{Config, Server};
 use std::path::PathBuf;
 use tokio::{net::TcpListener, sync::oneshot};
 

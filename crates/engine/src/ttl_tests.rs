@@ -2,7 +2,7 @@
 //! Lifecycle contracts with a controllable dual clock, independent of real sleeps or background runtimes.
 
 use crate::{Clock, Config, Deadline, Engine, TimeSnapshot};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::{
     sync::{Arc, Mutex},
     time::{Duration, Instant},

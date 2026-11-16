@@ -1,14 +1,14 @@
 # 固定分片数据引擎，不依赖网络或 SDK。
 # Fixed-shard data engine, independent of networking and SDKs.
 [package]
-name = "linger-engine"
+name = "ling-engine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-linger-types.workspace = true
-linger-events.workspace = true
+ling-types.workspace = true
+ling-events.workspace = true
 rand.workspace = true
 
 [lints]

@@ -2,7 +2,7 @@
 //! Shard ownership contracts proving independent progress and atomic multi-key visibility.
 
 use crate::{Config, Engine};
-use linger_types::Value;
+use ling_types::Value;
 use std::{
     sync::{Arc, mpsc},
     time::Duration,

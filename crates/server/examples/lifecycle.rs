@@ -1,8 +1,8 @@
 //! 真实网络 TTL 验收，记录过期可见性、后台回收和到期事件的独立延迟。
 //! Real-network TTL validation separates visibility, background reclamation, and expiry-event latency.
 
-use linger_client::{Client, Options, Value};
-use linger_types::EventKind;
+use ling_client::{Client, Options, Value};
+use ling_types::EventKind;
 use std::{
     net::SocketAddr,
     time::{Duration, Instant},
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tokio::time::sleep(Duration::from_millis(20)).await;
         let visibility = client.execute("GET", vec![key]).await;
         let visible = match visibility {
-            Err(linger_client::Error::Server(error)) if error.code == "ERR_KEY_NOT_FOUND" => false,
+            Err(ling_client::Error::Server(error)) if error.code == "ERR_KEY_NOT_FOUND" => false,
             Ok(_) => true,
             Err(error) => return Err(error.into()),
         };

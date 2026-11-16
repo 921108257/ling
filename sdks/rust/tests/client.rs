@@ -1,9 +1,9 @@
 //! Rust SDK 生命周期契约：真实服务、ID 匹配、超时、取消和结果未知。
 //! Rust SDK lifecycle contracts: real service, ID matching, timeouts, cancellation, and unknown outcomes.
 
-use linger_client::{Client, Error, LocalError, Options, Value};
-use linger_protocol::{Body, Frame, Limits, Request, read_frame, write_frame};
-use linger_server::{Config, Server};
+use ling_client::{Client, Error, LocalError, Options, Value};
+use ling_protocol::{Body, Frame, Limits, Request, read_frame, write_frame};
+use ling_server::{Config, Server};
 use std::{collections::BTreeMap, time::Duration};
 use tokio::{
     net::{TcpListener, TcpStream},

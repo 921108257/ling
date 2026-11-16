@@ -1,11 +1,11 @@
 //! 真实 TCP 服务契约：连接状态、共享引擎、并发与预算失败。
 //! Real TCP service contracts: connection state, shared engine, concurrency, and budget failures.
 
-use linger_protocol::{
+use ling_protocol::{
     Body, Frame, Limits, ReadError, Request, encode_frame, read_frame, write_frame,
 };
-use linger_server::{Config, Server};
-use linger_types::Value;
+use ling_server::{Config, Server};
+use ling_types::Value;
 use tokio::{
     io::AsyncWriteExt,
     net::{TcpListener, TcpStream},
@@ -742,7 +742,7 @@ async fn subscription_barrier_and_fragmented_ack_survive_event_pushes() {
     let Body::Event(value) = event.body else {
         panic!()
     };
-    let event = linger_types::Event::from_value(&value).unwrap();
+    let event = ling_types::Event::from_value(&value).unwrap();
     let ack = encode_frame(
         &Frame {
             request_id: 4,

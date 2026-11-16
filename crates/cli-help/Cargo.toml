@@ -1,0 +1,12 @@
+[package]
+name = "ling-cli-help"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+clap.workspace = true
+sys-locale = "0.3"
+
+[lints]
+workspace = true

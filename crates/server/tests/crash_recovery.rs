@@ -1,7 +1,7 @@
 //! 强制终止真实服务进程后恢复事件与 ACK；不使用优雅关闭替代崩溃。
 //! Recovers events and ACKs after forcibly killing a real server, rather than substituting graceful shutdown.
 
-use linger_client::{Client, Options, Value};
+use ling_client::{Client, Options, Value};
 use std::{
     fs,
     path::PathBuf,
@@ -28,7 +28,7 @@ impl Drop for Directory {
 }
 /// 启动真实二进制，并轮询确认完成恢复和监听；Starts the real binary and polls recovery/listening readiness.
 async fn start(path: &std::path::Path, address: std::net::SocketAddr) -> Process {
-    let child = Command::new(env!("CARGO_BIN_EXE_linger-server"))
+    let child = Command::new(env!("CARGO_BIN_EXE_ling"))
         .arg("--config")
         .arg(path)
         .stdin(Stdio::null())

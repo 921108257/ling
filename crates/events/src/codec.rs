@@ -5,7 +5,7 @@ use crate::{
     err,
     store::{Group, Pending, Progress},
 };
-use linger_types::{DbError, ErrorCode, Event, EventId, EventKind, Generation};
+use ling_types::{DbError, ErrorCode, Event, EventId, EventKind, Generation};
 use std::collections::BTreeMap;
 
 /// 一个磁盘记录的硬上限；Hard limit for one disk record.

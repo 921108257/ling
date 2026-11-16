@@ -2,8 +2,8 @@
 //! Whole-batch admission and shared response budgeting; items commit independently.
 
 use crate::Config;
-use linger_protocol::{Body, Frame, Request, encode_frame};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_protocol::{Body, Frame, Request, encode_frame};
+use ling_types::{DbError, ErrorCode, Value};
 
 /// 严格白名单，不把未知命令或控制面命令交给引擎。
 /// Strict allowlist excludes unknown and control-plane commands.
@@ -78,7 +78,7 @@ pub(crate) fn allowed(command: &str) -> bool {
 /// 预留每项最坏错误大小；各命令发布前检查自身剩余响应预算。
 /// Reserves the largest error per item; each command checks its remaining response budget before publication.
 pub(crate) fn execute(
-    engine: &linger_engine::Engine,
+    engine: &ling_engine::Engine,
     config: &Config,
     db: u16,
     items: Vec<Request>,

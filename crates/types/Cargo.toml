@@ -1,5 +1,5 @@
 [package]
-name = "linger-types"
+name = "ling-types"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

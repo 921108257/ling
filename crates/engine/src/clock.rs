@@ -2,7 +2,7 @@
 //! Dual-clock observation shared by one command; tests can advance monotonic and wall time independently.
 
 use crate::support::error;
-use linger_types::{DbError, ErrorCode};
+use ling_types::{DbError, ErrorCode};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 /// 取得全部相关分片执行权后的时间观测。

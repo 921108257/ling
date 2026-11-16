@@ -1,12 +1,12 @@
 //! 异步 Rust 客户端；调用方独占连接和数据库上下文，不自动重放请求。
 //! Async Rust client; callers own the connection and database context, with no automatic request replay.
 
-use linger_protocol::{Body, Frame, Limits, ReadError, encode_frame, read_frame};
-pub use linger_types::{DbError, ErrorCode, Event, EventId, EventKind, Float, Scalar, Value};
+use ling_protocol::{Body, Frame, Limits, ReadError, encode_frame, read_frame};
+pub use ling_types::{DbError, ErrorCode, Event, EventId, EventKind, Float, Scalar, Value};
 mod pool;
 mod subscriber;
-pub use linger_network::ClientTls;
-pub use linger_protocol::Request;
+pub use ling_network::ClientTls;
+pub use ling_protocol::Request;
 pub use pool::{Pool, PoolOptions, PooledClient};
 use std::{collections::BTreeMap, net::SocketAddr, time::Duration};
 pub use subscriber::Subscriber;
@@ -135,7 +135,7 @@ impl std::error::Error for Error {}
 pub struct Client {
     /// 请求等待时移出，取消即关闭。
     /// Taken during request waits so cancellation closes it.
-    stream: Option<linger_network::Stream>,
+    stream: Option<ling_network::Stream>,
     /// 创建时固定的连接预算。
     /// Connection budgets fixed at creation.
     options: Options,
@@ -175,7 +175,7 @@ impl Client {
         stream
             .set_nodelay(true)
             .map_err(|_| Error::local(LocalError::Connect, false))?;
-        let stream: linger_network::Stream = if let Some(tls) = &options.tls {
+        let stream: ling_network::Stream = if let Some(tls) = &options.tls {
             let (connector, name) = tls.connector().map_err(Error::Server)?;
             Box::new(
                 timeout(options.connect_timeout, connector.connect(name, stream))

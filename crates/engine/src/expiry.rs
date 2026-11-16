@@ -2,7 +2,7 @@
 //! Bounded expiry index: one item per entry, replaced on mutations and rechecked under normal lock order.
 
 use crate::{Budget, Engine, Metadata, TimeSnapshot, Transaction, unavailable};
-use linger_types::DbError;
+use ling_types::DbError;
 use std::time::Instant;
 
 /// 包含完整身份的定时记录；排序先按期限，再按存储位置和身份。
@@ -139,7 +139,7 @@ impl Transaction<'_> {
                     (task.location / self.config.shard_count as usize) as u16,
                     &task.key,
                     m,
-                    linger_types::EventKind::Expired,
+                    ling_types::EventKind::Expired,
                     time,
                 )
             })

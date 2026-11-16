@@ -2,8 +2,8 @@
 //! Fixed-workload closed-loop benchmark; real TCP and direct engine results are labeled separately.
 
 use clap::Parser;
-use linger_client::{Client, ClientTls, Options, Value};
-use linger_engine::{Config, Engine};
+use ling_client::{Client, ClientTls, Options, Value};
+use ling_engine::{Config, Engine};
 use rand::{Rng, SeedableRng, rngs::StdRng};
 use std::{
     collections::BTreeMap,
@@ -95,8 +95,8 @@ impl Target {
                 .execute(command, args)
                 .await
                 .map_err(|error| match error {
-                    linger_client::Error::Server(error) => error.code,
-                    linger_client::Error::Local {
+                    ling_client::Error::Server(error) => error.code,
+                    ling_client::Error::Local {
                         kind,
                         outcome_unknown,
                     } => {

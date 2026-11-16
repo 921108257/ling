@@ -2,8 +2,8 @@
 //! Derives lifecycle events from final candidates; ordinary state publishes only inside event commits.
 
 use crate::{Entry, Metadata, TimeSnapshot, Transaction, unavailable};
-use linger_events::Change;
-use linger_types::{DbError, EventKind};
+use ling_events::Change;
+use ling_types::{DbError, EventKind};
 
 impl Transaction<'_> {
     /// 大操作在复制事件 Key 前预留候选预算；Large operations reserve candidates before copying event keys.
@@ -24,13 +24,13 @@ impl Transaction<'_> {
                 .and_then(|n| bytes.checked_add(n))
                 .ok_or_else(|| {
                     crate::support::error(
-                        linger_types::ErrorCode::LimitExceeded,
+                        ling_types::ErrorCode::LimitExceeded,
                         "Event candidate budget exceeded",
                     )
                 })?;
             if bytes > store.transaction_budget() {
                 return Err(crate::support::error(
-                    linger_types::ErrorCode::LimitExceeded,
+                    ling_types::ErrorCode::LimitExceeded,
                     "Event candidate budget exceeded",
                 ));
             }

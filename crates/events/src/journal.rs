@@ -7,7 +7,7 @@ use crate::{
     err,
 };
 use fs2::FileExt;
-use linger_types::{DbError, ErrorCode};
+use ling_types::{DbError, ErrorCode};
 use std::{
     fs::{self, File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},

@@ -1,8 +1,8 @@
 //! 真实 TCP 订阅、ACK 恢复与取消契约；缓存冷启动始终为空。
 //! Real TCP subscriptions, ACK recovery, and cancellation contracts; cold caches always start empty.
 
-use linger_client::{Client, Event, EventKind, Options, Value};
-use linger_server::{Config, Server};
+use ling_client::{Client, Event, EventKind, Options, Value};
+use ling_server::{Config, Server};
 use std::{fs, path::PathBuf, time::Duration};
 use tokio::{net::TcpListener, sync::oneshot};
 
@@ -53,7 +53,7 @@ async fn client(address: std::net::SocketAddr) -> Client {
         .unwrap()
 }
 /// 将失败挂起限制在测试期限内；Bounds stalled test failures.
-async fn next(sub: &mut linger_client::Subscriber) -> Event {
+async fn next(sub: &mut ling_client::Subscriber) -> Event {
     tokio::time::timeout(Duration::from_secs(2), sub.next_event())
         .await
         .unwrap()
@@ -166,7 +166,7 @@ async fn cancellation_releases_connection_and_old_ack_errors_remain_explicit() {
         .await
         .unwrap();
     let event = next(&mut sub).await;
-    let wrong = linger_client::EventId {
+    let wrong = ling_client::EventId {
         stream_id: event.id.stream_id ^ 1,
         ..event.id
     };

@@ -1,8 +1,8 @@
 //! 重命名、跨库、清空和交换的公开契约。
 //! Public contracts for renaming, cross-DB changes, flushing, and swapping.
 
-use linger_engine::{Config, Engine};
-use linger_types::Value;
+use ling_engine::{Config, Engine};
+use ling_types::Value;
 
 /// 明确构造文本参数；Builds an explicit text argument.
 fn s(text: &str) -> Value {

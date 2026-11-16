@@ -1,7 +1,7 @@
 //! 命令共享的参数检查、大小预检和待发布变更。
 //! Shared argument checks, size preflights, and unpublished changes.
 
-use linger_types::{DbError, ErrorCode, Scalar, Value, ValueLimits};
+use ling_types::{DbError, ErrorCode, Scalar, Value, ValueLimits};
 use std::{collections::BTreeMap, mem::size_of};
 
 /// 一个尚未发布的 Key 变更；An unpublished change to one key.

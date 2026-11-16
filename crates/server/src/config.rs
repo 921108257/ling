@@ -1,8 +1,8 @@
 //! 严格解析启动配置；未知字段和不支持的能力均明确拒绝。
 //! Strict startup configuration parsing; unknown fields and unsupported features are rejected.
 
-use linger_protocol::Limits;
-use linger_types::{DbError, ErrorCode};
+use ling_protocol::Limits;
+use ling_types::{DbError, ErrorCode};
 use serde::{Deserialize, Serialize};
 use std::{net::IpAddr, path::Path, time::Duration};
 
@@ -147,7 +147,7 @@ pub struct EventsConfig {
 impl Default for EventsConfig {
     /// 默认有界 Fast 与七天保留；Defaults to bounded Fast with seven-day retention.
     fn default() -> Self {
-        let c = linger_events::Config::default();
+        let c = ling_events::Config::default();
         Self {
             enabled: c.enabled,
             mode: "fast".into(),
@@ -464,7 +464,7 @@ impl Config {
         }
         self.eviction
             .policy
-            .parse::<linger_engine::EvictionPolicy>()?;
+            .parse::<ling_engine::EvictionPolicy>()?;
         self.engine_config()?.validate()?;
         let s = &self.server;
         if s.port == 0
@@ -527,13 +527,13 @@ impl Config {
     }
 
     /// 将外部名称转换为已校验事件策略；Converts public names into validated event policy.
-    pub fn event_config(&self) -> Result<linger_events::Config, DbError> {
+    pub fn event_config(&self) -> Result<ling_events::Config, DbError> {
         if !matches!(self.events.mode.as_str(), "fast" | "reliable")
             || self.event_journal.group_commit_ms > 1000
         {
             return Err(invalid("Invalid event mode or group commit interval"));
         }
-        Ok(linger_events::Config {
+        Ok(ling_events::Config {
             enabled: self.events.enabled,
             reliable: self.events.mode == "reliable",
             directory: self.event_journal.dir.clone(),
@@ -559,7 +559,7 @@ impl Config {
             max_request_bytes: self.server.max_request_bytes,
             max_response_bytes: self.server.max_response_bytes,
             max_batch_size: self.protocol.max_batch_size,
-            value: linger_types::ValueLimits {
+            value: ling_types::ValueLimits {
                 max_bytes: self.engine.max_value_bytes,
                 max_depth: self.engine.max_nest_depth,
                 max_key_bytes: self.engine.max_key_bytes,
@@ -570,15 +570,15 @@ impl Config {
 
     /// 将配置转换为不依赖网络的引擎配置。
     /// Converts settings into the network-independent engine configuration.
-    pub fn engine_config(&self) -> Result<linger_engine::Config, DbError> {
-        Ok(linger_engine::Config {
+    pub fn engine_config(&self) -> Result<ling_engine::Config, DbError> {
+        Ok(ling_engine::Config {
             databases: self.database.databases,
             eviction: self.eviction.policy.parse()?,
             sample_size: self.eviction.sample_size,
             shard_count: self.engine.shard_count,
             max_memory_bytes: self.engine.max_memory_bytes,
             max_keys: self.engine.max_keys,
-            value: linger_types::ValueLimits {
+            value: ling_types::ValueLimits {
                 max_bytes: self.engine.max_value_bytes,
                 max_depth: self.engine.max_nest_depth,
                 max_key_bytes: self.engine.max_key_bytes,

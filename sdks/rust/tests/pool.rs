@@ -1,8 +1,8 @@
 //! 真实服务验证池容量、固定库上下文和取消后的资源归还。
 //! Real-server contracts for pool capacity, fixed database context, and cancellation cleanup.
 
-use linger_client::{Options, Pool, PoolOptions, Value};
-use linger_server::{Config, Server};
+use ling_client::{Options, Pool, PoolOptions, Value};
+use ling_server::{Config, Server};
 use std::time::Duration;
 use tokio::{net::TcpListener, sync::oneshot};
 

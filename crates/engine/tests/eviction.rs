@@ -1,15 +1,15 @@
 //! 全实例内存、单库 Key 配额和淘汰失败原子性。
 //! Instance memory, per-database key quotas, and atomic rejection of eviction failures.
 
-use linger_engine::{Config, Engine, EvictionPolicy};
-use linger_types::Value;
+use ling_engine::{Config, Engine, EvictionPolicy};
+use ling_types::Value;
 
 /// 显式文本参数；Explicit text argument.
 fn s(text: &str) -> Value {
     Value::String(text.into())
 }
 /// 按指定数据库读取；Reads from the specified database.
-fn get(e: &Engine, db: u16, key: &str) -> Result<Value, linger_types::DbError> {
+fn get(e: &Engine, db: u16, key: &str) -> Result<Value, ling_types::DbError> {
     e.execute(db, "GET", &[s(key)], 4096)
 }
 

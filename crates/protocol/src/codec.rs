@@ -2,7 +2,7 @@
 //! Big-endian version 1 codec; lengths, counts, and logical budgets are checked before allocation.
 
 use crate::*;
-use linger_types::{Float, Scalar};
+use ling_types::{Float, Scalar};
 use std::collections::{BTreeMap, HashSet};
 use std::mem::size_of;
 
@@ -268,7 +268,7 @@ impl<'a> Decoder<'a> {
         // 协议封套不占用业务 Value 深度。
         // Protocol envelopes do not count against business Value depth.
         for (index, argument) in arguments.iter().enumerate() {
-            if linger_types::is_value_argument(&command.to_ascii_uppercase(), index) {
+            if ling_types::is_value_argument(&command.to_ascii_uppercase(), index) {
                 if let Err(e) = argument.validate(self.limits.value) {
                     self.semantic.get_or_insert(e);
                 }
@@ -548,7 +548,7 @@ impl Encoder {
         self.push(&[7])?;
         self.count(request.arguments.len())?;
         for (index, argument) in request.arguments.iter().enumerate() {
-            if linger_types::is_value_argument(&request.command, index) {
+            if ling_types::is_value_argument(&request.command, index) {
                 argument.validate(limits.value)?;
             }
             self.value(argument, 1, limits)?;

@@ -1,7 +1,7 @@
 //! 共享 TCP/TLS 传输；证书校验由 rustls 完成，不提供跳过验证开关。
 //! Shared TCP/TLS transport; rustls verifies certificates without an insecure bypass.
 
-use linger_types::{DbError, ErrorCode};
+use ling_types::{DbError, ErrorCode};
 use std::{
     fs::File,
     io::BufReader,

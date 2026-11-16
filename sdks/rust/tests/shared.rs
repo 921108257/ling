@@ -1,10 +1,10 @@
 //! 三种 SDK 共享同一命令向量，防止类型与错误语义分叉。
 //! All three SDKs share command vectors to prevent divergent types and error semantics.
 
-use linger_client::{Client, Error, Options};
-use linger_protocol::{Limits, decode_value};
-use linger_server::{Config, Server};
-use linger_types::Value;
+use ling_client::{Client, Error, Options};
+use ling_protocol::{Limits, decode_value};
+use ling_server::{Config, Server};
+use ling_types::Value;
 use tokio::{net::TcpListener, sync::oneshot};
 
 /// 黄金十六进制由文件独立提供；Golden hex is independently provided by the fixture.

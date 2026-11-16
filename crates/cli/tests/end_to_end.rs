@@ -1,7 +1,7 @@
 //! 真实 CLI 子进程与 TCP 服务的端到端契约。
 //! End-to-end contracts between real CLI subprocesses and the TCP service.
 
-use linger_server::{Config, Server};
+use ling_server::{Config, Server};
 use std::{
     io::Write,
     process::{Command, Output, Stdio},
@@ -37,9 +37,10 @@ async fn cli(port: u16, source: &str, stdin: bool, password: Option<&str>) -> Ou
     let source = source.to_owned();
     let password = password.map(str::to_owned);
     tokio::task::spawn_blocking(move || {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_linger-cli"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_ling-cli"));
         command
             .args(["--port", &port.to_string()])
+            .env_remove("LING_PASSWORD")
             .env_remove("LINGER_PASSWORD")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -101,8 +102,9 @@ async fn real_cli_ping_unknown_command_and_batch_input_exit_status() {
 async fn explicit_batch_and_operations_commands() {
     let (port, stop, task) = start(false).await;
     let output = tokio::task::spawn_blocking(move || {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_linger-cli"))
+        let mut child = Command::new(env!("CARGO_BIN_EXE_ling-cli"))
             .args(["--port", &port.to_string(), "--batch"])
+            .env_remove("LING_PASSWORD")
             .env_remove("LINGER_PASSWORD")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -257,7 +259,7 @@ async fn cli_subscription_requires_explicit_ack() {
     use std::io::{BufRead, BufReader};
     use std::time::Duration;
     let (port, stop, task) = start(false).await;
-    let mut child = Command::new(env!("CARGO_BIN_EXE_linger-cli"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ling-cli"))
         .args([
             "--port",
             &port.to_string(),
@@ -266,6 +268,7 @@ async fn cli_subscription_requires_explicit_ack() {
             "-c",
             "SUBSCRIBE cli:* GROUP cli-test",
         ])
+        .env_remove("LING_PASSWORD")
         .env_remove("LINGER_PASSWORD")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -284,7 +287,7 @@ async fn cli_subscription_requires_explicit_ack() {
     // 重复写入不同版本，避免以固定睡眠猜测订阅已经就绪。
     // Write distinct versions until delivery instead of assuming readiness after a fixed sleep.
     let address = std::net::SocketAddr::from(([127, 0, 0, 1], port));
-    let mut writer = linger_client::Client::connect(address, None, 0, Default::default())
+    let mut writer = ling_client::Client::connect(address, None, 0, Default::default())
         .await
         .unwrap();
     let line = tokio::time::timeout(Duration::from_secs(3), async {
@@ -293,8 +296,8 @@ async fn cli_subscription_requires_explicit_ack() {
                 .execute(
                     "SET",
                     vec![
-                        linger_client::Value::String("cli:key".into()),
-                        linger_client::Value::UInt(n),
+                        ling_client::Value::String("cli:key".into()),
+                        ling_client::Value::UInt(n),
                     ],
                 )
                 .await
@@ -309,7 +312,7 @@ async fn cli_subscription_requires_explicit_ack() {
     .await
     .unwrap();
     let id = line.split_whitespace().next().unwrap();
-    linger_cli::parse_event_id(id).unwrap();
+    ling_cli::parse_event_id(id).unwrap();
     assert!(child.try_wait().unwrap().is_none());
     writeln!(input, "ACK {id}").unwrap();
     drop(input);

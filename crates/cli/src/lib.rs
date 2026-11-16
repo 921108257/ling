@@ -2,8 +2,8 @@
 //! CLI typed-literal parsing and rendering; JSON is used only for String escaping, never to carry Values.
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use linger_protocol::Request;
-use linger_types::{Float, Scalar, Value, ValueLimits};
+use ling_protocol::Request;
+use ling_types::{Float, Scalar, Value, ValueLimits};
 use std::collections::{BTreeMap, HashSet};
 
 /// 单条输入的字节上限，解析前先检查。
@@ -400,7 +400,7 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
         );
         let signed = signed || (command == "SET" && index >= 3 && args.get(index - 1).is_some_and(|value|
             matches!(value, Value::String(option) if matches!(option.to_ascii_uppercase().as_str(), "EX" | "PX" | "EXAT" | "PXAT"))));
-        args.push(if linger_types::is_value_argument(&command, index) {
+        args.push(if ling_types::is_value_argument(&command, index) {
             p.value(0)?
         } else if unsigned {
             let n = p.word()?;
@@ -468,14 +468,14 @@ pub fn display_value(value: &Value) -> String {
 }
 
 /// 无损显示复合事件身份；Losslessly displays a compound event identity.
-pub fn display_event_id(id: linger_types::EventId) -> String {
+pub fn display_event_id(id: ling_types::EventId) -> String {
     format!(
         "{:032x}/{}/{}/{}",
         id.stream_id, id.db, id.shard, id.sequence
     )
 }
 /// 严格读取固定宽度 stream 与十进制坐标；Strictly parses a fixed-width stream and decimal coordinates.
-pub fn parse_event_id(text: &str) -> Result<linger_types::EventId, ParseError> {
+pub fn parse_event_id(text: &str) -> Result<ling_types::EventId, ParseError> {
     let parts: Vec<_> = text.split('/').collect();
     if parts.len() != 4
         || parts[0].len() != 32
@@ -486,7 +486,7 @@ pub fn parse_event_id(text: &str) -> Result<linger_types::EventId, ParseError> {
     {
         return Err(ParseError);
     }
-    let id = linger_types::EventId {
+    let id = ling_types::EventId {
         stream_id: u128::from_str_radix(parts[0], 16).map_err(|_| ParseError)?,
         db: parts[1].parse().map_err(|_| ParseError)?,
         shard: parts[2].parse().map_err(|_| ParseError)?,

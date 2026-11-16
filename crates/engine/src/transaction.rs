@@ -2,7 +2,7 @@
 //! Lookups and commits after shard ownership; budget locks always follow shard locks.
 
 use crate::{Entry, Metadata, TimeSnapshot, Transaction, entry_size, support::*, unavailable};
-use linger_types::{DbError, ErrorCode, Generation, Value};
+use ling_types::{DbError, ErrorCode, Generation, Value};
 use std::{cell::Cell, collections::BTreeMap, time::Instant};
 
 impl Transaction<'_> {
@@ -184,9 +184,9 @@ impl Transaction<'_> {
                     key,
                     old.metadata,
                     if old.metadata.deadline.is_some_and(|d| now >= d.monotonic) {
-                        linger_types::EventKind::Expired
+                        ling_types::EventKind::Expired
                     } else {
-                        linger_types::EventKind::Evicted
+                        ling_types::EventKind::Evicted
                     },
                     time,
                 ));

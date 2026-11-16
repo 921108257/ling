@@ -93,7 +93,7 @@ policy = "noeviction"
 sample_size = 5
 ''')
             server = subprocess.Popen(
-                [ROOT / "target/release/linger-server", "--config", config],
+                [ROOT / "target/release/ling", "--config", config],
                 cwd=ROOT, stdout=log, stderr=log,
             )
             deadline = time.monotonic() + 10
@@ -169,8 +169,8 @@ def main():
         parser.error("repeats and operations must be positive")
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
-    subprocess.run(["cargo", "build", "--release", "-p", "linger-server",
-                    "--bin", "linger-server", "--example", "baseline"], cwd=ROOT, check=True)
+    subprocess.run(["cargo", "build", "--release", "-p", "ling-server",
+                    "--bin", "ling", "--example", "baseline"], cwd=ROOT, check=True)
     environment = {
         "date_utc": capture("date", "-u", "+%Y-%m-%dT%H:%M:%SZ"),
         "revision": capture("git", "rev-parse", "HEAD"),

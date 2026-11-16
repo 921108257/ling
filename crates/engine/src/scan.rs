@@ -2,7 +2,7 @@
 //! Byte globs, database queries, and bounded cursors; progress never depends on mutable array offsets.
 
 use crate::{Engine, Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use rand::seq::IteratorRandom;
 use std::{
     collections::BTreeMap,

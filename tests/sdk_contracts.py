@@ -26,7 +26,7 @@ def free_port():
 
 def main():
     """先构建，再分别验证明文与双向 TLS；每轮使用全新 Journal。 Builds first, then tests plaintext and mutual TLS with a fresh Journal per run."""
-    run(["cargo", "build", "-p", "linger-server"])
+    run(["cargo", "build", "-p", "ling-server"])
     classes = ROOT / "target/java-contracts"
     classes.mkdir(parents=True, exist_ok=True)
     sources = sorted((ROOT / "sdks/java/src").rglob("*.java"))
@@ -48,7 +48,7 @@ def main():
                 env.update(LINGER_TEST_CA=str(ca), LINGER_TEST_CERT=str(cert), LINGER_TEST_KEY=str(key), LINGER_TEST_PKCS12=str(identity))
             config.write_text(text)
             with (directory / "server.log").open("w+") as log:
-                server = subprocess.Popen([str(ROOT / "target/debug/linger-server"), "--config", str(config)], cwd=ROOT, stdout=log, stderr=log)
+                server = subprocess.Popen([str(ROOT / "target/debug/ling"), "--config", str(config)], cwd=ROOT, stdout=log, stderr=log)
                 try:
                     deadline = time.monotonic() + 10
                     while True:

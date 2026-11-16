@@ -1,9 +1,9 @@
-//! CLI 入口；网络语义复用 Rust SDK，标准输出只展示成功 Value。
-//! CLI entry point; network semantics reuse the Rust SDK and stdout contains only successful Values.
+//! CLI 入口；网络语义复用 Rust SDK，本地帮助无需连接。
+//! CLI entry point; network semantics reuse the Rust SDK and local help needs no connection.
 
 use clap::Parser;
-use linger_cli::{display_value, parse_command};
-use linger_client::{Client, Options};
+use ling_cli::{display_value, parse_command};
+use ling_client::{Client, Options};
 use std::{
     io::{self, BufRead, IsTerminal, Read, Write},
     net::{IpAddr, SocketAddr},
@@ -11,13 +11,18 @@ use std::{
 };
 
 #[derive(Parser)]
-#[command(
-    version,
-    about = "linger-cache-db 阶段 6 CLI；认证密码通过 LINGER_PASSWORD 环境变量提供"
-)]
+#[command(name = "ling-cli", version)]
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
 struct Args {
+    /// 本地帮助语言，默认按系统语言选择。
+    /// Local help language, detected from the system by default.
+    #[arg(long)]
+    lang: Option<String>,
+    /// 离线显示全部命令速查。
+    /// Shows the complete command reference offline.
+    #[arg(long, conflicts_with_all = ["command", "batch"])]
+    cheatsheet: bool,
     /// 目标 IP，默认回环地址。
     /// Target IP, loopback by default.
     #[arg(long, default_value = "127.0.0.1")]
@@ -80,27 +85,37 @@ async fn main() {
 /// 装配配置与运行时资源，完成退出前的连接清理。
 /// Assembles configuration and runtime resources and cleans up connections before exit.
 async fn run() -> Result<bool, Box<dyn std::error::Error>> {
-    let args = Args::parse();
-    let password = std::env::var("LINGER_PASSWORD").ok();
+    let (args, language) = ling_cli_help::parse_localized::<Args>(false);
+    if args.cheatsheet {
+        print!("{}", ling_cli_help::cheatsheet(language));
+        return Ok(true);
+    }
+    if let Some(result) = args
+        .command
+        .as_deref()
+        .and_then(|s| local_help(s, language))
+    {
+        return Ok(result);
+    }
+    let password = std::env::var("LING_PASSWORD")
+        .or_else(|_| std::env::var("LINGER_PASSWORD"))
+        .ok();
     let options = Options {
         request_timeout: Duration::from_millis(args.timeout_ms),
         tls: args
             .tls_server_name
-            .map(|server_name| linger_client::ClientTls {
+            .clone()
+            .map(|server_name| ling_client::ClientTls {
                 server_name,
-                ca_file: args.tls_ca,
-                cert_file: args.tls_cert,
-                key_file: args.tls_key,
+                ca_file: args.tls_ca.clone(),
+                cert_file: args.tls_cert.clone(),
+                key_file: args.tls_key.clone(),
             }),
         ..Options::default()
     };
-    let mut client = Client::connect(
-        SocketAddr::new(args.host, args.port),
-        password.as_deref(),
-        args.db,
-        options,
-    )
-    .await?;
+    if args.command.is_none() && !args.batch {
+        return run_input(&args, language, password.as_deref(), options).await;
+    }
     if args.batch {
         let stdin = io::stdin();
         let mut input = stdin.lock();
@@ -126,8 +141,19 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
             if requests.len() >= 1000 {
                 return Err("批量命令数超过上限".into());
             }
-            requests.push(parse_command(line)?);
+            let request = parse_command(line)?;
+            if request.command == "HELP" {
+                return Err(ling_cli_help::batch_help_error(language).into());
+            }
+            requests.push(request);
         }
+        let mut client = Client::connect(
+            SocketAddr::new(args.host, args.port),
+            password.as_deref(),
+            args.db,
+            options,
+        )
+        .await?;
         let mut success = true;
         for result in client.batch(requests).await? {
             match result {
@@ -141,23 +167,29 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
         client.close().await?;
         return Ok(success);
     }
-    let mut success = true;
+    let mut client = Client::connect(
+        SocketAddr::new(args.host, args.port),
+        password.as_deref(),
+        args.db,
+        options,
+    )
+    .await?;
     if let Some(source) = args.command.as_ref() {
         let request = parse_command(source)?;
         if request.command == "SUBSCRIBE" {
             let mut arguments = request.arguments.into_iter();
-            let Some(linger_client::Value::List(patterns)) = arguments.next() else {
+            let Some(ling_client::Value::List(patterns)) = arguments.next() else {
                 unreachable!()
             };
             let patterns = patterns
                 .into_iter()
                 .map(|p| match p {
-                    linger_client::Value::String(s) => s,
+                    ling_client::Value::String(s) => s,
                     _ => unreachable!(),
                 })
                 .collect();
             let group = arguments.nth(1).map(|v| match v {
-                linger_client::Value::String(s) => s,
+                ling_client::Value::String(s) => s,
                 _ => unreachable!(),
             });
             let mut subscriber = client.subscribe(patterns, group.as_deref()).await?;
@@ -176,7 +208,7 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
                 // Acknowledge only after successful output; downstream processing should be idempotent by event_id.
                 println!(
                     "{} {}",
-                    linger_cli::display_event_id(event.id),
+                    ling_cli::display_event_id(event.id),
                     display_value(&event.to_value())
                 );
                 io::stdout().flush()?;
@@ -190,6 +222,9 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
                             subscriber.close().await?;
                             return Ok(true);
                         };
+                        if local_help(&line, language).is_some() {
+                            continue;
+                        }
                         let request = match parse_command(&line) {
                             Ok(r) => r,
                             Err(e) => {
@@ -199,7 +234,7 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
                         };
                         match request.command.as_str() {
                             "ACK" => {
-                                let id = linger_client::EventId::from_value(&request.arguments[0])?;
+                                let id = ling_client::EventId::from_value(&request.arguments[0])?;
                                 match subscriber.ack(id).await {
                                     Ok(()) if id == event.id => break,
                                     Ok(()) => {}
@@ -228,51 +263,133 @@ async fn run() -> Result<bool, Box<dyn std::error::Error>> {
             return Ok(true);
         }
     }
-    if let Some(source) = args.command {
-        success = execute(&mut client, &source).await;
-    } else {
-        let interactive = io::stdin().is_terminal();
-        let stdin = io::stdin();
-        let mut input = stdin.lock();
-        loop {
-            if interactive {
-                print!("linger> ");
-                io::stdout().flush()?;
-            }
-            let mut bytes = Vec::new();
-            // 读取时限制每行大小，不先分配完整的无界输入。
-            // Bound each input line before allocating its complete contents.
-            let count = input
-                .by_ref()
-                .take(64 * 1024 * 1024 + 1)
-                .read_until(b'\n', &mut bytes)?;
-            if count == 0 {
-                break;
-            }
-            if count > 64 * 1024 * 1024 {
-                eprintln!("命令超过输入上限");
-                success = false;
-                break;
-            }
-            let source = match std::str::from_utf8(&bytes) {
-                Ok(s) => s,
-                Err(_) => {
-                    eprintln!("命令必须是 UTF-8");
-                    success = false;
-                    continue;
-                }
-            };
-            if source.trim().is_empty() {
-                continue;
-            }
-            success &= execute(&mut client, source).await;
-            if client.is_closed() {
-                break;
-            }
-        }
-    }
+    let success = execute(
+        &mut client,
+        args.command.as_deref().expect("single command"),
+    )
+    .await;
     if !client.is_closed() {
         client.close().await?;
+    }
+    Ok(success)
+}
+
+/// 拦截本地 HELP，不回显未知主题，以免泄漏敏感输入。
+/// Intercepts local HELP without echoing unknown topics that may contain sensitive input.
+fn local_help(source: &str, language: ling_cli_help::Language) -> Option<bool> {
+    let command = source.split_whitespace().next()?;
+    if !command.eq_ignore_ascii_case("HELP") {
+        return None;
+    }
+    let request = match parse_command(source) {
+        Ok(request) => request,
+        Err(error) => {
+            eprintln!("{error}");
+            return Some(false);
+        }
+    };
+    if request.arguments.is_empty() {
+        print!("{}", ling_cli_help::cheatsheet(language));
+        return Some(true);
+    }
+    let topic = request
+        .arguments
+        .iter()
+        .filter_map(|value| match value {
+            ling_client::Value::String(text) => Some(text.as_str()),
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+        .join(" ");
+    match ling_cli_help::command_help(language, &topic) {
+        Some(help) => {
+            print!("{help}");
+            Some(true)
+        }
+        None => {
+            eprintln!("{}", ling_cli_help::unknown_topic(language));
+            Some(false)
+        }
+    }
+}
+
+/// 帮助先在本地执行，首条业务命令才触发连接。
+/// Executes help locally and connects only for the first database command.
+async fn run_input(
+    args: &Args,
+    language: ling_cli_help::Language,
+    password: Option<&str>,
+    options: Options,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let interactive = io::stdin().is_terminal();
+    let mut client: Option<Client> = None;
+    let mut success = true;
+    if interactive {
+        println!("{}", ling_cli_help::interactive_hint(language));
+    }
+    let stdin = io::stdin();
+    let mut input = stdin.lock();
+    loop {
+        if interactive {
+            print!("ling> ");
+            io::stdout().flush()?;
+        }
+        let mut bytes = Vec::new();
+        // 读取时限制每行大小，不先分配完整的无界输入。
+        // Bound each input line before allocating its complete contents.
+        let count = input
+            .by_ref()
+            .take(64 * 1024 * 1024 + 1)
+            .read_until(b'\n', &mut bytes)?;
+        if count == 0 {
+            break;
+        }
+        if count > 64 * 1024 * 1024 {
+            eprintln!("命令超过输入上限");
+            success = false;
+            break;
+        }
+        let source = match std::str::from_utf8(&bytes) {
+            Ok(s) => s,
+            Err(_) => {
+                eprintln!("命令必须是 UTF-8");
+                success = false;
+                continue;
+            }
+        };
+        if source.trim().is_empty() {
+            continue;
+        }
+        if let Some(result) = local_help(source, language) {
+            success &= result;
+            continue;
+        }
+        // 无连接也可查阅帮助及退出；只有业务命令才建立连接。
+        // Help and exit work offline; connect only for a database command.
+        if source.trim().eq_ignore_ascii_case("QUIT") && client.is_none() {
+            break;
+        }
+        if client.is_none() {
+            client = Some(
+                Client::connect(
+                    SocketAddr::new(args.host, args.port),
+                    password,
+                    args.db,
+                    options.clone(),
+                )
+                .await?,
+            );
+        }
+        let active = client.as_mut().expect("connected above");
+        success &= execute(active, source).await;
+        if active.is_closed() {
+            break;
+        }
+    }
+    if let Some(mut client) = client {
+        if !client.is_closed() {
+            client.close().await?;
+        }
     }
     Ok(success)
 }

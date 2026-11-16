@@ -2,7 +2,7 @@
 //! Generic key commands; multi-key changes publish atomically within one owner.
 
 use crate::{TimeSnapshot, Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::collections::HashSet;
 
 impl Transaction<'_> {

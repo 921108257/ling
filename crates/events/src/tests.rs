@@ -2,7 +2,7 @@
 //! Event consumption and disk-failure contracts using real temporary directories and independent golden bytes.
 
 use super::*;
-use linger_types::{ErrorCode, EventId};
+use ling_types::{ErrorCode, EventId};
 use std::{
     fs,
     path::PathBuf,
@@ -14,7 +14,7 @@ struct Directory(PathBuf);
 impl Directory {
     /// 隔离并行测试；Isolates parallel tests.
     fn new() -> Self {
-        Self(std::env::temp_dir().join(format!("linger-events-{:032x}", rand::random::<u128>())))
+        Self(std::env::temp_dir().join(format!("ling-events-{:032x}", rand::random::<u128>())))
     }
     /// 小磁盘预算促成可重复背压；A small disk budget makes backpressure reproducible.
     fn config(&self) -> Config {
@@ -48,7 +48,7 @@ fn change(key: &str, shard: u32) -> Change {
     }
 }
 /// 对稳定错误码断言；Asserts stable error codes.
-fn code<T: std::fmt::Debug>(result: Result<T, linger_types::DbError>, code: ErrorCode) {
+fn code<T: std::fmt::Debug>(result: Result<T, ling_types::DbError>, code: ErrorCode) {
     assert_eq!(result.unwrap_err().code, code.as_str());
 }
 
@@ -79,7 +79,7 @@ fn independent_disk_vector_and_truncated_lengths() {
         .step_by(2)
         .map(|i| u8::from_str_radix(&hex[i..i + 2], 16).unwrap())
         .collect();
-    let e = linger_types::Event {
+    let e = ling_types::Event {
         id: EventId {
             stream_id: 2,
             db: 0,

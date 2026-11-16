@@ -1,7 +1,7 @@
 //! Map 修改浅合并，请求中的重复字段在写入前拒绝。
 //! Map mutations use shallow merging and reject duplicate request fields before writing.
 use crate::{Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::{
     collections::{BTreeMap, HashSet},
     time::Instant,
@@ -9,14 +9,11 @@ use std::{
 
 /// 先测量借用字段的完整编码，再复制为持有所有权的 Map。
 /// Measures borrowed fields before cloning into an owned Map.
-fn map(
-    fields: BTreeMap<&str, &Value>,
-    limits: linger_types::ValueLimits,
-) -> Result<Value, DbError> {
+fn map(fields: BTreeMap<&str, &Value>, limits: ling_types::ValueLimits) -> Result<Value, DbError> {
     let mut bytes = 5usize;
     u32::try_from(fields.len()).map_err(|_| limit_error())?;
     for (key, value) in &fields {
-        let len = value.validate(linger_types::ValueLimits {
+        let len = value.validate(ling_types::ValueLimits {
             max_depth: limits.max_depth - 1,
             ..limits
         })?;

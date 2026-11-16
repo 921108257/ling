@@ -4,7 +4,7 @@ mod lists;
 mod maps;
 mod sets;
 use crate::{Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::time::Instant;
 
 impl Transaction<'_> {

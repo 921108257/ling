@@ -1,15 +1,20 @@
 [package]
-name = "linger-server"
+name = "ling-server"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
+[[bin]]
+name = "ling"
+path = "src/main.rs"
+
 [dependencies]
-linger-types.workspace = true
-linger-protocol.workspace = true
-linger-engine.workspace = true
-linger-events.workspace = true
-linger-network.workspace = true
+ling-cli-help.workspace = true
+ling-types.workspace = true
+ling-protocol.workspace = true
+ling-engine.workspace = true
+ling-events.workspace = true
+ling-network.workspace = true
 tokio-rustls.workspace = true
 rand.workspace = true
 tokio.workspace = true
@@ -19,7 +24,7 @@ clap.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]
-linger-client.workspace = true
+ling-client.workspace = true
 
 [lints]
 workspace = true

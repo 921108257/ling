@@ -2,7 +2,7 @@
 //! Runtime state, config reload, and metrics without business labels; locks never span network waits.
 
 use crate::Config;
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::{
     collections::BTreeMap,
     sync::{
@@ -171,7 +171,7 @@ impl Runtime {
     }
     /// INFO 固定分类，未提供伪造 RSS 或未测量的性能数据。
     /// INFO uses fixed sections without invented RSS or unmeasured performance claims.
-    pub fn info(&self, engine: &linger_engine::Engine, args: &[Value]) -> Result<Value, DbError> {
+    pub fn info(&self, engine: &ling_engine::Engine, args: &[Value]) -> Result<Value, DbError> {
         let section = match args {
             [] => "all".to_owned(),
             [Value::String(s)] => s.to_ascii_lowercase(),
@@ -339,7 +339,7 @@ impl Runtime {
     }
     /// Prometheus 文本只使用固定标签，避免业务高基数。
     /// Prometheus text uses fixed labels to avoid business cardinality.
-    fn metrics(&self, engine: &linger_engine::Engine) -> Result<String, DbError> {
+    fn metrics(&self, engine: &ling_engine::Engine) -> Result<String, DbError> {
         let mut text = format!(
             "# TYPE linger_requests_total counter\nlinger_requests_total {}\n# TYPE linger_errors_total counter\nlinger_errors_total {}\n# TYPE linger_clients gauge\nlinger_clients {}\n# TYPE linger_managed_bytes gauge\nlinger_managed_bytes {}\n# TYPE linger_scheduled_expirations gauge\nlinger_scheduled_expirations {}\n",
             self.requests.load(Ordering::Relaxed),
@@ -431,7 +431,7 @@ fn invalid() -> DbError {
 pub(crate) async fn serve_metrics(
     listener: TcpListener,
     runtime: Arc<Runtime>,
-    engine: Arc<linger_engine::Engine>,
+    engine: Arc<ling_engine::Engine>,
     mut closing: watch::Receiver<bool>,
 ) -> std::io::Result<()> {
     let capacity = Arc::new(Semaphore::new(16));

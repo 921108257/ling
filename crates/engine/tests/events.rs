@@ -1,9 +1,9 @@
 //! 引擎与事件提交边界契约；同一套生命周期断言运行于 Fast 和 Reliable。
 //! Engine/event commit-boundary contracts with lifecycle assertions in both Fast and Reliable modes.
 
-use linger_engine::{Clock, Config, Engine, EvictionPolicy, TimeSnapshot};
-use linger_events::{EventStore, Subscription};
-use linger_types::{DbError, Event, EventKind, Value};
+use ling_engine::{Clock, Config, Engine, EvictionPolicy, TimeSnapshot};
+use ling_events::{EventStore, Subscription};
+use ling_types::{DbError, Event, EventKind, Value};
 use std::{
     fs,
     path::PathBuf,
@@ -40,7 +40,7 @@ impl Directory {
     /// 随机隔离；Random isolation.
     fn new() -> Self {
         Self(std::env::temp_dir().join(format!(
-            "linger-engine-events-{:032x}",
+            "ling-engine-events-{:032x}",
             rand::random::<u128>()
         )))
     }
@@ -81,7 +81,7 @@ fn six_kinds_revisions_noops_and_relocation_in_both_modes() {
         };
         let events = Arc::new(
             EventStore::open(
-                linger_events::Config {
+                ling_events::Config {
                     reliable,
                     directory: if reliable {
                         dir.0.clone()
@@ -170,7 +170,7 @@ fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
     let clock = TestClock::new();
     let events = Arc::new(
         EventStore::open(
-            linger_events::Config {
+            ling_events::Config {
                 reliable: true,
                 directory: dir.0.clone(),
                 max_bytes: 1024 * 1024,
@@ -197,12 +197,12 @@ fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
     run(&e, "SET", &[s("b"), Value::Int(1)]);
     let key = "k".repeat(1024);
     loop {
-        let change = linger_events::Change {
+        let change = ling_events::Change {
             db: 1,
             shard: 0,
             kind: EventKind::Created,
             key: key.clone(),
-            generation: linger_types::Generation {
+            generation: ling_types::Generation {
                 epoch: 1,
                 counter: 1,
             },
@@ -214,12 +214,12 @@ fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
         }
     }
     // 用尽剩余尾部空间，确保较短写入也受背压；Exhaust the remainder so short writes are also rejected.
-    let change = linger_events::Change {
+    let change = ling_events::Change {
         db: 1,
         shard: 0,
         kind: EventKind::Created,
         key: "x".into(),
-        generation: linger_types::Generation {
+        generation: ling_types::Generation {
             epoch: 1,
             counter: 1,
         },

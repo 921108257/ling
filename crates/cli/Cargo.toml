@@ -1,20 +1,21 @@
 [package]
-name = "linger-cli"
+name = "ling-cli"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-linger-client.workspace = true
-linger-protocol.workspace = true
-linger-types.workspace = true
+ling-cli-help.workspace = true
+ling-client.workspace = true
+ling-protocol.workspace = true
+ling-types.workspace = true
 tokio.workspace = true
 clap.workspace = true
 serde_json.workspace = true
 base64.workspace = true
 
 [dev-dependencies]
-linger-server.workspace = true
+ling-server.workspace = true
 
 [lints]
 workspace = true

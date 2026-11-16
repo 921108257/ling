@@ -1,8 +1,8 @@
 //! 独立协议黄金向量与畸形输入契约；不依赖自编码自解码证明兼容。
 //! Independent protocol golden vectors and malformed-input contracts; round trips alone do not prove compatibility.
 
-use linger_protocol::*;
-use linger_types::{DbError, ErrorCode, Float, Scalar, Value};
+use ling_protocol::*;
+use ling_types::{DbError, ErrorCode, Float, Scalar, Value};
 use std::collections::{BTreeMap, HashSet};
 
 /// 读取独立十六进制黄金文件，忽略排版空白。
@@ -227,7 +227,7 @@ fn decoding_is_bounded_and_envelopes_do_not_count_as_business_depth() {
             .fatal
     );
     let limits = Limits {
-        value: linger_types::ValueLimits {
+        value: ling_types::ValueLimits {
             max_depth: 1,
             ..Default::default()
         },
@@ -294,7 +294,7 @@ fn batch_business_error_is_isolated_but_truncated_tail_rejects_all() {
 #[test]
 fn business_limits_do_not_restrict_keys_or_response_envelopes() {
     let limits = Limits {
-        value: linger_types::ValueLimits {
+        value: ling_types::ValueLimits {
             max_bytes: 1,
             max_depth: 1,
             max_key_bytes: 1,
@@ -385,7 +385,7 @@ async fn fragmented_and_coalesced_frames_and_truncated_eof() {
 #[test]
 fn typed_events_match_existing_protocol_vectors() {
     let limits = Limits {
-        value: linger_types::ValueLimits {
+        value: ling_types::ValueLimits {
             max_bytes: 1,
             max_depth: 1,
             max_key_bytes: 1,
@@ -406,8 +406,8 @@ fn typed_events_match_existing_protocol_vectors() {
     let Body::Event(value) = event_frame.body else {
         panic!()
     };
-    let event = linger_types::Event::from_value(&value).unwrap();
-    assert_eq!(event.kind, linger_types::EventKind::Created);
+    let event = ling_types::Event::from_value(&value).unwrap();
+    assert_eq!(event.kind, ling_types::EventKind::Created);
     assert_eq!(event.id.stream_id, 1);
     assert_eq!(event.generation.epoch, 2);
     assert_eq!(event.key, "k");
@@ -422,22 +422,19 @@ fn typed_events_match_existing_protocol_vectors() {
     let Body::Event(v) = decode_frame(&round, limits).unwrap().body else {
         panic!()
     };
-    assert_eq!(linger_types::Event::from_value(&v).unwrap(), event);
-    let id = linger_types::EventId {
+    assert_eq!(ling_types::Event::from_value(&v).unwrap(), event);
+    let id = ling_types::EventId {
         stream_id: u128::MAX,
         db: u16::MAX,
         shard: u32::MAX,
         sequence: u64::MAX,
     };
-    assert_eq!(
-        linger_types::EventId::from_value(&id.to_value()).unwrap(),
-        id
-    );
+    assert_eq!(ling_types::EventId::from_value(&id.to_value()).unwrap(), id);
     let mut invalid = event.to_value();
     if let Value::Map(m) = &mut invalid {
         m.insert("revision".into(), Value::Int(1));
     }
-    assert!(linger_types::Event::from_value(&invalid).is_err());
+    assert!(ling_types::Event::from_value(&invalid).is_err());
 }
 
 /// 固定种子的畸形输入烟测覆盖长度、标签与深度；不等同于持续模糊测试。

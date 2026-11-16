@@ -1,7 +1,7 @@
 //! 类型契约：精度、相等、哈希、深度与稳定错误码。
 //! Type contracts: precision, equality, hashing, depth, and stable error codes.
 
-use linger_types::{ErrorCode, Float, Scalar, Value, ValueLimits};
+use ling_types::{ErrorCode, Float, Scalar, Value, ValueLimits};
 use std::collections::{BTreeMap, HashSet};
 
 /// 类型敏感的相等与哈希一致，拒绝 NaN 并归一化正负零。
@@ -26,10 +26,7 @@ fn scalar_equality_and_hash_preserve_types() {
     assert_ne!(Value::Null, Value::Bool(false));
     assert_ne!(
         Ok(Value::Null),
-        Err(linger_types::DbError::new(
-            ErrorCode::KeyNotFound,
-            "missing"
-        ))
+        Err(ling_types::DbError::new(ErrorCode::KeyNotFound, "missing"))
     );
 }
 

@@ -2,16 +2,20 @@
 //! Server command-line entry point, configuration loading, and graceful shutdown signals.
 
 use clap::Parser;
-use linger_server::{Config, Server};
+use ling_server::{Config, Server};
 use std::path::PathBuf;
 
 /// 启动参数；凭据不进入命令行参数。
 /// Startup arguments; credentials are not accepted on the command line.
 #[derive(Parser)]
-#[command(version, about = "linger-cache-db 阶段 6 固定分片网络服务")]
+#[command(name = "ling", version)]
 struct Args {
-    /// 可选配置路径，缺省尝试工作目录 linger.toml。
-    /// Optional config path; defaults to linger.toml in the working directory.
+    /// 本地帮助语言，默认按系统语言选择。
+    /// Local help language, detected from the system by default.
+    #[arg(long)]
+    lang: Option<String>,
+    /// 可选配置路径，缺省尝试工作目录 ling.toml，再兼容 linger.toml。
+    /// Optional config path; tries ling.toml, then legacy linger.toml in the working directory.
     #[arg(long)]
     config: Option<PathBuf>,
 }
@@ -29,11 +33,13 @@ async fn main() {
 /// 装配配置与运行时资源，完成退出前的连接清理。
 /// Assembles configuration and runtime resources and cleans up connections before exit.
 async fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let args = Args::parse();
+    let (args, _) = ling_cli_help::parse_localized::<Args>(true);
     let config = match args.config {
         Some(path) => Config::load(&path)?,
         None => {
-            if std::path::Path::new("linger.toml").exists() {
+            if std::path::Path::new("ling.toml").exists() {
+                Config::load(std::path::Path::new("ling.toml"))?
+            } else if std::path::Path::new("linger.toml").exists() {
                 Config::load(std::path::Path::new("linger.toml"))?
             } else {
                 Config::default()

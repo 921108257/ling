@@ -24,11 +24,11 @@ def main():
     args = parser.parse_args()
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
-    subprocess.run(["cargo", "build", "--release", "-p", "linger-server", "--bin", "linger-server", "--example", "lifecycle"], cwd=ROOT, check=True)
+    subprocess.run(["cargo", "build", "--release", "-p", "ling-server", "--bin", "ling", "--example", "lifecycle"], cwd=ROOT, check=True)
     # 与矩阵工具一样固定二进制和来源，隔离实验期间的后续编译。
     # Freeze binaries and provenance like the matrix runner, isolating subsequent builds.
     (args.output / "bin").mkdir()
-    shutil.copy2(ROOT / "target/release/linger-server", args.output / "bin/linger-server")
+    shutil.copy2(ROOT / "target/release/ling", args.output / "bin/ling")
     shutil.copy2(ROOT / "target/release/examples/lifecycle", args.output / "bin/lifecycle")
     (args.output / "environment.json").write_text(json.dumps(environment(args), ensure_ascii=False, indent=2) + "\n")
     results = {}
@@ -43,7 +43,7 @@ def main():
             config += '[event_journal]\ndir="journal"\n'
         (directory / "linger.toml").write_text(config)
         with (directory / "server.log").open("w") as log:
-            server = subprocess.Popen([str(args.output / "bin/linger-server"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
+            server = subprocess.Popen([str(args.output / "bin/ling"), "--config", str(directory / "linger.toml")], cwd=ROOT, stdout=log, stderr=log)
             try:
                 deadline = time.monotonic() + 10
                 while True:

@@ -2,7 +2,7 @@
 //! Eviction candidates are removed only after full commit preflight; access heat never changes business revisions.
 
 use crate::{Transaction, support::*};
-use linger_types::{DbError, ErrorCode};
+use ling_types::{DbError, ErrorCode};
 use rand::seq::IteratorRandom;
 use std::{
     collections::{BTreeMap, HashSet},

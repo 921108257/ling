@@ -2,7 +2,7 @@
 //! Millisecond deadlines, TTL queries, and atomic deadline changes; logical expiry is independent of reclamation.
 
 use crate::{Deadline, TimeSnapshot, Transaction, support::*, unavailable};
-use linger_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value};
 use std::time::Duration;
 
 /// 完整检查秒换算、Unix 范围及平台单调期限，禁止溢出变为永久有效。
@@ -145,9 +145,9 @@ impl Transaction<'_> {
             key,
             if immediate { old } else { metadata },
             if immediate {
-                linger_types::EventKind::Expired
+                ling_types::EventKind::Expired
             } else {
-                linger_types::EventKind::TtlChanged
+                ling_types::EventKind::TtlChanged
             },
             time,
         )];

@@ -1,8 +1,8 @@
 //! 游标弱一致性、字节匹配与响应预算契约。
 //! Cursor weak-consistency, byte matching, and response-budget contracts.
 
-use linger_engine::{Config, Engine, ScanState};
-use linger_types::Value;
+use ling_engine::{Config, Engine, ScanState};
+use ling_types::Value;
 use std::collections::HashSet;
 
 /// 构造文本参数；Builds a text argument.

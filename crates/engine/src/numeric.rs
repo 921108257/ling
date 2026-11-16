@@ -1,7 +1,7 @@
 //! 数值操作保留类型与 TTL，并在宽整数中校验溢出。
 //! Numeric operations preserve type and TTL and check overflow with wide integers.
 use crate::{Transaction, support::*};
-use linger_types::{DbError, ErrorCode, Float, Value};
+use ling_types::{DbError, ErrorCode, Float, Value};
 use std::time::Instant;
 
 impl Transaction<'_> {

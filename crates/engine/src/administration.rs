@@ -2,7 +2,7 @@
 //! Cross-database relocation and whole-database mutations publish after identity, capacity, and response checks.
 
 use crate::{Metadata, TimeSnapshot, Transaction, copy_options, support::*, unavailable};
-use linger_types::{DbError, ErrorCode, Generation, Value};
+use ling_types::{DbError, ErrorCode, Generation, Value};
 use std::time::Instant;
 
 impl Transaction<'_> {
@@ -200,7 +200,7 @@ impl Transaction<'_> {
                             target,
                             &key,
                             e.metadata,
-                            linger_types::EventKind::Expired,
+                            ling_types::EventKind::Expired,
                             time,
                         ));
                     }
@@ -209,14 +209,14 @@ impl Transaction<'_> {
                             target,
                             &key,
                             m,
-                            linger_types::EventKind::Created,
+                            ling_types::EventKind::Created,
                             time,
                         )),
                         (Some(e), None) => events.push(self.event(
                             target,
                             &key,
                             e.metadata,
-                            linger_types::EventKind::Deleted,
+                            ling_types::EventKind::Deleted,
                             time,
                         )),
                         (Some(e), Some(m)) => {
@@ -224,7 +224,7 @@ impl Transaction<'_> {
                                 target,
                                 &key,
                                 m,
-                                linger_types::EventKind::Updated,
+                                ling_types::EventKind::Updated,
                                 time,
                             ));
                             if e.metadata.deadline != m.deadline {
@@ -232,7 +232,7 @@ impl Transaction<'_> {
                                     target,
                                     &key,
                                     m,
-                                    linger_types::EventKind::TtlChanged,
+                                    ling_types::EventKind::TtlChanged,
                                     time,
                                 ));
                             }

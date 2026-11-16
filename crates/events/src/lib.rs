@@ -4,7 +4,7 @@
 mod codec;
 mod journal;
 mod store;
-use linger_types::{DbError, ErrorCode, EventKind, Generation};
+use ling_types::{DbError, ErrorCode, EventKind, Generation};
 use std::path::PathBuf;
 pub use store::{EventStore, GroupStats, Stats, Subscription};
 
