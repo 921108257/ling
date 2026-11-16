@@ -2,7 +2,7 @@
 
 ling（原 linger-cache-db）是独立部署的 Rust 内存缓存数据库：自定义二进制协议、10 种强类型、固定分片和多数据库；已支持毫秒 TTL、Fast 事件与可选 Reliable Journal。
 
-**当前为 0.1.0 预发布版本，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
+**当前为 0.1.1 预发布版本，已完成阶段 7 本机性能与资源验收。** 已实现共享类型、版本 1 编解码、数据引擎、TCP / TLS 服务、Rust / Java / Go SDK 和 CLI。支持十种 Value、隔离数据库、数值与容器命令，以及跨库复制 / 移动、重命名、遍历、清库、数据库交换及完整 TTL 生命周期；清单见 [命令契约](docs/commands.md)。
 
 每个 (数据库, Shard) 拥有独立索引与锁，多 Key 命令按固定顺序取得全部执行权后整体发布。可配置全实例受管内存、每库 Key 配额及 noeviction / lru / lfu / random / ttl-first 策略；受管内存不等于进程 RSS。启用淘汰且配置容量上限时，当前写入保守取得全实例执行权。ttl-first 选择最早到期的活跃条目，无期限候选时拒绝写入。
 
@@ -36,7 +36,7 @@ ling-cli -c 'PING'
 
 **Windows 当前仅支持 Fast 事件；Reliable 配置在文件操作和监听前返回 `ERR_CONFIG_INVALID`，不会降级为 Fast。** Linux / macOS 保留 Reliable 支持；其恢复边界仍是已提交事件和消费元数据，缓存值与 TTL 不恢复。
 
-[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预发布 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。本次版本标签为 `v0.1.0`，对应 GitHub Prerelease；后续发布同样先更新版本，再推送匹配标签。
+[GitHub Actions](.github/workflows/release.yml) 在 `v*` 标签、手动触发和面向 `main` 的 PR 上执行检查与原生打包；标签必须与 `Cargo.toml` 版本一致，只有标签构建全部成功后才创建预发布 Release。手动/PR 构建产物保留 14 天，Release 资产长期保留。本次版本标签为 `v0.1.1`，对应 GitHub Prerelease；后续发布同样先更新版本，再推送匹配标签。
 
 ## 构建与试用
 
