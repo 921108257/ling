@@ -1,0 +1,3920 @@
+{
+  "root": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\redis-full-20261118-0507",
+  "valid": false,
+  "errors": [
+    "one or more case audits failed"
+  ],
+  "inputs": {
+    "controller": {
+      "copy": "inputs/controller-redis_compare.py",
+      "sha256": "8532e228fdbbaf928ebbff520074b2172e4c59164c5cfa6c0bacabc879e8b5dc",
+      "valid": true
+    },
+    "protocol_helper": {
+      "copy": "inputs/protocol_helper-v020.py",
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "valid": true
+    },
+    "tests": {
+      "copy": "inputs/tests-test_redis_compare.py",
+      "sha256": "9153c8005142799161cf6cf8f85e7bf1e77cc06af4b6cd3052d40e6e60a1be96",
+      "valid": true
+    },
+    "ling": {
+      "copy": "inputs/ling-ling",
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "valid": true
+    },
+    "redis": {
+      "copy": "inputs/redis-redis-server",
+      "sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a",
+      "valid": true
+    },
+    "redis_source_archive": {
+      "copy": "inputs/redis_source_archive-redis-8.10.3.tar.gz",
+      "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+      "valid": true
+    }
+  },
+  "cases": [
+    {
+      "name": "reliable-string-set-px-3-ling",
+      "errors": [],
+      "raw_sha256": "004a94861f67fe8de21dfbc10e9f4b1c076d80808fae922266bf7079ebaabcd7",
+      "raw_samples": 1659,
+      "elapsed_seconds": 10.024240663,
+      "successes_per_second": 165.49881988801968,
+      "p50_us": 23997.212,
+      "p95_us": 30880.295,
+      "p99_us": 33752.552,
+      "p999_us": 42951.263,
+      "server_cpu_seconds": 0.37999999999999995,
+      "client_cpu_seconds_recorded": 0.14997033600000004,
+      "resources_before": {
+        "cpu_seconds": 0.32,
+        "rss_bytes": 5341184,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5378048
+      },
+      "resources_after": {
+        "cpu_seconds": 0.7,
+        "rss_bytes": 5382144,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5509120
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-px-3-redis",
+      "errors": [],
+      "raw_sha256": "ec18357a51a3162d49b590341b82da360d5d5d074d960fe493d0ef99213f4563",
+      "raw_samples": 3241,
+      "elapsed_seconds": 10.009258679,
+      "successes_per_second": 323.80020378530173,
+      "p50_us": 12192.489,
+      "p95_us": 13149.783,
+      "p99_us": 14270.655,
+      "p999_us": 81258.397,
+      "server_cpu_seconds": 0.22000000000000003,
+      "client_cpu_seconds_recorded": 0.243534131,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9695232,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9695232
+      },
+      "resources_after": {
+        "cpu_seconds": 0.34,
+        "rss_bytes": 9797632,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9797632
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856256,
+        "dataset_bytes": 173560
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 857784,
+        "dataset_bytes": 170608
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-get-3-redis",
+      "errors": [],
+      "raw_sha256": "29c962cf5de40a3b15568315f7d119419eb14fb24848eb603ada38c6f9d6df7b",
+      "raw_samples": 206721,
+      "elapsed_seconds": 10.000500333,
+      "successes_per_second": 20671.065758365592,
+      "p50_us": 148.113,
+      "p95_us": 444.327,
+      "p99_us": 636.35,
+      "p999_us": 951.354,
+      "server_cpu_seconds": 2.63,
+      "client_cpu_seconds_recorded": 14.024291483,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9535488,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9535488
+      },
+      "resources_after": {
+        "cpu_seconds": 2.65,
+        "rss_bytes": 9609216,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9609216
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946640,
+        "dataset_bytes": 198600
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858888,
+        "dataset_bytes": 196864
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-get-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "9b00781901fc9a75857169f614e13519983acda334c9c7ac52b56db1349ade79",
+      "raw_samples": 177833,
+      "elapsed_seconds": 10.000233466,
+      "successes_per_second": 17782.884830101026,
+      "p50_us": 197.422,
+      "p95_us": 421.346,
+      "p99_us": 576.812,
+      "p999_us": 837.26,
+      "server_cpu_seconds": 9.270000000000001,
+      "client_cpu_seconds_recorded": 13.090802514,
+      "resources_before": {
+        "cpu_seconds": 0.11,
+        "rss_bytes": 5369856,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5369856
+      },
+      "resources_after": {
+        "cpu_seconds": 9.38,
+        "rss_bytes": 5283840,
+        "threads": 7,
+        "handles": 11,
+        "peak_rss_bytes": 5283840
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-bytes-get-3-redis",
+      "errors": [],
+      "raw_sha256": "8a1c157995849b92d79e747d3cf9e4b6124cdc708b5f27cb849426efdaf7fcf9",
+      "raw_samples": 205825,
+      "elapsed_seconds": 10.000207572,
+      "successes_per_second": 20582.072773799016,
+      "p50_us": 147.321,
+      "p95_us": 447.113,
+      "p99_us": 631.231,
+      "p999_us": 886.484,
+      "server_cpu_seconds": 2.5100000000000002,
+      "client_cpu_seconds_recorded": 13.955652503999996,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9404416,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9404416
+      },
+      "resources_after": {
+        "cpu_seconds": 2.54,
+        "rss_bytes": 9478144,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9478144
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946544,
+        "dataset_bytes": 198504
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858792,
+        "dataset_bytes": 196768
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-get-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "f5dde18480530b5a65ff361df3612ad7509ba5a9d93c07c620cea38b3652d040",
+      "raw_samples": 179103,
+      "elapsed_seconds": 10.00025797,
+      "successes_per_second": 17909.837979909633,
+      "p50_us": 196.249,
+      "p95_us": 412.228,
+      "p99_us": 560.973,
+      "p999_us": 782.866,
+      "server_cpu_seconds": 9.31,
+      "client_cpu_seconds_recorded": 13.085967132,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5365760,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5365760
+      },
+      "resources_after": {
+        "cpu_seconds": 9.43,
+        "rss_bytes": 5287936,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 5287936
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-string-set-3-ling",
+      "errors": [],
+      "raw_sha256": "8931b3b93e9feda27bf3f3dfe69e94a1bafa3c18a91ad4a02c190cfcbfc0a946",
+      "raw_samples": 179120,
+      "elapsed_seconds": 10.00039393,
+      "successes_per_second": 17911.294420378897,
+      "p50_us": 196.077,
+      "p95_us": 406.581,
+      "p99_us": 560.763,
+      "p999_us": 878.383,
+      "server_cpu_seconds": 10.08,
+      "client_cpu_seconds_recorded": 12.915485480000001,
+      "resources_before": {
+        "cpu_seconds": 0.11,
+        "rss_bytes": 5423104,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5423104
+      },
+      "resources_after": {
+        "cpu_seconds": 10.19,
+        "rss_bytes": 23900160,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 23900160
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-3-redis",
+      "errors": [],
+      "raw_sha256": "51efa0164947d54da44b87bb1778c902a1ab1f9e7e06e2e007a596c28e333aa1",
+      "raw_samples": 261769,
+      "elapsed_seconds": 10.000244194,
+      "successes_per_second": 26176.26079141723,
+      "p50_us": 129.144,
+      "p95_us": 280.632,
+      "p99_us": 435.288,
+      "p999_us": 665.47,
+      "server_cpu_seconds": 3.27,
+      "client_cpu_seconds_recorded": 14.455706117999995,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9515008,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9515008
+      },
+      "resources_after": {
+        "cpu_seconds": 3.29,
+        "rss_bytes": 9584640,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9584640
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921824,
+        "dataset_bytes": 173784
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834072,
+        "dataset_bytes": 172048
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-3-redis",
+      "errors": [],
+      "raw_sha256": "21480a252501ee4ff10bcca07e00c2d343595dff1490fc67f4957ee73d2e09f3",
+      "raw_samples": 246309,
+      "elapsed_seconds": 10.000189552,
+      "successes_per_second": 24630.433125214025,
+      "p50_us": 135.624,
+      "p95_us": 303.654,
+      "p99_us": 471.945,
+      "p999_us": 730.733,
+      "server_cpu_seconds": 3.33,
+      "client_cpu_seconds_recorded": 14.330710339999996,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9650176,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9650176
+      },
+      "resources_after": {
+        "cpu_seconds": 3.36,
+        "rss_bytes": 9699328,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9699328
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 933304,
+        "dataset_bytes": 172632
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856136,
+        "dataset_bytes": 169856
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-3-ling",
+      "errors": [],
+      "raw_sha256": "0e49f7409e35539320f46b67efba44934d681f7ecb9f22687dc02a5b346ae63e",
+      "raw_samples": 174944,
+      "elapsed_seconds": 10.000212547,
+      "successes_per_second": 17494.028169679463,
+      "p50_us": 202.111,
+      "p95_us": 406.159,
+      "p99_us": 543.75,
+      "p999_us": 744.917,
+      "server_cpu_seconds": 10.190000000000001,
+      "client_cpu_seconds_recorded": 12.870304618000006,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5586944,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5586944
+      },
+      "resources_after": {
+        "cpu_seconds": 10.31,
+        "rss_bytes": 24137728,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 24252416
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-3-ling",
+      "errors": [],
+      "raw_sha256": "f030105c9b31572eba6af5976e5fc0b7748bfb4b288816ebafdd9a89624eb581",
+      "raw_samples": 183349,
+      "elapsed_seconds": 10.000160895,
+      "successes_per_second": 18334.605005372767,
+      "p50_us": 192.049,
+      "p95_us": 396.186,
+      "p99_us": 536.327,
+      "p999_us": 770.452,
+      "server_cpu_seconds": 9.99,
+      "client_cpu_seconds_recorded": 12.914607179,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5439488,
+        "threads": 7,
+        "handles": 15,
+        "peak_rss_bytes": 5439488
+      },
+      "resources_after": {
+        "cpu_seconds": 10.11,
+        "rss_bytes": 23904256,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 23990272
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-3-redis",
+      "errors": [],
+      "raw_sha256": "f5a21b2f8cb6afd913a83bdd24e3d48e18c26171a0dc832a270eb2a9f6f814ff",
+      "raw_samples": 262907,
+      "elapsed_seconds": 10.000242541,
+      "successes_per_second": 26290.062358198556,
+      "p50_us": 129.746,
+      "p95_us": 272.459,
+      "p99_us": 425.675,
+      "p999_us": 665.021,
+      "server_cpu_seconds": 3.25,
+      "client_cpu_seconds_recorded": 14.430500669999986,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9584640,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9584640
+      },
+      "resources_after": {
+        "cpu_seconds": 3.27,
+        "rss_bytes": 9654272,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9654272
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921760,
+        "dataset_bytes": 173720
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834008,
+        "dataset_bytes": 171984
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-2-redis",
+      "errors": [],
+      "raw_sha256": "0b50f5f7c32ba671c82bccb0770d247b1fb4f03210cb679c1e8be4ec1e505998",
+      "raw_samples": 3326,
+      "elapsed_seconds": 10.0100897,
+      "successes_per_second": 332.26475483031885,
+      "p50_us": 11921.92,
+      "p95_us": 12798.665,
+      "p99_us": 15283.013,
+      "p999_us": 17354.648,
+      "server_cpu_seconds": 0.24,
+      "client_cpu_seconds_recorded": 0.29984190499999386,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 9740288,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9740288
+      },
+      "resources_after": {
+        "cpu_seconds": 0.37,
+        "rss_bytes": 9809920,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9809920
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 845968,
+        "dataset_bytes": 174408
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835464,
+        "dataset_bytes": 172672
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "523775430c4e2773705e2fecca40dd6a0cb52d1b84d14e0f19c7f51170f7931c",
+      "raw_samples": 1603,
+      "elapsed_seconds": 10.018520487,
+      "successes_per_second": 160.00366541946465,
+      "p50_us": 24824.358,
+      "p95_us": 32424.401,
+      "p99_us": 36832.476,
+      "p999_us": 86019.0,
+      "server_cpu_seconds": 0.37000000000000005,
+      "client_cpu_seconds_recorded": 0.15509566399998675,
+      "resources_before": {
+        "cpu_seconds": 0.42,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 0.79,
+        "rss_bytes": 5185536,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-string-set-px-2-ling",
+      "errors": [],
+      "raw_sha256": "3582345b0b8e2e8dc516c29d6c62ae040ba3e4ef181d89cfa8cfc3b97e688764",
+      "raw_samples": 173754,
+      "elapsed_seconds": 10.000286522,
+      "successes_per_second": 17374.902170828023,
+      "p50_us": 201.424,
+      "p95_us": 413.664,
+      "p99_us": 580.978,
+      "p999_us": 1135.51,
+      "server_cpu_seconds": 10.22,
+      "client_cpu_seconds_recorded": 12.844958919999982,
+      "resources_before": {
+        "cpu_seconds": 0.1,
+        "rss_bytes": 5586944,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5586944
+      },
+      "resources_after": {
+        "cpu_seconds": 10.32,
+        "rss_bytes": 24150016,
+        "threads": 9,
+        "handles": 11,
+        "peak_rss_bytes": 24150016
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-px-2-redis",
+      "errors": [],
+      "raw_sha256": "7b6c8fb2e072abd01ba3926cb36dd3a9dc0fe938e7777e244509e1af709f71cb",
+      "raw_samples": 261227,
+      "elapsed_seconds": 10.000217473,
+      "successes_per_second": 26122.131914160625,
+      "p50_us": 132.549,
+      "p95_us": 267.152,
+      "p99_us": 423.392,
+      "p999_us": 648.547,
+      "server_cpu_seconds": 3.37,
+      "client_cpu_seconds_recorded": 14.394762010999983,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9543680,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9543680
+      },
+      "resources_after": {
+        "cpu_seconds": 3.4,
+        "rss_bytes": 9658368,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9658368
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 930848,
+        "dataset_bytes": 172248
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855880,
+        "dataset_bytes": 169600
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-px-1-ling",
+      "errors": [],
+      "raw_sha256": "120c43836e1b8cfd85cdec71ea0dd5825cc96806915d2723ad9d3880de478038",
+      "raw_samples": 1607,
+      "elapsed_seconds": 10.018969555,
+      "successes_per_second": 160.3957364256109,
+      "p50_us": 24665.013,
+      "p95_us": 31508.845,
+      "p99_us": 34830.164,
+      "p999_us": 40085.234,
+      "server_cpu_seconds": 0.41,
+      "client_cpu_seconds_recorded": 0.17357036799998582,
+      "resources_before": {
+        "cpu_seconds": 0.31,
+        "rss_bytes": 5378048,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5378048
+      },
+      "resources_after": {
+        "cpu_seconds": 0.72,
+        "rss_bytes": 5423104,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5509120
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-px-1-redis",
+      "errors": [],
+      "raw_sha256": "317ae8b7fbb3654e0c567d3100cdcb06680cc7ed2866f2c5943b542279d86d49",
+      "raw_samples": 3330,
+      "elapsed_seconds": 10.00745055,
+      "successes_per_second": 332.752081397994,
+      "p50_us": 11880.811,
+      "p95_us": 12927.432,
+      "p99_us": 15820.047,
+      "p999_us": 22160.363,
+      "server_cpu_seconds": 0.25,
+      "client_cpu_seconds_recorded": 0.3051726390000056,
+      "resources_before": {
+        "cpu_seconds": 0.14,
+        "rss_bytes": 9342976,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9342976
+      },
+      "resources_after": {
+        "cpu_seconds": 0.39,
+        "rss_bytes": 9445376,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9445376
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856080,
+        "dataset_bytes": 173384
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 857784,
+        "dataset_bytes": 170608
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-get-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "ab0b6e0badb067c02dfef10ad17c4630d3fc211b3d4e78ff7259e0fad3a567fc",
+      "raw_samples": 181214,
+      "elapsed_seconds": 10.000249955,
+      "successes_per_second": 18120.947057867816,
+      "p50_us": 193.526,
+      "p95_us": 407.449,
+      "p99_us": 556.57,
+      "p999_us": 802.954,
+      "server_cpu_seconds": 9.36,
+      "client_cpu_seconds_recorded": 13.074176212999987,
+      "resources_before": {
+        "cpu_seconds": 0.25,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 9.61,
+        "rss_bytes": 5193728,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5193728
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-get-1-redis",
+      "errors": [],
+      "raw_sha256": "216a74292631d642c9a55fca9ea0dd402b557df2662aec47cacdfad661b3ff27",
+      "raw_samples": 201841,
+      "elapsed_seconds": 10.000237818,
+      "successes_per_second": 20183.61999718595,
+      "p50_us": 149.928,
+      "p95_us": 457.144,
+      "p99_us": 651.444,
+      "p999_us": 953.501,
+      "server_cpu_seconds": 2.57,
+      "client_cpu_seconds_recorded": 13.952296759000006,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9728000,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9728000
+      },
+      "resources_after": {
+        "cpu_seconds": 2.69,
+        "rss_bytes": 9736192,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9736192
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 931776,
+        "dataset_bytes": 269432
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859384,
+        "dataset_bytes": 197040
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-get-2-redis",
+      "errors": [],
+      "raw_sha256": "e2ac21be95c145d2671941a6e9da43a3f552859ec810f027f5ab8f0642a26fad",
+      "raw_samples": 209920,
+      "elapsed_seconds": 10.00025353,
+      "successes_per_second": 20991.467803316784,
+      "p50_us": 143.55,
+      "p95_us": 442.178,
+      "p99_us": 626.545,
+      "p999_us": 901.052,
+      "server_cpu_seconds": 2.57,
+      "client_cpu_seconds_recorded": 14.003857274000012,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9629696,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9629696
+      },
+      "resources_after": {
+        "cpu_seconds": 2.69,
+        "rss_bytes": 9703424,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9703424
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 932144,
+        "dataset_bytes": 199144
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859752,
+        "dataset_bytes": 197408
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-get-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "8ff0417239e4fa4fb906ee1e6a50acf85b13ad68e1541ab2c6165e0facb47a7c",
+      "raw_samples": 180279,
+      "elapsed_seconds": 10.000223702,
+      "successes_per_second": 18027.496721292846,
+      "p50_us": 195.402,
+      "p95_us": 410.412,
+      "p99_us": 553.963,
+      "p999_us": 788.148,
+      "server_cpu_seconds": 9.37,
+      "client_cpu_seconds_recorded": 13.052641856999998,
+      "resources_before": {
+        "cpu_seconds": 0.24,
+        "rss_bytes": 5271552,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5271552
+      },
+      "resources_after": {
+        "cpu_seconds": 9.61,
+        "rss_bytes": 5193728,
+        "threads": 8,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-bytes-set-2-redis",
+      "errors": [],
+      "raw_sha256": "6d9c228d908b667c97394a6e9b7412c3539e1715c70363193ff09aed19527924",
+      "raw_samples": 262458,
+      "elapsed_seconds": 10.000415593,
+      "successes_per_second": 26244.709288253278,
+      "p50_us": 129.39,
+      "p95_us": 275.866,
+      "p99_us": 433.259,
+      "p999_us": 658.286,
+      "server_cpu_seconds": 3.29,
+      "client_cpu_seconds_recorded": 14.441308692999996,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9478144,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9478144
+      },
+      "resources_after": {
+        "cpu_seconds": 3.31,
+        "rss_bytes": 9547776,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9547776
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921936,
+        "dataset_bytes": 173896
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834184,
+        "dataset_bytes": 172160
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-2-ling",
+      "errors": [],
+      "raw_sha256": "ce815bc034ac1912d8dea2dbc238ef773514f6b9d34b89e383e4474945370e0e",
+      "raw_samples": 181802,
+      "elapsed_seconds": 10.000236559,
+      "successes_per_second": 18179.76994118025,
+      "p50_us": 194.591,
+      "p95_us": 395.604,
+      "p99_us": 529.426,
+      "p999_us": 733.271,
+      "server_cpu_seconds": 10.0,
+      "client_cpu_seconds_recorded": 12.977007980999986,
+      "resources_before": {
+        "cpu_seconds": 0.11,
+        "rss_bytes": 5431296,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5431296
+      },
+      "resources_after": {
+        "cpu_seconds": 10.11,
+        "rss_bytes": 23908352,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 23908352
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-2-ling",
+      "errors": [],
+      "raw_sha256": "073366a45b3868369aed8f1dbe1418e5b5c2bf8edb2784ea33f1e79091e4e81c",
+      "raw_samples": 1663,
+      "elapsed_seconds": 10.029197836,
+      "successes_per_second": 165.81585359006772,
+      "p50_us": 23906.529,
+      "p95_us": 30703.502,
+      "p99_us": 33615.24,
+      "p999_us": 37343.07,
+      "server_cpu_seconds": 0.36999999999999994,
+      "client_cpu_seconds_recorded": 0.1567397489999962,
+      "resources_before": {
+        "cpu_seconds": 0.33,
+        "rss_bytes": 5382144,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5382144
+      },
+      "resources_after": {
+        "cpu_seconds": 0.7,
+        "rss_bytes": 5439488,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5439488
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-2-redis",
+      "errors": [],
+      "raw_sha256": "a9abf9e730c2579b47665c5cb6021b82e2d926e4d085136cd937050539abefb0",
+      "raw_samples": 3208,
+      "elapsed_seconds": 10.006328611,
+      "successes_per_second": 320.59710656248404,
+      "p50_us": 12360.842,
+      "p95_us": 13305.25,
+      "p99_us": 16584.149,
+      "p999_us": 42779.545,
+      "server_cpu_seconds": 0.2,
+      "client_cpu_seconds_recorded": 0.2694995420000055,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 9625600,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9625600
+      },
+      "resources_after": {
+        "cpu_seconds": 0.33,
+        "rss_bytes": 9695232,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9695232
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855648,
+        "dataset_bytes": 173528
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 857528,
+        "dataset_bytes": 170928
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-get-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "68c9a1cc78110cb85660bc389c5d21198f051ba4f255c87381111d0ebfbbbde9",
+      "raw_samples": 182252,
+      "elapsed_seconds": 10.000337168,
+      "successes_per_second": 18224.585525294762,
+      "p50_us": 192.723,
+      "p95_us": 406.346,
+      "p99_us": 554.202,
+      "p999_us": 769.379,
+      "server_cpu_seconds": 9.24,
+      "client_cpu_seconds_recorded": 13.061515016999977,
+      "resources_before": {
+        "cpu_seconds": 0.24,
+        "rss_bytes": 5279744,
+        "threads": 7,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 9.48,
+        "rss_bytes": 5206016,
+        "threads": 9,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-get-3-redis",
+      "errors": [],
+      "raw_sha256": "d06dd9b08f3588ae45476a92c2c2ec9f3101150736562ed170a6126193486df8",
+      "raw_samples": 209841,
+      "elapsed_seconds": 10.000182334,
+      "successes_per_second": 20983.71739548724,
+      "p50_us": 143.14,
+      "p95_us": 443.579,
+      "p99_us": 632.779,
+      "p999_us": 879.007,
+      "server_cpu_seconds": 2.52,
+      "client_cpu_seconds_recorded": 13.969196854000018,
+      "resources_before": {
+        "cpu_seconds": 0.1,
+        "rss_bytes": 9662464,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9662464
+      },
+      "resources_after": {
+        "cpu_seconds": 2.62,
+        "rss_bytes": 9797632,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9797632
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 932096,
+        "dataset_bytes": 269752
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859704,
+        "dataset_bytes": 197360
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-get-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "db21eb28b4f1ed6b6c72926df717d18e95bd87d22f8eb069ccaff8b267bc03f1",
+      "raw_samples": 180933,
+      "elapsed_seconds": 10.000219621,
+      "successes_per_second": 18092.90264186289,
+      "p50_us": 193.207,
+      "p95_us": 410.213,
+      "p99_us": 560.185,
+      "p999_us": 812.342,
+      "server_cpu_seconds": 9.270000000000001,
+      "client_cpu_seconds_recorded": 13.101924293000025,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5365760,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5365760
+      },
+      "resources_after": {
+        "cpu_seconds": 9.39,
+        "rss_bytes": 5287936,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 5287936
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-bytes-get-1-redis",
+      "errors": [],
+      "raw_sha256": "e86a0207464315dfe81e9b156cc1eef15a42a62313ce8b895de01115fc1c13a0",
+      "raw_samples": 212467,
+      "elapsed_seconds": 10.000200466,
+      "successes_per_second": 21246.27408444194,
+      "p50_us": 141.182,
+      "p95_us": 435.92,
+      "p99_us": 621.232,
+      "p999_us": 875.631,
+      "server_cpu_seconds": 2.48,
+      "client_cpu_seconds_recorded": 13.988857222000036,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9498624,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9498624
+      },
+      "resources_after": {
+        "cpu_seconds": 2.51,
+        "rss_bytes": 9568256,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9568256
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946304,
+        "dataset_bytes": 198264
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858552,
+        "dataset_bytes": 196528
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-px-2-redis",
+      "errors": [],
+      "raw_sha256": "bf962ea5747ffb121b7ef42c1a7a64a3d881609385f2b3ed986b0f3ef86bb381",
+      "raw_samples": 3348,
+      "elapsed_seconds": 10.007895441,
+      "successes_per_second": 334.5358691782519,
+      "p50_us": 11824.232,
+      "p95_us": 12697.447,
+      "p99_us": 15535.253,
+      "p999_us": 19582.241,
+      "server_cpu_seconds": 0.22999999999999998,
+      "client_cpu_seconds_recorded": 0.29776560100003735,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9613312,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9613312
+      },
+      "resources_after": {
+        "cpu_seconds": 0.35,
+        "rss_bytes": 9711616,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9711616
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855568,
+        "dataset_bytes": 173448
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858040,
+        "dataset_bytes": 170864
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-px-2-ling",
+      "errors": [],
+      "raw_sha256": "65d9fddfa886cdab6ef64a68cbe5513f0be6009a76b151071f95395334be4113",
+      "raw_samples": 1589,
+      "elapsed_seconds": 10.020271542,
+      "successes_per_second": 158.5785368529886,
+      "p50_us": 25016.45,
+      "p95_us": 32005.27,
+      "p99_us": 36531.83,
+      "p999_us": 87148.748,
+      "server_cpu_seconds": 0.45999999999999996,
+      "client_cpu_seconds_recorded": 0.2191053889999921,
+      "resources_before": {
+        "cpu_seconds": 0.4,
+        "rss_bytes": 5382144,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5382144
+      },
+      "resources_after": {
+        "cpu_seconds": 0.86,
+        "rss_bytes": 5423104,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5423104
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-1-ling",
+      "errors": [],
+      "raw_sha256": "c257733bb260b8cbc1cae3fbd3bf56192515c54ce44ee09cda5a0bbbf5172268",
+      "raw_samples": 1626,
+      "elapsed_seconds": 10.020248932,
+      "successes_per_second": 162.27141770972523,
+      "p50_us": 24477.334,
+      "p95_us": 31304.279,
+      "p99_us": 33636.808,
+      "p999_us": 38164.942,
+      "server_cpu_seconds": 0.38,
+      "client_cpu_seconds_recorded": 0.16303516699997544,
+      "resources_before": {
+        "cpu_seconds": 0.35,
+        "rss_bytes": 5373952,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5373952
+      },
+      "resources_after": {
+        "cpu_seconds": 0.73,
+        "rss_bytes": 5435392,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5435392
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-1-redis",
+      "errors": [],
+      "raw_sha256": "bbf049216915c50a0d1cae2c3df80a37256a40e43ec6013f9743fe70bacc735d",
+      "raw_samples": 3340,
+      "elapsed_seconds": 10.010347327,
+      "successes_per_second": 333.65475651292553,
+      "p50_us": 11890.694,
+      "p95_us": 12658.921,
+      "p99_us": 15276.587,
+      "p999_us": 19288.872,
+      "server_cpu_seconds": 0.21,
+      "client_cpu_seconds_recorded": 0.2632613310000238,
+      "resources_before": {
+        "cpu_seconds": 0.15,
+        "rss_bytes": 9486336,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9486336
+      },
+      "resources_after": {
+        "cpu_seconds": 0.36,
+        "rss_bytes": 9588736,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9588736
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855616,
+        "dataset_bytes": 173496
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858136,
+        "dataset_bytes": 170960
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "4dda32731ed69187828a74d426d923c2a7e2a6d9b007128ad62ddaa8d6950dac",
+      "raw_samples": 1627,
+      "elapsed_seconds": 10.022238208,
+      "successes_per_second": 162.3389871836501,
+      "p50_us": 24411.81,
+      "p95_us": 31348.651,
+      "p99_us": 34062.01,
+      "p999_us": 42376.428,
+      "server_cpu_seconds": 0.35000000000000003,
+      "client_cpu_seconds_recorded": 0.1492172749999554,
+      "resources_before": {
+        "cpu_seconds": 0.3,
+        "rss_bytes": 5242880,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5242880
+      },
+      "resources_after": {
+        "cpu_seconds": 0.65,
+        "rss_bytes": 5148672,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5148672
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-string-set-3-redis",
+      "errors": [],
+      "raw_sha256": "61fc621d4990825470776799a20afaccb9787296b7cfbd5e81236aa84d4c3250",
+      "raw_samples": 3333,
+      "elapsed_seconds": 10.011316919,
+      "successes_per_second": 332.9232334733564,
+      "p50_us": 11950.948,
+      "p95_us": 12723.879,
+      "p99_us": 13583.758,
+      "p999_us": 18679.685,
+      "server_cpu_seconds": 0.21000000000000002,
+      "client_cpu_seconds_recorded": 0.25093370199999754,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 9367552,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9367552
+      },
+      "resources_after": {
+        "cpu_seconds": 0.34,
+        "rss_bytes": 9437184,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9437184
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 846000,
+        "dataset_bytes": 174440
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835496,
+        "dataset_bytes": 172704
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-2-ling",
+      "errors": [],
+      "raw_sha256": "011daf3d367fef9b259313f7cf0aba6bd723a1760aa71aeb905c25038181417b",
+      "raw_samples": 176772,
+      "elapsed_seconds": 10.000276839,
+      "successes_per_second": 17676.710639710323,
+      "p50_us": 199.34,
+      "p95_us": 404.346,
+      "p99_us": 542.984,
+      "p999_us": 752.339,
+      "server_cpu_seconds": 10.209999999999999,
+      "client_cpu_seconds_recorded": 12.907372561000045,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 5591040,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5591040
+      },
+      "resources_after": {
+        "cpu_seconds": 10.34,
+        "rss_bytes": 24137728,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 24137728
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-2-redis",
+      "errors": [],
+      "raw_sha256": "9493901d599a8b07f2e9d419eceb69453e36ed496841cc88dc93bbb14bb18084",
+      "raw_samples": 255628,
+      "elapsed_seconds": 10.000238171,
+      "successes_per_second": 25562.191182736384,
+      "p50_us": 133.592,
+      "p95_us": 277.889,
+      "p99_us": 437.779,
+      "p999_us": 667.264,
+      "server_cpu_seconds": 3.34,
+      "client_cpu_seconds_recorded": 14.330951970000001,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9613312,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9613312
+      },
+      "resources_after": {
+        "cpu_seconds": 3.36,
+        "rss_bytes": 9723904,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9723904
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 930880,
+        "dataset_bytes": 172280
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855688,
+        "dataset_bytes": 169408
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-get-3-redis",
+      "errors": [],
+      "raw_sha256": "336a44c926b127626f061d849852d2c8290997c1f05b43e2868e2b160c1b54af",
+      "raw_samples": 215082,
+      "elapsed_seconds": 10.000204487,
+      "successes_per_second": 21507.760194264116,
+      "p50_us": 139.174,
+      "p95_us": 436.066,
+      "p99_us": 620.24,
+      "p999_us": 889.18,
+      "server_cpu_seconds": 2.53,
+      "client_cpu_seconds_recorded": 14.035782856000026,
+      "resources_before": {
+        "cpu_seconds": 0.1,
+        "rss_bytes": 9678848,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9678848
+      },
+      "resources_after": {
+        "cpu_seconds": 2.63,
+        "rss_bytes": 9752576,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9752576
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 932112,
+        "dataset_bytes": 269768
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859720,
+        "dataset_bytes": 197376
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-get-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "f9084ff41c8eb65d97a89bcf99e5437c3ab9b9d88a1b572204bb2333d2220e79",
+      "raw_samples": 186716,
+      "elapsed_seconds": 10.000337586,
+      "successes_per_second": 18670.969694202482,
+      "p50_us": 188.89,
+      "p95_us": 394.359,
+      "p99_us": 536.177,
+      "p999_us": 744.641,
+      "server_cpu_seconds": 9.36,
+      "client_cpu_seconds_recorded": 13.023494139999968,
+      "resources_before": {
+        "cpu_seconds": 0.24,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 9.6,
+        "rss_bytes": 5201920,
+        "threads": 8,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-string-get-1-redis",
+      "errors": [],
+      "raw_sha256": "8aad8a38c74907d0d9fead81de46335849502925b1798a5888896d0f14b9164c",
+      "raw_samples": 215718,
+      "elapsed_seconds": 10.000291641,
+      "successes_per_second": 21571.170896214866,
+      "p50_us": 138.807,
+      "p95_us": 433.014,
+      "p99_us": 620.103,
+      "p999_us": 874.464,
+      "server_cpu_seconds": 2.52,
+      "client_cpu_seconds_recorded": 14.034373746000028,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9592832,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9592832
+      },
+      "resources_after": {
+        "cpu_seconds": 2.54,
+        "rss_bytes": 9662464,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9662464
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946528,
+        "dataset_bytes": 198488
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858776,
+        "dataset_bytes": 196752
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-get-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "e93bc1db8c62bc6772de386e634e856f0296da04df8672bee3de48c22f1c91a1",
+      "raw_samples": 184875,
+      "elapsed_seconds": 10.000332696,
+      "successes_per_second": 18486.88494873251,
+      "p50_us": 190.552,
+      "p95_us": 401.8,
+      "p99_us": 550.452,
+      "p999_us": 792.785,
+      "server_cpu_seconds": 9.3,
+      "client_cpu_seconds_recorded": 13.050659364000012,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5365760,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5365760
+      },
+      "resources_after": {
+        "cpu_seconds": 9.42,
+        "rss_bytes": 5279744,
+        "threads": 7,
+        "handles": 11,
+        "peak_rss_bytes": 5279744
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-set-3-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "44960179977b4039e11a84f076fcdd0f4c2699e67b460175255b5fdba9f49e34",
+      "raw_samples": 1631,
+      "elapsed_seconds": 10.01960955,
+      "successes_per_second": 162.7807941877336,
+      "p50_us": 24417.505,
+      "p95_us": 31470.296,
+      "p99_us": 32832.73,
+      "p999_us": 38503.612,
+      "server_cpu_seconds": 0.35000000000000003,
+      "client_cpu_seconds_recorded": 0.14509562199998527,
+      "resources_before": {
+        "cpu_seconds": 0.32,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 0.67,
+        "rss_bytes": 5201920,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5201920
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-set-3-redis",
+      "errors": [],
+      "raw_sha256": "b7f9fd157d33b395b2e2eb8e274ef4fe7957b2eb4e15ea2513040583cdeafc9f",
+      "raw_samples": 3341,
+      "elapsed_seconds": 10.006841671,
+      "successes_per_second": 333.87157605204004,
+      "p50_us": 11887.223,
+      "p95_us": 12667.872,
+      "p99_us": 15260.494,
+      "p999_us": 21693.578,
+      "server_cpu_seconds": 0.21000000000000002,
+      "client_cpu_seconds_recorded": 0.2346304629999736,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 9531392,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9531392
+      },
+      "resources_after": {
+        "cpu_seconds": 0.34,
+        "rss_bytes": 9596928,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9596928
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 846496,
+        "dataset_bytes": 174488
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835544,
+        "dataset_bytes": 172752
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-get-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "097a9c913bc2270ecc3d8bc557ba410f88a8c355cb0af70d1bd3653f2d8350e3",
+      "raw_samples": 185835,
+      "elapsed_seconds": 10.000209951,
+      "successes_per_second": 18583.109845750478,
+      "p50_us": 189.899,
+      "p95_us": 397.825,
+      "p99_us": 537.523,
+      "p999_us": 741.432,
+      "server_cpu_seconds": 9.34,
+      "client_cpu_seconds_recorded": 13.083927343000028,
+      "resources_before": {
+        "cpu_seconds": 0.24,
+        "rss_bytes": 5287936,
+        "threads": 7,
+        "handles": 17,
+        "peak_rss_bytes": 5287936
+      },
+      "resources_after": {
+        "cpu_seconds": 9.58,
+        "rss_bytes": 5193728,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5193728
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-string-get-1-redis",
+      "errors": [],
+      "raw_sha256": "69bd20c1341140de27df2e97e3ba5f40acbe6f871181850f80106c64f0c82e09",
+      "raw_samples": 208970,
+      "elapsed_seconds": 10.00025921,
+      "successes_per_second": 20896.458342903294,
+      "p50_us": 143.585,
+      "p95_us": 448.646,
+      "p99_us": 639.86,
+      "p999_us": 913.985,
+      "server_cpu_seconds": 2.58,
+      "client_cpu_seconds_recorded": 13.944781627999987,
+      "resources_before": {
+        "cpu_seconds": 0.11,
+        "rss_bytes": 9592832,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9592832
+      },
+      "resources_after": {
+        "cpu_seconds": 2.69,
+        "rss_bytes": 9723904,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9723904
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 932224,
+        "dataset_bytes": 199224
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859832,
+        "dataset_bytes": 197488
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-1-ling",
+      "errors": [],
+      "raw_sha256": "d0170cc92c6017455b9989d6b501b68b0caa224fc02444bd4c0be79c518dd698",
+      "raw_samples": 169694,
+      "elapsed_seconds": 10.00042202,
+      "successes_per_second": 16968.683887602576,
+      "p50_us": 207.186,
+      "p95_us": 422.573,
+      "p99_us": 567.345,
+      "p999_us": 800.226,
+      "server_cpu_seconds": 10.19,
+      "client_cpu_seconds_recorded": 12.836849266000002,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 5591040,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5591040
+      },
+      "resources_after": {
+        "cpu_seconds": 10.32,
+        "rss_bytes": 24141824,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 24141824
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-px-1-redis",
+      "errors": [],
+      "raw_sha256": "fb0bb9ccc896945da73c1c75a1336fb93766ccfa7ca8ed6804854880b01767fc",
+      "raw_samples": 258246,
+      "elapsed_seconds": 10.000215445,
+      "successes_per_second": 25824.043633891928,
+      "p50_us": 131.75,
+      "p95_us": 284.742,
+      "p99_us": 444.349,
+      "p999_us": 671.421,
+      "server_cpu_seconds": 3.2800000000000002,
+      "client_cpu_seconds_recorded": 14.406889682000042,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9674752,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9674752
+      },
+      "resources_after": {
+        "cpu_seconds": 3.31,
+        "rss_bytes": 9785344,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9785344
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 931280,
+        "dataset_bytes": 172680
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856360,
+        "dataset_bytes": 170080
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-px-3-redis",
+      "errors": [],
+      "raw_sha256": "c8035f3916998ecbcc4092b848fcda3ce08c35f4363c7a5cfb317fb3563345ca",
+      "raw_samples": 265096,
+      "elapsed_seconds": 10.00015662,
+      "successes_per_second": 26509.184813147454,
+      "p50_us": 132.344,
+      "p95_us": 258.229,
+      "p99_us": 411.531,
+      "p999_us": 619.466,
+      "server_cpu_seconds": 3.33,
+      "client_cpu_seconds_recorded": 14.444722157000001,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9670656,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9670656
+      },
+      "resources_after": {
+        "cpu_seconds": 3.35,
+        "rss_bytes": 9793536,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9793536
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 931408,
+        "dataset_bytes": 172808
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856776,
+        "dataset_bytes": 170496
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-px-3-ling",
+      "errors": [],
+      "raw_sha256": "f342ff9d938e6c3f98659042b7d4230799be07d6e1c593c387157ba1319d13fc",
+      "raw_samples": 179541,
+      "elapsed_seconds": 10.000289604,
+      "successes_per_second": 17953.580057140112,
+      "p50_us": 197.734,
+      "p95_us": 397.282,
+      "p99_us": 531.388,
+      "p999_us": 714.695,
+      "server_cpu_seconds": 10.23,
+      "client_cpu_seconds_recorded": 12.887903951999988,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5591040,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5591040
+      },
+      "resources_after": {
+        "cpu_seconds": 10.35,
+        "rss_bytes": 24137728,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 24137728
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-3-redis",
+      "errors": [],
+      "raw_sha256": "16f32c9de5d8f62259e9cc534cbeb294efa35334a4c01f7685506b26fdb994ed",
+      "raw_samples": 3210,
+      "elapsed_seconds": 10.011954038,
+      "successes_per_second": 320.6167335383846,
+      "p50_us": 12372.485,
+      "p95_us": 13250.053,
+      "p99_us": 14385.19,
+      "p999_us": 20778.603,
+      "server_cpu_seconds": 0.2,
+      "client_cpu_seconds_recorded": 0.26545574599998645,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 9625600,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9625600
+      },
+      "resources_after": {
+        "cpu_seconds": 0.33,
+        "rss_bytes": 9728000,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9728000
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 855280,
+        "dataset_bytes": 173160
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 857496,
+        "dataset_bytes": 170320
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-px-3-ling",
+      "errors": [],
+      "raw_sha256": "35a7e802700fe5cfcf430a1e2d580f236095c7dac557b53bf97df80fb27ed0aa",
+      "raw_samples": 1659,
+      "elapsed_seconds": 10.020479171,
+      "successes_per_second": 165.56094490982701,
+      "p50_us": 24065.766,
+      "p95_us": 30930.487,
+      "p99_us": 32337.864,
+      "p999_us": 35529.24,
+      "server_cpu_seconds": 0.37000000000000005,
+      "client_cpu_seconds_recorded": 0.1488659519999942,
+      "resources_before": {
+        "cpu_seconds": 0.31,
+        "rss_bytes": 5382144,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5382144
+      },
+      "resources_after": {
+        "cpu_seconds": 0.68,
+        "rss_bytes": 5431296,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5431296
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-2-redis",
+      "errors": [],
+      "raw_sha256": "768b15caf65fe794cab1f96623de8c6a005112192c614f7930474a1b7376559a",
+      "raw_samples": 3267,
+      "elapsed_seconds": 10.007256166,
+      "successes_per_second": 326.46311294595876,
+      "p50_us": 12164.499,
+      "p95_us": 13130.25,
+      "p99_us": 16742.905,
+      "p999_us": 52761.652,
+      "server_cpu_seconds": 0.22999999999999998,
+      "client_cpu_seconds_recorded": 0.2299646510000457,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9416704,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9416704
+      },
+      "resources_after": {
+        "cpu_seconds": 0.35,
+        "rss_bytes": 9453568,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9453568
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 846336,
+        "dataset_bytes": 174328
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835384,
+        "dataset_bytes": 172592
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-set-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "79685fcf607dd2a624758321bd4a6fa18d728f199d38178f980e094e45c022d6",
+      "raw_samples": 1602,
+      "elapsed_seconds": 10.024936655,
+      "successes_per_second": 159.80150849142697,
+      "p50_us": 24866.355,
+      "p95_us": 31790.563,
+      "p99_us": 33068.055,
+      "p999_us": 36111.413,
+      "server_cpu_seconds": 0.36000000000000004,
+      "client_cpu_seconds_recorded": 0.14843696899998804,
+      "resources_before": {
+        "cpu_seconds": 0.3,
+        "rss_bytes": 5283840,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5283840
+      },
+      "resources_after": {
+        "cpu_seconds": 0.66,
+        "rss_bytes": 5189632,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-bytes-get-2-redis",
+      "errors": [],
+      "raw_sha256": "f54d591f1a792e08bb0a0ee44cee6ce155ea2d540d5ffcbe0bfa89f972eb8535",
+      "raw_samples": 213599,
+      "elapsed_seconds": 10.000345732,
+      "successes_per_second": 21359.161545436058,
+      "p50_us": 139.092,
+      "p95_us": 438.758,
+      "p99_us": 616.459,
+      "p999_us": 853.501,
+      "server_cpu_seconds": 2.47,
+      "client_cpu_seconds_recorded": 14.029964606000021,
+      "resources_before": {
+        "cpu_seconds": 0.03,
+        "rss_bytes": 9576448,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9576448
+      },
+      "resources_after": {
+        "cpu_seconds": 2.5,
+        "rss_bytes": 9646080,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9646080
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946496,
+        "dataset_bytes": 198456
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858744,
+        "dataset_bytes": 196720
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-get-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "6f965fe58cf881070011d476bbb1e403a47567b4d13bcebdd7c47910ad9b3239",
+      "raw_samples": 183859,
+      "elapsed_seconds": 10.000301178,
+      "successes_per_second": 18385.34627381799,
+      "p50_us": 190.438,
+      "p95_us": 405.332,
+      "p99_us": 552.971,
+      "p999_us": 793.086,
+      "server_cpu_seconds": 9.22,
+      "client_cpu_seconds_recorded": 13.077678917000014,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5316608,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5316608
+      },
+      "resources_after": {
+        "cpu_seconds": 9.34,
+        "rss_bytes": 5238784,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 5238784
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-set-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "208e4cc72aa1888768b608ce6a43d5b2be91206c2da8e6a925be4697141fa0e3",
+      "raw_samples": 1645,
+      "elapsed_seconds": 10.020645229,
+      "successes_per_second": 164.1610856793262,
+      "p50_us": 24278.736,
+      "p95_us": 31017.355,
+      "p99_us": 32028.088,
+      "p999_us": 36914.869,
+      "server_cpu_seconds": 0.36000000000000004,
+      "client_cpu_seconds_recorded": 0.1463059449999946,
+      "resources_before": {
+        "cpu_seconds": 0.29,
+        "rss_bytes": 5292032,
+        "threads": 7,
+        "handles": 17,
+        "peak_rss_bytes": 5292032
+      },
+      "resources_after": {
+        "cpu_seconds": 0.65,
+        "rss_bytes": 5197824,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-bytes-set-1-redis",
+      "errors": [],
+      "raw_sha256": "3716fda14431dddddd0a40c0fcb74bd99bfb36f955fc4305d4ed86cce79cdc4b",
+      "raw_samples": 3235,
+      "elapsed_seconds": 10.006926643,
+      "successes_per_second": 323.27607820158573,
+      "p50_us": 12130.704,
+      "p95_us": 13152.623,
+      "p99_us": 16865.11,
+      "p999_us": 61854.568,
+      "server_cpu_seconds": 0.2,
+      "client_cpu_seconds_recorded": 0.247042203000035,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9674752,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9674752
+      },
+      "resources_after": {
+        "cpu_seconds": 0.32,
+        "rss_bytes": 9740288,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9740288
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 846560,
+        "dataset_bytes": 174552
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835608,
+        "dataset_bytes": 172816
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-get-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "2f34e5bffa8b619d489bc7d049cff79df0ccf86ba10160b7b8fbe5ffb267318a",
+      "raw_samples": 185829,
+      "elapsed_seconds": 10.000253829,
+      "successes_per_second": 18582.428324080094,
+      "p50_us": 189.661,
+      "p95_us": 398.091,
+      "p99_us": 542.305,
+      "p999_us": 741.82,
+      "server_cpu_seconds": 9.290000000000001,
+      "client_cpu_seconds_recorded": 13.074341557000082,
+      "resources_before": {
+        "cpu_seconds": 0.11,
+        "rss_bytes": 5365760,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5365760
+      },
+      "resources_after": {
+        "cpu_seconds": 9.4,
+        "rss_bytes": 5287936,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 5287936
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-string-get-2-redis",
+      "errors": [],
+      "raw_sha256": "64605832ee339206b1b0906aa761e0b3042915c1419b33ceb812b1bbd0a8fb3c",
+      "raw_samples": 216149,
+      "elapsed_seconds": 10.000465305,
+      "successes_per_second": 21613.89429469152,
+      "p50_us": 140.031,
+      "p95_us": 430.957,
+      "p99_us": 615.986,
+      "p999_us": 882.821,
+      "server_cpu_seconds": 2.55,
+      "client_cpu_seconds_recorded": 14.051651320000019,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9547776,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9547776
+      },
+      "resources_after": {
+        "cpu_seconds": 2.57,
+        "rss_bytes": 9621504,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9621504
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 946528,
+        "dataset_bytes": 198488
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 858776,
+        "dataset_bytes": 196752
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-string-set-1-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "cea87da0537d8a8f9b97fb57c434843586e937477b86dcb293a396a5d373110d",
+      "raw_samples": 1646,
+      "elapsed_seconds": 10.022948168,
+      "successes_per_second": 164.2231379840056,
+      "p50_us": 24244.302,
+      "p95_us": 30937.95,
+      "p99_us": 32023.452,
+      "p999_us": 34995.721,
+      "server_cpu_seconds": 0.4,
+      "client_cpu_seconds_recorded": 0.17218869999999242,
+      "resources_before": {
+        "cpu_seconds": 0.35,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 0.75,
+        "rss_bytes": 5197824,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5246976
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "reliable-string-set-1-redis",
+      "errors": [],
+      "raw_sha256": "4e4dc9651634e40182422635c66d94556435a9d5488a33277594f74884208345",
+      "raw_samples": 3304,
+      "elapsed_seconds": 10.009723452,
+      "successes_per_second": 330.07904922086954,
+      "p50_us": 11990.221,
+      "p95_us": 12951.359,
+      "p99_us": 14001.288,
+      "p999_us": 18294.643,
+      "server_cpu_seconds": 0.23,
+      "client_cpu_seconds_recorded": 0.2958643330000541,
+      "resources_before": {
+        "cpu_seconds": 0.15,
+        "rss_bytes": 9670656,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9670656
+      },
+      "resources_after": {
+        "cpu_seconds": 0.38,
+        "rss_bytes": 9736192,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9736192
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 846704,
+        "dataset_bytes": 174696
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 835752,
+        "dataset_bytes": 172960
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-1-redis",
+      "errors": [],
+      "raw_sha256": "dfcce893a10557351584e2d432ca9b801eeedc7be3bf67f146c5c64847ef9841",
+      "raw_samples": 258350,
+      "elapsed_seconds": 10.000236423,
+      "successes_per_second": 25834.389215619845,
+      "p50_us": 129.54,
+      "p95_us": 291.465,
+      "p99_us": 441.128,
+      "p999_us": 666.057,
+      "server_cpu_seconds": 3.27,
+      "client_cpu_seconds_recorded": 14.500086024000097,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9392128,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9392128
+      },
+      "resources_after": {
+        "cpu_seconds": 3.29,
+        "rss_bytes": 9461760,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9461760
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921808,
+        "dataset_bytes": 173768
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834056,
+        "dataset_bytes": 172032
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-1-ling",
+      "errors": [],
+      "raw_sha256": "d5d3c2303ccaf90f8a2af0468f31a63bc771335aa8cc481b4f7a49e9b5f74e12",
+      "raw_samples": 181562,
+      "elapsed_seconds": 10.000222326,
+      "successes_per_second": 18155.796349442084,
+      "p50_us": 194.135,
+      "p95_us": 400.843,
+      "p99_us": 541.789,
+      "p999_us": 773.817,
+      "server_cpu_seconds": 10.06,
+      "client_cpu_seconds_recorded": 12.91502355800003,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5427200,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5427200
+      },
+      "resources_after": {
+        "cpu_seconds": 10.18,
+        "rss_bytes": 23928832,
+        "threads": 10,
+        "handles": 11,
+        "peak_rss_bytes": 23928832
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-px-1-ling",
+      "errors": [],
+      "raw_sha256": "1b17a3032cf0c98ca467b472188cf43691008ac8432b57359317b1336fd22453",
+      "raw_samples": 176560,
+      "elapsed_seconds": 10.000263191,
+      "successes_per_second": 17655.5353222003,
+      "p50_us": 200.798,
+      "p95_us": 402.809,
+      "p99_us": 538.796,
+      "p999_us": 742.25,
+      "server_cpu_seconds": 10.219999999999999,
+      "client_cpu_seconds_recorded": 12.854880696999999,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 5586944,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5586944
+      },
+      "resources_after": {
+        "cpu_seconds": 10.35,
+        "rss_bytes": 24133632,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 24252416
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-px-1-redis",
+      "errors": [],
+      "raw_sha256": "33d0db8cd7753ab7a6b46ea2cd58c443727464c9e88447a972f2a99b33c48a24",
+      "raw_samples": 254201,
+      "elapsed_seconds": 10.000249024,
+      "successes_per_second": 25419.46699426512,
+      "p50_us": 131.298,
+      "p95_us": 298.927,
+      "p99_us": 456.412,
+      "p999_us": 691.213,
+      "server_cpu_seconds": 3.32,
+      "client_cpu_seconds_recorded": 14.419085249999966,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9519104,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9519104
+      },
+      "resources_after": {
+        "cpu_seconds": 3.34,
+        "rss_bytes": 9629696,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9629696
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 933320,
+        "dataset_bytes": 172648
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 856008,
+        "dataset_bytes": 169728
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-1-ling",
+      "errors": [],
+      "raw_sha256": "40155fb987eace249d1d6c01e5d869ee8b2b985030f52913b575ccdfa7cee476",
+      "raw_samples": 178494,
+      "elapsed_seconds": 10.000220672,
+      "successes_per_second": 17849.0061224121,
+      "p50_us": 198.136,
+      "p95_us": 402.801,
+      "p99_us": 543.299,
+      "p999_us": 758.552,
+      "server_cpu_seconds": 10.059999999999999,
+      "client_cpu_seconds_recorded": 12.911079402000041,
+      "resources_before": {
+        "cpu_seconds": 0.13,
+        "rss_bytes": 5431296,
+        "threads": 6,
+        "handles": 15,
+        "peak_rss_bytes": 5431296
+      },
+      "resources_after": {
+        "cpu_seconds": 10.19,
+        "rss_bytes": 23904256,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 23904256
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-bytes-set-1-redis",
+      "errors": [],
+      "raw_sha256": "700b8b7a9e9b5226ab7ede8c2c1f21543314db24d5a8ff73aafd65048b79f74c",
+      "raw_samples": 260899,
+      "elapsed_seconds": 10.000167507,
+      "successes_per_second": 26089.462983232406,
+      "p50_us": 130.042,
+      "p95_us": 277.213,
+      "p99_us": 425.666,
+      "p999_us": 639.647,
+      "server_cpu_seconds": 3.27,
+      "client_cpu_seconds_recorded": 14.451839869000082,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9457664,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9457664
+      },
+      "resources_after": {
+        "cpu_seconds": 3.29,
+        "rss_bytes": 9527296,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9527296
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921824,
+        "dataset_bytes": 173784
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834072,
+        "dataset_bytes": 172048
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-get-2-redis",
+      "errors": [],
+      "raw_sha256": "8cb73dc1b5b620b0b062dad710b4bf51a078739aaffcd62b6d782cb42413bebe",
+      "raw_samples": 207445,
+      "elapsed_seconds": 10.000240337,
+      "successes_per_second": 20744.001444892474,
+      "p50_us": 146.12,
+      "p95_us": 445.862,
+      "p99_us": 632.233,
+      "p999_us": 886.288,
+      "server_cpu_seconds": 2.53,
+      "client_cpu_seconds_recorded": 13.963686742999926,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 9650176,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 9650176
+      },
+      "resources_after": {
+        "cpu_seconds": 2.65,
+        "rss_bytes": 9723904,
+        "threads": 6,
+        "handles": 13,
+        "peak_rss_bytes": 9723904
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 932256,
+        "dataset_bytes": 199256
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 859864,
+        "dataset_bytes": 197520
+      },
+      "valid": true
+    },
+    {
+      "name": "reliable-bytes-get-2-ling",
+      "errors": [
+        "lifetime RSS peak decreased"
+      ],
+      "raw_sha256": "0260dcf77d035c20ae31331a6d230ff42c4932376f2004e1906d73dda23a96ce",
+      "raw_samples": 180890,
+      "elapsed_seconds": 10.000258152,
+      "successes_per_second": 18088.533040901842,
+      "p50_us": 193.839,
+      "p95_us": 407.7,
+      "p99_us": 554.772,
+      "p999_us": 774.459,
+      "server_cpu_seconds": 9.38,
+      "client_cpu_seconds_recorded": 13.057628632000046,
+      "resources_before": {
+        "cpu_seconds": 0.25,
+        "rss_bytes": 5279744,
+        "threads": 6,
+        "handles": 17,
+        "peak_rss_bytes": 5279744
+      },
+      "resources_after": {
+        "cpu_seconds": 9.63,
+        "rss_bytes": 5193728,
+        "threads": 7,
+        "handles": 13,
+        "peak_rss_bytes": 5193728
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": false
+    },
+    {
+      "name": "fast-string-set-2-redis",
+      "errors": [],
+      "raw_sha256": "68ac346b367cb40ec4c17be8760e3ccd5e1c3c0571cb61004d5315b56783b4b1",
+      "raw_samples": 268560,
+      "elapsed_seconds": 10.000273937,
+      "successes_per_second": 26855.26433494539,
+      "p50_us": 128.128,
+      "p95_us": 267.488,
+      "p99_us": 418.258,
+      "p999_us": 630.815,
+      "server_cpu_seconds": 3.31,
+      "client_cpu_seconds_recorded": 14.481865331999984,
+      "resources_before": {
+        "cpu_seconds": 0.02,
+        "rss_bytes": 9535488,
+        "threads": 6,
+        "handles": 16,
+        "peak_rss_bytes": 9535488
+      },
+      "resources_after": {
+        "cpu_seconds": 3.33,
+        "rss_bytes": 9613312,
+        "threads": 6,
+        "handles": 12,
+        "peak_rss_bytes": 9613312
+      },
+      "memory_before": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 921888,
+        "dataset_bytes": 173848
+      },
+      "memory_after": {
+        "scope": "Redis used_memory including allocator-accounted server structures",
+        "bytes": 834136,
+        "dataset_bytes": 172112
+      },
+      "valid": true
+    },
+    {
+      "name": "fast-string-set-2-ling",
+      "errors": [],
+      "raw_sha256": "6e5ca10ba63e8f53baee6815b9ee24a8769d2a7e95bd2e5b7bcbb10ff1e561b2",
+      "raw_samples": 184071,
+      "elapsed_seconds": 10.000229354,
+      "successes_per_second": 18406.677835481172,
+      "p50_us": 192.072,
+      "p95_us": 393.948,
+      "p99_us": 529.756,
+      "p999_us": 735.144,
+      "server_cpu_seconds": 10.06,
+      "client_cpu_seconds_recorded": 12.915463592000037,
+      "resources_before": {
+        "cpu_seconds": 0.12,
+        "rss_bytes": 5443584,
+        "threads": 7,
+        "handles": 15,
+        "peak_rss_bytes": 5443584
+      },
+      "resources_after": {
+        "cpu_seconds": 10.18,
+        "rss_bytes": 23908352,
+        "threads": 8,
+        "handles": 11,
+        "peak_rss_bytes": 23908352
+      },
+      "memory_before": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "memory_after": {
+        "scope": "ling managed cache budget; excludes event/journal/network memory",
+        "bytes": 3968000
+      },
+      "valid": true
+    }
+  ],
+  "groups": [
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17909.837979909633,
+          "median": 18092.90264186289,
+          "max": 18385.34627381799
+        },
+        "p50_us": {
+          "min": 190.438,
+          "median": 193.207,
+          "max": 196.249
+        },
+        "p95_us": {
+          "min": 405.332,
+          "median": 410.213,
+          "max": 412.228
+        },
+        "p99_us": {
+          "min": 552.971,
+          "median": 560.185,
+          "max": 560.973
+        },
+        "p999_us": {
+          "min": 782.866,
+          "median": 793.086,
+          "max": 812.342
+        },
+        "server_cpu_seconds": {
+          "min": 9.22,
+          "median": 9.270000000000001,
+          "max": 9.31
+        },
+        "client_cpu_seconds": {
+          "min": 13.077678917000014,
+          "median": 13.085967132,
+          "max": 13.101924293000025
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20582.072773799016,
+          "median": 21246.27408444194,
+          "max": 21359.161545436058
+        },
+        "p50_us": {
+          "min": 139.092,
+          "median": 141.182,
+          "max": 147.321
+        },
+        "p95_us": {
+          "min": 435.92,
+          "median": 438.758,
+          "max": 447.113
+        },
+        "p99_us": {
+          "min": 616.459,
+          "median": 621.232,
+          "max": 631.231
+        },
+        "p999_us": {
+          "min": 853.501,
+          "median": 875.631,
+          "max": 886.484
+        },
+        "server_cpu_seconds": {
+          "min": 2.47,
+          "median": 2.48,
+          "max": 2.5100000000000002
+        },
+        "client_cpu_seconds": {
+          "min": 13.955652503999996,
+          "median": 13.988857222000036,
+          "max": 14.029964606000021
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17849.0061224121,
+          "median": 18179.76994118025,
+          "max": 18334.605005372767
+        },
+        "p50_us": {
+          "min": 192.049,
+          "median": 194.591,
+          "max": 198.136
+        },
+        "p95_us": {
+          "min": 395.604,
+          "median": 396.186,
+          "max": 402.801
+        },
+        "p99_us": {
+          "min": 529.426,
+          "median": 536.327,
+          "max": 543.299
+        },
+        "p999_us": {
+          "min": 733.271,
+          "median": 758.552,
+          "max": 770.452
+        },
+        "server_cpu_seconds": {
+          "min": 9.99,
+          "median": 10.0,
+          "max": 10.059999999999999
+        },
+        "client_cpu_seconds": {
+          "min": 12.911079402000041,
+          "median": 12.914607179,
+          "max": 12.977007980999986
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 26089.462983232406,
+          "median": 26244.709288253278,
+          "max": 26290.062358198556
+        },
+        "p50_us": {
+          "min": 129.39,
+          "median": 129.746,
+          "max": 130.042
+        },
+        "p95_us": {
+          "min": 272.459,
+          "median": 275.866,
+          "max": 277.213
+        },
+        "p99_us": {
+          "min": 425.666,
+          "median": 425.675,
+          "max": 433.259
+        },
+        "p999_us": {
+          "min": 639.647,
+          "median": 658.286,
+          "max": 665.021
+        },
+        "server_cpu_seconds": {
+          "min": 3.25,
+          "median": 3.27,
+          "max": 3.29
+        },
+        "client_cpu_seconds": {
+          "min": 14.430500669999986,
+          "median": 14.441308692999996,
+          "max": 14.451839869000082
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 16968.683887602576,
+          "median": 17494.028169679463,
+          "max": 17676.710639710323
+        },
+        "p50_us": {
+          "min": 199.34,
+          "median": 202.111,
+          "max": 207.186
+        },
+        "p95_us": {
+          "min": 404.346,
+          "median": 406.159,
+          "max": 422.573
+        },
+        "p99_us": {
+          "min": 542.984,
+          "median": 543.75,
+          "max": 567.345
+        },
+        "p999_us": {
+          "min": 744.917,
+          "median": 752.339,
+          "max": 800.226
+        },
+        "server_cpu_seconds": {
+          "min": 10.19,
+          "median": 10.190000000000001,
+          "max": 10.209999999999999
+        },
+        "client_cpu_seconds": {
+          "min": 12.836849266000002,
+          "median": 12.870304618000006,
+          "max": 12.907372561000045
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 24630.433125214025,
+          "median": 25562.191182736384,
+          "max": 25824.043633891928
+        },
+        "p50_us": {
+          "min": 131.75,
+          "median": 133.592,
+          "max": 135.624
+        },
+        "p95_us": {
+          "min": 277.889,
+          "median": 284.742,
+          "max": 303.654
+        },
+        "p99_us": {
+          "min": 437.779,
+          "median": 444.349,
+          "max": 471.945
+        },
+        "p999_us": {
+          "min": 667.264,
+          "median": 671.421,
+          "max": 730.733
+        },
+        "server_cpu_seconds": {
+          "min": 3.2800000000000002,
+          "median": 3.33,
+          "max": 3.34
+        },
+        "client_cpu_seconds": {
+          "min": 14.330710339999996,
+          "median": 14.330951970000001,
+          "max": 14.406889682000042
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17782.884830101026,
+          "median": 18486.88494873251,
+          "max": 18582.428324080094
+        },
+        "p50_us": {
+          "min": 189.661,
+          "median": 190.552,
+          "max": 197.422
+        },
+        "p95_us": {
+          "min": 398.091,
+          "median": 401.8,
+          "max": 421.346
+        },
+        "p99_us": {
+          "min": 542.305,
+          "median": 550.452,
+          "max": 576.812
+        },
+        "p999_us": {
+          "min": 741.82,
+          "median": 792.785,
+          "max": 837.26
+        },
+        "server_cpu_seconds": {
+          "min": 9.270000000000001,
+          "median": 9.290000000000001,
+          "max": 9.3
+        },
+        "client_cpu_seconds": {
+          "min": 13.050659364000012,
+          "median": 13.074341557000082,
+          "max": 13.090802514
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20671.065758365592,
+          "median": 21571.170896214866,
+          "max": 21613.89429469152
+        },
+        "p50_us": {
+          "min": 138.807,
+          "median": 140.031,
+          "max": 148.113
+        },
+        "p95_us": {
+          "min": 430.957,
+          "median": 433.014,
+          "max": 444.327
+        },
+        "p99_us": {
+          "min": 615.986,
+          "median": 620.103,
+          "max": 636.35
+        },
+        "p999_us": {
+          "min": 874.464,
+          "median": 882.821,
+          "max": 951.354
+        },
+        "server_cpu_seconds": {
+          "min": 2.52,
+          "median": 2.55,
+          "max": 2.63
+        },
+        "client_cpu_seconds": {
+          "min": 14.024291483,
+          "median": 14.034373746000028,
+          "max": 14.051651320000019
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17911.294420378897,
+          "median": 18155.796349442084,
+          "max": 18406.677835481172
+        },
+        "p50_us": {
+          "min": 192.072,
+          "median": 194.135,
+          "max": 196.077
+        },
+        "p95_us": {
+          "min": 393.948,
+          "median": 400.843,
+          "max": 406.581
+        },
+        "p99_us": {
+          "min": 529.756,
+          "median": 541.789,
+          "max": 560.763
+        },
+        "p999_us": {
+          "min": 735.144,
+          "median": 773.817,
+          "max": 878.383
+        },
+        "server_cpu_seconds": {
+          "min": 10.06,
+          "median": 10.06,
+          "max": 10.08
+        },
+        "client_cpu_seconds": {
+          "min": 12.91502355800003,
+          "median": 12.915463592000037,
+          "max": 12.915485480000001
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 25834.389215619845,
+          "median": 26176.26079141723,
+          "max": 26855.26433494539
+        },
+        "p50_us": {
+          "min": 128.128,
+          "median": 129.144,
+          "max": 129.54
+        },
+        "p95_us": {
+          "min": 267.488,
+          "median": 280.632,
+          "max": 291.465
+        },
+        "p99_us": {
+          "min": 418.258,
+          "median": 435.288,
+          "max": 441.128
+        },
+        "p999_us": {
+          "min": 630.815,
+          "median": 665.47,
+          "max": 666.057
+        },
+        "server_cpu_seconds": {
+          "min": 3.27,
+          "median": 3.27,
+          "max": 3.31
+        },
+        "client_cpu_seconds": {
+          "min": 14.455706117999995,
+          "median": 14.481865331999984,
+          "max": 14.500086024000097
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17374.902170828023,
+          "median": 17655.5353222003,
+          "max": 17953.580057140112
+        },
+        "p50_us": {
+          "min": 197.734,
+          "median": 200.798,
+          "max": 201.424
+        },
+        "p95_us": {
+          "min": 397.282,
+          "median": 402.809,
+          "max": 413.664
+        },
+        "p99_us": {
+          "min": 531.388,
+          "median": 538.796,
+          "max": 580.978
+        },
+        "p999_us": {
+          "min": 714.695,
+          "median": 742.25,
+          "max": 1135.51
+        },
+        "server_cpu_seconds": {
+          "min": 10.219999999999999,
+          "median": 10.22,
+          "max": 10.23
+        },
+        "client_cpu_seconds": {
+          "min": 12.844958919999982,
+          "median": 12.854880696999999,
+          "max": 12.887903951999988
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 25419.46699426512,
+          "median": 26122.131914160625,
+          "max": 26509.184813147454
+        },
+        "p50_us": {
+          "min": 131.298,
+          "median": 132.344,
+          "max": 132.549
+        },
+        "p95_us": {
+          "min": 258.229,
+          "median": 267.152,
+          "max": 298.927
+        },
+        "p99_us": {
+          "min": 411.531,
+          "median": 423.392,
+          "max": 456.412
+        },
+        "p999_us": {
+          "min": 619.466,
+          "median": 648.547,
+          "max": 691.213
+        },
+        "server_cpu_seconds": {
+          "min": 3.32,
+          "median": 3.33,
+          "max": 3.37
+        },
+        "client_cpu_seconds": {
+          "min": 14.394762010999983,
+          "median": 14.419085249999966,
+          "max": 14.444722157000001
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 18088.533040901842,
+          "median": 18120.947057867816,
+          "max": 18224.585525294762
+        },
+        "p50_us": {
+          "min": 192.723,
+          "median": 193.526,
+          "max": 193.839
+        },
+        "p95_us": {
+          "min": 406.346,
+          "median": 407.449,
+          "max": 407.7
+        },
+        "p99_us": {
+          "min": 554.202,
+          "median": 554.772,
+          "max": 556.57
+        },
+        "p999_us": {
+          "min": 769.379,
+          "median": 774.459,
+          "max": 802.954
+        },
+        "server_cpu_seconds": {
+          "min": 9.24,
+          "median": 9.36,
+          "max": 9.38
+        },
+        "client_cpu_seconds": {
+          "min": 13.057628632000046,
+          "median": 13.061515016999977,
+          "max": 13.074176212999987
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20183.61999718595,
+          "median": 20744.001444892474,
+          "max": 20983.71739548724
+        },
+        "p50_us": {
+          "min": 143.14,
+          "median": 146.12,
+          "max": 149.928
+        },
+        "p95_us": {
+          "min": 443.579,
+          "median": 445.862,
+          "max": 457.144
+        },
+        "p99_us": {
+          "min": 632.233,
+          "median": 632.779,
+          "max": 651.444
+        },
+        "p999_us": {
+          "min": 879.007,
+          "median": 886.288,
+          "max": 953.501
+        },
+        "server_cpu_seconds": {
+          "min": 2.52,
+          "median": 2.53,
+          "max": 2.57
+        },
+        "client_cpu_seconds": {
+          "min": 13.952296759000006,
+          "median": 13.963686742999926,
+          "max": 13.969196854000018
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 159.80150849142697,
+          "median": 162.7807941877336,
+          "max": 164.1610856793262
+        },
+        "p50_us": {
+          "min": 24278.736,
+          "median": 24417.505,
+          "max": 24866.355
+        },
+        "p95_us": {
+          "min": 31017.355,
+          "median": 31470.296,
+          "max": 31790.563
+        },
+        "p99_us": {
+          "min": 32028.088,
+          "median": 32832.73,
+          "max": 33068.055
+        },
+        "p999_us": {
+          "min": 36111.413,
+          "median": 36914.869,
+          "max": 38503.612
+        },
+        "server_cpu_seconds": {
+          "min": 0.35000000000000003,
+          "median": 0.36000000000000004,
+          "max": 0.36000000000000004
+        },
+        "client_cpu_seconds": {
+          "min": 0.14509562199998527,
+          "median": 0.1463059449999946,
+          "max": 0.14843696899998804
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 323.27607820158573,
+          "median": 326.46311294595876,
+          "max": 333.87157605204004
+        },
+        "p50_us": {
+          "min": 11887.223,
+          "median": 12130.704,
+          "max": 12164.499
+        },
+        "p95_us": {
+          "min": 12667.872,
+          "median": 13130.25,
+          "max": 13152.623
+        },
+        "p99_us": {
+          "min": 15260.494,
+          "median": 16742.905,
+          "max": 16865.11
+        },
+        "p999_us": {
+          "min": 21693.578,
+          "median": 52761.652,
+          "max": 61854.568
+        },
+        "server_cpu_seconds": {
+          "min": 0.2,
+          "median": 0.21000000000000002,
+          "max": 0.22999999999999998
+        },
+        "client_cpu_seconds": {
+          "min": 0.2299646510000457,
+          "median": 0.2346304629999736,
+          "max": 0.247042203000035
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 162.27141770972523,
+          "median": 165.56094490982701,
+          "max": 165.81585359006772
+        },
+        "p50_us": {
+          "min": 23906.529,
+          "median": 24065.766,
+          "max": 24477.334
+        },
+        "p95_us": {
+          "min": 30703.502,
+          "median": 30930.487,
+          "max": 31304.279
+        },
+        "p99_us": {
+          "min": 32337.864,
+          "median": 33615.24,
+          "max": 33636.808
+        },
+        "p999_us": {
+          "min": 35529.24,
+          "median": 37343.07,
+          "max": 38164.942
+        },
+        "server_cpu_seconds": {
+          "min": 0.36999999999999994,
+          "median": 0.37000000000000005,
+          "max": 0.38
+        },
+        "client_cpu_seconds": {
+          "min": 0.1488659519999942,
+          "median": 0.1567397489999962,
+          "max": 0.16303516699997544
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 320.59710656248404,
+          "median": 320.6167335383846,
+          "max": 333.65475651292553
+        },
+        "p50_us": {
+          "min": 11890.694,
+          "median": 12360.842,
+          "max": 12372.485
+        },
+        "p95_us": {
+          "min": 12658.921,
+          "median": 13250.053,
+          "max": 13305.25
+        },
+        "p99_us": {
+          "min": 14385.19,
+          "median": 15276.587,
+          "max": 16584.149
+        },
+        "p999_us": {
+          "min": 19288.872,
+          "median": 20778.603,
+          "max": 42779.545
+        },
+        "server_cpu_seconds": {
+          "min": 0.2,
+          "median": 0.2,
+          "max": 0.21
+        },
+        "client_cpu_seconds": {
+          "min": 0.2632613310000238,
+          "median": 0.26545574599998645,
+          "max": 0.2694995420000055
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 18027.496721292846,
+          "median": 18583.109845750478,
+          "max": 18670.969694202482
+        },
+        "p50_us": {
+          "min": 188.89,
+          "median": 189.899,
+          "max": 195.402
+        },
+        "p95_us": {
+          "min": 394.359,
+          "median": 397.825,
+          "max": 410.412
+        },
+        "p99_us": {
+          "min": 536.177,
+          "median": 537.523,
+          "max": 553.963
+        },
+        "p999_us": {
+          "min": 741.432,
+          "median": 744.641,
+          "max": 788.148
+        },
+        "server_cpu_seconds": {
+          "min": 9.34,
+          "median": 9.36,
+          "max": 9.37
+        },
+        "client_cpu_seconds": {
+          "min": 13.023494139999968,
+          "median": 13.052641856999998,
+          "max": 13.083927343000028
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20896.458342903294,
+          "median": 20991.467803316784,
+          "max": 21507.760194264116
+        },
+        "p50_us": {
+          "min": 139.174,
+          "median": 143.55,
+          "max": 143.585
+        },
+        "p95_us": {
+          "min": 436.066,
+          "median": 442.178,
+          "max": 448.646
+        },
+        "p99_us": {
+          "min": 620.24,
+          "median": 626.545,
+          "max": 639.86
+        },
+        "p999_us": {
+          "min": 889.18,
+          "median": 901.052,
+          "max": 913.985
+        },
+        "server_cpu_seconds": {
+          "min": 2.53,
+          "median": 2.57,
+          "max": 2.58
+        },
+        "client_cpu_seconds": {
+          "min": 13.944781627999987,
+          "median": 14.003857274000012,
+          "max": 14.035782856000026
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 160.00366541946465,
+          "median": 162.3389871836501,
+          "max": 164.2231379840056
+        },
+        "p50_us": {
+          "min": 24244.302,
+          "median": 24411.81,
+          "max": 24824.358
+        },
+        "p95_us": {
+          "min": 30937.95,
+          "median": 31348.651,
+          "max": 32424.401
+        },
+        "p99_us": {
+          "min": 32023.452,
+          "median": 34062.01,
+          "max": 36832.476
+        },
+        "p999_us": {
+          "min": 34995.721,
+          "median": 42376.428,
+          "max": 86019.0
+        },
+        "server_cpu_seconds": {
+          "min": 0.35000000000000003,
+          "median": 0.37000000000000005,
+          "max": 0.4
+        },
+        "client_cpu_seconds": {
+          "min": 0.1492172749999554,
+          "median": 0.15509566399998675,
+          "max": 0.17218869999999242
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 330.07904922086954,
+          "median": 332.26475483031885,
+          "max": 332.9232334733564
+        },
+        "p50_us": {
+          "min": 11921.92,
+          "median": 11950.948,
+          "max": 11990.221
+        },
+        "p95_us": {
+          "min": 12723.879,
+          "median": 12798.665,
+          "max": 12951.359
+        },
+        "p99_us": {
+          "min": 13583.758,
+          "median": 14001.288,
+          "max": 15283.013
+        },
+        "p999_us": {
+          "min": 17354.648,
+          "median": 18294.643,
+          "max": 18679.685
+        },
+        "server_cpu_seconds": {
+          "min": 0.21000000000000002,
+          "median": 0.23,
+          "max": 0.24
+        },
+        "client_cpu_seconds": {
+          "min": 0.25093370199999754,
+          "median": 0.2958643330000541,
+          "max": 0.29984190499999386
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 158.5785368529886,
+          "median": 160.3957364256109,
+          "max": 165.49881988801968
+        },
+        "p50_us": {
+          "min": 23997.212,
+          "median": 24665.013,
+          "max": 25016.45
+        },
+        "p95_us": {
+          "min": 30880.295,
+          "median": 31508.845,
+          "max": 32005.27
+        },
+        "p99_us": {
+          "min": 33752.552,
+          "median": 34830.164,
+          "max": 36531.83
+        },
+        "p999_us": {
+          "min": 40085.234,
+          "median": 42951.263,
+          "max": 87148.748
+        },
+        "server_cpu_seconds": {
+          "min": 0.37999999999999995,
+          "median": 0.41,
+          "max": 0.45999999999999996
+        },
+        "client_cpu_seconds": {
+          "min": 0.14997033600000004,
+          "median": 0.17357036799998582,
+          "max": 0.2191053889999921
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 323.80020378530173,
+          "median": 332.752081397994,
+          "max": 334.5358691782519
+        },
+        "p50_us": {
+          "min": 11824.232,
+          "median": 11880.811,
+          "max": 12192.489
+        },
+        "p95_us": {
+          "min": 12697.447,
+          "median": 12927.432,
+          "max": 13149.783
+        },
+        "p99_us": {
+          "min": 14270.655,
+          "median": 15535.253,
+          "max": 15820.047
+        },
+        "p999_us": {
+          "min": 19582.241,
+          "median": 22160.363,
+          "max": 81258.397
+        },
+        "server_cpu_seconds": {
+          "min": 0.22000000000000003,
+          "median": 0.22999999999999998,
+          "max": 0.25
+        },
+        "client_cpu_seconds": {
+          "min": 0.243534131,
+          "median": 0.29776560100003735,
+          "max": 0.3051726390000056
+        }
+      }
+    }
+  ],
+  "expected_identity": {
+    "ling_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+    "ling_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+    "ling_version": "ling 0.2.0",
+    "redis_sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a",
+    "redis_version": "8.10.3",
+    "redis_source_sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02"
+  },
+  "limits": {
+    "max_samples_per_case": 2000000,
+    "max_raw_bytes_per_case": 67108864
+  },
+  "scope": "Raw successful request latencies only; client CPU has no recorded endpoints to independently recompute. RSS endpoints and lifetime VmHWM include preload/warmup. Frozen input bytes match independently supplied pins; recorded revision/version metadata must agree, but archive hash alone does not prove binary build provenance. No executable is run.",
+  "identity_checks": {
+    "ling_sha256": true,
+    "redis_sha256": true,
+    "redis_source_archive_sha256": true,
+    "ling_revision": true,
+    "redis_pin": true,
+    "redis_source_archive_verified": true,
+    "ling_version": true,
+    "redis_version": true
+  },
+  "case_count": 72,
+  "group_count": 24
+}

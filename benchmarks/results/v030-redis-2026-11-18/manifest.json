@@ -1,0 +1,60 @@
+{
+  "archived_utc": "2026-11-17T21:26:53.322589+00:00",
+  "run_id": "redis-full-20261118-0507",
+  "archive_count": 2,
+  "valid_comparison": false,
+  "source_file_count": 388,
+  "git_path_filter_bytes_unchanged": true,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 52,
+      "sha256": "97d1c256af2f55fecf60d1839193db53dcab2679a655b8749c82cf301643b74e"
+    },
+    {
+      "path": "analyze-redis-results.py",
+      "bytes": 17843,
+      "sha256": "a0b8a1154046f4186ddcba598e717652a8ac6de1407137909c87dd9c989576d2"
+    },
+    {
+      "path": "archive-redis-acceptance.py",
+      "bytes": 20568,
+      "sha256": "c29fb367f94c8b7916d98a4759285bcd10f5a79a60c723fa9dfde7cdc890e976"
+    },
+    {
+      "path": "archive-verification.json",
+      "bytes": 6439,
+      "sha256": "75da56b6ee2f8c79922ec3f2eb53ba40cb6dee34aaae4ec36e90a2a3a4fd639e"
+    },
+    {
+      "path": "audit.json",
+      "bytes": 117134,
+      "sha256": "45d06986fc634980f47915976a1f3896d02a073f415ac6ba2334f964eda1c15b"
+    },
+    {
+      "path": "evidence-files.manifest.json",
+      "bytes": 208723,
+      "sha256": "774d3b25888e188eee12dc0e255e447f8afd78945769c2e14eb371d248d028e9"
+    },
+    {
+      "path": "raw-001.tar.gz",
+      "bytes": 36551856,
+      "sha256": "5e01593e656f46b04cd66ed6c018dda52d9ee5e7a679223205a2b896f3e37551"
+    },
+    {
+      "path": "raw-002.tar.gz",
+      "bytes": 32551859,
+      "sha256": "12cfb11f0af946ef2463e54bd5f38f8929dfa7538c08d333fe7eec0b3316c920"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 39370,
+      "sha256": "afd6c2a0f96e7199ee0d7f34d653ecfc6b9aba84da67ea8a00caf031c8adf3fe"
+    },
+    {
+      "path": "test_analyze_redis_results.py",
+      "bytes": 17209,
+      "sha256": "91098f9bf79e1304257cc44782bb0f9a5d827b0ff0a89d2d67327c5d0894b661"
+    }
+  ]
+}

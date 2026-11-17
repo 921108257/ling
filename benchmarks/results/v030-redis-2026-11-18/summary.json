@@ -1,0 +1,1250 @@
+{
+  "run_id": "redis-full-20261118-0507",
+  "valid": false,
+  "controller_exit": 0,
+  "independent_audit_valid": false,
+  "case_count": 72,
+  "group_count": 24,
+  "independent_audit_errors": [
+    "one or more case audits failed"
+  ],
+  "groups": [
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17909.837979909633,
+          "median": 18092.90264186289,
+          "max": 18385.34627381799
+        },
+        "p50_us": {
+          "min": 190.438,
+          "median": 193.207,
+          "max": 196.249
+        },
+        "p95_us": {
+          "min": 405.332,
+          "median": 410.213,
+          "max": 412.228
+        },
+        "p99_us": {
+          "min": 552.971,
+          "median": 560.185,
+          "max": 560.973
+        },
+        "p999_us": {
+          "min": 782.866,
+          "median": 793.086,
+          "max": 812.342
+        },
+        "server_cpu_seconds": {
+          "min": 9.22,
+          "median": 9.270000000000001,
+          "max": 9.31
+        },
+        "client_cpu_seconds": {
+          "min": 13.077678917000014,
+          "median": 13.085967132,
+          "max": 13.101924293000025
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20582.072773799016,
+          "median": 21246.27408444194,
+          "max": 21359.161545436058
+        },
+        "p50_us": {
+          "min": 139.092,
+          "median": 141.182,
+          "max": 147.321
+        },
+        "p95_us": {
+          "min": 435.92,
+          "median": 438.758,
+          "max": 447.113
+        },
+        "p99_us": {
+          "min": 616.459,
+          "median": 621.232,
+          "max": 631.231
+        },
+        "p999_us": {
+          "min": 853.501,
+          "median": 875.631,
+          "max": 886.484
+        },
+        "server_cpu_seconds": {
+          "min": 2.47,
+          "median": 2.48,
+          "max": 2.5100000000000002
+        },
+        "client_cpu_seconds": {
+          "min": 13.955652503999996,
+          "median": 13.988857222000036,
+          "max": 14.029964606000021
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17849.0061224121,
+          "median": 18179.76994118025,
+          "max": 18334.605005372767
+        },
+        "p50_us": {
+          "min": 192.049,
+          "median": 194.591,
+          "max": 198.136
+        },
+        "p95_us": {
+          "min": 395.604,
+          "median": 396.186,
+          "max": 402.801
+        },
+        "p99_us": {
+          "min": 529.426,
+          "median": 536.327,
+          "max": 543.299
+        },
+        "p999_us": {
+          "min": 733.271,
+          "median": 758.552,
+          "max": 770.452
+        },
+        "server_cpu_seconds": {
+          "min": 9.99,
+          "median": 10.0,
+          "max": 10.059999999999999
+        },
+        "client_cpu_seconds": {
+          "min": 12.911079402000041,
+          "median": 12.914607179,
+          "max": 12.977007980999986
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 26089.462983232406,
+          "median": 26244.709288253278,
+          "max": 26290.062358198556
+        },
+        "p50_us": {
+          "min": 129.39,
+          "median": 129.746,
+          "max": 130.042
+        },
+        "p95_us": {
+          "min": 272.459,
+          "median": 275.866,
+          "max": 277.213
+        },
+        "p99_us": {
+          "min": 425.666,
+          "median": 425.675,
+          "max": 433.259
+        },
+        "p999_us": {
+          "min": 639.647,
+          "median": 658.286,
+          "max": 665.021
+        },
+        "server_cpu_seconds": {
+          "min": 3.25,
+          "median": 3.27,
+          "max": 3.29
+        },
+        "client_cpu_seconds": {
+          "min": 14.430500669999986,
+          "median": 14.441308692999996,
+          "max": 14.451839869000082
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 16968.683887602576,
+          "median": 17494.028169679463,
+          "max": 17676.710639710323
+        },
+        "p50_us": {
+          "min": 199.34,
+          "median": 202.111,
+          "max": 207.186
+        },
+        "p95_us": {
+          "min": 404.346,
+          "median": 406.159,
+          "max": 422.573
+        },
+        "p99_us": {
+          "min": 542.984,
+          "median": 543.75,
+          "max": 567.345
+        },
+        "p999_us": {
+          "min": 744.917,
+          "median": 752.339,
+          "max": 800.226
+        },
+        "server_cpu_seconds": {
+          "min": 10.19,
+          "median": 10.190000000000001,
+          "max": 10.209999999999999
+        },
+        "client_cpu_seconds": {
+          "min": 12.836849266000002,
+          "median": 12.870304618000006,
+          "max": 12.907372561000045
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 24630.433125214025,
+          "median": 25562.191182736384,
+          "max": 25824.043633891928
+        },
+        "p50_us": {
+          "min": 131.75,
+          "median": 133.592,
+          "max": 135.624
+        },
+        "p95_us": {
+          "min": 277.889,
+          "median": 284.742,
+          "max": 303.654
+        },
+        "p99_us": {
+          "min": 437.779,
+          "median": 444.349,
+          "max": 471.945
+        },
+        "p999_us": {
+          "min": 667.264,
+          "median": 671.421,
+          "max": 730.733
+        },
+        "server_cpu_seconds": {
+          "min": 3.2800000000000002,
+          "median": 3.33,
+          "max": 3.34
+        },
+        "client_cpu_seconds": {
+          "min": 14.330710339999996,
+          "median": 14.330951970000001,
+          "max": 14.406889682000042
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17782.884830101026,
+          "median": 18486.88494873251,
+          "max": 18582.428324080094
+        },
+        "p50_us": {
+          "min": 189.661,
+          "median": 190.552,
+          "max": 197.422
+        },
+        "p95_us": {
+          "min": 398.091,
+          "median": 401.8,
+          "max": 421.346
+        },
+        "p99_us": {
+          "min": 542.305,
+          "median": 550.452,
+          "max": 576.812
+        },
+        "p999_us": {
+          "min": 741.82,
+          "median": 792.785,
+          "max": 837.26
+        },
+        "server_cpu_seconds": {
+          "min": 9.270000000000001,
+          "median": 9.290000000000001,
+          "max": 9.3
+        },
+        "client_cpu_seconds": {
+          "min": 13.050659364000012,
+          "median": 13.074341557000082,
+          "max": 13.090802514
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20671.065758365592,
+          "median": 21571.170896214866,
+          "max": 21613.89429469152
+        },
+        "p50_us": {
+          "min": 138.807,
+          "median": 140.031,
+          "max": 148.113
+        },
+        "p95_us": {
+          "min": 430.957,
+          "median": 433.014,
+          "max": 444.327
+        },
+        "p99_us": {
+          "min": 615.986,
+          "median": 620.103,
+          "max": 636.35
+        },
+        "p999_us": {
+          "min": 874.464,
+          "median": 882.821,
+          "max": 951.354
+        },
+        "server_cpu_seconds": {
+          "min": 2.52,
+          "median": 2.55,
+          "max": 2.63
+        },
+        "client_cpu_seconds": {
+          "min": 14.024291483,
+          "median": 14.034373746000028,
+          "max": 14.051651320000019
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17911.294420378897,
+          "median": 18155.796349442084,
+          "max": 18406.677835481172
+        },
+        "p50_us": {
+          "min": 192.072,
+          "median": 194.135,
+          "max": 196.077
+        },
+        "p95_us": {
+          "min": 393.948,
+          "median": 400.843,
+          "max": 406.581
+        },
+        "p99_us": {
+          "min": 529.756,
+          "median": 541.789,
+          "max": 560.763
+        },
+        "p999_us": {
+          "min": 735.144,
+          "median": 773.817,
+          "max": 878.383
+        },
+        "server_cpu_seconds": {
+          "min": 10.06,
+          "median": 10.06,
+          "max": 10.08
+        },
+        "client_cpu_seconds": {
+          "min": 12.91502355800003,
+          "median": 12.915463592000037,
+          "max": 12.915485480000001
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 25834.389215619845,
+          "median": 26176.26079141723,
+          "max": 26855.26433494539
+        },
+        "p50_us": {
+          "min": 128.128,
+          "median": 129.144,
+          "max": 129.54
+        },
+        "p95_us": {
+          "min": 267.488,
+          "median": 280.632,
+          "max": 291.465
+        },
+        "p99_us": {
+          "min": 418.258,
+          "median": 435.288,
+          "max": 441.128
+        },
+        "p999_us": {
+          "min": 630.815,
+          "median": 665.47,
+          "max": 666.057
+        },
+        "server_cpu_seconds": {
+          "min": 3.27,
+          "median": 3.27,
+          "max": 3.31
+        },
+        "client_cpu_seconds": {
+          "min": 14.455706117999995,
+          "median": 14.481865331999984,
+          "max": 14.500086024000097
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 17374.902170828023,
+          "median": 17655.5353222003,
+          "max": 17953.580057140112
+        },
+        "p50_us": {
+          "min": 197.734,
+          "median": 200.798,
+          "max": 201.424
+        },
+        "p95_us": {
+          "min": 397.282,
+          "median": 402.809,
+          "max": 413.664
+        },
+        "p99_us": {
+          "min": 531.388,
+          "median": 538.796,
+          "max": 580.978
+        },
+        "p999_us": {
+          "min": 714.695,
+          "median": 742.25,
+          "max": 1135.51
+        },
+        "server_cpu_seconds": {
+          "min": 10.219999999999999,
+          "median": 10.22,
+          "max": 10.23
+        },
+        "client_cpu_seconds": {
+          "min": 12.844958919999982,
+          "median": 12.854880696999999,
+          "max": 12.887903951999988
+        }
+      }
+    },
+    {
+      "mode": "fast",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 25419.46699426512,
+          "median": 26122.131914160625,
+          "max": 26509.184813147454
+        },
+        "p50_us": {
+          "min": 131.298,
+          "median": 132.344,
+          "max": 132.549
+        },
+        "p95_us": {
+          "min": 258.229,
+          "median": 267.152,
+          "max": 298.927
+        },
+        "p99_us": {
+          "min": 411.531,
+          "median": 423.392,
+          "max": 456.412
+        },
+        "p999_us": {
+          "min": 619.466,
+          "median": 648.547,
+          "max": 691.213
+        },
+        "server_cpu_seconds": {
+          "min": 3.32,
+          "median": 3.33,
+          "max": 3.37
+        },
+        "client_cpu_seconds": {
+          "min": 14.394762010999983,
+          "median": 14.419085249999966,
+          "max": 14.444722157000001
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 18088.533040901842,
+          "median": 18120.947057867816,
+          "max": 18224.585525294762
+        },
+        "p50_us": {
+          "min": 192.723,
+          "median": 193.526,
+          "max": 193.839
+        },
+        "p95_us": {
+          "min": 406.346,
+          "median": 407.449,
+          "max": 407.7
+        },
+        "p99_us": {
+          "min": 554.202,
+          "median": 554.772,
+          "max": 556.57
+        },
+        "p999_us": {
+          "min": 769.379,
+          "median": 774.459,
+          "max": 802.954
+        },
+        "server_cpu_seconds": {
+          "min": 9.24,
+          "median": 9.36,
+          "max": 9.38
+        },
+        "client_cpu_seconds": {
+          "min": 13.057628632000046,
+          "median": 13.061515016999977,
+          "max": 13.074176212999987
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20183.61999718595,
+          "median": 20744.001444892474,
+          "max": 20983.71739548724
+        },
+        "p50_us": {
+          "min": 143.14,
+          "median": 146.12,
+          "max": 149.928
+        },
+        "p95_us": {
+          "min": 443.579,
+          "median": 445.862,
+          "max": 457.144
+        },
+        "p99_us": {
+          "min": 632.233,
+          "median": 632.779,
+          "max": 651.444
+        },
+        "p999_us": {
+          "min": 879.007,
+          "median": 886.288,
+          "max": 953.501
+        },
+        "server_cpu_seconds": {
+          "min": 2.52,
+          "median": 2.53,
+          "max": 2.57
+        },
+        "client_cpu_seconds": {
+          "min": 13.952296759000006,
+          "median": 13.963686742999926,
+          "max": 13.969196854000018
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 159.80150849142697,
+          "median": 162.7807941877336,
+          "max": 164.1610856793262
+        },
+        "p50_us": {
+          "min": 24278.736,
+          "median": 24417.505,
+          "max": 24866.355
+        },
+        "p95_us": {
+          "min": 31017.355,
+          "median": 31470.296,
+          "max": 31790.563
+        },
+        "p99_us": {
+          "min": 32028.088,
+          "median": 32832.73,
+          "max": 33068.055
+        },
+        "p999_us": {
+          "min": 36111.413,
+          "median": 36914.869,
+          "max": 38503.612
+        },
+        "server_cpu_seconds": {
+          "min": 0.35000000000000003,
+          "median": 0.36000000000000004,
+          "max": 0.36000000000000004
+        },
+        "client_cpu_seconds": {
+          "min": 0.14509562199998527,
+          "median": 0.1463059449999946,
+          "max": 0.14843696899998804
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 323.27607820158573,
+          "median": 326.46311294595876,
+          "max": 333.87157605204004
+        },
+        "p50_us": {
+          "min": 11887.223,
+          "median": 12130.704,
+          "max": 12164.499
+        },
+        "p95_us": {
+          "min": 12667.872,
+          "median": 13130.25,
+          "max": 13152.623
+        },
+        "p99_us": {
+          "min": 15260.494,
+          "median": 16742.905,
+          "max": 16865.11
+        },
+        "p999_us": {
+          "min": 21693.578,
+          "median": 52761.652,
+          "max": 61854.568
+        },
+        "server_cpu_seconds": {
+          "min": 0.2,
+          "median": 0.21000000000000002,
+          "max": 0.22999999999999998
+        },
+        "client_cpu_seconds": {
+          "min": 0.2299646510000457,
+          "median": 0.2346304629999736,
+          "max": 0.247042203000035
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 162.27141770972523,
+          "median": 165.56094490982701,
+          "max": 165.81585359006772
+        },
+        "p50_us": {
+          "min": 23906.529,
+          "median": 24065.766,
+          "max": 24477.334
+        },
+        "p95_us": {
+          "min": 30703.502,
+          "median": 30930.487,
+          "max": 31304.279
+        },
+        "p99_us": {
+          "min": 32337.864,
+          "median": 33615.24,
+          "max": 33636.808
+        },
+        "p999_us": {
+          "min": 35529.24,
+          "median": 37343.07,
+          "max": 38164.942
+        },
+        "server_cpu_seconds": {
+          "min": 0.36999999999999994,
+          "median": 0.37000000000000005,
+          "max": 0.38
+        },
+        "client_cpu_seconds": {
+          "min": 0.1488659519999942,
+          "median": 0.1567397489999962,
+          "max": 0.16303516699997544
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "bytes",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 320.59710656248404,
+          "median": 320.6167335383846,
+          "max": 333.65475651292553
+        },
+        "p50_us": {
+          "min": 11890.694,
+          "median": 12360.842,
+          "max": 12372.485
+        },
+        "p95_us": {
+          "min": 12658.921,
+          "median": 13250.053,
+          "max": 13305.25
+        },
+        "p99_us": {
+          "min": 14385.19,
+          "median": 15276.587,
+          "max": 16584.149
+        },
+        "p999_us": {
+          "min": 19288.872,
+          "median": 20778.603,
+          "max": 42779.545
+        },
+        "server_cpu_seconds": {
+          "min": 0.2,
+          "median": 0.2,
+          "max": 0.21
+        },
+        "client_cpu_seconds": {
+          "min": 0.2632613310000238,
+          "median": 0.26545574599998645,
+          "max": 0.2694995420000055
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "get",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 18027.496721292846,
+          "median": 18583.109845750478,
+          "max": 18670.969694202482
+        },
+        "p50_us": {
+          "min": 188.89,
+          "median": 189.899,
+          "max": 195.402
+        },
+        "p95_us": {
+          "min": 394.359,
+          "median": 397.825,
+          "max": 410.412
+        },
+        "p99_us": {
+          "min": 536.177,
+          "median": 537.523,
+          "max": 553.963
+        },
+        "p999_us": {
+          "min": 741.432,
+          "median": 744.641,
+          "max": 788.148
+        },
+        "server_cpu_seconds": {
+          "min": 9.34,
+          "median": 9.36,
+          "max": 9.37
+        },
+        "client_cpu_seconds": {
+          "min": 13.023494139999968,
+          "median": 13.052641856999998,
+          "max": 13.083927343000028
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "get",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 20896.458342903294,
+          "median": 20991.467803316784,
+          "max": 21507.760194264116
+        },
+        "p50_us": {
+          "min": 139.174,
+          "median": 143.55,
+          "max": 143.585
+        },
+        "p95_us": {
+          "min": 436.066,
+          "median": 442.178,
+          "max": 448.646
+        },
+        "p99_us": {
+          "min": 620.24,
+          "median": 626.545,
+          "max": 639.86
+        },
+        "p999_us": {
+          "min": 889.18,
+          "median": 901.052,
+          "max": 913.985
+        },
+        "server_cpu_seconds": {
+          "min": 2.53,
+          "median": 2.57,
+          "max": 2.58
+        },
+        "client_cpu_seconds": {
+          "min": 13.944781627999987,
+          "median": 14.003857274000012,
+          "max": 14.035782856000026
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 160.00366541946465,
+          "median": 162.3389871836501,
+          "max": 164.2231379840056
+        },
+        "p50_us": {
+          "min": 24244.302,
+          "median": 24411.81,
+          "max": 24824.358
+        },
+        "p95_us": {
+          "min": 30937.95,
+          "median": 31348.651,
+          "max": 32424.401
+        },
+        "p99_us": {
+          "min": 32023.452,
+          "median": 34062.01,
+          "max": 36832.476
+        },
+        "p999_us": {
+          "min": 34995.721,
+          "median": 42376.428,
+          "max": 86019.0
+        },
+        "server_cpu_seconds": {
+          "min": 0.35000000000000003,
+          "median": 0.37000000000000005,
+          "max": 0.4
+        },
+        "client_cpu_seconds": {
+          "min": 0.1492172749999554,
+          "median": 0.15509566399998675,
+          "max": 0.17218869999999242
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 330.07904922086954,
+          "median": 332.26475483031885,
+          "max": 332.9232334733564
+        },
+        "p50_us": {
+          "min": 11921.92,
+          "median": 11950.948,
+          "max": 11990.221
+        },
+        "p95_us": {
+          "min": 12723.879,
+          "median": 12798.665,
+          "max": 12951.359
+        },
+        "p99_us": {
+          "min": 13583.758,
+          "median": 14001.288,
+          "max": 15283.013
+        },
+        "p999_us": {
+          "min": 17354.648,
+          "median": 18294.643,
+          "max": 18679.685
+        },
+        "server_cpu_seconds": {
+          "min": 0.21000000000000002,
+          "median": 0.23,
+          "max": 0.24
+        },
+        "client_cpu_seconds": {
+          "min": 0.25093370199999754,
+          "median": 0.2958643330000541,
+          "max": 0.29984190499999386
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "ling",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 158.5785368529886,
+          "median": 160.3957364256109,
+          "max": 165.49881988801968
+        },
+        "p50_us": {
+          "min": 23997.212,
+          "median": 24665.013,
+          "max": 25016.45
+        },
+        "p95_us": {
+          "min": 30880.295,
+          "median": 31508.845,
+          "max": 32005.27
+        },
+        "p99_us": {
+          "min": 33752.552,
+          "median": 34830.164,
+          "max": 36531.83
+        },
+        "p999_us": {
+          "min": 40085.234,
+          "median": 42951.263,
+          "max": 87148.748
+        },
+        "server_cpu_seconds": {
+          "min": 0.37999999999999995,
+          "median": 0.41,
+          "max": 0.45999999999999996
+        },
+        "client_cpu_seconds": {
+          "min": 0.14997033600000004,
+          "median": 0.17357036799998582,
+          "max": 0.2191053889999921
+        }
+      }
+    },
+    {
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set-px",
+      "system": "redis",
+      "repeats": 3,
+      "all_valid": true,
+      "ranges": {
+        "successes_per_second": {
+          "min": 323.80020378530173,
+          "median": 332.752081397994,
+          "max": 334.5358691782519
+        },
+        "p50_us": {
+          "min": 11824.232,
+          "median": 11880.811,
+          "max": 12192.489
+        },
+        "p95_us": {
+          "min": 12697.447,
+          "median": 12927.432,
+          "max": 13149.783
+        },
+        "p99_us": {
+          "min": 14270.655,
+          "median": 15535.253,
+          "max": 15820.047
+        },
+        "p999_us": {
+          "min": 19582.241,
+          "median": 22160.363,
+          "max": 81258.397
+        },
+        "server_cpu_seconds": {
+          "min": 0.22000000000000003,
+          "median": 0.22999999999999998,
+          "max": 0.25
+        },
+        "client_cpu_seconds": {
+          "min": 0.243534131,
+          "median": 0.29776560100003735,
+          "max": 0.3051726390000056
+        }
+      }
+    }
+  ],
+  "ling_revision_operator_asserted": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+  "input_identity": {
+    "controller": {
+      "copy": "inputs/controller-redis_compare.py",
+      "sha256": "8532e228fdbbaf928ebbff520074b2172e4c59164c5cfa6c0bacabc879e8b5dc",
+      "valid": true
+    },
+    "protocol_helper": {
+      "copy": "inputs/protocol_helper-v020.py",
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "valid": true
+    },
+    "tests": {
+      "copy": "inputs/tests-test_redis_compare.py",
+      "sha256": "9153c8005142799161cf6cf8f85e7bf1e77cc06af4b6cd3052d40e6e60a1be96",
+      "valid": true
+    },
+    "ling": {
+      "copy": "inputs/ling-ling",
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "valid": true
+    },
+    "redis": {
+      "copy": "inputs/redis-redis-server",
+      "sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a",
+      "valid": true
+    },
+    "redis_source_archive": {
+      "copy": "inputs/redis_source_archive-redis-8.10.3.tar.gz",
+      "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+      "valid": true
+    }
+  },
+  "identity_checks": {
+    "ling_sha256": true,
+    "redis_sha256": true,
+    "redis_source_archive_sha256": true,
+    "ling_revision": true,
+    "redis_pin": true,
+    "redis_source_archive_verified": true,
+    "ling_version": true,
+    "redis_version": true
+  },
+  "tool_checkout_head": {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "stdout": "e3df8ad216ec29118c7b2394c19127eaf047ee97",
+    "stderr": ""
+  },
+  "tool_checkout_status": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "redis_pin": {
+    "version": "8.10.3",
+    "checked_date": "2026-11-18",
+    "released_utc": "2026-10-26T11:56:24Z",
+    "commit": "1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f",
+    "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+    "archive": "https://download.redis.io/releases/redis-8.10.3.tar.gz",
+    "release": "https://github.com/redis/redis/releases/tag/8.10.3",
+    "hash_source": "https://raw.githubusercontent.com/redis/redis-hashes/master/README",
+    "tag_source": "https://api.github.com/repos/redis/redis/git/ref/tags/8.10.3",
+    "durability_source": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/",
+    "protocol_source": "https://redis.io/docs/latest/develop/reference/protocol-spec/"
+  },
+  "redis_build_metadata": {
+    "started_utc": "2026-11-17T19:06:34.777970+00:00",
+    "cwd": "/root/ling-acceptance/redis-8.10.3",
+    "command": [
+      "make",
+      "-j4",
+      "build",
+      "redis",
+      "BUILD_TLS=no"
+    ],
+    "wall_timeout_seconds": 1200,
+    "jobs": 4,
+    "source_archive_sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+    "scope": "Redis core only, default bundled vectorset version 1 retained; no external modules, TLS, global install or sysctl changes",
+    "tools": {
+      "compiler": {
+        "command": [
+          "cc",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+        "stderr": ""
+      },
+      "make": {
+        "command": [
+          "make",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "GNU Make 4.4.1\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2023 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+        "stderr": ""
+      },
+      "kernel": {
+        "command": [
+          "uname",
+          "-a"
+        ],
+        "exit_code": 0,
+        "stdout": "Linux LightLing 6.18.40.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Fri Jul 31 22:12:15 UTC 2026 x86_64 GNU/Linux\n",
+        "stderr": ""
+      },
+      "cpu": {
+        "command": [
+          "lscpu"
+        ],
+        "exit_code": 0,
+        "stdout": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  16\nOn-line CPU(s) list:                     0-15\nVendor ID:                               GenuineIntel\nModel name:                              11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz\nCPU family:                              6\nModel:                                   141\nThread(s) per core:                      2\nCore(s) per socket:                      8\nSocket(s):                               1\nStepping:                                1\nBogoMIPS:                                4607.99\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves vnmi avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       Microsoft\nVirtualization type:                     full\nL1d cache:                               384 KiB (8 instances)\nL1i cache:                               256 KiB (8 instances)\nL2 cache:                                10 MiB (8 instances)\nL3 cache:                                24 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-15\nVulnerability Gather data sampling:      Unknown: Dependent on hypervisor status\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; Enhanced IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+        "stderr": ""
+      },
+      "memory": {
+        "command": [
+          "cat",
+          "/proc/meminfo"
+        ],
+        "exit_code": 0,
+        "stdout": "MemTotal:       32791104 kB\nMemFree:        31311592 kB\nMemAvailable:   31905856 kB\nBuffers:           61600 kB\nCached:           812936 kB\nSwapCached:            0 kB\nActive:           153420 kB\nInactive:         849708 kB\nActive(anon):       3400 kB\nInactive(anon):   129660 kB\nActive(file):     150020 kB\nInactive(file):   720048 kB\nUnevictable:           0 kB\nMlocked:               0 kB\nSwapTotal:       8388608 kB\nSwapFree:        8388608 kB\nDirty:            224396 kB\nWriteback:            12 kB\nAnonPages:        129120 kB\nMapped:           151948 kB\nShmem:              4180 kB\nKReclaimable:      50788 kB\nSlab:             121460 kB\nSReclaimable:      50788 kB\nSUnreclaim:        70672 kB\nKernelStack:        5056 kB\nPageTables:         4696 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    24784160 kB\nCommitted_AS:     781840 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       37908 kB\nVmallocChunk:          0 kB\nPercpu:             6656 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nBalloon:               0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:       50176 kB\nDirectMap2M:     7211008 kB\nDirectMap1G:    35651584 kB\n",
+        "stderr": ""
+      }
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 81.337436242,
+    "finished_utc": "2026-11-17T19:07:56.133970+00:00",
+    "version": {
+      "exit_code": 0,
+      "stdout": "Redis server v=8.10.3 sha=00000000:1 malloc=jemalloc-5.3.0 bits=64 build=3e73afa1181d75d1\n",
+      "stderr": ""
+    },
+    "binary_sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a",
+    "scope_original": "Redis core only, no modules, no TLS; no make install or global changes",
+    "scope_correction_evidence": "redis-only-smoke-2/fast-bytes-get-1-redis/result.json retains the MODULE LIST; pinned src/module.c moduleLoadInternalModules and modules/vector-sets/vset.c RedisModule_Init identify the built-in"
+  },
+  "comparability": "Redis 8 与 ling 的有界、交错、闭环对照；Bounded interleaved Redis 8 / ling comparison.\n\nLinux only; starts private child processes, never attaches to an existing service.\nGET / SET / SET PX use equal keys, payload bytes, connections and pipeline depth 1.\nFast retains ling events while Redis disables persistence. Reliable journals events;\nRedis AOF always persists values and may group parallel commands into one fsync.\nThese durability objects are different: report each pair separately, never one ranking.\nThe shared Python process, protocol codecs and same-host CPU budget limit this workload.\nRedis core retains its bundled vectorset module; no external modules are accepted.\n",
+  "audit_scope": "Raw successful request latencies only; client CPU has no recorded endpoints to independently recompute. RSS endpoints and lifetime VmHWM include preload/warmup. Frozen input bytes match independently supplied pins; recorded revision/version metadata must agree, but archive hash alone does not prove binary build provenance. No executable is run.",
+  "limitations": [
+    "Pre-release closed-loop same-host comparison of ling 0.2.0 and the pinned Redis build; no 0.3.0 release or post-release acceptance is implied.",
+    "Fast persistence and Reliable durability objects differ; report each system/scenario separately, never a single overall ranking.",
+    "CPU values, RSS endpoints and lifetime VmHWM retain the original measurement boundaries; no continuous peaks, saturation, leak absence or endurance claim.",
+    "Official source and successful build records bind recorded inputs; this archiver does not independently reproduce the build.",
+    "Windows copies preserve file bytes, not original Linux owner/mode metadata. No WSL, tests, builds, analyzer or load is started by this script."
+  ]
+}
