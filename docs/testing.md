@@ -88,7 +88,9 @@ Linux 比 macOS 多一项 `/dev/full` 契约；Windows 未编译上表列明的 
 | macOS x86_64 / aarch64，各自原生目标 | 全 workspace | 各 221 | 均 0 / 0 | 各 47 |
 | Windows x86_64 原生目标 | 全 workspace，Fast 与明确拒绝 Reliable | 206 | 0 / 0 | 47 |
 
-公共检查中的 fmt、严格 clippy / rustdoc、Rust / Java / Go TCP 与双向 TLS 契约全部通过。五个平台实际构建并验证 14 个包，解包后的便携服务均通过 PING、SET、GET、PTTL、SHUTDOWN 烟测；Linux AppImage 另通过统一烟测。两个 Linux 目标均实际拒绝故意错误的 appimagetool 摘要，正确摘要校验后才运行工具。各安装包、便携包与 AppImage 的项目 MIT 许可及第三方声明检查通过：macOS 各收集 151 个 crate、Linux 各 152 个、Windows 152 个，并附 Rust 标准库许可原文；Linux 另附 musl 声明，Windows 保留 WinSW 声明。日志为本机 `target/ci-44056119224.log`。
+公共检查中的 fmt、严格 clippy / rustdoc 和 Java / Go TCP 与双向 TLS 契约全部通过；Rust 对应契约由各平台 workspace 测试覆盖。五个平台实际构建并验证 14 个包，解包后的便携服务均通过 PING、SET、GET、PTTL、SHUTDOWN 烟测；Linux AppImage 另通过统一烟测。两个 Linux 目标均实际拒绝故意错误的 appimagetool 摘要，正确摘要校验后才运行工具。各安装包、便携包与 AppImage 的项目 MIT 许可及第三方声明检查通过：macOS 各收集 151 个 crate、Linux 各 152 个、Windows 152 个，并附 Rust 标准库许可原文；Linux 另附 musl 声明，Windows 保留 WinSW 声明。日志为本机 `target/ci-44056119224.log`。
+
+2026-11-17，标签 `v0.1.4` 指向 `b073054bca2202dfe21ce1210cc19531306f4b68`，仅比上述候选增加验收文档。标签 Actions [`44057670375`](https://github.com/921108257/ling/actions/runs/44057670375) 全部成功，测试数量与上表一致，并创建 [v0.1.4 Preview](https://github.com/921108257/ling/releases/tag/v0.1.4) 预发布。实际下载全部 15 个资产后，文件大小与 SHA-256 均匹配 GitHub 资产元数据，14 个包同时匹配 `SHA256SUMS`；五个便携归档内的 MIT 许可和第三方声明均通过检查。下载的 Windows 便携包在本机再次通过 PING、SET、GET、PTTL、SHUTDOWN 烟测。日志为本机 `target/ci-44057670375.log`，这些验证日志与下载文件不作为发行资产。
 
 ### 生产路径 panic 审阅
 
