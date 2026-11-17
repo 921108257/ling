@@ -430,9 +430,9 @@ class Acceptance(unittest.TestCase):
         self.assertEqual(sample["native"]["rss_bytes"], 1024)
         self.assertEqual(sample["consumers"]["slow-db0"]["acks"], 1)
 
-    def test_terminal_sample_preserves_stop_boundary_and_budget(self):
-        """排空耗时不充作负载时长，末次样本仍保存且不突破既有样本预算。
-        Draining is separate from load duration; the terminal sample is retained within the original sample cap.
+    def _phase_with_delayed_worker_counts(self):
+        """模拟首次采样后、排空时才增加 worker 计数。
+        Simulate worker counts increasing only while draining, after the initial sample.
         """
         args = parser().parse_args([str(self.directory), "--server-binary", "ling", "--binary-revision", "test",
                                     "--seconds", ".02", "--resource-samples", "1", "--workers", "2",
@@ -481,19 +481,44 @@ class Acceptance(unittest.TestCase):
         observer = SimpleNamespace(hello=Value(8, {"stream_id": Value(6, b"x" * 16)}), close=lambda: None,
                                    request=lambda command, arguments: Value(8, {}) if command == "INFO" else Value(1, True))
         native = {"rss_bytes": 100, "cpu_seconds": 0, "handles": 4, "threads": 2}
+        observed_samples = []
+        def observe_resource_sample(*arguments, **options):
+            """保留真实快照结果，验证首次计数；Retain real snapshots to verify initial counters."""
+            sample = resource_sample(*arguments, **options)
+            observed_samples.append(sample)
+            return sample
         with patch("v030.subprocess.Popen", return_value=process), patch("v030.CappedLog", Logger), \
              patch("v030.Client", return_value=observer), patch("v030.Consumer", FakeConsumer), \
              patch("v030.threading.Thread", Thread), patch("v030.native_snapshot", return_value=native), \
+             patch("v030.resource_sample", side_effect=observe_resource_sample), \
              patch("v030.urllib.request.urlopen", side_effect=lambda *a, **k: io.BytesIO(b"ling_test 1\n")), \
              patch("v030.disk_space", return_value={"output_filesystem_free_bytes": 10**12}):
             result = run_phase(args, self.directory / "ling", "fast", "pressure", "noeviction")
         with gzip.open(self.directory / "fast-pressure-noeviction/resources.jsonl.gz", "rt", encoding="utf-8") as stream:
             samples = [json.loads(line) for line in stream]
+        return result, samples, observed_samples
+
+    def test_initial_snapshots_contain_every_planned_worker_counter(self):
+        """worker 尚无进展时，边界和首个资源快照仍有明确零值。
+        Boundary and first resource snapshots contain explicit zeros before workers make progress.
+        """
+        result, _, observed = self._phase_with_delayed_worker_counts()
+        expected = {"worker_0_cycles": 0, "worker_1_cycles": 0}
+        for snapshot in (result["load_start"], observed[0]):
+            with self.subTest(snapshot=snapshot.get("sample_kind", "load_start")):
+                counts = snapshot["workload"]["counts"]
+                self.assertEqual({key: counts[key] for key in expected}, expected)
+
+    def test_terminal_sample_preserves_stop_boundary_and_budget(self):
+        """排空耗时不充作负载时长，末次样本仍保存且不突破既有样本预算。
+        Draining is separate from load duration; the terminal sample is retained within the original sample cap.
+        """
+        result, samples, _ = self._phase_with_delayed_worker_counts()
         self.assertEqual(len(samples), 1)
         self.assertEqual(samples[0]["sample_kind"], "terminal")
         self.assertEqual(result["resource_samples_saved"], 1)
         self.assertGreater(result["counts"]["resource_samples_omitted"], 0)
-        self.assertNotIn("worker_0_cycles", result["load_stop"]["workload"]["counts"])
+        self.assertEqual(result["load_stop"]["workload"]["counts"]["worker_0_cycles"], 0)
         self.assertEqual(samples[0]["workload"]["counts"]["worker_0_cycles"], 200)
         self.assertLessEqual(result["load_stop"]["sample_completed_elapsed_seconds"], result["load_stop_requested_elapsed_seconds"])
         self.assertGreater(samples[0]["sample_started_elapsed_seconds"], result["load_stop_requested_elapsed_seconds"])

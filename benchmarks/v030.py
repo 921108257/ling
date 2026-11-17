@@ -1049,6 +1049,9 @@ def run_phase(args, binary, mode, phase, policy):
     directory = args.output / f"{mode}-{phase}-{policy}"
     directory.mkdir()
     records = Records(directory, args.seed, args.finding_examples)
+    # 首次快照前显式区分零进展与缺失观测；Distinguish zero progress from missing observations before the first snapshot.
+    for number in range(args.workers):
+        records.count(f"worker_{number}_cycles", 0)
     stop, threads, observer, server, logger = threading.Event(), [], None, None, None
     consumers = []
     port, metrics_port = free_port(), free_port()
