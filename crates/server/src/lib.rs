@@ -218,6 +218,9 @@ impl Server {
             ));
         }
         let mut connections = JoinSet::new();
+        // 拒绝写入独立于正常连接，最多保留一个任务，慢读端不会阻塞 accept。
+        // Refusal writes are separate from admitted connections: retain at most one task so a slow reader cannot block accept.
+        let mut rejections = JoinSet::new();
         // 接入退避状态跨循环保留，成功接受后复位。
         // Accept backoff state persists across iterations and resets after a successful accept.
         let mut backoff = None;
@@ -240,6 +243,11 @@ impl Server {
                         runtime.accept.panicked(std::time::Instant::now(), |m| runtime.log("error", m));
                     }
                 }
+                Some(result) = rejections.join_next(), if !rejections.is_empty() => {
+                    if result.is_err() {
+                        runtime.accept.panicked(std::time::Instant::now(), |m| runtime.log("error", m));
+                    }
+                }
                 accepted = accept::recover(
                     || self.listener.accept(),
                     &mut backoff,
@@ -253,8 +261,12 @@ impl Server {
                         }
                     };
                     let Ok(permit) = semaphore.clone().try_acquire_owned() else {
-                        drop(stream);
                         runtime.accept.rejected(std::time::Instant::now(), |m| runtime.log("warn", m));
+                        // TLS 未握手时不能发送明文；拒绝预算满时直接关闭。
+                        // Never send plaintext before a TLS handshake; close immediately when the refusal budget is full.
+                        if self.tls.is_none() {
+                            try_reject_connection(&mut rejections, stream, self.config.limits(), receiver.clone());
+                        }
                         continue;
                     };
                     let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone(); let slots = slots.clone();
@@ -284,6 +296,7 @@ impl Server {
         closing.send_replace(true);
         let drain = async {
             while connections.join_next().await.is_some() {}
+            while rejections.join_next().await.is_some() {}
             while background.join_next().await.is_some() {}
         };
         if tokio::time::timeout(
@@ -294,13 +307,72 @@ impl Server {
         .is_err()
         {
             connections.abort_all();
+            rejections.abort_all();
             background.abort_all();
             while connections.join_next().await.is_some() {}
+            while rejections.join_next().await.is_some() {}
             while background.join_next().await.is_some() {}
         }
         runtime.log("info", "server stopped");
         result
     }
+}
+
+/// 单个拒绝任务在 50 ms 或关闭信号到达时释放流；错误只表示尽力交付失败。
+/// A single refusal task releases its stream after 50 ms or shutdown; write errors mean best-effort delivery failed.
+fn try_reject_connection<W>(
+    tasks: &mut JoinSet<()>,
+    mut stream: W,
+    limits: ling_protocol::Limits,
+    mut closing: watch::Receiver<bool>,
+) where
+    W: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
+{
+    if !tasks.is_empty() {
+        return;
+    }
+    let deadline = tokio::time::Instant::now() + Duration::from_millis(50);
+    tasks.spawn(async move {
+        if *closing.borrow() {
+            return;
+        }
+        let frame = ling_protocol::Frame {
+            request_id: 0,
+            body: ling_protocol::Body::Error(ling_types::DbError::new(
+                ling_types::ErrorCode::Busy,
+                "Connection limit reached",
+            )),
+        };
+        let refuse = async {
+            use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+            if ling_protocol::write_frame(&mut stream, &frame, limits)
+                .await
+                .is_err()
+            {
+                return;
+            }
+            // 先发送 FIN 再有界排空输入，避免客户端已写 HELLO 时关闭造成 RST 丢弃拒绝帧。
+            // Send FIN before bounded input draining so a client's pending HELLO does not reset and discard the refusal.
+            if stream.shutdown().await.is_err() {
+                return;
+            }
+            let mut discard = [0u8; 1024];
+            let mut remaining = 8 * 1024;
+            while remaining > 0 {
+                let limit = remaining.min(discard.len());
+                match stream.read(&mut discard[..limit]).await {
+                    Ok(0) | Err(_) => break,
+                    Ok(size) => remaining -= size,
+                }
+            }
+        };
+        tokio::select! {
+            biased;
+            _ = closing.changed() => {}
+            _ = tokio::time::timeout_at(deadline, refuse) => {}
+        }
+    });
 }
 
 /// 在业务监听前拒绝不可用身份；Rejects unavailable identities before accepting business traffic.
@@ -393,12 +465,13 @@ mod failure_policy_tests {
         task.await.unwrap().unwrap();
     }
 
-    /// 真实连接占满上限后，额外连接全部关闭并逐次计数，一分钟内只告警一次，已有连接仍可用。
-    /// Once real connections fill the limit, excess connections close and are counted individually, warning only once per minute while the accepted connection remains usable.
+    /// 真实连接占满上限后，额外连接尽力收到 ERR_BUSY 后关闭并逐次计数，已有连接仍可用。
+    /// Once real connections fill the limit, excess connections best-effort receive ERR_BUSY before closing and are counted individually while the admitted connection remains usable.
     #[tokio::test]
     async fn excess_connections_are_counted_with_one_warning() {
         use ling_client::{Client, Options, Value};
-        use tokio::{io::AsyncReadExt, net::TcpStream};
+        use ling_protocol::{Body, Limits, read_frame};
+        use tokio::net::TcpStream;
 
         let mut config = Config::default();
         config.events.enabled = false;
@@ -417,14 +490,45 @@ mod failure_policy_tests {
         for _ in 0..4 {
             excess.push(TcpStream::connect(address).await.unwrap());
         }
+        let mut busy = 0;
         for mut stream in excess {
-            let mut byte = [0];
-            let result = tokio::time::timeout(Duration::from_secs(2), stream.read(&mut byte))
-                .await
-                .unwrap();
-            assert!(matches!(result, Ok(0) | Err(_)), "{result:?}");
+            let result = tokio::time::timeout(
+                Duration::from_secs(2),
+                read_frame(&mut stream, Limits::default()),
+            )
+            .await
+            .unwrap();
+            if let Ok(Some(frame)) = result {
+                assert_eq!(frame.request_id, 0);
+                assert!(matches!(frame.body, Body::Error(error) if error.code == "ERR_BUSY"));
+                busy += 1;
+                assert!(matches!(
+                    tokio::time::timeout(
+                        Duration::from_secs(2),
+                        read_frame(&mut stream, Limits::default()),
+                    )
+                    .await
+                    .expect("refused connection did not close"),
+                    Ok(None) | Err(_)
+                ));
+            }
         }
-        assert_eq!(runtime.accept.observed(), (4, 1, 0));
+        assert!(busy > 0, "no excess client received the refusal frame");
+        // 真实 SDK 在 HELLO 之前保留连接级稳定码，而不是改写成协议或断线错误。
+        // The real SDK preserves the connection-level code before HELLO rather than rewriting it as a protocol or transport error.
+        let error = tokio::time::timeout(
+            Duration::from_secs(2),
+            Client::connect(address, None, 0, Options::default()),
+        )
+        .await
+        .expect("SDK waited after admission rejection")
+        .err()
+        .expect("excess SDK connection was accepted");
+        assert!(
+            matches!(&error, ling_client::Error::Server(error) if error.code == "ERR_BUSY"),
+            "{error:?}"
+        );
+        assert_eq!(runtime.accept.observed(), (5, 1, 0));
         assert_eq!(
             healthy.execute("PING", vec![]).await.unwrap(),
             Value::String("PONG".into())
@@ -432,6 +536,92 @@ mod failure_policy_tests {
         healthy.close().await.unwrap();
         runtime.stop.send_replace(true);
         task.await.unwrap().unwrap();
+    }
+
+    /// 永不读取的对端只能占一个拒绝任务，50 ms 后释放；额外对端直接关闭。
+    /// A peer that never reads occupies only one refusal task and releases after 50 ms; additional peers close immediately.
+    #[tokio::test(start_paused = true)]
+    async fn refusal_tasks_are_bounded_and_writes_expire() {
+        use tokio::io::{AsyncReadExt, duplex};
+
+        let (_closing, receiver) = watch::channel(false);
+        let mut tasks = JoinSet::new();
+        let (stream, mut stalled) = duplex(1);
+        try_reject_connection(
+            &mut tasks,
+            stream,
+            ling_protocol::Limits::default(),
+            receiver.clone(),
+        );
+        let (extra, mut rejected) = duplex(1);
+        try_reject_connection(
+            &mut tasks,
+            extra,
+            ling_protocol::Limits::default(),
+            receiver,
+        );
+        assert_eq!(tasks.len(), 1);
+        let mut byte = [0];
+        assert_eq!(rejected.read(&mut byte).await.unwrap(), 0);
+        tokio::task::yield_now().await;
+        tokio::time::advance(Duration::from_millis(49)).await;
+        assert!(tasks.try_join_next().is_none());
+        tokio::time::advance(Duration::from_millis(1)).await;
+        tasks.join_next().await.unwrap().unwrap();
+        let mut sent = Vec::new();
+        stalled.read_to_end(&mut sent).await.unwrap();
+        assert_eq!(sent.len(), 1);
+    }
+
+    /// 关闭会取消尚未写完的拒绝帧，不额外等待 50 ms。
+    /// Shutdown cancels an unfinished refusal frame without waiting another 50 ms.
+    #[tokio::test(start_paused = true)]
+    async fn shutdown_cancels_a_stalled_refusal() {
+        let (closing, receiver) = watch::channel(false);
+        let mut tasks = JoinSet::new();
+        let (stream, _stalled) = tokio::io::duplex(1);
+        try_reject_connection(
+            &mut tasks,
+            stream,
+            ling_protocol::Limits::default(),
+            receiver,
+        );
+        tokio::task::yield_now().await;
+        let started = tokio::time::Instant::now();
+        closing.send_replace(true);
+        tasks.join_next().await.unwrap().unwrap();
+        assert_eq!(started.elapsed(), Duration::ZERO);
+    }
+
+    /// 拒绝期间持续可读的输入也有字节预算，不会耗尽整个计时预算后才退出。
+    /// Input that remains readable during refusal also has a byte budget, so it cannot consume the full timeout before exit.
+    #[tokio::test(start_paused = true)]
+    async fn refusal_input_draining_has_a_byte_limit() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let (_closing, receiver) = watch::channel(false);
+        let mut tasks = JoinSet::new();
+        let (stream, mut peer) = tokio::io::duplex(16 * 1024);
+        peer.write_all(&[0; 8193]).await.unwrap();
+        let started = tokio::time::Instant::now();
+        try_reject_connection(
+            &mut tasks,
+            stream,
+            ling_protocol::Limits::default(),
+            receiver,
+        );
+        tasks.join_next().await.unwrap().unwrap();
+        assert_eq!(started.elapsed(), Duration::ZERO);
+        let frame = ling_protocol::read_frame(&mut peer, ling_protocol::Limits::default())
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(frame.request_id, 0);
+        assert!(
+            matches!(frame.body, ling_protocol::Body::Error(error) if error.code == "ERR_BUSY")
+        );
+        let mut byte = [0];
+        assert_eq!(peer.read(&mut byte).await.unwrap(), 0);
     }
 
     /// 指标监听器连续致命错误只影响指标端点，业务连接在重试前后仍可 PING，关闭仍及时完成。
