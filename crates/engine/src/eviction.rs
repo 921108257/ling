@@ -126,6 +126,8 @@ impl Transaction<'_> {
             } else if self.config.eviction == EvictionPolicy::TtlFirst {
                 // ttl-first 承诺最早期限，必须检查所有有期限候选。
                 // ttl-first promises the earliest deadline, so inspect all eligible timed candidates.
+                // 此策略的 candidates 过滤器已排除无期限项，迭代期间仍持有分片锁。
+                // This policy's candidates filter excluded entries without deadlines and shard locks remain held during iteration.
                 candidates
                     .min_by_key(|(_, _, e)| e.metadata.deadline.unwrap().monotonic)
                     .into_iter()

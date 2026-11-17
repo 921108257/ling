@@ -100,14 +100,14 @@ impl Transaction<'_> {
     /// Reliable 下先记账本次锁定分片的自然过期，失败保留条目并阻止该分片写入。
     /// Accounts due expirations in locked Reliable shards first; failures preserve entries and block shard writes.
     pub(crate) fn account_expired(&mut self, time: TimeSnapshot) -> Result<(), DbError> {
-        if !self
+        let Some(store) = self
             .engine
             .events
             .as_ref()
-            .is_some_and(|s| s.enabled() && s.reliable())
-        {
+            .filter(|s| s.enabled() && s.reliable())
+        else {
             return Ok(());
-        }
+        };
         // 每次仅准备一个终结事实，避免大积压超出单事务预算后永远无法推进。
         // Prepare one terminal fact at a time so a large backlog cannot permanently exceed transaction budgets.
         for pos in 0..self.guards.len() {
@@ -130,7 +130,7 @@ impl Transaction<'_> {
                     time,
                 );
                 let mut budget = self.engine.budget.lock().map_err(|_| unavailable())?;
-                self.engine.events.as_ref().unwrap().commit(&[event], || {
+                store.commit(&[event], || {
                     budget.schedule(id, &key, Some(metadata), None);
                     self.guards[pos].1.remove(&key);
                     budget.memory -= bytes;

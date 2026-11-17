@@ -2,7 +2,7 @@
 //! Per-connection state, authentication, and database barriers; network waits never hold the engine lock.
 
 use crate::Config;
-use ling_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
+use ling_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame_budgeted};
 use ling_types::{DbError, ErrorCode, Value};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -10,7 +10,7 @@ use std::{sync::Arc, time::Duration};
 use subtle::ConstantTimeEq;
 use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
-    sync::{Semaphore, watch},
+    sync::{OwnedSemaphorePermit, Semaphore, watch},
     time::{Instant, timeout, timeout_at},
 };
 
@@ -21,6 +21,7 @@ pub(crate) async fn serve(
     config: &Config,
     engine: &Arc<ling_engine::Engine>,
     slots: Arc<Semaphore>,
+    read_budget: Arc<Semaphore>,
     mut shutdown: watch::Receiver<bool>,
     runtime: Arc<crate::operations::Runtime>,
 ) {
@@ -28,16 +29,6 @@ pub(crate) async fn serve(
         .clients
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let _connection = ConnectionCount(runtime.clone());
-    // 测试专用故障点，只存在于单元测试构建；发行构建不含。
-    // Test-only failpoint present only in unit-test builds and absent from release builds.
-    #[cfg(test)]
-    {
-        if crate::failure_policy_tests::PANIC_NEXT_CONNECTION
-            .swap(false, std::sync::atomic::Ordering::SeqCst)
-        {
-            panic!("failpoint: connection task panic");
-        }
-    }
     let (mut reader, mut stream) = tokio::io::split(stream);
     let (frames, mut incoming) = tokio::sync::mpsc::channel(1);
     let read_config = config.clone();
@@ -47,12 +38,16 @@ pub(crate) async fn serve(
     reading.spawn(async move {
         let mut first_frame = true;
         loop {
-            let frame = receive(&mut reader, &read_config, first_frame).await;
+            let frame = receive(&mut reader, &read_config, first_frame, read_budget.clone()).await;
             first_frame = false;
             let done = !matches!(frame, Ok(Some(_)));
-            if frames.send(frame).await.is_err() || done {
+            let (consumed, resume) = tokio::sync::oneshot::channel::<()>();
+            if frames.send((frame, consumed)).await.is_err() || done {
                 break;
             }
+            // 每连接只保留一个请求；处理端释放通知后才读下一帧，避免预读绕过连接屏障。
+            // Retain one request per connection; read the next frame only after processing releases the notification.
+            let _ = resume.await;
         }
     });
     let mut poll = tokio::time::interval(Duration::from_millis(10));
@@ -72,12 +67,14 @@ pub(crate) async fn serve(
         if *shutdown.borrow() {
             break;
         }
-        let received = tokio::select! {
+        let (received, _consumed) = tokio::select! {
             _ = shutdown.changed() => break,
             frame = incoming.recv() => match frame {Some(frame)=>frame,None=>break},
             _ = poll.tick(), if session.subscription.is_some() => {
-                let sub=session.subscription.as_ref().unwrap().clone();
-                let store=session.events.as_ref().unwrap().clone();
+                // 订阅轮询只在上下文完整时执行，避免会话状态异常触发 panic。
+                // Poll only with a complete subscription context instead of panicking on inconsistent session state.
+                let (Some(sub), Some(store)) = (&session.subscription, &session.events) else { break; };
+                let (sub, store) = (sub.clone(), store.clone());
                 match event_work(slots.clone(),config,move ||store.next(&sub.token,std::time::Instant::now())).await {
                     Ok(Some(event))=>{
                         if send(&mut stream,Frame{request_id:0,body:Body::Event(event.to_value())},config).await.is_err(){break;}
@@ -92,7 +89,9 @@ pub(crate) async fn serve(
                 continue;
             }
         };
-        let frame = match received {
+        // 许可覆盖排队、解码帧与命令消费；提前释放会让下一帧绕过全局内存上限。
+        // Retain the permit across queuing and request consumption; early release would let the next frame bypass the global memory bound.
+        let (frame, _read_permit) = match received {
             Ok(Some(frame)) => frame,
             Ok(None) | Err(ReadError::Io(_)) => break,
             Err(ReadError::Decode(error)) => {
@@ -108,6 +107,7 @@ pub(crate) async fn serve(
                 break;
             }
         };
+        let read_permit = Arc::new(_read_permit);
         if matches!(frame.body, Body::Heartbeat) {
             if !session.hello {
                 let _ = send(
@@ -174,7 +174,11 @@ pub(crate) async fn serve(
                 let engine = engine.clone();
                 let config = config.clone();
                 let db = session.db;
+                let read_permit = read_permit.clone();
                 match event_work(slots.clone(), &config.clone(), move || {
+                    // 连接取消不会终止已开始的阻塞任务，许可随其拥有的参数一起保留。
+                    // Cancellation cannot stop a started blocking task; retain its permit alongside the owned arguments.
+                    let _read_permit = read_permit;
                     crate::batch::execute(&engine, &config, db, items)
                 })
                 .await
@@ -202,7 +206,7 @@ pub(crate) async fn serve(
         let (result, close, fatal_error) = match frame.body {
             Body::Request(request) => {
                 session
-                    .execute(request, config, engine, slots.clone())
+                    .execute(request, config, engine, slots.clone(), Some(read_permit))
                     .await
             }
             _ if !session.authenticated => (
@@ -233,7 +237,9 @@ pub(crate) async fn serve(
                 ) {
                     (Some(sub), Some(store), Ok(id)) => {
                         let (sub, store) = (sub.clone(), store.clone());
+                        let read_permit = read_permit.clone();
                         event_work(slots.clone(), config, move || {
+                            let _read_permit = read_permit;
                             store.ack(&sub.token, id).map(|()| Value::Bool(true))
                         })
                         .await
@@ -370,6 +376,7 @@ impl Session {
         config: &Config,
         engine: &Arc<ling_engine::Engine>,
         slots: Arc<Semaphore>,
+        read_permit: Option<Arc<OwnedSemaphorePermit>>,
     ) -> (Result<Value, DbError>, bool, bool) {
         let name = request.command.as_str();
         if self.subscription.is_some() && !matches!(name, "PING" | "QUIT" | "UNSUBSCRIBE") {
@@ -464,6 +471,7 @@ impl Session {
                 let args = args.to_vec();
                 let info = name == "INFO";
                 event_work(slots.clone(), config, move || {
+                    let _read_permit = read_permit;
                     if info {
                         runtime.info(&engine, &args)
                     } else {
@@ -498,6 +506,7 @@ impl Session {
                         (Ok(patterns), Some(store)) => {
                             let db = self.db;
                             match event_work(slots.clone(), config, move || {
+                                let _read_permit = read_permit;
                                 store
                                     .subscribe(db, patterns, name.as_deref())
                                     .map(|token| Consumer { token, store })
@@ -549,6 +558,10 @@ impl Session {
                         if let Some(runtime) = &self.runtime {
                             runtime.auth_failed();
                         }
+                        // 比较完成后丢弃口令与帧许可，失败延迟不占健康连接的读取预算。
+                        // Drop the consumed password and read permit before delaying so healthy peers retain read capacity.
+                        drop(request);
+                        drop(read_permit);
                         // 等待不持执行许可；关闭只影响当前连接，失败响应字节保持不变。
                         // Waiting holds no execution permit; only this peer closes, with unchanged failure bytes.
                         tokio::time::sleep(auth_failure_delay(self.auth_failures, config)).await;
@@ -609,6 +622,7 @@ impl Session {
                 // Once started, timeout cannot claim rollback; losing a response may leave the client outcome unknown.
                 match tokio::task::spawn_blocking(move || {
                     let _permit = permit;
+                    let _read_permit = read_permit;
                     let result = if request.command == "SCAN" {
                         engine.scan(db, &request.arguments, &mut scan, cap)
                     } else {
@@ -668,7 +682,8 @@ async fn receive(
     stream: &mut (impl AsyncRead + Unpin),
     config: &Config,
     first_frame: bool,
-) -> Result<Option<Frame>, ReadError> {
+    read_budget: Arc<Semaphore>,
+) -> Result<Option<(Frame, OwnedSemaphorePermit)>, ReadError> {
     if first_frame {
         // 首字节前就开始计时，慢速发送头部也不能延长同一个期限。
         // Start before the first byte so a slowly sent header cannot extend the deadline.
@@ -677,7 +692,7 @@ async fn receive(
         } else {
             config.server.idle_timeout_ms
         };
-        let read = read_frame(stream, config.limits());
+        let read = read_frame_budgeted(stream, config.limits(), read_budget);
         return if millis == 0 {
             read.await
         } else {
@@ -703,7 +718,7 @@ async fn receive(
     // 首字节回接至同一解码器，TCP/TLS 均不依赖 peek。
     // Chain the first byte into the same decoder; neither TCP nor TLS depends on peek.
     let mut complete = std::io::Cursor::new(first).chain(stream);
-    let read = read_frame(&mut complete, config.limits());
+    let read = read_frame_budgeted(&mut complete, config.limits(), read_budget);
     if config.server.request_timeout_ms == 0 {
         read.await
     } else {
@@ -783,7 +798,7 @@ mod tests {
             let (_writer, mut reader) = tokio::io::duplex(32);
             let start = Instant::now();
             assert!(
-                receive(&mut reader, &config, first)
+                receive(&mut reader, &config, first, Arc::new(Semaphore::new(1)))
                     .await
                     .unwrap()
                     .is_none()
@@ -797,8 +812,56 @@ mod tests {
             let (mut writer, mut reader) = tokio::io::duplex(32);
             writer.write_all(b"L").await.unwrap();
             let start = Instant::now();
-            assert!(receive(&mut reader, &config, true).await.unwrap().is_none());
+            assert!(
+                receive(&mut reader, &config, true, Arc::new(Semaphore::new(1)))
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
             assert_eq!(start.elapsed(), Duration::from_millis(expected_ms));
+        }
+    }
+
+    /// 已有帧占满共享池时，握手前后等待同样受请求期限约束；慢半帧超时归还许可。
+    /// A saturated shared pool respects pre/post-handshake request deadlines; timed-out partial frames return their permit.
+    #[tokio::test(start_paused = true)]
+    async fn frame_budget_waiting_and_partial_reads_obey_deadlines() {
+        let mut config = Config::default();
+        config.server.request_timeout_ms = 100;
+        let frame = Frame {
+            request_id: 1,
+            body: Body::Request(Request::new("PING", vec![])),
+        };
+        let bytes = encode_frame(&frame, config.limits()).unwrap();
+        for first in [true, false] {
+            let budget = Arc::new(Semaphore::new(1));
+            let occupied = budget.clone().acquire_owned().await.unwrap();
+            let (mut writer, mut reader) = tokio::io::duplex(128);
+            writer.write_all(&bytes).await.unwrap();
+            let started = Instant::now();
+            assert!(
+                receive(&mut reader, &config, first, budget.clone())
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+            assert_eq!(started.elapsed(), Duration::from_millis(100));
+            assert_eq!(budget.available_permits(), 0);
+            drop(occupied);
+            assert_eq!(budget.available_permits(), 1);
+
+            let (mut writer, mut reader) = tokio::io::duplex(128);
+            writer
+                .write_all(&bytes[..ling_protocol::HEADER_LEN + 1])
+                .await
+                .unwrap();
+            assert!(
+                receive(&mut reader, &config, first, budget.clone())
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+            assert_eq!(budget.available_permits(), 1);
         }
     }
 
@@ -875,12 +938,13 @@ mod tests {
                 &config,
                 &engine,
                 slots.clone(),
+                None,
             );
             tokio::pin!(delayed);
             tokio::select! {
                 biased;
                 _ = &mut delayed => panic!("Authentication failure was not delayed"),
-                (result, _, _) = other.execute(Request::new("PING", vec![]), &config, &engine, slots.clone()) => {
+                (result, _, _) = other.execute(Request::new("PING", vec![]), &config, &engine, slots.clone(), None) => {
                     assert_eq!(result.unwrap(), Value::String("PONG".into()));
                     assert_eq!(Instant::now(), started);
                 }
@@ -897,12 +961,127 @@ mod tests {
                 &config,
                 &engine,
                 slots,
+                None,
             )
             .await;
         assert_eq!(result.unwrap(), Value::Bool(true));
         assert!(!close && !fatal);
         assert!(bad.authenticated);
         assert_eq!(bad.auth_failures, 0);
+    }
+
+    /// 单份全局许可下，错误 AUTH 及已排队下一帧不能阻挡另一个完整会话的 HELLO/PING。
+    /// With one global permit, delayed AUTH and its queued next frame cannot block another complete session's HELLO/PING.
+    #[tokio::test(start_paused = true)]
+    async fn authentication_delay_releases_shared_read_budget() {
+        use ling_protocol::{read_frame, write_frame};
+
+        let mut config = Config::default();
+        config.auth.enabled = true;
+        config.auth.password = "secret".into();
+        config.events.enabled = false;
+        let engine =
+            Arc::new(ling_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
+        let config = Arc::new(config);
+        let runtime = Arc::new(crate::operations::Runtime::new(config.clone()));
+        let slots = Arc::new(Semaphore::new(1));
+        let budget = Arc::new(Semaphore::new(1));
+        let (stop, stopped) = watch::channel(false);
+        let mut tasks = tokio::task::JoinSet::new();
+        let mut clients = Vec::new();
+        for _ in 0..2 {
+            let (client, server) = tokio::io::duplex(1024);
+            clients.push(client);
+            let (config, engine, runtime, slots, budget, stopped) = (
+                config.clone(),
+                engine.clone(),
+                runtime.clone(),
+                slots.clone(),
+                budget.clone(),
+                stopped.clone(),
+            );
+            tasks.spawn(async move {
+                serve(
+                    Box::new(server),
+                    &config,
+                    &engine,
+                    slots,
+                    budget,
+                    stopped,
+                    runtime,
+                )
+                .await
+            });
+        }
+        let mut healthy = clients.pop().unwrap();
+        let mut bad = clients.pop().unwrap();
+        write_frame(
+            &mut bad,
+            &Frame {
+                request_id: 1,
+                body: Body::Request(Request::new("HELLO", vec![Value::UInt(1)])),
+            },
+            config.limits(),
+        )
+        .await
+        .unwrap();
+        read_frame(&mut bad, config.limits())
+            .await
+            .unwrap()
+            .unwrap();
+        for (id, request) in [
+            (2, Request::new("AUTH", vec![Value::String("wrong".into())])),
+            (3, Request::new("PING", vec![])),
+        ] {
+            write_frame(
+                &mut bad,
+                &Frame {
+                    request_id: id,
+                    body: Body::Request(request),
+                },
+                config.limits(),
+            )
+            .await
+            .unwrap();
+        }
+        // 先驱动错误连接进入认证延迟，再让健康连接开始握手。
+        // Drive the bad peer into its authentication delay before starting the healthy handshake.
+        for _ in 0..10 {
+            tokio::task::yield_now().await;
+        }
+        let started = Instant::now();
+        let healthy_exchange = async {
+            for (id, request) in [
+                (1, Request::new("HELLO", vec![Value::UInt(1)])),
+                (2, Request::new("PING", vec![])),
+            ] {
+                write_frame(
+                    &mut healthy,
+                    &Frame {
+                        request_id: id,
+                        body: Body::Request(request),
+                    },
+                    config.limits(),
+                )
+                .await
+                .unwrap();
+                let response = read_frame(&mut healthy, config.limits())
+                    .await
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(response.request_id, id);
+                assert!(matches!(response.body, Body::Response(Ok(_))));
+            }
+        };
+        tokio::select! {
+            biased;
+            _ = read_frame(&mut bad, config.limits()) => panic!("healthy peer waited for the authentication delay"),
+            _ = healthy_exchange => {}
+        }
+        assert_eq!(started.elapsed(), Duration::ZERO);
+        stop.send_replace(true);
+        while tasks.join_next().await.is_some() {}
+        assert_eq!(budget.available_permits(), 1);
     }
 
     /// 排队超时必须明确尚未执行；许可释放后同一会话可以继续请求。
@@ -929,7 +1108,7 @@ mod tests {
         };
         let request = Request::new("SET", vec![Value::String("queued".into()), Value::Null]);
         let (result, close, fatal) = session
-            .execute(request.clone(), &config, &engine, slots.clone())
+            .execute(request.clone(), &config, &engine, slots.clone(), None)
             .await;
         assert_eq!(result.unwrap_err().code, "ERR_BUSY");
         assert!(!close && !fatal);
@@ -938,7 +1117,9 @@ mod tests {
             Value::UInt(0)
         );
         drop(occupied);
-        let (result, close, fatal) = session.execute(request, &config, &engine, slots).await;
+        let (result, close, fatal) = session
+            .execute(request, &config, &engine, slots, None)
+            .await;
         assert_eq!(result.unwrap(), Value::Bool(true));
         assert!(!close && !fatal);
         assert_eq!(

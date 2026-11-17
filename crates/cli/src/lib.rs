@@ -428,6 +428,8 @@ pub fn parse_command(source: &str) -> Result<Request, ParseError> {
 /// 仅使用 JSON 字符串转义，保持 Unicode 与控制字符可逆。
 /// Uses JSON string escaping only, preserving Unicode and control-character round trips.
 fn quoted(text: &str) -> String {
+    // &str 的序列化只向 String 写入 JSON 转义，不含用户自定义 Serialize 或可失败的 I/O。
+    // Serializing &str only appends JSON escapes to a String, without custom Serialize implementations or fallible I/O.
     serde_json::to_string(text).expect("String serialization")
 }
 

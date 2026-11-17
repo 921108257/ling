@@ -181,6 +181,52 @@ mod tests {
         );
     }
 
+    /// Fast 发布回调 panic 会让事件状态锁中毒，维护按稳定 Journal 错误退出而不永久重试。
+    /// A panic in a Fast publication callback poisons the event-state lock; maintenance exits with a stable Journal error instead of retrying forever.
+    #[tokio::test]
+    async fn poisoned_event_state_stops_maintenance() {
+        let store =
+            Arc::new(ling_events::EventStore::open(ling_events::Config::default(), 1, 1).unwrap());
+        let change = ling_events::Change {
+            db: 0,
+            shard: 0,
+            kind: ling_types::EventKind::Created,
+            key: "k".into(),
+            generation: ling_types::Generation {
+                epoch: 1,
+                counter: 1,
+            },
+            revision: 1,
+            timestamp_ms: 1,
+        };
+        let failed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _ = store.commit(&[change], || panic!("test publication panic"));
+        }));
+        assert!(failed.is_err());
+        assert!(store.is_poisoned());
+        let config = ling_engine::Config {
+            databases: 1,
+            shard_count: 1,
+            ..ling_engine::Config::default()
+        };
+        let engine = Arc::new(
+            Engine::with_events(config, 1, Arc::new(ling_engine::SystemClock), Some(store))
+                .unwrap(),
+        );
+        let (_closing, receiver) = watch::channel(false);
+        let error = tokio::time::timeout(
+            Duration::from_secs(5),
+            run(engine, Arc::new(Semaphore::new(1)), 1, receiver, None),
+        )
+        .await
+        .expect("maintenance kept retrying poisoned event state")
+        .unwrap_err();
+        assert!(
+            error.to_string().contains("ERR_JOURNAL_UNAVAILABLE"),
+            "{error}"
+        );
+    }
+
     /// 许可被请求占用时，关闭通知仍可取消排队的维护。
     /// Shutdown cancels queued maintenance even while requests hold all execution permits.
     #[tokio::test]

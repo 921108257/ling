@@ -78,7 +78,8 @@ enum Install {
 /// Selects, verifies and installs; check mode never writes to the installation directory.
 pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
     let fail = |code| Diagnostic::new(language, code, Context::Update);
-    let current = Version::parse(env!("CARGO_PKG_VERSION")).expect("package version");
+    let current =
+        Version::parse(env!("CARGO_PKG_VERSION")).map_err(|_| fail("LOCAL_UPDATE_VERSION"))?;
     let requested = args
         .target_version
         .as_deref()
@@ -678,6 +679,8 @@ fn file_hash(path: &Path) -> io::Result<String> {
 /// 更新输出仅包含受信任文案、解析后的版本和本机结果文件路径。
 /// Update output contains trusted text, parsed versions and the local result-file path only.
 fn text(language: Language, key: &str) -> &'static str {
+    // 键来自本模块固定调用点，内嵌表为七语契约测试覆盖，不读取用户提供的表。
+    // Keys come from fixed call sites and seven-locale contracts cover the embedded table, never a user-supplied table.
     include_str!("update/messages.tsv")
         .lines()
         .find_map(|line| {

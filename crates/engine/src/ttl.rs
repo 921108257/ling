@@ -170,7 +170,7 @@ impl Transaction<'_> {
         let pos = self
             .guards
             .binary_search_by_key(&id, |(id, _)| *id)
-            .expect("TTL shard locked");
+            .map_err(|_| unavailable())?;
         let events = [self.event(
             db,
             key,
@@ -189,6 +189,8 @@ impl Transaction<'_> {
                 self.guards[pos].1.remove(key);
                 budget.memory -= bytes;
             } else {
+                // active 已确认此 Key 存在，分片锁一直持有到提交回调完成，无法被并发移除。
+                // Active confirmed this key exists and the shard lock stays held through the commit callback, preventing concurrent removal.
                 self.guards[pos].1.get_mut(key).unwrap().metadata = metadata;
             }
             result

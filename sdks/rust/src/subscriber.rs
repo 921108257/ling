@@ -122,7 +122,10 @@ impl Subscriber {
             self.bytes -= charge(&event);
             return Ok(event);
         }
-        let mut connection = self.connection.take().unwrap();
+        let mut connection = self
+            .connection
+            .take()
+            .ok_or_else(|| Error::local(LocalError::Closed, false))?;
         let heartbeat = self.options.request_timeout.min(Duration::from_secs(30)) / 2;
         let mut tick = tokio::time::interval(heartbeat.max(Duration::from_millis(1)));
         loop {

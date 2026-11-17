@@ -142,6 +142,8 @@ impl Transaction<'_> {
                 }
                 Value::UInt(added)
             }
+            // 调度器和本函数入口已验证 Map 命令名，其他只读分支已提前返回。
+            // The dispatcher and this function's entry validate Map command names; other read-only branches returned earlier.
             _ => unreachable!(),
         };
         Ok(Effect::put(

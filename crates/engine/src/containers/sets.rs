@@ -134,7 +134,7 @@ impl Transaction<'_> {
                     let mut memory = amount * 2 * std::mem::size_of::<Value>();
                     let mut result = Vec::new();
                     for _ in 0..amount {
-                        let member = *pool.choose(&mut rng).unwrap();
+                        let member = *pool.choose(&mut rng).ok_or_else(argument_error)?;
                         let (len, heap) = match member {
                             Scalar::Null => (1, 0),
                             Scalar::Bool(_) => (2, 0),
@@ -179,6 +179,8 @@ impl Transaction<'_> {
                     true,
                 ))
             }
+            // 调度器和本函数入口已验证 Set 命令名，集合运算已交给独立分支。
+            // The dispatcher and this function's entry validate Set command names; set algebra was routed to a separate branch.
             _ => unreachable!(),
         }
     }
@@ -235,6 +237,8 @@ impl Transaction<'_> {
         }
         let value = set(result, self.config.value)?;
         if let Some(key) = destination {
+            // set 只构造 Value::Set，校验失败已通过 ? 返回，且 value 尚未修改。
+            // Set constructs only Value::Set; validation errors already returned through ?, and value has not been modified.
             let Value::Set(ref members) = value else {
                 unreachable!()
             };

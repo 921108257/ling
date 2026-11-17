@@ -230,6 +230,8 @@ fn command_example(name: &str) -> Option<&'static str> {
 /// 复用帮助中关于执行位置与先决条件的译文。
 /// Reuses help translations for execution context and prerequisites.
 fn help_label(key: &str, language: Language) -> &'static str {
+    // key 来自固定诊断分支，内嵌 labels.tsv 的七语列由帮助契约测试覆盖。
+    // Keys come from fixed diagnostic branches and help contracts cover all seven locale columns of embedded labels.tsv.
     include_str!("labels.tsv")
         .lines()
         .find_map(|line| {

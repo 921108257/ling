@@ -94,6 +94,8 @@ impl Journal {
             }
             file.read_exact(&mut header)
                 .map_err(|_| at_offset(codec::corrupt(), 0))?;
+            // header 固定为 HEADER=40 字节，且 read_exact 已成功；36..40 恒为四字节 CRC。
+            // Header is fixed at HEADER=40 bytes and read_exact succeeded; 36..40 is always a four-byte CRC.
             if &header[..8] != MAGIC
                 || crc32fast::hash(&header[..36])
                     != u32::from_be_bytes(header[36..40].try_into().unwrap())
@@ -201,6 +203,8 @@ impl Journal {
             }
             let mut h = [0; 8];
             self.file.read_exact(&mut h).map_err(|_| unavailable())?;
+            // h 是八字节数组且读取完整；前后两个切片恒各四字节，转换不受磁盘内容影响。
+            // H is an eight-byte array read in full; both halves are always four bytes, regardless of disk contents.
             let n = u32::from_be_bytes(h[..4].try_into().unwrap()) as usize;
             if n == 0 || n > self.record_limit {
                 return Err(at_offset(codec::corrupt(), pos));
@@ -214,6 +218,8 @@ impl Journal {
             self.file
                 .read_exact(&mut payload)
                 .map_err(|_| unavailable())?;
+            // 上述固定 h 的后半仍为四字节，读取 payload 不改变 h。
+            // The fixed h array's second half is still four bytes; reading the payload never modifies h.
             if crc32fast::hash(&payload) != u32::from_be_bytes(h[4..].try_into().unwrap()) {
                 return Err(at_offset(codec::corrupt(), pos));
             }

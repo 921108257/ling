@@ -247,6 +247,8 @@ impl Transaction<'_> {
             for shard in 0..self.config.shard_count as usize {
                 let ai = a as usize * self.config.shard_count as usize + shard;
                 let bi = b as usize * self.config.shard_count as usize + shard;
+                // SWAPDB 入口已校验 a/b 并锁定两个完整数据库；回调只交换这些既有分片。
+                // SWAPDB validated a/b and locked both complete databases; the callback swaps only these existing shards.
                 let ap = self
                     .guards
                     .binary_search_by_key(&ai, |(id, _)| *id)

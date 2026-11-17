@@ -219,7 +219,10 @@ async fn run() -> Result<bool, Diagnostic> {
             .map_err(|error| sdk_error(&error, language, Context::Batch))?;
         return Ok(success);
     }
-    let source = args.command.as_deref().expect("single command");
+    let source = args
+        .command
+        .as_deref()
+        .ok_or_else(|| Diagnostic::new(language, "LOCAL_ARGUMENT", Context::Client))?;
     let request = checked_parse(source, language)?;
     let mut client = Client::connect(
         SocketAddr::new(args.host, args.port),
@@ -234,6 +237,8 @@ async fn run() -> Result<bool, Diagnostic> {
     })?;
     {
         if request.command == "SUBSCRIBE" {
+            // checked_parse 只为 SUBSCRIBE 构造 String 列表和可选 GROUP String；用户输入不能绕过解析器。
+            // Checked_parse constructs only a String list and optional GROUP String for SUBSCRIBE; user input cannot bypass it.
             let mut arguments = request.arguments.into_iter();
             let Some(ling_client::Value::List(patterns)) = arguments.next() else {
                 unreachable!()
@@ -506,7 +511,9 @@ async fn run_input(
                 })?,
             );
         }
-        let active = client.as_mut().expect("connected above");
+        let active = client
+            .as_mut()
+            .ok_or_else(|| Diagnostic::new(language, "LOCAL_CLOSED", Context::Client))?;
         success &= execute(active, request, language).await?;
         if active.is_closed() {
             break;

@@ -335,6 +335,8 @@ pub fn batch_help_error(language: Language) -> &'static str {
 /// 从静态目录提取名称、签名与当前语言的说明。
 /// Extracts names, signature and the selected description from the static catalog.
 fn entries(language: Language) -> impl Iterator<Item = (&'static str, &'static str, &'static str)> {
+    // 内嵌目录的名称、签名和七语列由目录契约测试逐行校验，运行时不加载外部目录。
+    // Catalog contracts validate names, signatures and seven locale columns on every embedded row; no external catalog is loaded at runtime.
     include_str!("commands.tsv").lines().map(move |line| {
         let mut columns = line.split('\t');
         let names = columns.next().expect("catalog names");

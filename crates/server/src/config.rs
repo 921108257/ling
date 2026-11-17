@@ -87,7 +87,7 @@ impl Default for MetricsConfig {
     fn default() -> Self {
         Self {
             enabled: false,
-            host: "127.0.0.1".parse().unwrap(),
+            host: std::net::Ipv4Addr::LOCALHOST.into(),
             port: 9090,
             path: "/metrics".into(),
         }
@@ -306,7 +306,7 @@ impl Default for ServerConfig {
     /// Defaults to loopback listening with bounded connections, deadlines, and buffers.
     fn default() -> Self {
         Self {
-            host: "127.0.0.1".parse().unwrap(),
+            host: std::net::Ipv4Addr::LOCALHOST.into(),
             port: 6380,
             backlog: 1024,
             max_connections: 10000,

@@ -126,7 +126,7 @@ impl Transaction<'_> {
         let position = self
             .guards
             .binary_search_by_key(&task.location, |(id, _)| *id)
-            .unwrap();
+            .map_err(|_| unavailable())?;
         let index = &self.guards[position].1;
         let metadata = index
             .get(&task.key)
@@ -149,6 +149,8 @@ impl Transaction<'_> {
         let mut publish = || {
             budget.expirations.remove(task);
             if metadata.is_some() {
+                // metadata 从同一条目提取，分片锁贯穿 Journal 提交与回调，期间不能被删除。
+                // Metadata came from this entry and the shard lock spans Journal commit and this callback, preventing removal in between.
                 let entry = self.guards[position].1.remove(&task.key).unwrap();
                 budget.memory -= entry.bytes;
             }

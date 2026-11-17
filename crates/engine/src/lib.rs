@@ -274,6 +274,10 @@ impl Engine {
 
     /// 返回逻辑受管内存；保留阶段 2 API，锁损坏代表内部错误。
     /// Returns managed memory; retains the stage 2 API, with poison indicating an internal failure.
+    ///
+    /// # Panics
+    /// 预算锁中毒时 panic；该兼容接口仅供历史调用方，服务端使用可返回错误的 `memory_usage`。
+    /// Panics on budget-lock poison; this compatibility API serves legacy callers, while the server uses fallible `memory_usage`.
     pub fn managed_bytes(&self) -> usize {
         self.memory_usage().expect("engine budget lock poisoned")
     }

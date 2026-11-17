@@ -6,9 +6,18 @@ use ling_types::{Float, Scalar};
 use std::collections::{BTreeMap, HashSet};
 use std::mem::size_of;
 
+#[cfg(test)]
+thread_local! {
+    /// 操作计数只存在于测试，观测命令规范化所扫描的字节数。
+    /// Test-only operation counter observes bytes scanned while normalizing command names.
+    static NORMALIZED_BYTES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// 校验魔数、版本、保留位、请求 ID 和方向限额，不读取或分配负载。
 /// Checks magic, version, reserved bits, IDs, and directional caps without reading or allocating payloads.
 pub fn parse_header(bytes: &[u8; HEADER_LEN], limits: Limits) -> Result<Header, DecodeError> {
+    // 输入固定为 18 字节，以下 8/2/4 字节切片宽度由协议布局保证。
+    // The fixed 18-byte header guarantees the following 8/2/4-byte slice widths.
     let id = u64::from_be_bytes(bytes[6..14].try_into().unwrap());
     let fail = |message| {
         let mut e = DecodeError::protocol(message);
@@ -117,6 +126,8 @@ impl<'a> Decoder<'a> {
     /// 读取大端 u32 长度，不提前分配。
     /// Reads a big-endian u32 length without allocating.
     fn count(&mut self) -> Result<usize, DecodeError> {
+        // take(4) 成功恰好返回四字节；截断已作为协议错误返回。
+        // A successful take(4) returns exactly four bytes; truncation already returns a protocol error.
         Ok(u32::from_be_bytes(self.take(4)?.try_into().unwrap()) as usize)
     }
     /// 在分配发生前扣减逻辑内存预算。
@@ -163,6 +174,8 @@ impl<'a> Decoder<'a> {
                 1 => Value::Bool(true),
                 _ => return Err(DecodeError::protocol("Invalid Bool")),
             },
+            // take(8) 对各数值分支统一保证宽度，失败先返回错误而不转换。
+            // take(8) guarantees the numeric branch widths and returns truncation before conversion.
             2 => Value::Int(i64::from_be_bytes(self.take(8)?.try_into().unwrap())),
             3 => Value::UInt(u64::from_be_bytes(self.take(8)?.try_into().unwrap())),
             4 => match Float::new(f64::from_bits(u64::from_be_bytes(
@@ -258,24 +271,29 @@ impl<'a> Decoder<'a> {
     /// 解析命令封套，单独验证签名中的实际业务值。
     /// Parses the command envelope and separately validates business-value arguments.
     fn request(&mut self) -> Result<Request, DecodeError> {
-        let command = self.string()?;
+        let mut command = self.string()?;
         if !command.is_ascii() {
             return Err(DecodeError::protocol("Command name must be ASCII"));
         }
+        // 名称仅规范化一次，不让命令长度与参数数量的乘积放大工作量。
+        // Normalize once so command length and argument count do not multiply the work.
+        command.make_ascii_uppercase();
+        #[cfg(test)]
+        NORMALIZED_BYTES.set(NORMALIZED_BYTES.get() + command.len());
         let Value::List(arguments) = self.value(0)? else {
             return Err(DecodeError::protocol("Expected argument List"));
         };
         // 协议封套不占用业务 Value 深度。
         // Protocol envelopes do not count against business Value depth.
         for (index, argument) in arguments.iter().enumerate() {
-            if ling_types::is_value_argument(&command.to_ascii_uppercase(), index) {
+            if ling_types::is_value_argument(&command, index) {
                 if let Err(e) = argument.validate(self.limits.value) {
                     self.semantic.get_or_insert(e);
                 }
             }
         }
         Ok(Request {
-            command: command.to_ascii_uppercase(),
+            command,
             arguments,
             value_error: self.semantic.take(),
         })
@@ -337,6 +355,8 @@ pub fn decode_frame(bytes: &[u8], limits: Limits) -> Result<Frame, DecodeError> 
     let raw_header = bytes
         .get(..HEADER_LEN)
         .ok_or_else(|| DecodeError::protocol("Truncated frame header"))?;
+    // get(..HEADER_LEN) 成功只可能得到固定宽度的头部。
+    // A successful get(..HEADER_LEN) can only return the exact header width.
     let header = parse_header(raw_header.try_into().unwrap(), limits)?;
     if bytes.len() != HEADER_LEN + header.payload_len {
         return Err(DecodeError::protocol("Incorrect payload length"));
@@ -544,11 +564,12 @@ impl Encoder {
                 "Command must be ASCII",
             ));
         }
-        self.string(&request.command.to_ascii_uppercase())?;
+        let command = request.command.to_ascii_uppercase();
+        self.string(&command)?;
         self.push(&[7])?;
         self.count(request.arguments.len())?;
         for (index, argument) in request.arguments.iter().enumerate() {
-            if ling_types::is_value_argument(&request.command, index) {
+            if ling_types::is_value_argument(&command, index) {
                 argument.validate(limits.value)?;
             }
             self.value(argument, 1, limits)?;
@@ -649,6 +670,29 @@ pub fn encode_frame(frame: &Frame, limits: Limits) -> Result<Vec<u8>, DbError> {
     e.bytes[4..6].copy_from_slice(&u16::from(batch).to_be_bytes());
     e.bytes[6..14].copy_from_slice(&frame.request_id.to_be_bytes());
     e.bytes[14..18].copy_from_slice(&len.to_be_bytes());
+    // 编码器首先写入完整固定头，之后只追加，头部宽度不会缩短。
+    // The encoder begins with a complete fixed header and only appends, so its width cannot shrink.
     parse_header(e.bytes[..HEADER_LEN].try_into().unwrap(), limits).map_err(|e| e.error)?;
     Ok(e.bytes)
+}
+
+#[cfg(test)]
+mod normalization_tests {
+    use super::*;
+
+    /// 命令名扫描次数与参数数量无关；长命令和大量参数不能产生相乘的规范化分配。
+    /// Command scans are independent of argument count; long names and many arguments cannot multiply normalization allocations.
+    #[test]
+    fn command_normalization_is_once_per_request() {
+        for count in [0, 1, 1000] {
+            let request = Frame {
+                request_id: 1,
+                body: Body::Request(Request::new("x".repeat(8192), vec![Value::Null; count])),
+            };
+            let bytes = encode_frame(&request, Limits::default()).unwrap();
+            NORMALIZED_BYTES.set(0);
+            assert_eq!(decode_frame(&bytes, Limits::default()).unwrap(), request);
+            assert_eq!(NORMALIZED_BYTES.get(), 8192);
+        }
+    }
 }

@@ -156,6 +156,9 @@ pub(crate) struct AcceptStats {
     metrics_warning: Throttle,
     /// 连接任务 panic 告警；Connection-panic warning.
     panic_warning: Throttle,
+    /// 测试观察实际告警放行次数；Tests observe the actual number of permitted warnings.
+    #[cfg(test)]
+    rejection_warnings: AtomicU64,
 }
 
 impl AcceptStats {
@@ -170,6 +173,8 @@ impl AcceptStats {
             metrics_warning: Throttle::new(),
             panics: AtomicU64::new(0),
             panic_warning: Throttle::new(),
+            #[cfg(test)]
+            rejection_warnings: AtomicU64::new(0),
         }
     }
 
@@ -181,6 +186,8 @@ impl AcceptStats {
             .fetch_add(1, Ordering::Relaxed)
             .saturating_add(1);
         if self.reject_warning.allow(now) {
+            #[cfg(test)]
+            self.rejection_warnings.fetch_add(1, Ordering::Relaxed);
             warn(&format!(
                 "Connection limit reached; {total} connections rejected since start"
             ));
@@ -225,6 +232,17 @@ impl AcceptStats {
                 "Connection task panicked; {total} panics since start; other connections unaffected"
             ));
         }
+    }
+
+    /// 测试读取拒绝总数、已放行告警数与 accept 错误数，不改变运行时统计。
+    /// Tests read rejected, permitted-warning and accept-error counts without changing runtime statistics.
+    #[cfg(test)]
+    pub(crate) fn observed(&self) -> (u64, u64, u64) {
+        (
+            self.rejected.load(Ordering::Relaxed),
+            self.rejection_warnings.load(Ordering::Relaxed),
+            self.failures.load(Ordering::Relaxed),
+        )
     }
 }
 

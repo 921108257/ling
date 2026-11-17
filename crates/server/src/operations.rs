@@ -41,6 +41,10 @@ pub(crate) struct Runtime {
     /// 接入层内部计数与限频告警；对外指标放到 0.1.5。
     /// Internal accept-side counters and rate-limited warnings; public metrics arrive in 0.1.5.
     pub accept: crate::accept::AcceptStats,
+    /// 本实例指标接入的测试错误源；发行构建不包含。
+    /// Test error source for this instance's metrics accept loop, absent from release builds.
+    #[cfg(test)]
+    pub fail_metrics_accept: std::sync::atomic::AtomicBool,
     /// 请求时延固定桶，无 Key 或命令标签；Fixed latency buckets without key or command labels.
     latency: [AtomicU64; 6],
     /// 总延迟微秒用于 histogram sum；Total latency microseconds for histogram sum.
@@ -60,6 +64,8 @@ impl Runtime {
             clients: AtomicU64::new(0),
             last_auth_warning: Mutex::new(None),
             accept: crate::accept::AcceptStats::new(),
+            #[cfg(test)]
+            fail_metrics_accept: std::sync::atomic::AtomicBool::new(false),
             latency: std::array::from_fn(|_| AtomicU64::new(0)),
             latency_micros: AtomicU64::new(0),
         }
@@ -472,7 +478,13 @@ pub(crate) async fn serve_metrics(
         tokio::select! {
             _=closing.changed()=>break,
             Some(_)=tasks.join_next(),if !tasks.is_empty()=>{},
-            accepted=crate::accept::recover(||listener.accept(),&mut backoff,&note)=>{
+            accepted=crate::accept::recover(|| async {
+                #[cfg(test)]
+                if runtime.fail_metrics_accept.load(Ordering::Relaxed) {
+                    return Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied));
+                }
+                listener.accept().await
+            },&mut backoff,&note)=>{
                 let (mut socket,_)=match accepted {
                     Ok(value)=>value,
                     Err(error)=>{

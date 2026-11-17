@@ -6,7 +6,7 @@ mod transport;
 
 pub use codec::{decode_frame, decode_value, encode_frame, encode_value, parse_header};
 use ling_types::{DbError, ErrorCode, Value, ValueLimits};
-pub use transport::{ReadError, read_frame, write_frame};
+pub use transport::{ReadError, read_frame, read_frame_budgeted, write_frame};
 
 /// 已冻结的线上协议版本。
 /// Frozen wire-protocol version.

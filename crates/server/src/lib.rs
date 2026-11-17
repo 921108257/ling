@@ -32,6 +32,16 @@ pub struct Server {
     /// 分片锁由引擎协调，网络层只持有共享句柄。
     /// The engine coordinates shard locks; networking holds only a shared handle.
     engine: Arc<ling_engine::Engine>,
+    /// 实例专属测试故障点；发行构建不包含。
+    /// Instance-local test failpoint, absent from release builds.
+    #[cfg(test)]
+    panic_next_connection: bool,
+    /// 实例专属指标监听故障注入；Instance-local metrics-listener fault injection.
+    #[cfg(test)]
+    fail_metrics_accept: bool,
+    /// 测试只读观察本实例的接入计数；Tests observe this instance's accept counters only.
+    #[cfg(test)]
+    observe_runtime: Option<tokio::sync::oneshot::Sender<Arc<operations::Runtime>>>,
 }
 
 impl Server {
@@ -65,6 +75,12 @@ impl Server {
             tls,
             config: Arc::new(config),
             engine,
+            #[cfg(test)]
+            panic_next_connection: false,
+            #[cfg(test)]
+            fail_metrics_accept: false,
+            #[cfg(test)]
+            observe_runtime: None,
         })
     }
 
@@ -93,6 +109,12 @@ impl Server {
             tls,
             config: Arc::new(config),
             engine,
+            #[cfg(test)]
+            panic_next_connection: false,
+            #[cfg(test)]
+            fail_metrics_accept: false,
+            #[cfg(test)]
+            observe_runtime: None,
         })
     }
     /// 返回实际监听地址，支持由操作系统选择测试端口。
@@ -120,8 +142,25 @@ impl Server {
                 .map_or(1, |n| n.get())
                 .min(self.config.server.max_connections),
         ));
+        // 每份许可保守覆盖一帧编码与两份 max_decode_bytes（包括 Batch 参数副本），合计至多 CPU 并行度份；
+        // 固定头和 8 KiB 读块仍由连接数约束。许可只在有效帧头后取得。
+        // Each permit reserves one frame plus twice max_decode_bytes (including Batch argument copies), up to CPU parallelism;
+        // fixed headers and 8 KiB read chunks remain connection-bounded. Acquire only after a valid header.
+        let read_budget = Arc::new(Semaphore::new(slots.available_permits()));
         let (closing, receiver) = watch::channel(false);
         let runtime = Arc::new(operations::Runtime::new(self.config.clone()));
+        #[cfg(test)]
+        let mut panic_next_connection = self.panic_next_connection;
+        #[cfg(test)]
+        {
+            runtime.fail_metrics_accept.store(
+                self.fail_metrics_accept,
+                std::sync::atomic::Ordering::Relaxed,
+            );
+            if let Some(observer) = self.observe_runtime {
+                let _ = observer.send(runtime.clone());
+            }
+        }
         for warning in config::exposure_warnings(&self.config) {
             runtime.log("warn", warning);
         }
@@ -212,8 +251,13 @@ impl Server {
                     let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone(); let slots = slots.clone();
                     let tls = self.tls.clone();
                     let runtime = runtime.clone();
+                    let read_budget = read_budget.clone();
+                    #[cfg(test)]
+                    let panic_connection = std::mem::take(&mut panic_next_connection);
                     connections.spawn(async move {
                         let _permit = permit;
+                        #[cfg(test)]
+                        assert!(!panic_connection, "failpoint: connection task panic");
                         let stream: ling_network::Stream = if let Some(tls) = tls {
                             let mut closing = receiver.clone();
                             let handshake = tokio::time::timeout(Duration::from_millis(config.server.shutdown_timeout_ms), tls.accept(stream));
@@ -222,7 +266,7 @@ impl Server {
                                 result = handshake => match result { Ok(Ok(s)) => Box::new(s), _ => return },
                             }
                         } else { Box::new(stream) };
-                        connection::serve(stream, &config, &engine, slots, receiver, runtime).await;
+                        connection::serve(stream, &config, &engine, slots, read_budget, receiver, runtime).await;
                     });
                 }
             }
@@ -287,30 +331,24 @@ mod failure_policy_tests {
         assert!(error.to_string().contains("ERR_BUSY"), "{error}");
     }
 
-    /// 测试专用故障点：让下一个被接受连接的任务 panic，仅在单元测试构建中存在。
-    /// Test-only failpoint: makes the next accepted connection's task panic; present only in unit-test builds.
-    pub(crate) static PANIC_NEXT_CONNECTION: std::sync::atomic::AtomicBool =
-        std::sync::atomic::AtomicBool::new(false);
-
     /// 连接任务 panic 只终止该连接：出事连接被关闭，随后的新连接仍能握手并执行 PING，服务可正常关闭。
     /// A connection task panic ends only that connection: it is closed, a later connection can still handshake and PING, and the server shuts down cleanly.
     #[tokio::test]
     async fn connection_panic_leaves_other_connections_alive() {
         use ling_protocol::{Body, Frame, Limits, Request, read_frame, write_frame};
-        use std::sync::atomic::Ordering;
         use tokio::net::TcpStream;
 
         let mut config = Config::default();
         config.events.enabled = false;
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let server = Server::from_listener(listener, config).unwrap();
+        let mut server = Server::from_listener(listener, config).unwrap();
+        server.panic_next_connection = true;
         let address = server.local_addr().unwrap();
         let (stop, stopped) = tokio::sync::oneshot::channel::<()>();
         let task = tokio::spawn(server.run(async move {
             let _ = stopped.await;
         }));
 
-        PANIC_NEXT_CONNECTION.store(true, Ordering::SeqCst);
         let mut doomed = TcpStream::connect(address).await.unwrap();
         let closed = tokio::time::timeout(
             Duration::from_secs(2),
@@ -319,8 +357,6 @@ mod failure_policy_tests {
         .await
         .expect("panicked connection was not closed");
         assert!(matches!(closed, Ok(None) | Err(_)), "{closed:?}");
-        assert!(!PANIC_NEXT_CONNECTION.load(Ordering::SeqCst));
-
         let mut healthy = TcpStream::connect(address).await.unwrap();
         for (id, name, args) in [
             (1u64, "HELLO", vec![ling_types::Value::UInt(1)]),
@@ -346,5 +382,91 @@ mod failure_policy_tests {
         }
         let _ = stop.send(());
         task.await.unwrap().unwrap();
+    }
+
+    /// 真实连接占满上限后，额外连接全部关闭并逐次计数，一分钟内只告警一次，已有连接仍可用。
+    /// Once real connections fill the limit, excess connections close and are counted individually, warning only once per minute while the accepted connection remains usable.
+    #[tokio::test]
+    async fn excess_connections_are_counted_with_one_warning() {
+        use ling_client::{Client, Options, Value};
+        use tokio::{io::AsyncReadExt, net::TcpStream};
+
+        let mut config = Config::default();
+        config.events.enabled = false;
+        config.server.max_connections = 1;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut server = Server::from_listener(listener, config).unwrap();
+        let address = server.local_addr().unwrap();
+        let (observe, observed) = tokio::sync::oneshot::channel();
+        server.observe_runtime = Some(observe);
+        let task = tokio::spawn(server.run(std::future::pending()));
+        let runtime = observed.await.unwrap();
+        let mut healthy = Client::connect(address, None, 0, Options::default())
+            .await
+            .unwrap();
+        let mut excess = Vec::new();
+        for _ in 0..4 {
+            excess.push(TcpStream::connect(address).await.unwrap());
+        }
+        for mut stream in excess {
+            let mut byte = [0];
+            let result = tokio::time::timeout(Duration::from_secs(2), stream.read(&mut byte))
+                .await
+                .unwrap();
+            assert!(matches!(result, Ok(0) | Err(_)), "{result:?}");
+        }
+        assert_eq!(runtime.accept.observed(), (4, 1, 0));
+        assert_eq!(
+            healthy.execute("PING", vec![]).await.unwrap(),
+            Value::String("PONG".into())
+        );
+        healthy.close().await.unwrap();
+        runtime.stop.send_replace(true);
+        task.await.unwrap().unwrap();
+    }
+
+    /// 指标监听器连续致命错误只影响指标端点，业务连接在重试前后仍可 PING，关闭仍及时完成。
+    /// Repeated fatal metrics-listener errors stay local: business PING succeeds across retries and shutdown still completes promptly.
+    #[tokio::test]
+    async fn persistent_metrics_accept_errors_leave_data_listener_alive() {
+        use ling_client::{Client, Options, Value};
+
+        let mut config = Config::default();
+        config.events.enabled = false;
+        config.metrics.enabled = true;
+        let metrics = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        config.metrics.port = metrics.local_addr().unwrap().port();
+        drop(metrics);
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut server = Server::from_listener(listener, config).unwrap();
+        let address = server.local_addr().unwrap();
+        let (observe, observed) = tokio::sync::oneshot::channel();
+        server.observe_runtime = Some(observe);
+        server.fail_metrics_accept = true;
+        let task = tokio::spawn(server.run(std::future::pending()));
+        let runtime = observed.await.unwrap();
+        let mut healthy = Client::connect(address, None, 0, Options::default())
+            .await
+            .unwrap();
+        for failures in [1, 3] {
+            tokio::time::timeout(Duration::from_secs(5), async {
+                while runtime.accept.observed().2 < failures {
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                }
+            })
+            .await
+            .expect("metrics accept retries did not continue");
+            assert_eq!(
+                healthy.execute("PING", vec![]).await.unwrap(),
+                Value::String("PONG".into())
+            );
+        }
+        healthy.close().await.unwrap();
+        runtime.stop.send_replace(true);
+        tokio::time::timeout(Duration::from_secs(2), task)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
     }
 }

@@ -141,7 +141,11 @@ impl Engine {
         let mut processed = 0;
         while position.shard < self.config.shard_count && processed < work {
             let id = db as usize * self.config.shard_count as usize + position.shard as usize;
-            let index = &tx.guards[tx.guards.binary_search_by_key(&id, |(id, _)| *id).unwrap()].1;
+            let slot = tx
+                .guards
+                .binary_search_by_key(&id, |(id, _)| *id)
+                .map_err(|_| crate::unavailable())?;
+            let index = &tx.guards[slot].1;
             let next = match &position.last {
                 Some(key) => index
                     .range::<str, _>((Excluded(key.as_str()), Unbounded))

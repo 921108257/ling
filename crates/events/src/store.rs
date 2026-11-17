@@ -57,8 +57,8 @@ pub(crate) struct Group {
 }
 impl Group {
     /// 窗口首个未完成位置前移，已确认后继释放；Advance past completed positions and release acknowledged successors.
-    fn advance(&mut self, shard: u32) {
-        let p = self.progress.get_mut(&shard).unwrap();
+    fn advance(&mut self, shard: u32) -> Result<(), DbError> {
+        let p = self.progress.get_mut(&shard).ok_or_else(codec::corrupt)?;
         let first = self
             .pending
             .range((shard, 0)..=(shard, u64::MAX))
@@ -68,6 +68,7 @@ impl Group {
         let watermark = p.watermark;
         self.pending
             .retain(|&(s, seq), _| s != shard || seq > watermark);
+        Ok(())
     }
     /// 含记录边界的最新状态磁盘占用；Latest-state disk usage including record framing.
     fn disk_charge(&self, name: &str) -> usize {
@@ -404,7 +405,12 @@ impl EventStore {
         }
         if self.config.reliable {
             let payload = codec::events(&events);
-            if !s.journal.as_ref().unwrap().fits(payload.len(), false) {
+            if !s
+                .journal
+                .as_ref()
+                .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?
+                .fits(payload.len(), false)
+            {
                 compact(
                     &mut s,
                     &self.config,
@@ -551,7 +557,10 @@ impl EventStore {
         if let Some((shard, seq)) = retry {
             let event = find(&mut s, g.db, shard, seq)?
                 .ok_or_else(|| err(ErrorCode::OffsetExpired, "Pending event no longer retained"))?;
-            let p = g.pending.get_mut(&(shard, seq)).unwrap();
+            let p = g
+                .pending
+                .get_mut(&(shard, seq))
+                .ok_or_else(codec::corrupt)?;
             p.owner = sub.consumer;
             p.sent = Some(now);
             s.stats.redelivered = s.stats.redelivered.saturating_add(1);
@@ -600,11 +609,11 @@ impl EventStore {
                         sent: Some(now),
                     },
                 );
-                g.advance(shard);
+                g.advance(shard)?;
                 result = Some(event);
                 break;
             }
-            g.advance(shard);
+            g.advance(shard)?;
         }
         if changed {
             if check_group_budget(&s, &sub.group, &g, &self.config).is_err() {
@@ -665,7 +674,7 @@ impl EventStore {
             .get_mut(&(id.shard, id.sequence))
             .ok_or_else(|| err(ErrorCode::InvalidAck, "Event was never delivered"))?;
         pending.acked = true;
-        g.advance(id.shard);
+        g.advance(id.shard)?;
         save_group(&mut s, &sub.group, &mut g, &self.config)?;
         s.groups.insert(sub.group.clone(), g);
         Ok(())
@@ -808,7 +817,12 @@ fn check_group_budget(s: &State, key: &str, g: &Group, c: &Config) -> Result<(),
 fn save_group(s: &mut State, name: &str, g: &mut Group, c: &Config) -> Result<(), DbError> {
     if g.named && c.reliable {
         let record = codec::group(name, g);
-        if !s.journal.as_ref().unwrap().fits(record.len(), true) {
+        if !s
+            .journal
+            .as_ref()
+            .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?
+            .fits(record.len(), true)
+        {
             compact(s, c, 0)?;
             // 本次候选尚未插入组表，也必须丢弃压缩前的物理偏移。
             // This candidate is not in the group table yet and must discard its pre-compaction offset too.
@@ -820,7 +834,11 @@ fn save_group(s: &mut State, name: &str, g: &mut Group, c: &Config) -> Result<()
 }
 /// 同步错误与容量背压分开统计；Counts synchronization errors separately from capacity backpressure.
 fn append_record(s: &mut State, record: &[u8], control: bool) -> Result<(), DbError> {
-    let result = s.journal.as_mut().unwrap().append(record, control);
+    let result = s
+        .journal
+        .as_mut()
+        .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?
+        .append(record, control);
     if result
         .as_ref()
         .is_err_and(|e| e.code == ErrorCode::CommitUnknown.as_str())
@@ -916,7 +934,10 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
     let cutoff = now.checked_sub(c.retention_ms);
     let stream = s.stream;
     let mut floors = s.floors.clone();
-    let j = s.journal.as_mut().unwrap();
+    let j = s
+        .journal
+        .as_mut()
+        .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?;
     let mut prefix = true;
     j.visit(|r| {
         if r[0] == codec::EVENTS {
@@ -1005,4 +1026,47 @@ fn limit() -> DbError {
         ErrorCode::LimitExceeded,
         "Event memory or transaction budget exceeded",
     )
+}
+
+#[cfg(test)]
+mod ownership_tests {
+    use super::*;
+    use std::cell::Cell;
+
+    /// 内部 Journal 所有权缺失时显式失败，不能 panic 或先发布值与流进度。
+    /// Missing internal Journal ownership fails explicitly, without panic or publishing values and stream progress first.
+    #[test]
+    fn missing_journal_rejects_before_publication() {
+        let mut store = EventStore::open(Config::default(), 1, 1).unwrap();
+        // 仅测试注入：不创建目录，在 Fast 实例上模拟 Reliable 的 Journal 句柄缺失。
+        // Test-only injection: simulate a missing Reliable Journal handle on a Fast instance without creating directories.
+        store.config.reliable = true;
+        let published = Cell::new(false);
+        let change = Change {
+            db: 0,
+            shard: 0,
+            kind: ling_types::EventKind::Created,
+            key: "k".into(),
+            generation: ling_types::Generation {
+                epoch: 1,
+                counter: 1,
+            },
+            revision: 1,
+            timestamp_ms: 1,
+        };
+        let error = store.commit(&[change], || published.set(true)).unwrap_err();
+        assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+        assert!(!published.get());
+        let mut state = store.state.lock().unwrap();
+        assert_eq!(state.stats.committed, 0);
+        assert!(state.tails.is_empty());
+        assert_eq!(
+            append_record(&mut state, &[1], false).unwrap_err().code,
+            ErrorCode::JournalUnavailable.as_str()
+        );
+        assert_eq!(
+            compact(&mut state, &store.config, 0).unwrap_err().code,
+            ErrorCode::JournalUnavailable.as_str()
+        );
+    }
 }

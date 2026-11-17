@@ -9,6 +9,8 @@ impl Transaction<'_> {
     /// 仅访问协调器预先锁定的分片；缺少执行权是内部编程错误。
     /// Accesses only prelocked shards; missing ownership is an internal programming error.
     fn index(&self, db: u16, key: &str) -> &crate::Index {
+        // execute 已校验数据库并按命令涉及的 Key 预锁分片；候选不允许追加未协调的目标。
+        // Execute validated the database and prelocked the command's key shards; candidates cannot add uncoordinated targets.
         let id = self.engine.location(db, key).expect("validated database");
         &self.guards[self
             .guards
@@ -106,7 +108,7 @@ impl Transaction<'_> {
                 memory -= old.bytes;
             }
             if self.config.max_keys != 0 && active.is_some() {
-                *key_counts.get_mut(&target).unwrap() -= 1;
+                *key_counts.get_mut(&target).ok_or_else(unavailable)? -= 1;
             }
             let next = if let Some(value) = change.value {
                 value.validate(self.config.value)?;
@@ -178,7 +180,7 @@ impl Transaction<'_> {
                 );
             }
             for (target, key) in &victims {
-                let old = self.index(*target, key).get(key).unwrap();
+                let old = self.index(*target, key).get(key).ok_or_else(unavailable)?;
                 events.push(self.event(
                     *target,
                     key,
@@ -197,6 +199,8 @@ impl Transaction<'_> {
             // 受害者和写入共用一次发布；预算不足时不会提前删除任何 Key。
             // Victims and writes share publication; insufficient budgets never delete keys early.
             for (target, key) in victims {
+                // victims 来自已锁分片中的候选；所有位置在提交前已由 index 校验，锁集合在回调中不变。
+                // Victims came from prelocked shards and index validated their locations before commit; the lock set cannot change in this callback.
                 let id = self
                     .engine
                     .location(target, &key)
@@ -214,6 +218,8 @@ impl Transaction<'_> {
                 self.guards[pos].1.remove(&key);
             }
             for (target, key, entry) in prepared {
+                // prepared 已在预检中通过 index 校验；提交后不得新增可失败检查或取得额外分片锁。
+                // Preflight checked prepared targets through index; after commit, no fallible checks or additional shard locks may be introduced.
                 let id = self
                     .engine
                     .location(target, &key)

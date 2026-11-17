@@ -142,6 +142,8 @@ impl Transaction<'_> {
                     )?,
                 )
             }
+            // 调度器和本函数入口已验证 List 命令名，其他只读分支已提前返回。
+            // The dispatcher and this function's entry validate List command names; other read-only branches returned earlier.
             _ => unreachable!(),
         };
         Ok(Effect::put(result, key, next, true))

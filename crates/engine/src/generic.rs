@@ -124,13 +124,15 @@ impl Transaction<'_> {
                     result: Value::Bool(true),
                     changes: args
                         .chunks_exact(2)
-                        .map(|pair| Change {
-                            key: text(&pair[0]).unwrap().into(),
-                            value: Some(pair[1].clone()),
-                            db: None,
-                            policy: Mutation::Replace,
+                        .map(|pair| {
+                            Ok(Change {
+                                key: text(&pair[0])?.into(),
+                                value: Some(pair[1].clone()),
+                                db: None,
+                                policy: Mutation::Replace,
+                            })
                         })
-                        .collect(),
+                        .collect::<Result<_, DbError>>()?,
                 })
             }
             _ => Err(error(

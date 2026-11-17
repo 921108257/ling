@@ -1,5 +1,8 @@
 //! 有层级的纯文本帮助，不依赖终端颜色或宽表格。
 //! Hierarchical plain-text help without terminal colors or wide tables.
+//!
+//! 本模块的 String formatting 断言只写 String；其 fmt::Write 实现不会返回格式化错误，参数均为标准字符串与整数。
+//! String-formatting assertions here only write to String, whose fmt::Write never returns formatting errors; arguments are standard strings and integers.
 
 use super::{Language, entries, flag_help};
 use clap::Command;
@@ -12,6 +15,8 @@ const WIDTH: usize = 72;
 /// 按稳定键查询七种语言的标题和提示。
 /// Looks up headings and notes in all seven locales by stable key.
 fn label(key: &str, language: Language) -> &'static str {
+    // 键由本模块固定调用点和静态目录提供，七语帮助契约保证内嵌表覆盖全部键与语言。
+    // Keys come from fixed call sites and static catalogs; seven-locale help contracts cover every embedded key and language.
     include_str!("labels.tsv")
         .lines()
         .find_map(|line| {
@@ -123,6 +128,8 @@ fn flags(output: &mut String, command: &Command, ids: &[&str], language: Languag
             "cheatsheet" => "--cheatsheet",
             "help" => "-h, --help",
             "version" => "-V, --version",
+            // ids 仅来自下方 startup 中的固定选项列表，已由七语启动帮助测试遍历。
+            // Ids come only from startup's fixed option lists below, traversed by seven-locale startup-help tests.
             _ => unreachable!("known help flag"),
         };
         writeln!(output, "    {signature}").expect("String formatting");
@@ -151,6 +158,8 @@ fn flags(output: &mut String, command: &Command, ids: &[&str], language: Languag
 /// Builds startup help with two levels expressed through spacing and indentation.
 pub(super) fn startup(command: &Command, language: Language, server: bool) -> String {
     let mut output = String::new();
+    // localize 在调用前为根命令与 update 设置 about；这里只接收这两个静态命令。
+    // Localize assigns about before calling this function, which accepts only the two static root/update commands.
     prose(
         &mut output,
         &command.get_about().expect("help introduction").to_string(),
@@ -284,6 +293,8 @@ pub(super) fn startup(command: &Command, language: Language, server: bool) -> St
 /// 单个命令的固定分组、子组和可执行文本示例。
 /// Fixed category, subgroup and textual example for one command.
 fn metadata(name: &str) -> (&'static str, &'static str, &'static str) {
+    // name 来自内嵌命令目录，目录契约逐行验证布局表的四列与一一覆盖关系。
+    // Names come from the embedded command catalog; catalog contracts check every layout row's four columns and one-to-one coverage.
     include_str!("command-layout.tsv")
         .lines()
         .find_map(|line| {
@@ -355,6 +366,8 @@ fn subgroup(language: Language, group: &str, subgroup: &str) -> String {
     );
     prose(&mut output, label("command_note", language), 0);
     for (names, _, description) in entries(language) {
+        // str::split 即使输入为空也至少返回一段，next 必定为 Some。
+        // str::split yields at least one segment even for empty input, so next is always Some.
         let name = names.split(',').next().unwrap();
         let (item_group, item_subgroup, _) = metadata(name);
         if group == item_group && subgroup == item_subgroup {
@@ -431,6 +444,8 @@ pub(super) fn reference(language: Language) -> String {
         for subgroup in *subgroups {
             heading(&mut output, subgroup, language, 2);
             for (names, source, description) in entries(language) {
+                // str::split 即使输入为空也至少返回一段，next 必定为 Some。
+                // str::split yields at least one segment even for empty input, so next is always Some.
                 let name = names.split(',').next().unwrap();
                 let (item_group, item_subgroup, _) = metadata(name);
                 if item_group == *group && item_subgroup == *subgroup {
@@ -589,6 +604,8 @@ pub(super) fn detail(language: Language, topic: &str) -> Option<String> {
                         prose(&mut output, &related.join(", "), 4);
                     }
                 }
+                // 章节在上方通过 SECTIONS 验证；默认分支也只枚举同一静态列表。
+                // Sections were validated against SECTIONS above; the default branch also enumerates that same static list.
                 _ => unreachable!("known help section"),
             }
         }

@@ -65,7 +65,7 @@ async fn run() -> Result<(), Diagnostic> {
                 [] => command.render_help(),
                 [topic] if topic.eq_ignore_ascii_case("update") => command
                     .find_subcommand_mut("update")
-                    .expect("update subcommand")
+                    .ok_or_else(|| Diagnostic::new(language, "LOCAL_HELP_TOPIC", Context::Server))?
                     .render_help(),
                 _ => {
                     return Err(Diagnostic::new(
