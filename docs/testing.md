@@ -450,6 +450,38 @@ Python 输入与构建工具契约 15 项通过；覆盖固定动作与工具版
 
 该在线升级由 0.1.5 更新器执行，只校验 SHA-256 并替换两个程序，旧许可声明保持原样；0.1.6 ZIP 额外由独立验证器验签。0.1.6 同版本检查不重新下载或安装，因此新版“下载、验签、替换”的完整跨版本路径仍待下一版本验证，不能与上述结果混为一项。原始日志、发行元数据和测量位于 `target/release-v0.1.6-evidence/`，在线升级记录位于 `target/public-update-v0.1.6-5b5bd20512054d5d831fda7c4cd1709b/evidence/`。
 
+## 0.1.7 互操作与 CLI 构建验收
+
+2026-11-17，开发分支 `codex/v0.1.7-interop` 的源码提交 `af8cc1f161f1c356a1b0e8e8824632ef21df3187` 通过 Actions [`44109461968`](https://github.com/921108257/ling/actions/runs/44109461968)。本轮认领的 P0 会话、断线与 CLI 确认契约已完成；公共语言包和可选恢复策略未认领。工作流由开发分支手动触发，发布任务按条件跳过，未合并 `main` 或创建版本标签。
+
+Windows 本机最终 workspace 默认配置 231 项、关闭更新器配置 212 项，零失败、零 ignored。fmt、两种配置严格 Clippy、严格 rustdoc、Python 23 项工具回归及文档站构建/链接检查通过；release 服务端与 CLI 通过真实 TCP 烟测。本机三语言使用显式 Fast 和 `--no-go-race`，不作为 Reliable 或 race 的证据。普通本机 workspace 未设置产物环境变量时的证明测试提前返回，不算真实验签；最终下载产物后单独运行真实证明测试已通过。
+
+Actions 公共检查在 Linux 实际开启 Reliable 与 Go race；三语言逐项核对结果如下，所有路径的失败、跳过、缺失均为 0。TCP / 双向 TLS 各 105 项包含 39 项离线夹具和 66 项真实服务断言，`local-peer` 单列，不充作 TLS 证据。
+
+| 语言 | local-peer | TCP | 双向 TLS |
+|---|---:|---:|---:|
+| Rust | 41 / 41 | 105 / 105 | 105 / 105 |
+| Go | 41 / 41 | 105 / 105 | 105 / 105 |
+| Java | 41 / 41 | 105 / 105 | 105 / 105 |
+
+公共关闭更新器 workspace 为 235 项，Python 工具回归 23 项；fmt、严格 Clippy / rustdoc、Rust 1.88.0 两种配置及 release 依赖图 failpoints 隔离检查通过。平台测试数来自各 job 日志，不把条件编译排除项算作执行：
+
+| 平台 | 原生 workspace 通过 | musl server / CLI 通过 | 失败 / ignored |
+|---|---:|---:|---:|
+| Linux x86_64 | 253 | 125 | 0 / 0 |
+| Linux ARM64 | 253 | 125 | 0 / 0 |
+| macOS Intel | 252 | — | 0 / 0 |
+| macOS ARM64 | 252 | — | 0 / 0 |
+| Windows x86_64 | 231 | — | 0 / 0 |
+
+四个 Unix 原生任务都执行了真实 SIGINT 子进程用例；CLI 还用命名组核对 EOF、显式 ACK、auto-ack、输出失败后的实际重投。同一信号监听贯穿事件和确认阶段，新增测试验证控制行不会消耗监听器。Windows 未发送真实控制台信号，不能由内部取消选择测试推断该路径已验收。
+
+五平台原生包验证退出码均为 0，包含从 0.1.6 安装包升级、配置与状态保留、服务生命周期和便携 TCP 烟测；共生成 14 个包。Windows 为 Server 2022，Linux RPM 测试运行于 Ubuntu，不能替代 Windows 11 管理员安装、原生 RPM 发行版或交互 UAC 取消验收。此处安装包升级也不是 `ling update` 的公开在线升级；后者仍待 0.1.7 真正发布。
+
+来源证明的独立验证及更新器真实验证在 Linux、Windows、macOS 均通过。本机下载完整 `verified-release` 的 31 个附件，固定文件集及 SHA-256 全部匹配；14 份 SBOM 通过 CycloneDX 1.6 schema 与 SPDX 表达式校验。离线验证覆盖 30 个 subject 和六类篡改反例，显式设置分支 ref 的 Rust 真实证明测试通过。五份便携包含正确 MIT 正文与第三方声明，Linux 另含 musl 声明；下载的 Windows ZIP 通过 PING / SET / GET / PTTL / SHUTDOWN 烟测。构建包与证明的源码均为上面的 `af8cc1f`，后续验收记录提交不改变该产物身份。
+
+固定工具和数据库的审计报告为 212 个锁定依赖、1,527 条公告、0 个已知漏洞，继续保留 `rustls-pemfile 2.2.0` 停止维护提示。双构建测量的两个程序大小及 SHA-256 一致，仅证明同 runner、同工具链与同一源码的本次结果，不证明跨机器复现或性能提升。原始日志、测量及最终产物位于 `target/ci-44109461968/`；Windows Reliable、平台签名 / 公证、多日压力及物理断电等既有边界不变。
+
 ## Redis 对比边界
 
 只比较语义可比的String/Bytes GET/SET等工作负载。相同数据量、连接、流水线、TTL与持久性条件下运行；自定义类型、命令差异和额外事件成本单列说明。
