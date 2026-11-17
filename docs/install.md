@@ -1,6 +1,6 @@
 # 安装、服务与升级
 
-本页对应 0.1.7 Preview。项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`；来源证明验证步骤见下文。
+本页按 0.2.0 Preview 准备，标签构建与发布验收尚待完成；指定版本的示例需在该版本提供下载后使用。项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`；来源证明验证步骤见下文。
 
 安装器默认注册并启动后台服务，默认监听 `127.0.0.1:6380`，事件模式为 Fast。服务使用专用工作目录，不读取用户终端当前目录的配置。需要自定义配置或已有实例占用端口时，先跳过自动启动，修改配置后再启动。Reliable 限制见 [architecture.md](architecture.md) 和 [persistence.md](persistence.md)。
 
@@ -10,7 +10,7 @@
 | Linux x86_64 / ARM64 | 支持 | 支持满足同步语义的文件系统 | 现有 CI / 本机恢复契约，不能代替目标硬件断电验收 |
 | macOS Intel / ARM64 | 支持 | 支持满足同步语义的文件系统 | 现有 CI 恢复契约，设备写缓存与物理断电仍未验收 |
 
-0.2.0 评审保留上述支持矩阵。一次目录同步 API 调用成功不足以证明断电后的目录项持久化，不以此开放 Windows Reliable。
+0.2.0 保留上述支持矩阵。一次目录同步 API 调用成功不足以证明断电后的目录项持久化，不以此开放 Windows Reliable。
 
 ## 认证与暴露面
 
@@ -27,7 +27,7 @@
 ```sh
 ling update --check
 ling update
-ling update --version 0.1.7
+ling update --version 0.2.0
 ling update --stable --check
 ling help update
 ```
@@ -48,12 +48,12 @@ Windows 在下载校验后退出当前命令，再继续安装，以释放程序
 
 Windows 更新锁与 pending 标记按用户隔离；对同一安装目录的操作应由同一管理员用户串行执行。恢复脚本也应在停止相关程序后顺序执行。
 
-## 独立验证 0.1.7 下载
+## 独立验证 0.2.0 下载
 
 从官方 Release 下载选定包、`SHA256SUMS`、`PROVENANCE.sigstore.json` 和同名 `.cdx.json`（CycloneDX 1.6 SBOM）。先核对包的 SHA-256，再用可信来源的 GitHub CLI 验证。以下命令在 PowerShell、Linux 和 macOS 均适用，替换为实际文件名：
 
 ```sh
-gh attestation verify ling_0.1.7_windows_x86_64.zip --bundle PROVENANCE.sigstore.json --repo 921108257/ling --cert-identity https://github.com/921108257/ling/.github/workflows/release.yml@refs/tags/v0.1.7 --source-ref refs/tags/v0.1.7 --deny-self-hosted-runners
+gh attestation verify ling_0.2.0_windows_x86_64.zip --bundle PROVENANCE.sigstore.json --repo 921108257/ling --cert-identity https://github.com/921108257/ling/.github/workflows/release.yml@refs/tags/v0.2.0 --source-ref refs/tags/v0.2.0 --deny-self-hosted-runners
 ```
 
 这条独立命令默认通过 GitHub CLI 的 TUF 机制获取可信根；离线时，额外传入 `--custom-trusted-root <可信副本路径>`。固定根的来源与轮换见 [DEC-02](decisions.md)。不要把与待验证文件一起取得的任意根当作独立信任依据。验证包、SBOM、`SHA256SUMS` 时分别替换命令中的文件名；同一 bundle 绑定所有资产，bundle 本身不自签。分支构建的证书身份是分支 ref，不能冒充标签发行。
