@@ -14,11 +14,15 @@
 python3 tests/sdk_contracts.py
 ```
 
-需要 Python 3、Go 1.22+、JDK 17 与 OpenSSL。驱动先构建 Rust 服务端，并以 `javac -Xlint:all -Werror` 编译 Java，然后分别启动 TCP 与双向 TLS 的真实服务端，每轮使用独立临时 Reliable Journal。Go 执行 `go test -race -count=1 ./...`，Java 执行 `java -ea` 契约入口；结束清理服务进程和临时目录。测试中使用仓库内公开的测试证书与私钥，仅用于本地验证。
+需要 Python 3、Go 1.22+、JDK 17 与 OpenSSL。驱动先构建 Rust 服务端和独立契约 example，并以 `javac -Xlint:all -Werror` 编译 Java，然后分别启动 TCP 与双向 TLS 的真实服务端，每轮使用独立临时 Reliable Journal。Rust example、Go `go test -race -count=1` 和 Java `java -ea` 分别执行相同计划；结束清理服务进程和临时目录。测试中使用仓库内公开的测试证书与私钥，仅用于本地验证。
 
-共享的 `values.tsv`、`invalid-values.tsv`、`frames.tsv` 验证字节、类型与错误，`commands.tsv` 验证真实服务端上的 Null / 缺失、最大 UInt、数值溢出不修改及 TTL 哨兵值。Go / Java 还覆盖十种 Value 往返、Batch 逐项错误、SELECT 后订阅数据库、断线重投稳定 ID、显式 ACK、订阅取消、固定库租约与关闭、发送后断线结果未知。Rust 同时消费该命令用例，并通过服务端 TLS 测试覆盖信任错误和主机名错误。
+共享的 `values.tsv`、`invalid-values.tsv`、`frames.tsv` 验证字节、类型与错误，`commands.tsv` 验证真实服务端上的 Null / 缺失、最大 UInt、数值溢出不修改及 TTL 哨兵值。三语言在每个传输上还覆盖十种 Value 往返、INFO 字段、Batch 逐项错误、SELECT 后订阅数据库、断线重投稳定 ID、显式 ACK、订阅取消、固定库租约与关闭。每条夹具输出 `LING_CONTRACT` 记录，驱动以输入文件的 ID 集合核对执行，漏跑、重复、多报、失败或跳过均失败；表格单列计划、执行、失败、跳过和缺失。
 
-独立运行 Go 测试时，没有 `LINGER_TEST_ADDR` 会跳过真实服务用例；应使用驱动取得完整验收结果。`go vet ./...` 在 `sdks/go` 运行。Java 无 Maven / Gradle 工程，实际构建入口为 JDK；阶段 7 另有资源耗尽、各 10 分钟持续运行和协议突变烟测；未执行持续模糊测试、多日压力或物理断电验证。
+独立运行 Go 测试时，没有 `LINGER_TEST_ADDR` 默认失败，并提示使用驱动；仅显式设置 `LINGER_TEST_SKIP_LIVE=1` 才允许离线跳过，输出仍报告跳过数，不能作为互操作验收。Java 缺地址也列出跳过并非零退出。`go vet ./...` 在 `sdks/go` 运行。Java 无 Maven / Gradle 工程，实际构建入口为 JDK。Rust 真实服务入口为 example，普通 workspace 测试不会把缺地址的提前返回计为该入口成功。
+
+`sessions.tsv` 的 41 个本地对端用例在三语言分别运行并单列 `local-peer`：验证普通请求、Batch、订阅控制及空闲订阅中的旧非零响应、零或未来 ID、ERROR ID0、EVENT / HEARTBEAT，以及写出后断线、响应截断、发送前失败与固定库租约。监听器继续观察连接，检查没有隐式重连重放；它们不算作双向 TLS 验证。CLI 另用真实子进程与 Fast 命名组核对 stdin EOF、显式 ACK、auto-ack、输出失败和主动取消后的重投，而非只检查退出码。
+
+Windows 可显式运行 `python3 tests/sdk_contracts.py --event-mode fast`；该模式不宣称验证 Reliable。没有 cgo 工具链时可追加 `--no-go-race` 做本地回归，输出注明关闭 race；默认命令和 Linux CI 继续开启 race。Unix 的 CLI 子进程接收真实 SIGINT；Windows 用内部选择测试区分 EOF 与取消，本轮未向 Windows 控制台发送信号。阶段 7 的持续运行与协议突变烟测不等于持续模糊、多日压力或物理断电验证。
 
 ## Windows 契约分类（v0.1.4）
 

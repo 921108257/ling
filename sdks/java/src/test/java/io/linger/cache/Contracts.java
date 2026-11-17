@@ -14,13 +14,64 @@ import javax.net.ssl.SSLContext;
 public final class Contracts {
   private Contracts() {}
 
+  // 当前夹具在异常退出时仍报告失败；The active fixture reports failure even on exceptional exit.
+  private static String activeScope, activeId;
+  private static int passed, failed, skipped;
+  private static final List<String> LIVE_SCENARIOS =
+      List.of("batch", "subscription", "redelivery", "ack-cancel", "pool");
+
+  private static void begin(String scope, String id) {
+    activeScope = scope;
+    activeId = id;
+  }
+
+  private static void report(String scope, String id, String status) {
+    System.out.println("LING_CONTRACT\t" + scope + "\t" + id + "\t" + status);
+    switch (status) {
+      case "passed" -> passed++;
+      case "failed" -> failed++;
+      case "skipped" -> skipped++;
+      default -> throw new IllegalArgumentException(status);
+    }
+  }
+
+  private static void passed() {
+    report(activeScope, activeId, "passed");
+    activeScope = null;
+    activeId = null;
+  }
+
+  // 没有服务时逐 ID 记跳过，不能把离线成功当作完整验收。
+  // Missing servers report skipped IDs; offline success cannot pass complete acceptance.
+  private static void skipLive(Path fixtures) throws IOException {
+    for (String scope : List.of("commands", "info-fields", "live-values")) {
+      String name = scope.equals("live-values") ? "values" : scope;
+      for (String[] row : lines(fixtures, name + ".tsv"))
+        report(scope, row[0] + (scope.equals("info-fields") ? "." + row[1] : ""), "skipped");
+    }
+    for (String id : LIVE_SCENARIOS) report("scenario", id, "skipped");
+  }
+
   /** 失败即非零退出，真实服务由仓库驱动器提供。 Failures exit nonzero; the repository harness supplies live servers. */
   public static void main(String[] args) throws Exception {
     Path fixtures = Path.of(args[0]);
-    protocol(fixtures);
-    unknownOutcome();
-    if (System.getenv("LINGER_TEST_ADDR") != null) live(fixtures);
-    System.out.println("Java contracts passed");
+    try {
+      protocol(fixtures);
+      unknownOutcome();
+      String address = System.getenv("LINGER_TEST_ADDR");
+      if (address == null || address.isBlank()) skipLive(fixtures);
+      else live(fixtures);
+    } catch (Exception | AssertionError failure) {
+      if (activeScope != null) report(activeScope, activeId, "failed");
+      throw failure;
+    } finally {
+      System.out.printf(
+          "Java contract fixtures: executed=%d failed=%d skipped=%d%n",
+          passed + failed, failed, skipped);
+    }
+    if (skipped != 0)
+      throw new IllegalStateException(
+          "Skipped live contracts: run tests/sdk_contracts.py to supply LINGER_TEST_ADDR");
   }
 
   /** 每个 SDK 使用同一份冻结用例。 Each SDK uses the same frozen fixture files. */
@@ -47,19 +98,24 @@ public final class Contracts {
    */
   private static void protocol(Path fixtures) throws Exception {
     for (String[] row : lines(fixtures, "values.tsv")) {
+      begin("values", row[0]);
       byte[] expected = unhex(row[1]);
       Value value = Codec.decodeValue(expected);
       check(Arrays.equals(Codec.encodeValue(value), expected), row[0]);
+      passed();
     }
     for (String[] row : lines(fixtures, "invalid-values.tsv")) {
+      begin("invalid-values", row[0]);
       try {
         Codec.decodeValue(unhex(row[3]));
         throw new AssertionError(row[0]);
       } catch (Codec.DecodeException e) {
         check(e.code.equals(row[2]) && e.fatal == Boolean.parseBoolean(row[1]), row[0]);
       }
+      passed();
     }
     for (String[] row : lines(fixtures, "frames.tsv")) {
+      begin("frames", row[0]);
       byte[] expected = unhex(row[1]);
       Codec.Frame frame = Codec.read(new ByteArrayInputStream(expected));
       ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -90,6 +146,7 @@ public final class Contracts {
       }
       d.end();
       check(!d.semantic, row[0]);
+      passed();
     }
     try {
       new Value(Value.Kind.FLOAT, Double.NaN);
@@ -132,6 +189,7 @@ public final class Contracts {
     Client.Options options = options();
     try (Client client = Client.connect(options)) {
       for (String[] row : lines(fixtures, "commands.tsv")) {
+        begin("commands", row[0]);
         Value args = Codec.decodeValue(unhex(row[2]));
         List<?> list = (List<?>) args.data();
         Value[] values = list.toArray(Value[]::new);
@@ -144,10 +202,12 @@ public final class Contracts {
           }
         } else
           check(client.execute(row[1], values).equals(Codec.decodeValue(unhex(row[3]))), row[0]);
+        passed();
       }
       // 三语言共用 INFO 字段类型，动态计数不经 JSON。 Shared INFO types retain dynamic counters without JSON.
       Value info = client.execute("INFO");
       for (String[] row : lines(fixtures, "info-fields.tsv")) {
+        begin("info-fields", row[0] + "." + row[1]);
         Value value = info.fields().get(row[0]).fields().get(row[1]);
         boolean valid =
             switch (row[2]) {
@@ -164,13 +224,17 @@ public final class Contracts {
               default -> false;
             };
         check(valid, "INFO " + row[0] + "." + row[1]);
+        passed();
       }
       for (String[] row : lines(fixtures, "values.tsv")) {
+        begin("live-values", row[0]);
         Value value = Codec.decodeValue(unhex(row[1])), key = Value.string("java:" + row[0]);
         client.execute("SET", key, value);
         check(client.execute("GET", key).equals(value), "live " + row[0]);
+        passed();
       }
       Value key = Value.string("java:batch");
+      begin("scenario", "batch");
       List<Client.Result> results =
           client.batch(
               List.of(
@@ -182,6 +246,8 @@ public final class Contracts {
               && results.get(1).value().equals(Value.nil())
               && results.get(2).error() != null,
           "batch results");
+      passed();
+      begin("scenario", "subscription");
       Client subscription = Client.connect(options);
       byte[] stream = subscription.streamId();
       // 切库后的订阅保留当前数据库；Subscriptions retain the selected database.
@@ -191,12 +257,16 @@ public final class Contracts {
       client.execute("SET", Value.string("java:event"), Value.nil());
       Value event = subscriber.next(), id = event.fields().get("event_id");
       check(id.fields().get("db").equals(Value.uint(1)), "subscription database");
+      passed();
+      begin("scenario", "redelivery");
       subscriber.close();
       subscription = Client.connect(options);
       subscription.requireEventStream(stream);
       subscription.execute("SELECT", Value.uint(1));
       subscriber = subscription.subscribe(List.of("java:event"), "java-workers");
       check(subscriber.next().fields().get("event_id").equals(id), "stable redelivery ID");
+      passed();
+      begin("scenario", "ack-cancel");
       subscriber.ack(id);
       subscriber.ping();
       AtomicReference<Throwable> outcome = new AtomicReference<>();
@@ -219,6 +289,8 @@ public final class Contracts {
           !thread.isAlive() && outcome.get() instanceof Client.Failure,
           "subscription interruption");
       subscriber.close();
+      passed();
+      begin("scenario", "pool");
       try (Pool pool = new Pool(options, 2)) {
         check(pool.execute("GET", key).equals(Value.nil()), "pool get");
         try {
@@ -243,6 +315,7 @@ public final class Contracts {
       } finally {
         stopped.close();
       }
+      passed();
     }
   }
 

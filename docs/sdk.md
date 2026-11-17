@@ -15,6 +15,40 @@ ling 提供 Rust、Java、Go 原生客户端和 CLI，支持固定数据库连�
 
 [测试说明](testing.md)区分离线字节、真实 TCP 和双向 TLS；报告用例通过、失败及跳过的数量，未执行不算通过。下文介绍的是已有实现，不要求第三方使用相同 API 或包名。
 
+逐帧入门见[客户端实现示例](client-examples.md)：握手、强类型读写、订阅与显式 ACK、连接中断分别链接到共享输入和预期。响应匹配及传输失败另有[会话夹具](../tests/fixtures/protocol/sessions.tsv)，无需将仓内 SDK 当作预期结果生成器。
+
+## 连接选项与本地预算
+
+以下是仓内参考客户端的默认值，不是协议要求第三方采用的 API。地址、凭据、库号在建连时确定；TLS 不允许关闭身份校验。超时是一次等待的上限，不是服务端回滚期限。
+
+| 选项 | Rust | Java | Go |
+|---|---|---|---|
+| 地址与数据库 | `Client::connect(address, password, database, options)` | `Options.host / port / database`，简便构造默认库 0 | `Options.Address / Database`，零值库 0 |
+| 认证 | 可选 `password` | 可选 `Options.password` | `Options.Password` 为空时不发 AUTH |
+| 连接超时 | `Options.connect_timeout`，5 秒，必须大于零 | `connectTimeoutMs`，5000 毫秒，必须大于零 | `ConnectTimeout`，零值采用 5 秒，负值拒绝 |
+| 请求超时 | `Options.request_timeout`，30 秒，必须大于零 | `requestTimeoutMs`，30000 毫秒，必须大于零 | `RequestTimeout`，零值采用 30 秒，负值拒绝 |
+| TLS | `Options.tls: Option<ClientTls>`；名称、CA、成对客户端证书与私钥 | `SSLContext` 与 `serverName`；客户端身份为 PKCS#12 | `*tls.Config` 的 RootCAs、ServerName、Certificates；拒绝 `InsecureSkipVerify` |
+| 编解码限额 | `Options.limits: ling_protocol::Limits` 可设置本地上限 | 固定本地限额 | 固定本地限额 |
+| TCP_NODELAY | 显式启用 | 显式启用 | 使用 Go TCP 的默认设置；不另暴露开关 |
+| 恢复与重放 | 无自动重连或重放 | 无自动重连或重放 | 无自动重连或重放 |
+
+没有本轮同机 A/B 测量证明套接字选项的性能收益；不同语言的设置不升级为协议要求。连接池容量和排队约定见[连接与请求生命周期](#连接与请求生命周期)。
+
+| 本地资源边界 | Rust 默认 | Java / Go 固定值 |
+|---|---|---|
+| 完整帧（含 18 字节头） | 128 MiB，方向负载另限 64 MiB | 方向负载限 64 MiB，另加 18 字节头 |
+| 请求或响应 Payload | 64 MiB | 64 MiB |
+| 单个业务 Value 的编码大小 | 64 MiB | 64 MiB |
+| 单帧解码分配预算 | 128 MiB | 128 MiB |
+| 独立业务 Value 的容器深度 | 8，根标量为 0，根容器为 1 | 8 |
+| 协议封套递归保护 | 业务深度上限 + 4，默认 12 | 12 |
+| Batch 子请求数 | 1000 | 1000 |
+| 订阅交错事件队列 | 1024 项，保守计费不超过 `max_decode_bytes / 2`，默认 64 MiB | 1024 项，事件 Payload 合计不超过 32 MiB |
+
+长度、计数与预算必须在分配前校验；容器元素数还受剩余输入字节限制。业务深度不能直接应用到请求参数 List 或事件封套，解封后仍须单独校验业务 Value。超出结构保护导致无法安全解码时关闭连接，不能当作合法空值。服务端资源配置和客户端本地预算独立，放大服务端上限不会放宽客户端；合法的最大 Value 加上命令、Key 或响应封套后也可能超过单帧预算。
+
+表中的业务深度约束用于独立 Value 编解码与服务端存储值校验；响应帧中的 List / Map 还可能是多项结果或事件封套，仓内读取路径先用封套递归保护，不能把外层结果一律当成业务 Value 根。Rust 的订阅队列按每项 `512 + 2 × Key UTF-8 字节数` 保守计费，Java / Go 按事件 Payload 长度计费；这些本地预算不是相同的 RSS 承诺。
+
 ## Rust 与 CLI 入口
 
 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / batch / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求。`Client::subscribe` 消耗普通连接，返回固定数据库的 `Subscriber`，提供 `next_event / ack / ping / close`；交错事件进入有界队列，不隐式丢弃或确认。空闲读取发送 HEARTBEAT，取消等待关闭连接，命名组由调用方显式重连。重连后先调用 `Client::require_event_stream(expected)` 校验保存的流身份；变化时关闭连接并报告 ERR_STREAM_MISMATCH，不创建替代组。`Options.tls` 使用 `ClientTls` 设置服务端名称、可选 CA 及成对客户端身份。`Pool::new / acquire / execute / close` 和 `PoolOptions` 提供有界容量与排队期限，`PooledClient` 持有固定库租约。
@@ -87,6 +121,8 @@ Rust 的单值读取在语义上为 `Result<Value, Error>`。成功的 `Value::N
 
 单连接通过 Request ID 匹配请求与响应。当前三种 SDK 均限制一条普通请求在途；多线程 / 协程调用排队串行执行或通过独占借用约束，不提供单连接并行多路复用。协议可表达乱序响应，SDK 丢弃已结束旧请求的迟到响应，拒绝零 ID 或未发送 ID 的普通响应。
 
+订阅空闲读取沿用相同高水位检查：丢弃旧非零 RESPONSE，保留合法 ERROR 的服务端码并关闭，拒绝未来 ERROR 及零或未来 RESPONSE。空闲读取没有发送新的业务请求，本地协议错误的结果未知标记为 false；等待 ACK 或控制响应时，发送后失败仍按结果未知处理。
+
 服务端单连接按接收顺序执行；不同连接可在不同 Shard 并发，客户端不承诺多个连接之间的先后关系。
 
 `AUTH`、`SELECT`、`QUIT` 是连接状态屏障。SDK 必须等待其前序请求及屏障结果，再发送依赖新状态的请求，不能在切库期间混发业务命令。
@@ -107,7 +143,9 @@ Rust 的单值读取在语义上为 `Result<Value, Error>`。成功的 `Value::N
 
 连接重建不等于请求重放。写入发送后遇到超时或断线，结果可能未知；默认不自动重放该写入，尤其是增减、Push / Pop、删除及其他可能产生重复效果或重复事件的命令。
 
-读请求的重试策略可以由 API 明确配置，但必须受整体超时约束。SDK 不承诺 Exactly-Once，也不生成未经协议支持的幂等保证。
+仓内实现不提供发送后只读重试白名单，也不重放读请求。第三方如主动增加策略，必须显式启用、有界退避及总期限，并按命令表逐条列出白名单与共享用例；不能按命令名称推断安全性。SCAN 的游标绑定连接，写命令、订阅、ACK、SELECT、AUTH、HELLO 均不能列入发送后自动重放。读取可能更新 LRU / LFU 热度，再执行会再次影响热度，但不改变 revision（见 [config.md](config.md)）。SDK 不承诺 Exactly-Once，也不生成未经协议支持的幂等保证。
+
+调用前的参数校验失败、已关闭连接拒绝调用、尚未开始应用请求发送时的建连失败属于已知未发送。只要开始尝试写出请求，部分写入、等待响应时断线或响应被截断都保守报告结果未知；操作系统接受字节不证明服务端提交。失效租约应丢弃；下次租用新建连接重新完成 HELLO / AUTH / SELECT，不能把失败请求带到新连接执行。订阅恢复由调用方发起，须先比较 stream_id；ERR_STREAM_MISMATCH 或 ERR_OFFSET_EXPIRED 都停止恢复，不能自动换组或跳尾。
 
 ## Batch 与原子命令
 

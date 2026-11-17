@@ -318,9 +318,15 @@ impl Client {
                     .ok_or_else(|| Error::local(LocalError::Disconnected, true))?;
                 match frame.body {
                     Body::Heartbeat => continue,
-                    Body::Response(_) if frame.request_id < id => continue,
+                    Body::Response(_) | Body::BatchResponse(_)
+                        if frame.request_id != 0 && frame.request_id < id =>
+                    {
+                        continue;
+                    }
                     Body::Response(result) if frame.request_id == id => return Ok(result),
-                    Body::Error(error) => return Err(Error::Server(error)),
+                    Body::Error(error) if frame.request_id <= id => {
+                        return Err(Error::Server(error));
+                    }
                     _ => return Err(Error::local(LocalError::Protocol, true)),
                 }
             }
@@ -373,10 +379,15 @@ impl Client {
             loop {
                 let frame = read_frame(&mut stream, self.options.limits)
                     .await
-                    .map_err(|_| Error::local(LocalError::Disconnected, true))?
+                    .map_err(|e| match e {
+                        ReadError::Io(_) => Error::local(LocalError::Disconnected, true),
+                        ReadError::Decode(_) => Error::local(LocalError::Protocol, true),
+                    })?
                     .ok_or_else(|| Error::local(LocalError::Disconnected, true))?;
                 match frame.body {
                     Body::Heartbeat => {}
+                    Body::Response(_) | Body::BatchResponse(_)
+                        if frame.request_id != 0 && frame.request_id < id => {}
                     Body::BatchResponse(results)
                         if frame.request_id == id && results.len() == count =>
                     {
@@ -385,7 +396,7 @@ impl Client {
                     Body::Response(Err(e)) if frame.request_id == id => {
                         return Err(Error::Server(e));
                     }
-                    Body::Error(e) => {
+                    Body::Error(e) if frame.request_id <= id => {
                         fatal = true;
                         return Err(Error::Server(e));
                     }

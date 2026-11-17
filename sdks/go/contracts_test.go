@@ -9,13 +9,84 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
+
+// 每条夹具只报告一次，缺失与重复由外部驱动拒绝。
+// Each fixture reports once; the external harness rejects missing or duplicate reports.
+var contractCounts = struct {
+	sync.Mutex
+	passed, failed, skipped int
+}{}
+
+func reportContract(scope, id, status string) {
+	contractCounts.Lock()
+	defer contractCounts.Unlock()
+	switch status {
+	case "passed":
+		contractCounts.passed++
+	case "failed":
+		contractCounts.failed++
+	case "skipped":
+		contractCounts.skipped++
+	}
+	fmt.Printf("LING_CONTRACT\t%s\t%s\t%s\n", scope, id, status)
+}
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	fmt.Printf("Go contract fixtures: executed=%d failed=%d skipped=%d\n", contractCounts.passed+contractCounts.failed, contractCounts.failed, contractCounts.skipped)
+	os.Exit(code)
+}
+
+// Fatal 也记住当前失败的夹具；Fatal also reports the currently failing fixture.
+func contractCase(t *testing.T, scope, id string) func() {
+	t.Helper()
+	finished := false
+	t.Cleanup(func() {
+		if !finished {
+			status := "failed"
+			if t.Skipped() {
+				status = "skipped"
+			}
+			reportContract(scope, id, status)
+		}
+	})
+	return func() {
+		finished = true
+		reportContract(scope, id, "passed")
+	}
+}
+
+// 与驱动同名的真实服务场景；Live scenario IDs are shared with the harness.
+var liveScenarios = []string{"batch", "subscription", "redelivery", "ack-cancel", "pool"}
+
+func unavailableLive(t *testing.T, status string) {
+	t.Helper()
+	for _, scope := range []string{"commands", "info-fields", "live-values"} {
+		name := scope
+		if scope == "live-values" {
+			name = "values"
+		}
+		for _, row := range fixtures(t, name+".tsv") {
+			id := row[0]
+			if scope == "info-fields" {
+				id += "." + row[1]
+			}
+			reportContract(scope, id, status)
+		}
+	}
+	for _, id := range liveScenarios {
+		reportContract("scenario", id, status)
+	}
+}
 
 // 所有语言读取同一份冻结用例；Every language reads the same frozen fixtures.
 func fixtures(t *testing.T, name string) [][]string {
@@ -50,6 +121,7 @@ func unhex(t *testing.T, s string) []byte {
 func TestSharedProtocol(t *testing.T) {
 	for _, line := range fixtures(t, "values.tsv") {
 		t.Run(line[0], func(t *testing.T) {
+			done := contractCase(t, "values", line[0])
 			want := unhex(t, line[1])
 			v, e := DecodeValue(want)
 			if e != nil {
@@ -59,16 +131,20 @@ func TestSharedProtocol(t *testing.T) {
 			if e != nil || !bytes.Equal(got, want) {
 				t.Fatalf("golden %s", line[0])
 			}
+			done()
 		})
 	}
 	for _, line := range fixtures(t, "invalid-values.tsv") {
+		done := contractCase(t, "invalid-values", line[0])
 		_, e := DecodeValue(unhex(t, line[3]))
 		var decode *DecodeError
 		if !errors.As(e, &decode) || decode.Code != line[2] || decode.Fatal != (line[1] == "true") {
 			t.Fatalf("invalid fixture %s: %v", line[0], e)
 		}
+		done()
 	}
 	for _, line := range fixtures(t, "frames.tsv") {
+		done := contractCase(t, "frames", line[0])
 		f, e := readFrame(bytes.NewReader(unhex(t, line[1])))
 		if e != nil {
 			t.Fatal(e)
@@ -104,15 +180,22 @@ func TestSharedProtocol(t *testing.T) {
 		if e != nil || len(d.data) != 0 {
 			t.Fatalf("frame %s: %v", line[0], e)
 		}
+		done()
 	}
 }
 
-// 可选服务地址由仓库验收驱动器提供；The repository harness supplies an optional live address.
+// 真实服务地址由仓库验收驱动器提供，离线跳过必须显式选择。
+// The repository harness supplies a live address; offline skipping requires an explicit opt-in.
 func options(t *testing.T) Options {
 	t.Helper()
 	address := os.Getenv("LINGER_TEST_ADDR")
 	if address == "" {
-		t.Skip("live server provided by tests/sdk_contracts.py")
+		if os.Getenv("LINGER_TEST_SKIP_LIVE") == "1" {
+			unavailableLive(t, "skipped")
+			t.Skip("explicit LINGER_TEST_SKIP_LIVE=1; run tests/sdk_contracts.py for live contracts")
+		}
+		unavailableLive(t, "skipped")
+		t.Fatal("LINGER_TEST_ADDR is required: run tests/sdk_contracts.py; offline-only runs must explicitly set LINGER_TEST_SKIP_LIVE=1")
 	}
 	o := Options{Address: address, RequestTimeout: time.Second}
 	if ca := os.Getenv("LINGER_TEST_CA"); ca != "" {
@@ -146,6 +229,7 @@ func TestLiveContracts(t *testing.T) {
 	}
 	defer c.Close()
 	for _, line := range fixtures(t, "commands.tsv") {
+		done := contractCase(t, "commands", line[0])
 		args, e := DecodeValue(unhex(t, line[2]))
 		if e != nil {
 			t.Fatal(e)
@@ -162,6 +246,7 @@ func TestLiveContracts(t *testing.T) {
 				t.Fatalf("%s: %v", line[0], e)
 			}
 		}
+		done()
 	}
 	// 三语言共用 INFO 类型契约，动态计数保持 UInt；Shared INFO types retain dynamic counters as UInt.
 	info, e := c.Execute(ctx, "INFO")
@@ -169,6 +254,7 @@ func TestLiveContracts(t *testing.T) {
 		t.Fatalf("INFO: %v", e)
 	}
 	for _, row := range fixtures(t, "info-fields.tsv") {
+		done := contractCase(t, "info-fields", row[0]+"."+row[1])
 		section := info.Data.(map[string]Value)[row[0]]
 		if section.Kind != Map {
 			t.Fatalf("INFO section: %s", row[0])
@@ -200,8 +286,10 @@ func TestLiveContracts(t *testing.T) {
 		if !valid {
 			t.Fatalf("INFO field %v: %v", row, value.Kind)
 		}
+		done()
 	}
 	for _, line := range fixtures(t, "values.tsv") {
+		done := contractCase(t, "live-values", line[0])
 		v, e := DecodeValue(unhex(t, line[1]))
 		if e != nil {
 			t.Fatal(e)
@@ -214,12 +302,16 @@ func TestLiveContracts(t *testing.T) {
 		if e != nil || !got.Equal(v) {
 			t.Fatalf("live value %s: %v", line[0], e)
 		}
+		done()
 	}
 	key := VString("go:batch")
+	done := contractCase(t, "scenario", "batch")
 	results, e := c.Batch(ctx, []Request{{"SET", []Value{key, {Null, nil}}}, {"GET", []Value{key}}, {"GET", []Value{VString("absent")}}})
 	if e != nil || len(results) != 3 || results[2].Err == nil || results[1].Value.Kind != Null {
 		t.Fatalf("batch %v", e)
 	}
+	done()
+	done = contractCase(t, "scenario", "subscription")
 	subscriber, e := Connect(ctx, o)
 	if e != nil {
 		t.Fatal(e)
@@ -246,6 +338,8 @@ func TestLiveContracts(t *testing.T) {
 	if !id.Data.(map[string]Value)["db"].Equal(VUInt(1)) {
 		t.Fatal("subscription database")
 	}
+	done()
+	done = contractCase(t, "scenario", "redelivery")
 	s.Close()
 	retry, e := Connect(ctx, o)
 	if e != nil {
@@ -265,6 +359,8 @@ func TestLiveContracts(t *testing.T) {
 	if e != nil || !event.Data.(map[string]Value)["event_id"].Equal(id) {
 		t.Fatalf("redelivery: %v", e)
 	}
+	done()
+	done = contractCase(t, "scenario", "ack-cancel")
 	if e = s.Ack(ctx, id); e != nil {
 		t.Fatal(e)
 	}
@@ -274,6 +370,8 @@ func TestLiveContracts(t *testing.T) {
 		t.Fatal("cancel")
 	}
 	s.Close()
+	done()
+	done = contractCase(t, "scenario", "pool")
 	pool, e := NewPool(o, 2)
 	if e != nil {
 		t.Fatal(e)
@@ -296,6 +394,7 @@ func TestLiveContracts(t *testing.T) {
 		t.Fatal("closed pool lease")
 	}
 	lease.Close()
+	done()
 }
 
 // 发送后断线与取消不能伪装成未执行；Disconnect/cancel after send must never claim nonexecution.

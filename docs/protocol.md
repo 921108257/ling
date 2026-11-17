@@ -126,6 +126,22 @@ Batch 不提供事务或整体快照。`MSET` 等命令自身的多 Key 原子�
 
 多 Key 原子命令按命令规范由服务端协调，不通过协议层拆成若干独立单 Key 请求。SDK 池连接按数据库及认证上下文固定分桶，禁止调用方并发改变共享池连接的 SELECT。
 
+当前服务端与仓内三种客户端每条连接串行执行；并发使用独立连接。客户端仍须处理下表中的会话输入，不能依赖当前服务端不会产生某种响应来放松检查。普通请求、Batch 与订阅控制等待共用 ID 高水位规则；[会话夹具](../tests/fixtures/protocol/sessions.tsv)给出可独立实现的对端动作和预期。
+
+| 等待期间收到的帧 | 客户端行为 |
+|---|---|
+| 已结束请求的非零 ID RESPONSE | 丢弃迟到或重复响应，继续等当前 ID；不得重放请求 |
+| 当前 ID RESPONSE | 按当前普通 / Batch / 订阅控制请求的封套解码 |
+| ID=0 或未发送 ID 的 RESPONSE | 连接失步，关闭；不得将其值返回给当前调用 |
+| 合法 ERROR（ID=0 或已发送 ID） | 保留服务端稳定错误码并关闭；不把 ERROR 当普通 RESPONSE，也不因 ID=0 擅自覆盖为本地协议码；尚未发送的 ID 仍属失步 |
+| HEARTBEAT | 仅接受 ID=0、空 Payload；不结束当前等待、不回显 |
+| 订阅控制等待中的 EVENT | 校验后进入有界队列，留给事件消费者；继续等待控制响应 |
+| 普通请求或 Batch 等待中的 EVENT | 不属于该连接状态，关闭；不能将其当作命令结果 |
+
+上述关闭不证明发送中的命令已经回滚。客户端对传输中断暴露结果未知，服务端 ERR_COMMIT_UNKNOWN 保持原码；自动恢复不能隐藏这一边界。
+
+订阅空闲读取没有在途控制请求，同样丢弃不大于已发送 ID 高水位的非零 RESPONSE；合法 EVENT 交给消费者，HEARTBEAT 继续等待。ERROR 使用 ID=0 或已发送 ID 时保留服务端码并关闭；RESPONSE ID=0、未来 RESPONSE 或未来 ERROR 均关闭并报告协议错误。此时没有新业务请求被发送，本地错误不标记结果未知。
+
 ## 事件、ACK 与心跳
 
 订阅使用专用连接。完成 HELLO / AUTH / SELECT 后发送 `SUBSCRIBE pattern ... [GROUP group]`；成功 RESPONSE 必须先于该订阅的 EVENT。订阅状态下仅接受 ACK、UNSUBSCRIBE、PING、QUIT 与 HEARTBEAT，不执行普通数据请求。

@@ -282,17 +282,31 @@ async fn run() -> Result<bool, Diagnostic> {
                 )?;
                 if let Some(input) = input.as_mut() {
                     loop {
-                        let line = tokio::select! {
-                            line=input.recv()=>line,
-                            _=tokio::signal::ctrl_c()=>None
+                        let line = match subscription_control(input, tokio::signal::ctrl_c()).await
+                        {
+                            SubscriptionControl::Line(line) => line?,
+                            SubscriptionControl::Eof => {
+                                // 清理失败也不能掩盖未确认状态；Drop 仍会关闭专用连接。
+                                // Cleanup failure must not hide pending acknowledgement; drop still closes the dedicated connection.
+                                if let Err(error) = subscriber.close().await {
+                                    eprintln!(
+                                        "{}",
+                                        sdk_error(&error, language, Context::Subscription)
+                                    );
+                                }
+                                return Err(Diagnostic::new(
+                                    language,
+                                    "LOCAL_SUBSCRIPTION_UNACKNOWLEDGED",
+                                    Context::Subscription,
+                                ));
+                            }
+                            SubscriptionControl::Cancelled => {
+                                subscriber.close().await.map_err(|error| {
+                                    sdk_error(&error, language, Context::Subscription)
+                                })?;
+                                return Ok(success);
+                            }
                         };
-                        let Some(line) = line else {
-                            subscriber.close().await.map_err(|error| {
-                                sdk_error(&error, language, Context::Subscription)
-                            })?;
-                            return Ok(success);
-                        };
-                        let line = line?;
                         if let Some(result) = local_help(&line, language) {
                             success &= result;
                             continue;
@@ -602,6 +616,32 @@ fn subscription_input(
     rx
 }
 
+/// 输入结束不能冒充主动取消；两者均不隐式确认已显示事件。
+/// End of input differs from explicit cancellation; neither implicitly acknowledges displayed events.
+enum SubscriptionControl {
+    /// 已读取的控制行或输入错误；A received control line or input error.
+    Line(Result<String, Diagnostic>),
+    /// 标准输入关闭且仍待确认；Standard input closed while acknowledgement is pending.
+    Eof,
+    /// 用户主动取消；Explicit user cancellation.
+    Cancelled,
+}
+
+/// 保留 stdin EOF 与取消来源，避免无确认地成功退出。
+/// Preserves whether input ended or was cancelled, avoiding success without acknowledgement.
+async fn subscription_control(
+    input: &mut tokio::sync::mpsc::Receiver<Result<String, Diagnostic>>,
+    cancelled: impl std::future::Future<Output = io::Result<()>>,
+) -> SubscriptionControl {
+    tokio::select! {
+        line=input.recv()=>match line {
+            Some(line)=>SubscriptionControl::Line(line),
+            None=>SubscriptionControl::Eof,
+        },
+        _=cancelled=>SubscriptionControl::Cancelled,
+    }
+}
+
 /// 解析失败只引用内置命令签名，不包含原始参数。
 /// Parse failures refer only to built-in signatures and never raw arguments.
 fn checked_parse(source: &str, language: Language) -> Result<ling_protocol::Request, Diagnostic> {
@@ -686,4 +726,30 @@ fn item_diagnostics(command: &str, value: &mut ling_client::Value, language: Lan
         success = false;
     }
     success
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{SubscriptionControl, subscription_control};
+
+    /// 各平台均区分真实通道 EOF、控制行与主动取消，不向父进程发送控制台信号。
+    /// Every platform distinguishes channel EOF, control lines and cancellation without signalling its parent console.
+    #[tokio::test]
+    async fn subscription_control_keeps_eof_distinct_from_cancellation() {
+        let (sender, mut input) = tokio::sync::mpsc::channel(1);
+        sender.send(Ok("PING\n".into())).await.unwrap();
+        assert!(matches!(
+            subscription_control(&mut input, std::future::pending()).await,
+            SubscriptionControl::Line(Ok(line)) if line == "PING\n"
+        ));
+        assert!(matches!(
+            subscription_control(&mut input, std::future::ready(Ok(()))).await,
+            SubscriptionControl::Cancelled
+        ));
+        drop(sender);
+        assert!(matches!(
+            subscription_control(&mut input, std::future::pending()).await,
+            SubscriptionControl::Eof
+        ));
+    }
 }

@@ -674,7 +674,7 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "ling-cli"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -689,7 +689,7 @@ dependencies = [
 
 [[package]]
 name = "ling-cli-help"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "clap",
  "sys-locale",
@@ -697,7 +697,7 @@ dependencies = [
 
 [[package]]
 name = "ling-client"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "ling-network",
  "ling-protocol",
@@ -708,7 +708,7 @@ dependencies = [
 
 [[package]]
 name = "ling-engine"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "ling-events",
  "ling-types",
@@ -717,7 +717,7 @@ dependencies = [
 
 [[package]]
 name = "ling-events"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "crc32fast",
  "fs2",
@@ -727,7 +727,7 @@ dependencies = [
 
 [[package]]
 name = "ling-network"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "ling-types",
  "rustls-pemfile",
@@ -738,7 +738,7 @@ dependencies = [
 
 [[package]]
 name = "ling-protocol"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "ling-types",
  "tokio",
@@ -746,7 +746,7 @@ dependencies = [
 
 [[package]]
 name = "ling-server"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "clap",
  "flate2",
@@ -776,7 +776,7 @@ dependencies = [
 
 [[package]]
 name = "ling-types"
-version = "0.1.6"
+version = "0.1.7"
 
 [[package]]
 name = "linux-raw-sys"

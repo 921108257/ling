@@ -320,6 +320,8 @@ ling-cli -c 'SET order:1 null PX 60000'
 
 `GROUP` 作为 pattern 的字面值时须加双引号。组名为 1–128 字节 UTF-8 文本。只有显式使用 `--auto-ack` 才在输出刷新后确认，例如 `ling-cli --count 1 --auto-ack -c 'SUBSCRIBE order:* GROUP workers'`；输出成功不等于下游业务处理成功。
 
+默认显式确认模式下，已显示事件仍未收到对应 ACK 时，标准输入关闭（EOF）会报告 `LOCAL_SUBSCRIPTION_UNACKNOWLEDGED` 并以非零状态退出。主动按 Ctrl-C 属于取消，可正常退出；两种退出均不会自动确认当前事件，命名组可在保留范围内重投。`--auto-ack` 遇到输出或刷新失败也不会确认该事件，并以非零状态退出。
+
 默认 Fast 缓冲有界，可能丢事件并产生 Offset 过期；Reliable 保证已 fsync 的事件在保留期内可恢复、可重投，可能重复。断线后重新订阅不能忽略 `ERR_OFFSET_EXPIRED` 或 `ERR_STREAM_MISMATCH`。Windows 当前不支持 Reliable；完整边界见 [events.md](events.md) 和 [persistence.md](persistence.md)。
 
 ## 输出、退出码和排错

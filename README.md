@@ -132,7 +132,7 @@ max_bytes = 1073741824
 | 命令与类型 | [CLI 指南](docs/cli.md) · [命令参考](docs/commands.md) · [数据模型](docs/data-model.md) |
 | 过期与事件 | [TTL](docs/ttl.md) · [订阅与 ACK](docs/events.md) · [持久化](docs/persistence.md) |
 | 部署与运维 | [安装与服务](docs/install.md) · [配置](docs/config.md) |
-| 应用接入 | [Rust、Java、Go SDK](docs/sdk.md) · [通信协议](docs/protocol.md) |
+| 应用接入 | [客户端接入与仓内 SDK](docs/sdk.md) · [逐帧实现示例](docs/client-examples.md) · [通信协议](docs/protocol.md) |
 
 ling 使用自定义二进制协议，不兼容 Redis；仅支持独立单机服务，不提供 Embedded API、集群、复制或缓存数据恢复。项目原名为 linger-cache-db，Java 包 `io.linger.cache` 和 Go 模块 `linger.local/cache` 保留兼容名称。
 

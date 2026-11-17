@@ -138,7 +138,9 @@ impl Subscriber {
                             self.connection=Some(connection);return Ok(event);
                         }
                         Body::Heartbeat=>{}
-                        Body::Error(e)=>return Err(Error::Server(e)),
+                        Body::Response(_) | Body::BatchResponse(_)
+                            if frame.request_id != 0 && frame.request_id <= self.last_id=>{}
+                        Body::Error(e) if frame.request_id <= self.last_id=>return Err(Error::Server(e)),
                         _=>return Err(Error::local(LocalError::Protocol,false))
                     }
                 }
@@ -233,8 +235,10 @@ impl Subscriber {
                         self.queued.push_back(event);
                     }
                     Body::Heartbeat => {}
+                    Body::Response(_) | Body::BatchResponse(_)
+                        if frame.request_id != 0 && frame.request_id < id => {}
                     Body::Response(result) if frame.request_id == id => return Ok(result),
-                    Body::Error(e) => return Err(Error::Server(e)),
+                    Body::Error(e) if frame.request_id <= id => return Err(Error::Server(e)),
                     _ => return Err(Error::local(LocalError::Protocol, true)),
                 }
             }

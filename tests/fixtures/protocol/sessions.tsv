@@ -1,0 +1,56 @@
+# Session contracts, independent of SDK API names. Fields: id | mode | peer | expected | outcome_unknown | closed | request_count.
+# Each non-pool TCP peer validates HELLO(1), SELECT(2), then PING(3) or SUBSCRIBE(3), and observes target ID 4 exactly once.
+# ordinary target = INCR counter; batch target = one INCR counter; subscription target = ACK of frames.tsv event's event_id.
+# Responses use UInt(1) for ordinary/batch and Bool(true) for ACK. Event is the exact frames.tsv event with stream_id=1/db=0.
+# old-response/old-batch: send successful RESPONSE ID 3 (ordinary/batch respectively), then the matching ID 4 response.
+# heartbeat: send frames.tsv heartbeat, then the matching response. event: send frames.tsv event, heartbeat, matching ACK response; next_event must return that event.
+# zero-response/future-response: send ordinary successful RESPONSE ID 0/5. zero-error/future-error: send ERROR ID 0/5 with ERR_PROTOCOL and empty diagnostic.
+# disconnect: close after reading target. truncated: send only the first 19 bytes of its successful response, then close.
+# incomplete means a local transport/framing failure: taxonomy may differ, but the outcome is unknown and the connection must close.
+# closed: complete initialization, caller closes locally before target; peer observes EOF without a target (optional graceful QUIT is acknowledged). refused: connect to a closed local listener.
+# connect accepts a local connection error or connect timeout; no initialized session and no business bytes were sent.
+# pool-reset: database 7 on both connections, target ID 3; first target is read then disconnected, caller explicitly retries on a new lease and gets UInt(1); no implicit retry.
+# pool-context: database 7; lease rejects SELECT before sending, then INCR succeeds on its unchanged connection.
+# idle-subscription: after SUBSCRIBE(3), no target is sent. old-response/old-batch use ID 3, heartbeat/old frames precede the fixed EVENT.
+# Idle errors use ID 0/5 and RESPONSE failures use ID 0/5. No request is in flight, so local protocol failures have outcome_unknown=false.
+ordinary-old-response|ordinary|old-response|ok|false|false|1
+ordinary-old-batch|ordinary|old-batch|ok|false|false|1
+ordinary-heartbeat|ordinary|heartbeat|ok|false|false|1
+ordinary-event|ordinary|event|protocol|true|true|1
+ordinary-zero-response|ordinary|zero-response|protocol|true|true|1
+ordinary-future-response|ordinary|future-response|protocol|true|true|1
+ordinary-zero-error|ordinary|zero-error|ERR_PROTOCOL|false|true|1
+ordinary-future-error|ordinary|future-error|protocol|true|true|1
+ordinary-disconnect|ordinary|disconnect|disconnected|true|true|1
+ordinary-truncated|ordinary|truncated|incomplete|true|true|1
+batch-old-response|batch|old-response|ok|false|false|1
+batch-old-batch|batch|old-batch|ok|false|false|1
+batch-heartbeat|batch|heartbeat|ok|false|false|1
+batch-event|batch|event|protocol|true|true|1
+batch-zero-response|batch|zero-response|protocol|true|true|1
+batch-future-response|batch|future-response|protocol|true|true|1
+batch-zero-error|batch|zero-error|ERR_PROTOCOL|false|true|1
+batch-future-error|batch|future-error|protocol|true|true|1
+batch-disconnect|batch|disconnect|disconnected|true|true|1
+batch-truncated|batch|truncated|incomplete|true|true|1
+subscription-old-response|subscription|old-response|ok|false|false|1
+subscription-old-batch|subscription|old-batch|ok|false|false|1
+subscription-heartbeat|subscription|heartbeat|ok|false|false|1
+subscription-event|subscription|event|ok-event|false|false|1
+subscription-zero-response|subscription|zero-response|protocol|true|true|1
+subscription-future-response|subscription|future-response|protocol|true|true|1
+subscription-zero-error|subscription|zero-error|ERR_PROTOCOL|false|true|1
+subscription-future-error|subscription|future-error|protocol|true|true|1
+subscription-disconnect|subscription|disconnect|disconnected|true|true|1
+subscription-truncated|subscription|truncated|incomplete|true|true|1
+before-local-close|transport|closed|closed|false|true|0
+before-connect-refused|transport|refused|connect|false|true|0
+pool-invalid-lease|pool|pool-reset|ok|false|false|2
+pool-fixed-database|pool|pool-context|ok|false|false|1
+idle-old-response|idle-subscription|old-response|ok-event|false|false|0
+idle-old-batch|idle-subscription|old-batch|ok-event|false|false|0
+idle-heartbeat|idle-subscription|heartbeat|ok-event|false|false|0
+idle-zero-error|idle-subscription|zero-error|ERR_PROTOCOL|false|true|0
+idle-future-error|idle-subscription|future-error|protocol|false|true|0
+idle-zero-response|idle-subscription|zero-response|protocol|false|true|0
+idle-future-response|idle-subscription|future-response|protocol|false|true|0

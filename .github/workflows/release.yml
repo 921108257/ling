@@ -277,7 +277,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p target/previous-release
-          gh release download v0.1.5 --repo 921108257/ling --pattern "ling_0.1.5_${{ matrix.platform }}_${ARCH}*" --dir target/previous-release
+          gh release download v0.1.6 --repo 921108257/ling --pattern "ling_0.1.6_${{ matrix.platform }}_${ARCH}*" --dir target/previous-release
       - name: Build and verify Linux packages
         if: runner.os == 'Linux'
         run: |
@@ -285,14 +285,14 @@ jobs:
           bash packaging/linux/verify.sh
           python3 scripts/smoke-package.py --appimage "dist/ling_${VERSION}_linux_${ARCH}.AppImage"
         env:
-          PREVIOUS_VERSION: 0.1.5
+          PREVIOUS_VERSION: 0.1.6
       - name: Build and verify macOS packages
         if: runner.os == 'macOS'
         run: |
           bash packaging/macos/build.sh
           bash packaging/macos/verify.sh
         env:
-          PREVIOUS_VERSION: 0.1.5
+          PREVIOUS_VERSION: 0.1.6
       - name: Build and verify Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
@@ -300,7 +300,7 @@ jobs:
           ./packaging/windows/build.ps1 -Version $env:VERSION
           ./packaging/windows/verify.ps1 -Version $env:VERSION
         env:
-          PREVIOUS_VERSION: 0.1.5
+          PREVIOUS_VERSION: 0.1.6
       - name: Smoke-test Unix portable package
         if: runner.os != 'Windows'
         run: |

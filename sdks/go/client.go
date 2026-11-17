@@ -346,6 +346,15 @@ func (c *Client) request(ctx context.Context, kind byte, flags uint16, p payload
 	case <-c.gate:
 	}
 	defer func() { c.gate <- struct{}{} }()
+	// gate 与 closed 同时就绪时 select 可能选择 gate；发送前再次确认已知关闭。
+	// Select may choose gate when closed is also ready; recheck known closure before writing.
+	select {
+	case <-c.closed:
+		return nil, ErrClosed
+	case <-ctx.Done():
+		return nil, &Error{Code: "ERR_CLIENT_CANCELLED"}
+	default:
+	}
 	if c.subscribed && kind == 1 {
 		if flags == 1 {
 			return nil, &Error{Code: "ERR_CONNECTION_STATE"}
@@ -409,7 +418,7 @@ func (c *Client) request(ctx context.Context, kind byte, flags uint16, p payload
 			if f.kind == 2 && f.id > 0 && f.id < c.last {
 				continue
 			}
-			if (f.kind != 2 && f.kind != 6) || f.id != c.last {
+			if (f.kind != 2 && f.kind != 6) || (f.kind == 2 && f.id != c.last) || (f.kind == 6 && f.id > c.last) {
 				c.Close()
 				return nil, &Error{Code: "ERR_CLIENT_PROTOCOL", Unknown: true}
 			}
@@ -575,14 +584,20 @@ func (s *Subscriber) Next(ctx context.Context) (Value, error) {
 			if r.frame.kind == 5 {
 				continue
 			}
+			if r.frame.kind == 2 && r.frame.id > 0 && r.frame.id <= c.last {
+				continue
+			}
 			if r.frame.kind == 6 {
-				d := decoder{data: r.frame.payload, budget: 128 * 1024 * 1024}
 				c.Close()
+				if r.frame.id > c.last {
+					return Value{}, &Error{Code: "ERR_CLIENT_PROTOCOL"}
+				}
+				d := decoder{data: r.frame.payload, budget: 128 * 1024 * 1024}
 				return Value{}, decodeServerError(&d)
 			}
 			if r.frame.kind != 3 {
 				c.Close()
-				return Value{}, malformed()
+				return Value{}, &Error{Code: "ERR_CLIENT_PROTOCOL"}
 			}
 			v, e := DecodeValue(r.frame.payload)
 			if e == nil {

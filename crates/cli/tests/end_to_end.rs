@@ -16,6 +16,12 @@ async fn start(auth: bool) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle
         config.auth.enabled = true;
         config.auth.password = "test-secret".into();
     }
+    start_config(config).await
+}
+
+/// 真实服务沿用完整配置验证，允许订阅测试固定分片及重投时限。
+/// Real services retain complete validation while subscription tests fix shards and retry timing.
+async fn start_config(config: Config) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
     let server = Server::from_listener(listener, config).unwrap();
@@ -252,15 +258,87 @@ async fn cli_ttl_lifecycle_and_invalid_conditional_write() {
     task.await.unwrap();
 }
 
-/// 真实 CLI 用 SDK 消费，并仅在显式 ACK 后退出。
-/// The real CLI consumes through the SDK and exits only after an explicit ACK.
-#[tokio::test]
-async fn cli_subscription_requires_explicit_ack() {
-    use std::io::{BufRead, BufReader};
+/// 子进程异常或断言失败时关闭并回收，仅管理本测试启动的 CLI。
+/// Reaps only this test's CLI if the process or an assertion fails.
+struct SubscriptionProcess(std::process::Child);
+
+impl Drop for SubscriptionProcess {
+    fn drop(&mut self) {
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+/// 订阅退出路径必须分别验证真实 ACK 状态。
+/// Subscription exits require independent verification of actual acknowledgement state.
+#[derive(Clone, Copy)]
+enum SubscriptionExit {
+    Eof,
+    Ack,
+    AutoAck,
+    OutputFailure,
+    #[cfg(unix)]
+    Cancel,
+}
+
+/// 用命名组的公开 INFO 确认订阅建立，不以睡眠或重复写入猜测就绪。
+/// Uses public named-group INFO to confirm subscription readiness without sleep-based guesses or repeated writes.
+async fn wait_for_cli_group(writer: &mut ling_client::Client) {
+    use ling_client::Value;
+    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        loop {
+            let Value::Map(info) = writer
+                .execute("INFO", vec![Value::String("events".into())])
+                .await
+                .unwrap()
+            else {
+                panic!("INFO must be a Map");
+            };
+            let Value::Map(events) = &info["events"] else {
+                panic!("events must be a Map");
+            };
+            let Value::List(groups) = &events["consumer_groups"] else {
+                panic!("consumer_groups must be a List");
+            };
+            if groups.iter().any(|group| {
+                matches!(group, Value::Map(fields) if fields.get("name") == Some(&Value::String("n:cli-test".into())))
+            }) {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("CLI subscription was not established");
+}
+
+/// 为退出和重投设置明确期限，并在失败时保留子进程 stderr。
+/// Bounds exit and redelivery waits while retaining subprocess stderr on failure.
+async fn subscription_exit_contract(action: SubscriptionExit) {
+    use ling_client::{Client, Value};
+    use std::io::{BufRead, BufReader, Read};
     use std::time::Duration;
-    let (port, stop, task) = start(false).await;
-    let mut child = Command::new(env!("CARGO_BIN_EXE_ling-cli"))
+
+    let mut config = Config::default();
+    config.engine.shard_count = 1;
+    config.events.consumer_timeout_ms = 200;
+    config.events.retry_interval_ms = 20;
+    let (port, stop, task) = start_config(config).await;
+    let address = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+    let mut writer = Client::connect(address, None, 0, Default::default())
+        .await
+        .unwrap();
+    let mut observer = Client::connect(address, None, 0, Default::default())
+        .await
+        .unwrap()
+        .subscribe(vec!["cli:*".into()], Some("observer"))
+        .await
+        .unwrap();
+    let mut command = Command::new(env!("CARGO_BIN_EXE_ling-cli"));
+    command
         .args([
+            "--lang",
+            "en-US",
             "--port",
             &port.to_string(),
             "--count",
@@ -272,59 +350,184 @@ async fn cli_subscription_requires_explicit_ack() {
         .env_remove("LINGER_PASSWORD")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let mut input = child.stdin.take().unwrap();
-    let output = child.stdout.take().unwrap();
-    let (sender, mut receiver) = tokio::sync::mpsc::channel(1);
-    let thread = std::thread::spawn(move || {
-        let mut reader = BufReader::new(output);
-        let mut line = String::new();
-        reader.read_line(&mut line).unwrap();
-        let _ = sender.blocking_send(line);
-    });
-    // 重复写入不同版本，避免以固定睡眠猜测订阅已经就绪。
-    // Write distinct versions until delivery instead of assuming readiness after a fixed sleep.
-    let address = std::net::SocketAddr::from(([127, 0, 0, 1], port));
-    let mut writer = ling_client::Client::connect(address, None, 0, Default::default())
+        .stderr(Stdio::piped());
+    if matches!(
+        action,
+        SubscriptionExit::AutoAck | SubscriptionExit::OutputFailure
+    ) {
+        command.arg("--auto-ack");
+    }
+    let mut process = SubscriptionProcess(command.spawn().unwrap());
+    let mut input = process.0.stdin.take().unwrap();
+    let output = process.0.stdout.take().unwrap();
+    let (sent, received) = oneshot::channel();
+    let reader = if matches!(action, SubscriptionExit::OutputFailure) {
+        // 关闭唯一读端，强制真实管道写失败，验证 auto-ack 不能先于输出。
+        // Close the only reader to force a real pipe write failure before auto-ack.
+        drop(output);
+        None
+    } else {
+        Some(std::thread::spawn(move || {
+            let mut line = String::new();
+            let result = BufReader::new(output).read_line(&mut line);
+            let _ = sent.send((result, line));
+        }))
+    };
+    wait_for_cli_group(&mut writer).await;
+    writer
+        .execute("SET", vec![Value::String("cli:key".into()), Value::Null])
         .await
         .unwrap();
-    let line = tokio::time::timeout(Duration::from_secs(3), async {
-        for n in 0..200 {
-            writer
-                .execute(
-                    "SET",
-                    vec![
-                        ling_client::Value::String("cli:key".into()),
-                        ling_client::Value::UInt(n),
-                    ],
-                )
-                .await
-                .unwrap();
-            tokio::select! {
-                line=receiver.recv()=>return line.unwrap(),
-                _=tokio::time::sleep(Duration::from_millis(5))=>{}
+    let original = tokio::time::timeout(Duration::from_secs(5), observer.next_event())
+        .await
+        .unwrap()
+        .unwrap();
+    observer.ack(original.id).await.unwrap();
+    if reader.is_some() {
+        let (read, line) = tokio::time::timeout(Duration::from_secs(5), received)
+            .await
+            .expect("CLI did not display the event")
+            .unwrap();
+        assert!(read.unwrap() > 0);
+        let id = ling_cli::parse_event_id(line.split_whitespace().next().unwrap()).unwrap();
+        assert_eq!(id, original.id);
+        match action {
+            SubscriptionExit::Ack => {
+                assert!(process.0.try_wait().unwrap().is_none());
+                writeln!(input, "ACK {}", ling_cli::display_event_id(original.id)).unwrap();
             }
+            #[cfg(unix)]
+            SubscriptionExit::Cancel => {
+                // 只向测试创建的子进程发 SIGINT，不广播至父进程或其他控制台。
+                // Send SIGINT only to this test's subprocess, never its parent or another console.
+                assert!(
+                    Command::new("kill")
+                        .args(["-INT", &process.0.id().to_string()])
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+            }
+            _ => {}
         }
-        panic!("No CLI event");
+    }
+    // 取消测试保留 stdin，避免真实信号与测试自己制造的 EOF 竞争。
+    // Keep stdin open for cancellation so the real signal cannot race a test-created EOF.
+    let input = if matches!(
+        action,
+        SubscriptionExit::Eof | SubscriptionExit::OutputFailure
+    ) {
+        drop(input);
+        None
+    } else {
+        Some(input)
+    };
+    let status = tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            if let Some(status) = process.0.try_wait().unwrap() {
+                break status;
+            }
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
     })
     .await
-    .unwrap();
-    let id = line.split_whitespace().next().unwrap();
-    ling_cli::parse_event_id(id).unwrap();
-    assert!(child.try_wait().unwrap().is_none());
-    writeln!(input, "ACK {id}").unwrap();
+    .expect("CLI did not exit");
     drop(input);
-    let output = tokio::task::spawn_blocking(move || child.wait_with_output().unwrap())
+    let mut stderr = String::new();
+    process
+        .0
+        .stderr
+        .take()
+        .unwrap()
+        .read_to_string(&mut stderr)
+        .unwrap();
+    match action {
+        SubscriptionExit::Eof => {
+            assert!(!status.success(), "{stderr}");
+            assert!(
+                stderr.contains("LOCAL_SUBSCRIPTION_UNACKNOWLEDGED"),
+                "{stderr}"
+            );
+            assert!(stderr.contains("remains unacknowledged"), "{stderr}");
+            assert!(stderr.contains("HELP ACK"), "{stderr}");
+        }
+        SubscriptionExit::OutputFailure => {
+            assert!(!status.success(), "{stderr}");
+            assert!(stderr.contains("LOCAL_IO"), "{stderr}");
+        }
+        _ => {
+            assert!(status.success(), "{stderr}");
+            assert!(stderr.is_empty(), "{stderr}");
+        }
+    }
+    if let Some(reader) = reader {
+        reader.join().unwrap();
+    }
+
+    let mut resumed = Client::connect(address, None, 0, Default::default())
+        .await
+        .unwrap()
+        .subscribe(vec!["cli:*".into()], Some("cli-test"))
         .await
         .unwrap();
-    assert!(
-        output.status.success(),
-        "{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    thread.join().unwrap();
+    let acknowledged = matches!(action, SubscriptionExit::Ack | SubscriptionExit::AutoAck);
+    if acknowledged {
+        // 新哨兵应为组的下一条，不能用短暂无事件推断旧事件已确认。
+        // A new sentinel must be next; a short absence of events cannot prove acknowledgement.
+        writer
+            .execute(
+                "SET",
+                vec![Value::String("cli:sentinel".into()), Value::Null],
+            )
+            .await
+            .unwrap();
+    }
+    let replay = tokio::time::timeout(Duration::from_secs(5), resumed.next_event())
+        .await
+        .expect("Named group did not deliver its expected event")
+        .unwrap();
+    if acknowledged {
+        assert_eq!(replay.key, "cli:sentinel");
+        assert_eq!(replay.id.sequence, original.id.sequence + 1);
+    } else {
+        assert_eq!(replay.id, original.id);
+    }
+    resumed.ack(replay.id).await.unwrap();
+    resumed.close().await.unwrap();
+    observer.close().await.unwrap();
+    writer.close().await.unwrap();
     stop.send(()).unwrap();
     task.await.unwrap();
+}
+
+/// EOF 明确失败且原事件重投；EOF fails explicitly and the original event is redelivered.
+#[tokio::test]
+async fn cli_subscription_eof_keeps_event_unacknowledged() {
+    subscription_exit_contract(SubscriptionExit::Eof).await;
+}
+
+/// 显式 ACK 成功退出且原事件不重投；Explicit ACK exits successfully without redelivering the original event.
+#[tokio::test]
+async fn cli_subscription_requires_explicit_ack() {
+    subscription_exit_contract(SubscriptionExit::Ack).await;
+}
+
+/// 成功输出后自动 ACK；Auto-ack follows successful output.
+#[tokio::test]
+async fn cli_subscription_auto_ack_follows_output() {
+    subscription_exit_contract(SubscriptionExit::AutoAck).await;
+}
+
+/// 真实坏管道不触发自动 ACK；A real broken pipe cannot trigger auto-ack.
+#[tokio::test]
+async fn cli_subscription_output_failure_keeps_event_unacknowledged() {
+    subscription_exit_contract(SubscriptionExit::OutputFailure).await;
+}
+
+/// Unix 真实 SIGINT 是取消而非 EOF，原事件仍可重投。
+/// A real Unix SIGINT cancels rather than reporting EOF and leaves the event for redelivery.
+#[cfg(unix)]
+#[tokio::test]
+async fn cli_subscription_ctrl_c_keeps_event_unacknowledged() {
+    subscription_exit_contract(SubscriptionExit::Cancel).await;
 }

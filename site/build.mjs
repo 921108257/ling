@@ -26,6 +26,7 @@ const pages = [
   ['events', '事件与订阅', '使用与参考', 'docs/events.md', 'Fast、Reliable、消费组和 ACK。'],
   ['config', '配置参考', '使用与参考', 'docs/config.md', '配置默认值、资源预算与运行时边界。'],
   ['sdk', '客户端 SDK', '使用与参考', 'docs/sdk.md', 'Rust、Java 和 Go 的连接与集成。'],
+  ['client-examples', '客户端实现示例', '使用与参考', 'docs/client-examples.md', '逐帧握手、强类型读写、订阅 ACK 与断线排错。'],
   ['persistence', '持久化边界', '深入了解', 'docs/persistence.md', 'Journal 提交、恢复与故障语义。'],
   ['protocol', '二进制协议', '深入了解', 'docs/protocol.md', '帧、编码、请求与连接屏障。'],
   ['architecture', '架构与范围', '深入了解', 'docs/architecture.md', '独立单机服务、分片与并发设计。'],

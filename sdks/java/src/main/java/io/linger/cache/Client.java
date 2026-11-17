@@ -400,7 +400,9 @@ public final class Client implements AutoCloseable {
           continue;
         }
         if (f.kind() == 2 && f.id() != 0 && Long.compareUnsigned(f.id(), last) < 0) continue;
-        if ((f.kind() != 2 && f.kind() != 6) || f.id() != last) throw Codec.protocol();
+        if ((f.kind() != 2 && f.kind() != 6)
+            || (f.kind() == 2 && f.id() != last)
+            || (f.kind() == 6 && Long.compareUnsigned(f.id(), last) > 0)) throw Codec.protocol();
         Codec.Decoder d = new Codec.Decoder(f.payload());
         if (f.kind() == 6) {
           Failure error = serverError(d);
@@ -545,7 +547,11 @@ public final class Client implements AutoCloseable {
           if (r.error != null) throw r.error;
           Codec.Frame f = r.frame;
           if (f.kind() == 5) continue;
-          if (f.kind() == 6) throw serverError(new Codec.Decoder(f.payload()));
+          if (f.kind() == 2 && f.id() != 0 && Long.compareUnsigned(f.id(), client.last) <= 0) continue;
+          if (f.kind() == 6) {
+            if (Long.compareUnsigned(f.id(), client.last) > 0) throw Codec.protocol();
+            throw serverError(new Codec.Decoder(f.payload()));
+          }
           if (f.kind() != 3) throw Codec.protocol();
           Codec.Decoder d = new Codec.Decoder(f.payload());
           Value v = d.value(0);
@@ -558,6 +564,9 @@ public final class Client implements AutoCloseable {
         client.close();
         Thread.currentThread().interrupt();
         throw new Failure("ERR_CLIENT_CANCELLED", false);
+      } catch (Codec.DecodeException e) {
+        client.close();
+        throw new Failure("ERR_CLIENT_PROTOCOL", false);
       } catch (IOException e) {
         client.close();
         throw e;
