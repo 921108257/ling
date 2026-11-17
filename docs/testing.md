@@ -526,6 +526,10 @@ Windows 补测使用相同干净源码及固定二进制，保留原电源计划
 
 版本元数据改为 0.2.0 后，本机 Windows 再次执行完整默认 workspace 测试、fmt、严格 Clippy、严格 rustdoc、Python 发行工具回归及 release-notes 校验，均通过；原始日志为 `target/v020-metadata-*.log`，退出码为 `target/v020-metadata-checks.json`。站点实际构建为 0.2.0，检查 20 个 HTML、834 个本地链接和 200 个搜索条目通过。标签构建、跨平台发行及公开制品验收单独记录，不能用这次本机检查替代。
 
+标签 `v0.2.0` 固定提交 `441ffc7dbb2bf48d6257c0ca3b831f099554af1a`，首轮 Actions `44154274480` 的 Linux x86_64 CLI 输出失败契约在 `end_to_end.rs:455` 失败：子进程成功退出、stderr 为空，未出现预期的输出错误。原始日志保存在 `target/ci-44154274480/package-linux-x86_64.log`。同测试源码在 WSL 的 200 轮、每轮 11 项并发运行全部通过，记录为 `/root/ling-acceptance/cli-output-repeat-20261118/`。独立 fork / 管道实验确认：父进程关闭读端时，exec 前的其他子进程若仍持有继承读端，写入可以成功；这说明原测试的“唯一读端”前提没有保证，但没有捕获该 CI 进程的实际文件描述符，因此只记疑似测试竞态。
+
+后续 `main` 的 Linux 测试改为 `/dev/full` 确定产生写错误，其他平台保留原管道检查，继续验证输出失败不得 ACK；只修改测试，不改变 `v0.2.0` 标签或产品代码。修改后的本机 Windows 10 项、WSL Linux 11 项 CLI 端到端测试通过。首次失败与后续标签重跑的结果分别保留，重跑通过不能当成已证明首次失败根因。
+
 ## Redis 对比边界
 
 只比较语义可比的String/Bytes GET/SET等工作负载。相同数据量、连接、流水线、TTL与持久性条件下运行；自定义类型、命令差异和额外事件成本单列说明。

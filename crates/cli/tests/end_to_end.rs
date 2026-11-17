@@ -357,19 +357,30 @@ async fn subscription_exit_contract(action: SubscriptionExit) {
     ) {
         command.arg("--auto-ack");
     }
+    #[cfg(target_os = "linux")]
+    if matches!(action, SubscriptionExit::OutputFailure) {
+        // /dev/full 稳定返回写错误；并行 fork 可能短暂继承管道读端，使关闭父读端仍能写成功。
+        // /dev/full fails deterministically; a concurrent fork can briefly retain a pipe reader after its parent closes it.
+        command.stdout(
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open("/dev/full")
+                .unwrap(),
+        );
+    }
     let mut process = SubscriptionProcess(command.spawn().unwrap());
     let mut input = process.0.stdin.take().unwrap();
-    let output = process.0.stdout.take().unwrap();
+    let output = process.0.stdout.take();
     let (sent, received) = oneshot::channel();
     let reader = if matches!(action, SubscriptionExit::OutputFailure) {
-        // 关闭唯一读端，强制真实管道写失败，验证 auto-ack 不能先于输出。
-        // Close the only reader to force a real pipe write failure before auto-ack.
+        // Linux 已配置 /dev/full，其他平台关闭管道读端，验证输出失败前不得 auto-ack。
+        // Linux uses /dev/full; other platforms close the pipe reader to check failed output precedes auto-ack.
         drop(output);
         None
     } else {
         Some(std::thread::spawn(move || {
             let mut line = String::new();
-            let result = BufReader::new(output).read_line(&mut line);
+            let result = BufReader::new(output.unwrap()).read_line(&mut line);
             let _ = sent.send((result, line));
         }))
     };
