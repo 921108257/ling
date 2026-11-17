@@ -143,6 +143,9 @@ pub struct EventsConfig {
     pub consumer_timeout_ms: u64,
     /// 最小重投间隔毫秒；Minimum redelivery interval in milliseconds.
     pub retry_interval_ms: u64,
+    /// 提交或租约变化唤醒订阅；false 保留每 10 ms 检查的兼容路径。
+    /// Wakes subscriptions on commits and lease changes; false retains the legacy 10 ms polling path.
+    pub notification_enabled: bool,
 }
 impl Default for EventsConfig {
     /// 默认有界 Fast 与七天保留；Defaults to bounded Fast with seven-day retention.
@@ -157,6 +160,7 @@ impl Default for EventsConfig {
             max_groups: c.max_groups,
             consumer_timeout_ms: c.consumer_timeout_ms,
             retry_interval_ms: c.retry_interval_ms,
+            notification_enabled: true,
         }
     }
 }

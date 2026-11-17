@@ -13,9 +13,10 @@ use ling_types::{
 };
 use std::{
     collections::{BTreeMap, VecDeque},
-    sync::Mutex,
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
+use tokio::sync::Notify;
 
 /// 单流消费位置；origin 用于拒绝组创建之前的伪造 ACK。
 /// Per-stream progress; origin rejects forged ACKs from before group creation.
@@ -59,6 +60,22 @@ pub(crate) struct Group {
     pub scan_offset: usize,
 }
 impl Group {
+    /// 只为实际未确认租约安排重投，不为空闲订阅创建周期定时器。
+    /// Schedules only real unacknowledged leases, never a periodic timer for idle subscriptions.
+    fn retry_at(&self, now: Instant, config: &Config) -> Option<Instant> {
+        self.pending
+            .values()
+            .filter(|pending| !pending.acked)
+            .filter_map(|pending| match pending.sent {
+                None => Some(now),
+                Some(sent) => sent.checked_add(Duration::from_millis(if pending.owner == 0 {
+                    config.retry_interval_ms
+                } else {
+                    config.retry_interval_ms.max(config.consumer_timeout_ms)
+                })),
+            })
+            .min()
+    }
     /// 窗口首个未完成位置前移，已确认后继释放；Advance past completed positions and release acknowledged successors.
     fn advance(&mut self, shard: u32) -> Result<(), DbError> {
         let p = self.progress.get_mut(&shard).ok_or_else(codec::corrupt)?;
@@ -100,6 +117,19 @@ pub struct Subscription {
     group: String,
     /// 唯一消费者编号；Unique consumer number.
     consumer: u64,
+}
+/// 同一事件锁下取得的交付结果、重投期限与过滤扫描进度。
+/// Delivery, retry deadline, and filtered-scan progress observed under one event lock.
+#[derive(Debug)]
+pub struct Delivery {
+    /// 当前可交付的已提交事件；Currently deliverable committed event.
+    pub event: Option<Event>,
+    /// 最早未确认租约的重投期限，无租约时为空。
+    /// Earliest unacknowledged lease deadline, absent when there are no leases.
+    pub retry_at: Option<Instant>,
+    /// 过滤扫描已推进但未追平；预算拒绝不会要求立即重试。
+    /// Filtering advanced without catching up; budget rejection never requests an immediate retry.
+    pub more: bool,
 }
 /// 当前事件运行指标，不使用 Key 作为标签。
 /// Current event metrics without key-valued labels.
@@ -188,6 +218,9 @@ pub struct EventStore {
     shards: u32,
     /// 唯一提交所有权；Exclusive commit ownership.
     state: Mutex<State>,
+    /// 状态变化只唤醒重查，不携带未提交事件。
+    /// State changes wake rechecks without carrying uncommitted events.
+    changed: Arc<Notify>,
 }
 impl EventStore {
     /// 测试提交未知路径；Exercises unknown commit outcomes in tests.
@@ -355,7 +388,25 @@ impl EventStore {
             dbs,
             shards,
             state: Mutex::new(state),
+            changed: Arc::new(Notify::new()),
         })
+    }
+    /// 等待前先建立通知 future，再轮询，避免空检查到等待之间丢失广播。
+    /// Create the notification future before polling to avoid losing broadcasts between an empty check and waiting.
+    pub fn notifications(&self) -> Arc<Notify> {
+        self.changed.clone()
+    }
+
+    /// Journal 故障和不确定错误也唤醒空闲消费者，让其观察现有故障码。
+    /// Journal faults and uncertain errors also wake idle consumers so they observe the existing failure code.
+    fn wake_fault<T>(&self, result: Result<T, DbError>) -> Result<T, DbError> {
+        if result.as_ref().is_err_and(|error| {
+            error.code == ErrorCode::CommitUnknown.as_str()
+                || error.code == ErrorCode::JournalUnavailable.as_str()
+        }) {
+            self.changed.notify_waiters();
+        }
+        result
     }
     /// 是否生成事件；Whether events are enabled.
     pub fn enabled(&self) -> bool {
@@ -437,13 +488,14 @@ impl EventStore {
                 .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?
                 .fits(payload.len(), false)
             {
-                compact(
+                self.wake_fault(compact(
                     &mut s,
                     &self.config,
                     changes.iter().map(|c| c.timestamp_ms).max().unwrap_or(0),
-                )?;
+                ))?;
+                self.changed.notify_waiters();
             }
-            append_record(&mut s, &payload, false)?;
+            self.wake_fault(append_record(&mut s, &payload, false))?;
         }
         let result = publish();
         s.tails = tails;
@@ -462,6 +514,8 @@ impl EventStore {
                 drop_front(&mut s, true);
             }
         }
+        drop(s);
+        self.changed.notify_waiters();
         Ok(result)
     }
     /// 规范化筛选后建立或恢复组；首次命名组必须先持久化尾部位置。
@@ -533,7 +587,7 @@ impl EventStore {
                 scan_offset: 40,
             };
             check_group_budget(&s, &key, &g, &self.config)?;
-            save_group(&mut s, &key, &mut g, &self.config)?;
+            self.wake_fault(save_group(&mut s, &key, &mut g, &self.config))?;
             s.groups.insert(key.clone(), g);
         }
         s.consumer = consumer;
@@ -545,6 +599,22 @@ impl EventStore {
     /// 交付一条事件；先落盘交付窗口，再返回事件，断线后可重投。
     /// Delivers one event after persisting its delivery window so disconnects remain replayable.
     pub fn next(&self, sub: &Subscription, now: Instant) -> Result<Option<Event>, DbError> {
+        self.poll_inner(sub, now, false)
+            .map(|delivery| delivery.event)
+    }
+    /// 原子检查已提交事件、准确重投期限与有界过滤扫描进度。
+    /// Atomically checks committed events, precise retry deadlines, and bounded filtered-scan progress.
+    pub fn poll(&self, sub: &Subscription, now: Instant) -> Result<Delivery, DbError> {
+        self.poll_inner(sub, now, true)
+    }
+    /// 旧入口省略租约与进度汇总，保留原轮询路径的工作量。
+    /// The legacy entry omits scheduling summaries to retain its original polling work.
+    fn poll_inner(
+        &self,
+        sub: &Subscription,
+        now: Instant,
+        scheduled: bool,
+    ) -> Result<Delivery, DbError> {
         let mut s = self.lock()?;
         if s.journal.as_ref().is_some_and(|j| j.failed) {
             return Err(err(ErrorCode::JournalUnavailable, "Event Journal faulted"));
@@ -581,7 +651,8 @@ impl EventStore {
             })
             .map(|(id, _)| *id);
         if let Some((shard, seq)) = retry {
-            let event = find(&mut s, g.db, shard, seq)?
+            let event = self
+                .wake_fault(find(&mut s, g.db, shard, seq))?
                 .ok_or_else(|| err(ErrorCode::OffsetExpired, "Pending event no longer retained"))?;
             let p = g
                 .pending
@@ -590,25 +661,34 @@ impl EventStore {
             p.owner = sub.consumer;
             p.sent = Some(now);
             s.stats.redelivered = s.stats.redelivered.saturating_add(1);
+            let retry_at = scheduled.then(|| g.retry_at(now, &self.config)).flatten();
             s.groups.insert(sub.group.clone(), g);
-            return Ok(Some(event));
+            return Ok(Delivery {
+                event: Some(event),
+                retry_at,
+                more: false,
+            });
         }
         if g.pending.len() >= self.config.max_pending {
-            return Ok(None);
+            return Ok(Delivery {
+                event: None,
+                retry_at: scheduled.then(|| g.retry_at(now, &self.config)).flatten(),
+                more: false,
+            });
         }
         let cursors: BTreeMap<u32, u64> = g
             .progress
             .iter()
             .map(|(&shard, p)| (shard, p.cursor))
             .collect();
-        let events = read_after(
+        let events = self.wake_fault(read_after(
             &mut s,
             g.db,
             &cursors,
             self.config.buffer_bytes / 4,
             &mut g.scan_offset,
             &g.patterns,
-        )?;
+        ))?;
         let mut result = None;
         let mut changed = false;
         for event in events {
@@ -643,14 +723,31 @@ impl EventStore {
         }
         if changed {
             if check_group_budget(&s, &sub.group, &g, &self.config).is_err() {
-                return Ok(None);
+                return Ok(Delivery {
+                    event: None,
+                    retry_at: scheduled
+                        .then(|| s.groups[&sub.group].retry_at(now, &self.config))
+                        .flatten(),
+                    more: false,
+                });
             }
-            save_group(&mut s, &sub.group, &mut g, &self.config)?;
+            self.wake_fault(save_group(&mut s, &sub.group, &mut g, &self.config))?;
         }
+        let more = scheduled
+            && changed
+            && result.is_none()
+            && g.progress.iter().any(|(&shard, progress)| {
+                progress.cursor < s.tails.get(&(g.db, shard)).copied().unwrap_or(0)
+            });
+        let retry_at = scheduled.then(|| g.retry_at(now, &self.config)).flatten();
         // 只更新运行时读游标不产生持久变更，也不跳过尚未交付的同记录事件。
         // Advancing a runtime read cursor is not a durable change and skips no undelivered record items.
         s.groups.insert(sub.group.clone(), g);
-        Ok(result)
+        Ok(Delivery {
+            event: result,
+            retry_at,
+            more,
+        })
     }
     /// ACK 仅属于已交付组，连续水位前进前保留乱序空洞。
     /// ACKs belong only to delivered group events; out-of-order holes survive until contiguous progress.
@@ -688,7 +785,8 @@ impl EventStore {
             return Err(err(ErrorCode::InvalidAck, "Event predates this group"));
         }
         if id.sequence <= p.watermark {
-            let event = find(&mut s, g.db, id.shard, id.sequence)?
+            let event = self
+                .wake_fault(find(&mut s, g.db, id.shard, id.sequence))?
                 .ok_or_else(|| err(ErrorCode::OffsetExpired, "ACK history expired"))?;
             if g.patterns.iter().any(|p| matches(p, &event.key)) {
                 return Ok(());
@@ -701,22 +799,30 @@ impl EventStore {
             .ok_or_else(|| err(ErrorCode::InvalidAck, "Event was never delivered"))?;
         pending.acked = true;
         g.advance(id.shard)?;
-        save_group(&mut s, &sub.group, &mut g, &self.config)?;
+        self.wake_fault(save_group(&mut s, &sub.group, &mut g, &self.config))?;
         s.groups.insert(sub.group.clone(), g);
+        drop(s);
+        self.changed.notify_waiters();
         Ok(())
     }
     /// 断线释放租约；临时组销毁，命名组等待其他连接接手。
     /// Disconnect releases leases; temporary groups vanish and named groups await another consumer.
     pub fn disconnect(&self, sub: &Subscription) {
         if let Ok(mut s) = self.state.lock() {
+            let mut changed = false;
             if sub.group.starts_with("t:") {
-                s.groups.remove(&sub.group);
+                changed = s.groups.remove(&sub.group).is_some();
             } else if let Some(g) = s.groups.get_mut(&sub.group) {
                 for p in g.pending.values_mut() {
                     if p.owner == sub.consumer {
                         p.owner = 0;
+                        changed = true;
                     }
                 }
+            }
+            drop(s);
+            if changed {
+                self.changed.notify_waiters();
             }
         }
     }
@@ -737,15 +843,26 @@ impl EventStore {
             {
                 return Ok(());
             }
-            compact(&mut s, &self.config, now_ms)
+            let result = self.wake_fault(compact(&mut s, &self.config, now_ms));
+            drop(s);
+            if result.is_ok() {
+                self.changed.notify_waiters();
+            }
+            result
         } else {
             let cutoff = now_ms.checked_sub(self.config.retention_ms);
+            let mut changed = false;
             while s
                 .fast
                 .front()
                 .is_some_and(|e| cutoff.is_some_and(|c| e.timestamp_ms <= c))
             {
-                drop_front(&mut s, false)
+                drop_front(&mut s, false);
+                changed = true;
+            }
+            drop(s);
+            if changed {
+                self.changed.notify_waiters();
             }
             Ok(())
         }

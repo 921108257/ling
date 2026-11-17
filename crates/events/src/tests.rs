@@ -52,6 +52,259 @@ fn code<T: std::fmt::Debug>(result: Result<T, ling_types::DbError>, code: ErrorC
     assert_eq!(result.unwrap_err().code, code.as_str());
 }
 
+/// 在空检查之前登记的多个等待者不会漏掉提交，交付与无变化维护不引起广播循环。
+/// Waiters registered before an empty check cannot miss a commit; delivery and unchanged maintenance do not broadcast loops.
+#[tokio::test]
+async fn notifications_cover_commit_ack_and_disconnect_without_empty_wakeups() {
+    let store = EventStore::open(Config::default(), 1, 1).unwrap();
+    let sub = store
+        .subscribe(0, vec!["*".into()], Some("notify"))
+        .unwrap();
+    let notifications = store.notifications();
+    let first = notifications.notified();
+    let second = notifications.notified();
+    let idle = store.poll(&sub, Instant::now()).unwrap();
+    assert!(idle.event.is_none() && idle.retry_at.is_none() && !idle.more);
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    tokio::time::timeout(Duration::from_secs(1), first)
+        .await
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(1), second)
+        .await
+        .unwrap();
+
+    let no_change = notifications.notified();
+    let event = store.poll(&sub, Instant::now()).unwrap().event.unwrap();
+    store.maintain(1000).unwrap();
+    assert!(
+        tokio::time::timeout(Duration::from_millis(10), no_change)
+            .await
+            .is_err()
+    );
+
+    let acknowledged = notifications.notified();
+    store.ack(&sub, event.id).unwrap();
+    tokio::time::timeout(Duration::from_secs(1), acknowledged)
+        .await
+        .unwrap();
+    assert!(store.poll(&sub, Instant::now()).unwrap().retry_at.is_none());
+
+    store.commit(&[change("b", 0)], || ()).unwrap();
+    store.poll(&sub, Instant::now()).unwrap().event.unwrap();
+    let disconnected = notifications.notified();
+    store.disconnect(&sub);
+    tokio::time::timeout(Duration::from_secs(1), disconnected)
+        .await
+        .unwrap();
+}
+
+/// 租约以原发送时刻计算，断开只改变所有者，不把重投间隔缩短为立即重投。
+/// Lease deadlines use the original send time; disconnect changes ownership without bypassing the retry interval.
+#[test]
+fn notification_poll_uses_exact_lease_deadlines() {
+    let config = Config {
+        consumer_timeout_ms: 300,
+        retry_interval_ms: 100,
+        ..Config::default()
+    };
+    let store = EventStore::open(config, 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("lease")).unwrap();
+    let other = store.subscribe(0, vec!["*".into()], Some("lease")).unwrap();
+    let sent = Instant::now();
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    let first = store.poll(&sub, sent).unwrap();
+    let id = first.event.unwrap().id;
+    assert_eq!(first.retry_at, Some(sent + Duration::from_millis(300)));
+    let waiting = store
+        .poll(&other, sent + Duration::from_millis(50))
+        .unwrap();
+    assert!(waiting.event.is_none() && !waiting.more);
+    assert_eq!(waiting.retry_at, Some(sent + Duration::from_millis(300)));
+    store.disconnect(&sub);
+    let waiting = store
+        .poll(&other, sent + Duration::from_millis(99))
+        .unwrap();
+    assert!(waiting.event.is_none());
+    assert_eq!(waiting.retry_at, Some(sent + Duration::from_millis(100)));
+    let retry = store
+        .poll(&other, sent + Duration::from_millis(100))
+        .unwrap();
+    assert_eq!(retry.event.unwrap().id, id);
+    assert_eq!(retry.retry_at, Some(sent + Duration::from_millis(400)));
+}
+
+/// 有界过滤一轮未追平时继续扫描；共享预算拒绝时等待 ACK，不反复空转。
+/// A bounded filter scan continues when it has progressed; shared-budget rejection waits for an ACK without spinning.
+#[test]
+fn notification_poll_distinguishes_filter_progress_from_budget_rejection() {
+    let config = Config {
+        buffer_bytes: 4096,
+        max_pending: 8,
+        max_groups: 4,
+        ..Config::default()
+    };
+    let store = EventStore::open(config.clone(), 1, 1).unwrap();
+    let filtered = store.subscribe(0, vec!["match*".into()], None).unwrap();
+    for key in ["skip1", "skip2", "skip3", "skip4", "skip5", "match"] {
+        store.commit(&[change(key, 0)], || ()).unwrap();
+    }
+    let first = store.poll(&filtered, Instant::now()).unwrap();
+    assert!(first.event.is_none() && first.retry_at.is_none() && first.more);
+    let second = store.poll(&filtered, Instant::now()).unwrap();
+    let event = second.event.unwrap();
+    assert_eq!(event.key, "match");
+    store.ack(&filtered, event.id).unwrap();
+    let caught_up = store.poll(&filtered, Instant::now()).unwrap();
+    assert!(caught_up.event.is_none() && caught_up.retry_at.is_none() && !caught_up.more);
+
+    let store = EventStore::open(config, 1, 1).unwrap();
+    let one = store.subscribe(0, vec!["*".into()], Some("one")).unwrap();
+    let two = store.subscribe(0, vec!["*".into()], Some("two")).unwrap();
+    store.commit(&[change("budget", 0)], || ()).unwrap();
+    let event = store.poll(&one, Instant::now()).unwrap().event.unwrap();
+    let full = store.poll(&two, Instant::now()).unwrap();
+    assert!(full.event.is_none() && full.retry_at.is_none() && !full.more);
+    store.ack(&one, event.id).unwrap();
+    assert_eq!(
+        store.poll(&two, Instant::now()).unwrap().event.unwrap().id,
+        event.id
+    );
+}
+
+/// 保留删除会唤醒沉睡组，使其明确收到过期错误。
+/// Retention removal wakes a sleeping group so expired offsets are reported explicitly.
+#[tokio::test]
+async fn retention_notifies_offset_expiry() {
+    let store = EventStore::open(
+        Config {
+            retention_ms: 100,
+            ..Config::default()
+        },
+        1,
+        1,
+    )
+    .unwrap();
+    let sub = store
+        .subscribe(0, vec!["*".into()], Some("retained"))
+        .unwrap();
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    let notifications = store.notifications();
+    let changed = notifications.notified();
+    store.maintain(1100).unwrap();
+    tokio::time::timeout(Duration::from_secs(1), changed)
+        .await
+        .unwrap();
+    code(store.poll(&sub, Instant::now()), ErrorCode::OffsetExpired);
+}
+
+/// fsync 失败唤醒已登记的空闲订阅，并保留全局故障状态及恢复后的立即重投。
+/// An fsync failure wakes a registered idle subscription and preserves global failure and immediate recovered redelivery.
+#[cfg(unix)]
+#[tokio::test]
+async fn journal_failure_wakes_waiters_and_recovered_pending_is_immediate() {
+    let dir = Directory::new();
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("fault")).unwrap();
+    store.commit(&[change("a", 0)], || ()).unwrap();
+    let id = store.poll(&sub, Instant::now()).unwrap().event.unwrap().id;
+    let notifications = store.notifications();
+    let failed = notifications.notified();
+    store.fail_next_sync();
+    code(
+        store.commit(&[change("b", 0)], || ()),
+        ErrorCode::CommitUnknown,
+    );
+    tokio::time::timeout(Duration::from_secs(1), failed)
+        .await
+        .unwrap();
+    code(
+        store.poll(&sub, Instant::now()),
+        ErrorCode::JournalUnavailable,
+    );
+    drop(store);
+
+    let store = EventStore::open(dir.config(), 1, 1).unwrap();
+    let sub = store.subscribe(0, vec!["*".into()], Some("fault")).unwrap();
+    let now = Instant::now();
+    let recovered = store.poll(&sub, now).unwrap();
+    assert_eq!(recovered.event.unwrap().id, id);
+    assert_eq!(
+        recovered.retry_at,
+        Some(now + Duration::from_millis(Config::default().consumer_timeout_ms))
+    );
+}
+
+/// 消费、重投与重复 ACK 的读故障唤醒无待确认事件的组，并停止后续持久操作。
+/// Read faults during consumption, redelivery, and duplicate ACK wake groups without pending work and stop later durable operations.
+#[cfg(unix)]
+#[tokio::test]
+async fn journal_read_fault_wakes_idle_groups_and_stops_durable_operations() {
+    for access in 0..3 {
+        let dir = Directory::new();
+        let store = EventStore::open(dir.config(), 1, 1).unwrap();
+        let active = store
+            .subscribe(0, vec!["*".into()], Some("active"))
+            .unwrap();
+        let idle = store.subscribe(0, vec!["*".into()], Some("idle")).unwrap();
+        store.commit(&[change("a", 0)], || ()).unwrap();
+        let now = Instant::now();
+        let id = store.poll(&active, now).unwrap().event.unwrap().id;
+        assert_eq!(store.poll(&idle, now).unwrap().event.unwrap().id, id);
+        store.ack(&idle, id).unwrap();
+        if access != 1 {
+            store.ack(&active, id).unwrap();
+            assert!(store.poll(&active, now).unwrap().event.is_none());
+        }
+        let ready = store.poll(&idle, now).unwrap();
+        assert!(ready.event.is_none() && ready.retry_at.is_none() && !ready.more);
+        let notifications = store.notifications();
+        let failed = notifications.notified();
+        let path = dir.0.join("journal.lgj");
+        let mut damaged = fs::read(&path).unwrap();
+        let offset = if access == 0 {
+            let offset = damaged.len();
+            damaged.extend([0, 0]);
+            offset
+        } else {
+            let mut offset = 40;
+            while damaged[offset + 8] != codec::EVENTS {
+                let len =
+                    u32::from_be_bytes(damaged[offset..offset + 4].try_into().unwrap()) as usize;
+                offset += len + 16;
+            }
+            damaged[offset + 8] ^= 1;
+            offset
+        };
+        fs::write(&path, &damaged).unwrap();
+        let error = if access == 2 {
+            store.ack(&active, id).unwrap_err()
+        } else {
+            store
+                .poll(&active, now + Duration::from_secs(60))
+                .unwrap_err()
+        };
+        assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+        assert!(error.message.contains(&format!("byte offset {offset}")));
+        tokio::time::timeout(Duration::from_secs(1), failed)
+            .await
+            .unwrap();
+        let no_repeat = notifications.notified();
+        code(store.poll(&idle, now), ErrorCode::JournalUnavailable);
+        code(store.ack(&active, id), ErrorCode::JournalUnavailable);
+        assert!(
+            tokio::time::timeout(Duration::from_millis(10), no_repeat)
+                .await
+                .is_err()
+        );
+        code(
+            store.commit(&[change("b", 0)], || panic!("faulted commit published")),
+            ErrorCode::JournalUnavailable,
+        );
+        code(store.maintain(1000), ErrorCode::JournalUnavailable);
+        assert_eq!(fs::read(path).unwrap(), damaged);
+    }
+}
+
 /// Windows 保持 Fast 可用，Reliable 在创建任何目录前明确拒绝，不静默降级。
 /// Windows keeps Fast available and rejects Reliable before creating any directory, without silent fallback.
 #[cfg(windows)]

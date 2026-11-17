@@ -25,6 +25,11 @@ fn packaged_defaults_are_valid_fast_configurations() {
 #[test]
 fn defaults_and_namespace_edges() {
     Config::default().validate().unwrap();
+    assert!(Config::default().events.notification_enabled);
+    let legacy: Config = toml::from_str("[events]\nnotification_enabled=false").unwrap();
+    legacy.validate().unwrap();
+    assert!(!legacy.events.notification_enabled);
+    assert!(toml::from_str::<Config>("[events]\nnotification_enabled=1").is_err());
     let mut config = Config::default();
     config.engine.shard_count = 1;
     config.database.databases = 65536;

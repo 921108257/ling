@@ -71,6 +71,17 @@ pub(crate) async fn serve(
         events: engine.events().cloned(),
         runtime: Some(runtime.clone()),
     };
+    let notifications = session
+        .events
+        .as_ref()
+        .map(|store| store.notifications())
+        .unwrap_or_default();
+    // 通知 future 跨命令和事件派发保留，且在首次读状态前建立，避免检查后睡眠的竞态。
+    // Retain the notification future across commands and deliveries, registering before the first state read.
+    let notified = notifications.notified();
+    tokio::pin!(notified);
+    let mut check_events = true;
+    let mut retry_at = None;
     loop {
         if *shutdown.borrow() {
             break;
@@ -78,22 +89,50 @@ pub(crate) async fn serve(
         let (received, _consumed) = tokio::select! {
             _ = shutdown.changed() => break,
             frame = incoming.recv() => match frame {Some(frame)=>frame,None=>break},
-            _ = poll.tick(), if session.subscription.is_some() => {
+            _ = &mut notified, if config.events.notification_enabled && session.subscription.is_some() => {
+                notified.set(notifications.notified());
+                check_events = true;
+                continue;
+            }
+            _ = async {
+                if let Some(deadline) = retry_at {
+                    tokio::time::sleep_until(Instant::from_std(deadline)).await;
+                }
+            }, if config.events.notification_enabled && session.subscription.is_some() && !check_events && retry_at.is_some() => {
+                check_events = true;
+                continue;
+            }
+            _ = async {
+                if !config.events.notification_enabled {
+                    poll.tick().await;
+                }
+            }, if session.subscription.is_some() && (!config.events.notification_enabled || check_events) => {
                 // 订阅轮询只在上下文完整时执行，避免会话状态异常触发 panic。
                 // Poll only with a complete subscription context instead of panicking on inconsistent session state.
                 let (Some(sub), Some(store)) = (&session.subscription, &session.events) else { break; };
                 let (sub, store) = (sub.clone(), store.clone());
                 let metrics = runtime.telemetry.clone();
+                let notification_enabled = config.events.notification_enabled;
                 match event_work(slots.clone(),config,Some(runtime.telemetry.clone()),move ||{
                     crate::telemetry::add(&metrics.subscription_polls, 1);
-                    let result = store.next(&sub.token,std::time::Instant::now());
-                    if matches!(result, Ok(None)) { crate::telemetry::add(&metrics.subscription_empty_polls, 1); }
+                    let result = if notification_enabled {
+                        store.poll(&sub.token,std::time::Instant::now())
+                    } else {
+                        store.next(&sub.token,std::time::Instant::now()).map(|event| ling_events::Delivery {
+                            event, retry_at: None, more: false,
+                        })
+                    };
+                    if matches!(&result, Ok(delivery) if delivery.event.is_none()) { crate::telemetry::add(&metrics.subscription_empty_polls, 1); }
                     result
                 }).await {
-                    Ok(Some(event))=>{
-                        if send(&mut stream,Frame{request_id:0,body:Body::Event(event.to_value())},config).await.is_err(){break;}
+                    Ok(delivery)=>{
+                        retry_at = delivery.retry_at;
+                        check_events = delivery.event.is_some() || delivery.more;
+                        if let Some(event) = delivery.event
+                            && send(&mut stream,Frame{request_id:0,body:Body::Event(event.to_value())},config).await.is_err() {
+                            break;
+                        }
                     }
-                    Ok(None)=>{}
                     Err(error) if error.code==ErrorCode::Busy.as_str()=>{}
                     Err(error)=>{
                         let _=send(&mut stream,Frame{request_id:0,body:Body::Error(error)},config).await;
@@ -278,6 +317,12 @@ pub(crate) async fn serve(
             }
             _ => unreachable!(),
         };
+        if session.subscription.is_none() {
+            // 下一次 SUBSCRIBE 成功后须立即读取；当前通知不得替代首次状态检查。
+            // A later successful SUBSCRIBE must read immediately instead of relying on an old notification.
+            check_events = true;
+            retry_at = None;
+        }
         let accepted_shutdown = shutdown_requested && result == Ok(Value::Bool(true));
         runtime.record(started, result.is_err());
         let body = if fatal_error {

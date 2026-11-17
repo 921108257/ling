@@ -12,6 +12,7 @@ ling-types.workspace = true
 rand.workspace = true
 fs2.workspace = true
 crc32fast.workspace = true
+tokio = { workspace = true, features = ["sync"] }
 
 [lints]
 workspace = true

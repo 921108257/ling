@@ -39,7 +39,8 @@ pub(crate) struct Journal {
     pub bytes: usize,
     /// 整个目录限额，含替换预留；Directory limit including replacement reserve.
     max: usize,
-    /// 不确定写入后禁止追加；No appends after an uncertain write.
+    /// 运行期读故障或不确定写入后禁止追加。
+    /// No appends after a runtime read fault or uncertain write.
     pub failed: bool,
     /// 启动内存预算同时约束恢复分配；Startup memory budget also bounds recovery allocations.
     record_limit: usize,
@@ -183,14 +184,24 @@ impl Journal {
         })?;
         Ok(())
     }
-    /// 从已验证的边界只读续访，false 保留当前记录位置，短尾也报告错误。
-    /// Resumes read-only at a validated boundary; false retains that record and incomplete tails fail.
+    /// 从已验证的边界只读续访；故障保留原件和首次偏移并关闭后续持久操作。
+    /// Resumes read-only at a validated boundary; faults preserve the file and first offset and stop later durable operations.
     pub fn visit_from(
         &mut self,
         start: usize,
         apply: impl FnMut(&[u8]) -> Result<bool, DbError>,
     ) -> Result<usize, DbError> {
-        self.scan_from(start, false, apply)
+        if self.failed {
+            return Err(unavailable());
+        }
+        let result = self.scan_from(start, false, apply);
+        if result
+            .as_ref()
+            .is_err_and(|error| error.code == ErrorCode::JournalUnavailable.as_str())
+        {
+            self.failed = true;
+        }
+        result
     }
     /// 仅启动入口允许识别短尾；所有扫描都只读，确认修复另行提交。
     /// Only startup tolerates identifiable short tails; every scan is read-only until repair is finalized.
@@ -577,8 +588,8 @@ mod tests {
             bytes.extend(&complete);
             let offset = bytes.len();
             bytes.extend(tail);
-            let mut journal = fixture(&bytes);
             for resumed in [false, true] {
+                let mut journal = fixture(&bytes);
                 let error = if resumed {
                     journal.visit_from(offset, |_| Ok(true)).unwrap_err()
                 } else {
@@ -588,8 +599,13 @@ mod tests {
                 assert!(error.message.contains(&format!("byte offset {offset}")));
                 assert_eq!(fs::read(journal.dir.join("journal.lgj")).unwrap(), bytes);
                 assert_eq!(journal.bytes, bytes.len());
+                assert!(journal.failed);
+                assert_eq!(
+                    journal.append(b"rejected", false).unwrap_err().code,
+                    ErrorCode::JournalUnavailable.as_str()
+                );
+                cleanup(journal);
             }
-            cleanup(journal);
         }
     }
 
