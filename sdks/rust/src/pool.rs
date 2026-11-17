@@ -181,12 +181,11 @@ impl PooledClient {
 impl Drop for PooledClient {
     /// 只有健康且池未关闭的连接可归还；Only healthy sockets return to an open pool.
     fn drop(&mut self) {
-        if let Some(client) = self.client.take().filter(|c| !c.is_closed()) {
-            if let Ok(mut idle) = self.pool.0.idle.lock() {
-                if !*self.pool.0.closing.borrow() {
-                    idle.push(client);
-                }
-            }
+        if let Some(client) = self.client.take().filter(|c| !c.is_closed())
+            && let Ok(mut idle) = self.pool.0.idle.lock()
+            && !*self.pool.0.closing.borrow()
+        {
+            idle.push(client);
         }
     }
 }

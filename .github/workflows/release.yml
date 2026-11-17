@@ -44,7 +44,11 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate pinned CI inputs
+        run: |
+          python3 scripts/ci-inputs.py check
+          python3 -B -m unittest discover -s tests -p 'test_*.py' -v
       - name: Validate release version
         id: version
         env:
@@ -62,15 +66,17 @@ jobs:
           PY
       - name: Validate changelog entry
         run: python3 packaging/release-notes.py --version "${{ steps.version.outputs.version }}"
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action; Rust version pinned below
         with:
+          toolchain: 1.94.0
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-go@v5
+      - run: rustc --version --verbose
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: '1.22.x'
           cache: false
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '17'
@@ -88,6 +94,15 @@ jobs:
           ET.parse('packaging/windows/ling-service.xml')
           PY
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - name: Verify source build without updater dependencies
+        run: |
+          cargo test --locked --workspace --no-default-features
+          cargo clippy --locked --workspace --all-targets --no-default-features -- -D warnings
+          if cargo run --locked -p ling-server --no-default-features -- update --check > "$RUNNER_TEMP/update-disabled.log" 2>&1; then
+            echo 'Disabled updater unexpectedly succeeded' >&2
+            exit 1
+          fi
+          grep -q LOCAL_UPDATE_DISABLED "$RUNNER_TEMP/update-disabled.log"
       - name: Assert test-only failpoints stay out of release builds
         run: |
           # dev 依赖图必须含 failpoints，否则下面的发行图检查没有意义。
@@ -108,8 +123,70 @@ jobs:
           RUSTDOCFLAGS: -D warnings
       - run: python3 tests/sdk_contracts.py
 
+  msrv:
+    if: inputs.benchmark_target == '' || inputs.benchmark_target == 'none'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action; Rust version pinned below
+        with:
+          toolchain: 1.88.0
+      - run: rustc --version --verbose
+      - run: cargo check --workspace --locked
+      - run: cargo check --workspace --locked --no-default-features
+
+  audit:
+    if: inputs.benchmark_target == '' || inputs.benchmark_target == 'none'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action
+        with:
+          toolchain: 1.94.0
+      - name: Audit locked dependencies with a recorded advisory database
+        run: |
+          cargo install cargo-audit --version 0.22.1 --locked --no-default-features
+          git clone https://github.com/RustSec/advisory-db.git "$RUNNER_TEMP/advisory-db"
+          git -C "$RUNNER_TEMP/advisory-db" checkout 233155b4025b854c68a4b199c0e32d7fd53291a2
+          mkdir -p dist
+          cargo audit --db "$RUNNER_TEMP/advisory-db" --no-fetch --json > dist/dependency-audit.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: dependency-audit
+          path: dist/dependency-audit.json
+          if-no-files-found: error
+          retention-days: 14
+
+  build-measurements:
+    if: inputs.benchmark_target == '' || inputs.benchmark_target == 'none'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action
+        with:
+          toolchain: 1.94.0
+      - name: Measure updater dependency and binary size costs
+        run: python3 scripts/measure-update-deps.py --build > "$RUNNER_TEMP/update-measurement-summary.log"
+      - name: Compare two independent builds of the same commit
+        run: python3 scripts/reproducible-build.py --output "$RUNNER_TEMP/ling-reproducibility" --remap-root /ling
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: build-measurements
+          path: |
+            target/update-dependency-measurement/*.json
+            target/update-dependency-measurement/*.txt
+            ${{ runner.temp }}/ling-reproducibility/*.json
+            ${{ runner.temp }}/ling-reproducibility/*.txt
+          if-no-files-found: error
+          retention-days: 14
+
   packages:
-    needs: checks
+    needs: [checks, msrv]
     name: Package ${{ matrix.platform }} ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
@@ -151,11 +228,13 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action; Rust version pinned below
         with:
+          toolchain: 1.94.0
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
+      - run: rustc --version --verbose
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
         with:
           key: ${{ matrix.target }}
       - name: Install Linux packaging tools
@@ -169,30 +248,17 @@ jobs:
           mkdir -p "$tools_dir"
           case "$ARCH" in
             x86_64)
-              nfpm_arch=x86_64
               echo 'CC_x86_64_unknown_linux_musl=musl-gcc' >> "$GITHUB_ENV"
               echo 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc' >> "$GITHUB_ENV"
               ;;
             aarch64)
-              nfpm_arch=arm64
               echo 'CC_aarch64_unknown_linux_musl=musl-gcc' >> "$GITHUB_ENV"
               echo 'CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc' >> "$GITHUB_ENV"
               ;;
           esac
-          gh release download v2.49.0 --repo goreleaser/nfpm --pattern "nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" --pattern checksums.txt --dir "$tools_dir"
-          (cd "$tools_dir" && sha256sum --check --ignore-missing checksums.txt)
-          tar -xzf "$tools_dir/nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" -C "$tools_dir" nfpm
-          gh release download 1.9.1 --repo AppImage/appimagetool --pattern "appimagetool-${ARCH}.AppImage" --dir "$tools_dir"
-          # 用真实下载内容演练错误摘要拒绝，再校验仓内固定摘要。
-          # Exercise rejection with the real download before checking the repository-pinned digest.
-          bad_checksum="$RUNNER_TEMP/appimagetool-wrong.sha256"
-          printf '%064d  appimagetool-%s.AppImage\n' 0 "$ARCH" > "$bad_checksum"
-          if (cd "$tools_dir" && sha256sum --check "$bad_checksum"); then
-            echo 'Invalid packaging-tool checksum was accepted' >&2
-            exit 1
-          fi
-          (cd "$tools_dir" && sha256sum --check --ignore-missing "$GITHUB_WORKSPACE/packaging/appimagetool-1.9.1.sha256")
-          mv "$tools_dir/appimagetool-${ARCH}.AppImage" "$tools_dir/appimagetool"
+          python3 scripts/ci-inputs.py download nfpm "$ARCH" "$tools_dir"
+          tar -xzf "$tools_dir/nfpm.tar.gz" -C "$tools_dir" nfpm
+          python3 scripts/ci-inputs.py download appimagetool "$ARCH" "$tools_dir"
           chmod +x "$tools_dir/appimagetool"
           echo "$tools_dir" >> "$GITHUB_PATH"
       - name: Test native Unix contracts
@@ -206,23 +272,35 @@ jobs:
         run: cargo test --locked --target "$TARGET" --workspace
       - name: Build server and CLI
         run: cargo build --locked --release --target "$TARGET" -p ling-server -p ling-cli
+      - name: Download previous release for isolated upgrade acceptance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p target/previous-release
+          gh release download v0.1.5 --repo 921108257/ling --pattern "ling_0.1.5_${{ matrix.platform }}_${ARCH}*" --dir target/previous-release
       - name: Build and verify Linux packages
         if: runner.os == 'Linux'
         run: |
           bash packaging/linux/build.sh
           bash packaging/linux/verify.sh
           python3 scripts/smoke-package.py --appimage "dist/ling_${VERSION}_linux_${ARCH}.AppImage"
+        env:
+          PREVIOUS_VERSION: 0.1.5
       - name: Build and verify macOS packages
         if: runner.os == 'macOS'
         run: |
           bash packaging/macos/build.sh
           bash packaging/macos/verify.sh
+        env:
+          PREVIOUS_VERSION: 0.1.5
       - name: Build and verify Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           ./packaging/windows/build.ps1 -Version $env:VERSION
           ./packaging/windows/verify.ps1 -Version $env:VERSION
+        env:
+          PREVIOUS_VERSION: 0.1.5
       - name: Smoke-test Unix portable package
         if: runner.os != 'Windows'
         run: |
@@ -240,37 +318,116 @@ jobs:
           Expand-Archive -LiteralPath "dist/ling_$($env:VERSION)_windows_x86_64.zip" -DestinationPath $portable
           python scripts/smoke-package.py --server "$portable/ling/bin/ling.exe" --cli "$portable/ling/bin/ling-cli.exe"
           if ($LASTEXITCODE -ne 0) { throw 'Portable package smoke test failed' }
-      - uses: actions/upload-artifact@v4
+      - name: Generate per-package CycloneDX inventories
+        run: python3 packaging/generate-sbom.py --version "$VERSION" --target "$TARGET"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: native-acceptance-${{ matrix.platform }}-${{ matrix.arch }}
+          path: target/native-acceptance/*
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ling-${{ matrix.platform }}-${{ matrix.arch }}
           path: dist/*
           if-no-files-found: error
           retention-days: 14
 
+  supply-chain:
+    if: github.event_name != 'pull_request'
+    needs: [checks, packages, audit]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: dist
+          pattern: ling-*
+          merge-multiple: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: dependency-audit
+          path: dist
+      - name: Validate complete matrix and create checksum subjects
+        run: python3 packaging/release-assets.py --version "${{ needs.checks.outputs.version }}"
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        id: provenance
+        with:
+          subject-path: dist/*
+          create-storage-record: false
+      - name: Attach offline bundle and validate the final file set
+        env:
+          BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          cp "$BUNDLE" dist/PROVENANCE.sigstore.json
+          python3 packaging/release-assets.py --version "${{ needs.checks.outputs.version }}" --final
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-release
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  verify-provenance:
+    needs: [checks, supply-chain]
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, windows-2022, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action; Rust version pinned below
+        with:
+          toolchain: 1.94.0
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: verified-release
+          path: dist
+      - name: Install pinned official verification tool
+        run: python3 scripts/install-gh.py
+      - name: Independently verify provenance and reject altered inputs
+        env:
+          EXPECTED_REF: ${{ github.ref }}
+        run: python3 tests/provenance_contracts.py --dist dist --ref "$env:EXPECTED_REF"
+        if: runner.os == 'Windows'
+      - name: Independently verify provenance and reject altered inputs
+        env:
+          EXPECTED_REF: ${{ github.ref }}
+        run: python3 tests/provenance_contracts.py --dist dist --ref "$EXPECTED_REF"
+        if: runner.os != 'Windows'
+      - name: Exercise the updater's real provenance verifier
+        env:
+          LING_TEST_PROVENANCE_DIST: ${{ github.workspace }}/dist
+          LING_TEST_PROVENANCE_REF: ${{ github.ref }}
+        run: cargo test --locked -p ling-server --bin ling update::provenance::tests::workflow_bundle_verifies_with_real_gh -- --exact --nocapture
+
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [checks, packages]
+    needs: [checks, verify-provenance, build-measurements]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
+          name: verified-release
           path: dist
-          merge-multiple: true
       - name: Verify assets and publish prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.checks.outputs.version }}
         run: |
-          python3 - <<'PY'
-          import hashlib
-          from pathlib import Path
-          files = sorted(Path('dist').iterdir())
-          assert len(files) == 14, f'Expected 14 packages, found {len(files)}'
-          Path('dist/SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in files))
-          PY
+          python3 packaging/release-assets.py --version "$VERSION" --final
           python3 packaging/release-notes.py --version "$VERSION" --output "$RUNNER_TEMP/release-notes.md"
           gh release create "v${VERSION}" dist/* --verify-tag --prerelease --title "v${VERSION} Preview" --notes-file "$RUNNER_TEMP/release-notes.md"

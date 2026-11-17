@@ -111,7 +111,7 @@ impl Transaction<'_> {
                 })
             }
             "MSET" => {
-                if args.len() % 2 != 0 {
+                if !args.len().is_multiple_of(2) {
                     return Err(argument_error());
                 }
                 let mut seen = HashSet::new();

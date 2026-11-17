@@ -6,6 +6,10 @@ use ling_cli_help::{Context, Diagnostic, Language};
 use ling_server::{Config, Server};
 use std::path::PathBuf;
 
+#[cfg(feature = "self-update")]
+mod update;
+#[cfg(not(feature = "self-update"))]
+#[path = "update_disabled.rs"]
 mod update;
 
 /// 启动参数；凭据不进入命令行参数。

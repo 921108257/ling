@@ -3,9 +3,9 @@ members = ["crates/types", "crates/protocol", "crates/network", "crates/server",
 resolver = "3"
 
 [workspace.package]
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "MIT"
 
 [workspace.dependencies]
@@ -13,7 +13,7 @@ ling-cli-help = { path = "crates/cli-help" }
 ling-types = { path = "crates/types" }
 ling-protocol = { path = "crates/protocol" }
 ling-client = { path = "sdks/rust" }
-ling-server = { path = "crates/server" }
+ling-server = { path = "crates/server", default-features = false }
 ling-engine = { path = "crates/engine" }
 ling-events = { path = "crates/events" }
 ling-network = { path = "crates/network" }

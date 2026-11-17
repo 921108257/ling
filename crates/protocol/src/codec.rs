@@ -286,10 +286,10 @@ impl<'a> Decoder<'a> {
         // 协议封套不占用业务 Value 深度。
         // Protocol envelopes do not count against business Value depth.
         for (index, argument) in arguments.iter().enumerate() {
-            if ling_types::is_value_argument(&command, index) {
-                if let Err(e) = argument.validate(self.limits.value) {
-                    self.semantic.get_or_insert(e);
-                }
+            if ling_types::is_value_argument(&command, index)
+                && let Err(e) = argument.validate(self.limits.value)
+            {
+                self.semantic.get_or_insert(e);
             }
         }
         Ok(Request {

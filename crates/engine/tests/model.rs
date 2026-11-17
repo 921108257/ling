@@ -60,8 +60,12 @@ fn value(index: u64) -> Value {
     match index % 10 {
         0 => Value::Null,
         1 => Value::Bool(index % 2 == 1),
-        2 => Value::Int(if index % 3 == 0 { i64::MAX } else { -7 }),
-        3 => Value::UInt(if index % 3 == 0 { u64::MAX } else { 0 }),
+        2 => Value::Int(if index.is_multiple_of(3) {
+            i64::MAX
+        } else {
+            -7
+        }),
+        3 => Value::UInt(if index.is_multiple_of(3) { u64::MAX } else { 0 }),
         4 => Value::Float(Float::new(-0.0).unwrap()),
         5 => s("中文"),
         6 => Value::Bytes(vec![0, 255, index as u8]),

@@ -412,10 +412,10 @@ impl Engine {
                 .ok()
                 .map(|_| tx)
         });
-        if let Some(sender) = sender {
-            if let Err(error) = sender.try_send(retired) {
-                drop(error);
-            }
+        if let Some(sender) = sender
+            && let Err(error) = sender.try_send(retired)
+        {
+            drop(error);
         }
     }
 

@@ -1,6 +1,6 @@
 # 安装、服务与升级
 
-ling 当前为 0.1.4 预发布版本，项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
+当前已发布版本为 0.1.5；0.1.6 正在开发构建。项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
 
 安装器默认注册并启动后台服务，默认监听 `127.0.0.1:6380`，事件模式为 Fast。服务使用专用工作目录，不读取用户终端当前目录的配置。需要自定义配置或已有实例占用端口时，先跳过自动启动，修改配置后再启动。Reliable 限制见 [architecture.md](architecture.md) 和 [persistence.md](persistence.md)。
 
@@ -12,6 +12,8 @@ ling 当前为 0.1.4 预发布版本，项目自有代码采用 [MIT 许可证](
 
 ## 命令行更新
 
+0.1.6 的更新器要求 GitHub CLI **2.97.0 或更高版本**。先从 GitHub CLI 官方渠道安装 `gh` 并确认 `gh --version`；离线 bundle 验证不要求登录 GitHub。发行包默认包含更新器；源码部署可用 `cargo build --release -p ling-server --no-default-features` 关闭，关闭后更新命令明确报 `LOCAL_UPDATE_DISABLED`。
+
 从 0.1.3 起，可使用 `ling update` 更新服务端和客户端。0.1.2 及更早版本请先按下方平台说明安装 0.1.3。
 
 ```sh
@@ -22,7 +24,7 @@ ling update --stable --check
 ling help update
 ```
 
-`--check` 仅检查版本，不下载或安装。默认选择最新的已发布版本，包含预发布版本；`--stable` 仅选择稳定版。`--version` 固定目标版本，不允许降级；没有更新时不会重新安装。版本按语义版本比较。更新从 ling 官方 GitHub Releases 下载与本机系统、架构和安装方式匹配的资产，校验大小和 `SHA256SUMS` 后才安装。网络失败或校验失败不会修改已安装程序。遇到 GitHub 请求限制时，可稍后重试或设置 `LING_GITHUB_TOKEN`；令牌仅用于官方 GitHub API 请求，不会写入更新计划或诊断。
+`--check` 仅检查版本，不下载或安装，0.1.6 同时报告证明文件及验证器是否可用；显示“已提供”不代表完成密码学验证。默认选择最新的已发布版本，包含预发布版本；`--stable` 仅选择稳定版。`--version` 固定目标版本，不允许降级；没有更新时不会重新安装。版本按语义版本比较。0.1.6 更新器下载官方 GitHub Releases 中与系统、架构、安装方式匹配的资产，先核对大小及 `SHA256SUMS`，再用内置公共 Sigstore 根验证 `PROVENANCE.sigstore.json`：仓库、工作流、目标标签、托管 runner、签名和资产摘要必须匹配。没有证明、验证失败或缺少 `gh` 都停止安装，不降级为仅检查 SHA-256。网络或验证失败不会修改已安装程序。遇到 GitHub 请求限制时，可稍后重试或设置 `LING_GITHUB_TOKEN`；令牌仅用于固定 GitHub API 请求，不会传入验证子进程、下载 CDN、更新计划或诊断。0.1.5 及以前的更新器仍只校验 SHA-256，首次升级到 0.1.6 建议按下节独立验证。
 
 Linux / macOS 的系统安装需要管理员权限：
 
@@ -30,11 +32,25 @@ Linux / macOS 的系统安装需要管理员权限：
 sudo ling update
 ```
 
-系统安装使用原生安装器，保留已有工作配置和状态目录，并按安装器约定停止、更新和启动服务。便携包只更新 `ling`、`ling-cli`；AppImage 更新原始 AppImage 文件。便携进程由你自行停止和重新启动，文件占用时更新会失败。未识别为官方安装包或便携包的安装方式，请按其原安装方式升级。
+系统安装使用原生安装器，保留已有工作配置和状态目录，并按安装器约定停止、更新和启动服务。0.1.6 便携包更新 `ling`、`ling-cli`、`LICENSE` 和 `THIRD-PARTY-NOTICES.txt` 四个固定成员；AppImage 更新原始 AppImage 文件。便携进程由你自行停止和重新启动，文件占用时更新会失败。Unix 中断后可能保留安装目录旁的 `.ling-update-recovery-*`：停止两个程序，按错误输出运行该目录的 `restore.sh`，恢复完整旧版后再更新；保留该目录及备份直至确认恢复。此机制不构成物理断电保证。未识别为官方安装包或便携包的安装方式，请按其原安装方式升级。
 
-Windows 在下载校验后退出当前命令，再继续安装，以释放程序文件。出现管理员权限提示时请确认。命令输出结果文件路径；使用 `Get-Content '<结果文件路径>'` 查看 `status`，`success` 表示完成，`failed` 表示失败，`scheduled` 表示尚未完成。`unknown` 表示需要检查安装器和已安装版本，不要直接重复更新。交接成功不等于安装完成。完成后使用 `ling --version`、`ling-cli --version` 确认版本。便携更新失败且 `rollback_complete` 为 `false` 时，请保留结果文件所在目录，并重新安装官方发行包。
+Windows 在下载校验后退出当前命令，再继续安装，以释放程序文件。出现管理员权限提示时请确认。命令输出结果文件路径；使用 `Get-Content '<结果文件路径>'` 查看 `status`、`installer_started`、`helper_pid`、`installer_pid` 与 `updated_at_unix_ms`。`success` 表示完成，未启动安装器的取消／失败为 `failed`；启动后的失败或等待超过十分钟记为 `unknown`，保留 `.pending.json` 防止盲目重试。助手不会终止已启动的安装器。确认安装器与助手都已结束，再核对两个程序版本，读取结果文件同目录 `plan.json` 的 `lock_path`，检查该路径加 `.pending.json` 后缀的文件，必要时人工恢复或清理；不要只凭超时再次安装。交接成功不等于安装完成。便携更新失败且 `rollback_complete` 为 `false` 时，请保留结果文件所在目录，并重新安装官方发行包。
 
 更新可能重启服务。缓存值与 TTL 在重启后不恢复；Reliable 仅恢复保留窗口内已提交事件及消费元数据。
+
+Windows 更新锁与 pending 标记按用户隔离；对同一安装目录的操作应由同一管理员用户串行执行。恢复脚本也应在停止相关程序后顺序执行。
+
+## 独立验证 0.1.6 下载
+
+从官方 Release 下载选定包、`SHA256SUMS`、`PROVENANCE.sigstore.json` 和同名 `.cdx.json`（CycloneDX 1.6 SBOM）。先核对包的 SHA-256，再用可信来源的 GitHub CLI 验证。以下命令在 PowerShell、Linux 和 macOS 均适用，替换为实际文件名：
+
+```sh
+gh attestation verify ling_0.1.6_windows_x86_64.zip --bundle PROVENANCE.sigstore.json --repo 921108257/ling --cert-identity https://github.com/921108257/ling/.github/workflows/release.yml@refs/tags/v0.1.6 --source-ref refs/tags/v0.1.6 --deny-self-hosted-runners
+```
+
+这条独立命令默认通过 GitHub CLI 的 TUF 机制获取可信根；离线时，额外传入 `--custom-trusted-root <可信副本路径>`。固定根的来源与轮换见 [DEC-02](decisions.md)。不要把与待验证文件一起取得的任意根当作独立信任依据。验证包、SBOM、`SHA256SUMS` 时分别替换命令中的文件名；同一 bundle 绑定所有资产，bundle 本身不自签。分支构建的证书身份是分支 ref，不能冒充标签发行。
+
+任何摘要、来源、标签或签名验证失败都不要运行安装器；保留失败文件与诊断，从可信渠道重新获取并核查。来源证明不会消除 Windows SmartScreen、macOS Gatekeeper 提示，平台签名与公证仍未提供。
 
 ## Windows x86_64
 

@@ -46,3 +46,23 @@
 | 性能目标 | 同条件比较 Redis 8 的可比操作 | 发布原始环境、负载、吞吐、延迟分位及方差；未达目标也如实记录 |
 
 若未来要求“每一个计划到期的 Key，即使停机或崩溃也必须生成通知”，必须重新设计并持久化期限及生命周期状态；这属于新的可靠定时能力，不能仅通过改文案扩展 Reliable 保证。
+
+## DEC-02：发行来源证明与验证器（2026-11-17）
+
+所有者已选择 GitHub 构建来源证明。仓库 `921108257/ling` 为公开仓库，适用 GitHub 公共仓库的 attestation 支持；使用 GitHub OIDC 和公共 Sigstore 的短期证书，无需保管长期签名私钥。发布工作流以 SLSA v1 证明绑定包、每包 CycloneDX 1.6 SBOM、审计报告及校验清单，并上传离线 `PROVENANCE.sigstore.json`。证明绑定工作流执行身份与摘要，不证明软件无漏洞。
+
+备选 cosign keyless 使用同类身份与透明日志机制，但增加另一套 CLI／策略维护；minisign 的离线验证更简单，却需要私钥保管、备份和吊销策略。本轮选择与现有 GitHub Actions 一致的机制。Windows Authenticode、macOS Developer ID 与公证属于 DEC-03，所有者确认本轮继续顺延，来源证明不替代这些平台签名。
+
+更新器调用官方 GitHub CLI 2.97.0 或更高版本，使用随二进制内置的公共 Sigstore 信任根离线验签。固定仓库、OIDC issuer、`release.yml` 的完整证书身份、`refs/tags/v<目标版本>` 和托管 runner；验证后再次匹配声明的资产名与 SHA-256。不存在凭据、验证器不可用、错误身份／标签或任何验签失败均拒绝安装，不提供仅校验和降级开关。`--check` 只报告凭据是否提供及验证器是否可用，真正的密码学验证在下载后完成。
+
+选择外部官方验证器，是为了复用已维护的 Sigstore 验证实现；不把仍需单独审计的 Rust Sigstore 实验库及其密码学／证书依赖并入服务器。代价是安装者需要预装可信来源的 `gh`，该可执行程序本身属于本机信任边界。验证子进程清除 GitHub token、使用空配置目录、关闭遥测和更新通知，限制输出与执行时间。下载客户端仅向固定 GitHub API 发送 `LING_GITHUB_TOKEN`，API 不跟随重定向，下载 CDN 不携带令牌。
+
+`crates/server/src/update/trusted-root.json` 于 2026-11-17 经 `gh attestation trusted-root` 的 TUF 校验获取，选取公共 Sigstore 根，SHA-256 为 `3c2cc7f357dc064ec527fdcd78da6e9245c21a381e1abaa0f2b62b186bcac1a1`。保留旧和新 CA／日志密钥及有效期；计划轮换时先发布同时信任新旧根的版本，至少跨一个版本周期再停用旧签发根。紧急吊销不能只靠新根替换：停止受影响发布、撤销／限制仓库工作流权限，并让旧客户端通过独立渠道获取新版本。未知新根会使旧客户端安全失败，不能自动接受下载包附带的信任根。
+
+参考：[GitHub attestation action](https://github.com/actions/attest)、[官方验证命令与离线参数](https://cli.github.com/manual/gh_attestation_verify)、[公共 Sigstore 根](https://github.com/sigstore/root-signing)。
+
+## 0.1.6 构建与依赖决定（2026-11-17）
+
+仅在 CI 固定 Rust 1.94.0，不添加影响所有开发者的 `rust-toolchain.toml`。最初 Rust 1.85.0 对旧依赖检查通过；本轮审计发现 `zip 2.6.1` 处于多份 RustSec 公告范围，升级到 9.6.1（仅启用 deflate-flate2）后最低版本提高至 Rust 1.88，workspace 和 CI 一致调整，不保留无依据的审计豁免。
+
+采用默认开启的 `self-update` feature；源码构建可关闭，`ling update` 返回 `LOCAL_UPDATE_DISABLED`，协议和服务行为不变。官方包保持开启。依赖数量与两种构建体积由 `scripts/measure-update-deps.py` 记录，不用依赖数量替代安全结论。构建输入固定提高可复核性，不等于跨主机二进制逐位可复现。

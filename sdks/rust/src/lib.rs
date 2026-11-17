@@ -219,14 +219,13 @@ impl Client {
             return Err(Error::local(LocalError::Protocol, false));
         }
         client.hello = hello;
-        if let Some(password) = password {
-            if client
+        if let Some(password) = password
+            && client
                 .execute("AUTH", vec![Value::String(password.into())])
                 .await?
                 != Value::Bool(true)
-            {
-                return Err(Error::local(LocalError::Protocol, false));
-            }
+        {
+            return Err(Error::local(LocalError::Protocol, false));
         }
         client.select(database).await?;
         Ok(client)

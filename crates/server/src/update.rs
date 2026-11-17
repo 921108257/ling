@@ -15,6 +15,7 @@ use std::{
     time::Duration,
 };
 
+mod provenance;
 #[cfg(windows)]
 mod windows;
 
@@ -92,6 +93,8 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
     let executable = std::env::current_exe()
         .and_then(fs::canonicalize)
         .map_err(|_| fail("LOCAL_UPDATE_INSTALL"))?;
+    #[cfg(unix)]
+    pending_portable_recovery(&executable).map_err(|_| fail("LOCAL_UPDATE_INSTALL"))?;
     #[cfg(target_os = "linux")]
     let fingerprint = appimage_path(&executable).unwrap_or_else(|| executable.clone());
     #[cfg(not(target_os = "linux"))]
@@ -116,7 +119,7 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
         .connect_timeout(Duration::from_secs(15))
         .timeout(Duration::from_secs(180))
         .https_only(true)
-        .redirect(reqwest::redirect::Policy::limited(5))
+        .redirect(redirect_policy())
         .build()
         .map_err(|_| fail("LOCAL_UPDATE_NETWORK"))?;
     println!("{}", text(language, "checking"));
@@ -136,6 +139,32 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
         text(language, "current"),
         text(language, "available")
     );
+    let (install, destination) =
+        detect_install(&executable).map_err(|_| fail("LOCAL_UPDATE_PLATFORM"))?;
+    let name = asset_name(&version, install).ok_or_else(|| fail("LOCAL_UPDATE_PLATFORM"))?;
+    let proof = release_asset(release, &version, "PROVENANCE.sigstore.json", MAX_METADATA);
+    println!(
+        "{}",
+        text(
+            language,
+            if proof.is_some() {
+                "provenance_available"
+            } else {
+                "provenance_missing"
+            }
+        )
+    );
+    println!(
+        "{}",
+        text(
+            language,
+            if provenance::available() {
+                "verifier_available"
+            } else {
+                "verifier_missing"
+            }
+        )
+    );
     if version <= current {
         println!("{}", text(language, "latest"));
         return Ok(());
@@ -144,8 +173,10 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
         println!("{}", text(language, "check_hint"));
         return Ok(());
     }
-    let (install, destination) =
-        detect_install(&executable).map_err(|_| fail("LOCAL_UPDATE_PLATFORM"))?;
+    let proof = proof.ok_or_else(|| fail("LOCAL_UPDATE_PROVENANCE"))?;
+    if !provenance::available() {
+        return Err(fail("LOCAL_UPDATE_VERIFIER"));
+    }
     #[cfg(unix)]
     let _lock = installation_lock(&destination).map_err(|error| {
         fail(if error.kind() == io::ErrorKind::PermissionDenied {
@@ -157,7 +188,6 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
     if file_hash(&fingerprint).map_err(|_| fail("LOCAL_UPDATE_INSTALL"))? != original_hash {
         return Err(fail("LOCAL_UPDATE_BUSY"));
     }
-    let name = asset_name(&version, install).ok_or_else(|| fail("LOCAL_UPDATE_PLATFORM"))?;
     let asset = release_asset(release, &version, &name, MAX_PACKAGE)
         .ok_or_else(|| fail("LOCAL_UPDATE_RELEASE"))?;
     let sums = release_asset(release, &version, "SHA256SUMS", MAX_METADATA)
@@ -165,13 +195,11 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
     let sums = fetch(&client, &sums.browser_download_url, MAX_METADATA)
         .map_err(|_| fail("LOCAL_UPDATE_NETWORK"))?;
     let expected = checksum(&sums, &name).ok_or_else(|| fail("LOCAL_UPDATE_CHECKSUM"))?;
-    let workspace = tempfile::Builder::new()
-        .prefix("ling-update-")
-        .tempdir()
-        .map_err(|_| fail("LOCAL_UPDATE_INSTALL"))?;
+    let workspace =
+        private_tempdir("ling-update-", None).map_err(|_| fail("LOCAL_UPDATE_INSTALL"))?;
     let package = workspace.path().join(&name);
     println!("{} {version}", text(language, "downloading"));
-    download(&client, asset, &package, &expected).map_err(&fail)?;
+    download_and_verify(&client, asset, proof, &package, &expected, &version).map_err(&fail)?;
     println!("{}", text(language, "verified"));
     if file_hash(&fingerprint).map_err(|_| fail("LOCAL_UPDATE_INSTALL"))? != original_hash {
         return Err(fail("LOCAL_UPDATE_BUSY"));
@@ -226,6 +254,45 @@ pub(super) fn run(args: Args, language: Language) -> Result<(), Diagnostic> {
     Ok(())
 }
 
+/// API 请求不跟随重定向；下载仅允许有界 HTTPS 跳转，reqwest 另剥离跨源敏感头。
+/// API requests never follow redirects; downloads use bounded HTTPS redirects and reqwest strips cross-origin secrets.
+fn redirect_policy() -> reqwest::redirect::Policy {
+    reqwest::redirect::Policy::custom(|attempt| {
+        if attempt
+            .previous()
+            .first()
+            .is_some_and(|url| url.host_str() == Some("api.github.com"))
+        {
+            attempt.stop()
+        } else if attempt.previous().len() > 5 {
+            attempt.error("redirect limit")
+        } else {
+            attempt.follow()
+        }
+    })
+}
+
+/// 所有验证在暂存区完成；调用方只有成功后才能解包或调用安装器。
+/// Every check finishes in staging before callers may extract or invoke installers.
+fn download_and_verify(
+    client: &Client,
+    asset: &Asset,
+    proof: &Asset,
+    package: &Path,
+    expected: &str,
+    version: &Version,
+) -> Result<(), &'static str> {
+    download(client, asset, package, expected)?;
+    let bytes = fetch(client, &proof.browser_download_url, MAX_METADATA)
+        .map_err(|_| "LOCAL_UPDATE_PROVENANCE")?;
+    if bytes.len() as u64 != proof.size {
+        return Err("LOCAL_UPDATE_PROVENANCE");
+    }
+    let bundle = package.with_file_name("PROVENANCE.sigstore.json");
+    fs::write(&bundle, bytes).map_err(|_| "LOCAL_UPDATE_INSTALL")?;
+    provenance::verify(package, &bundle, version).map_err(|_| "LOCAL_UPDATE_PROVENANCE")
+}
+
 /// 比较语义版本而非发布时间，并明确过滤草稿和稳定通道。
 /// Compares semantic versions rather than publish time and explicitly filters drafts and stable channels.
 fn select_release<'a>(
@@ -273,12 +340,11 @@ fn fetch(client: &Client, url: &str, limit: u64) -> Result<Vec<u8>, Box<dyn std:
     let mut request = client.get(url);
     // 可选令牌仅发送给固定 API 源，不附加到下载 CDN 或其他请求。
     // Optional tokens go only to the fixed API origin, never download CDNs or other requests.
-    if url.starts_with(API) {
-        if let Ok(token) = std::env::var("LING_GITHUB_TOKEN") {
-            if !token.trim().is_empty() {
-                request = request.bearer_auth(token);
-            }
-        }
+    if url.starts_with(API)
+        && let Ok(token) = std::env::var("LING_GITHUB_TOKEN")
+        && !token.trim().is_empty()
+    {
+        request = request.bearer_auth(token);
     }
     let response = request.send()?.error_for_status()?;
     let mut bytes = Vec::new();
@@ -488,8 +554,8 @@ fn asset_name(version: &Version, install: Install) -> Option<String> {
     ))
 }
 
-/// 只提取两个固定成员，不解包配置、链接或任意路径。
-/// Extracts only two fixed members, never configuration, links or arbitrary paths.
+/// 只提取两个程序与许可声明，不解包配置、链接或任意路径。
+/// Extracts only two programs and license notices, never configuration, links or arbitrary paths.
 fn extract_binaries(
     package: &Path,
     workspace: &Path,
@@ -497,30 +563,42 @@ fn extract_binaries(
     version: &Version,
 ) -> io::Result<Vec<(PathBuf, PathBuf)>> {
     let names = if cfg!(windows) {
-        ["ling.exe", "ling-cli.exe"]
+        [
+            "ling.exe",
+            "ling-cli.exe",
+            "LICENSE",
+            "THIRD-PARTY-NOTICES.txt",
+        ]
     } else {
-        ["ling", "ling-cli"]
+        ["ling", "ling-cli", "LICENSE", "THIRD-PARTY-NOTICES.txt"]
     };
     let archive_prefix = if cfg!(target_os = "linux") {
         "ling/"
     } else {
         "ling/bin/"
     };
-    let mut found = [false; 2];
+    let members = names.map(|name| {
+        if matches!(name, "LICENSE" | "THIRD-PARTY-NOTICES.txt") {
+            format!("ling/{name}")
+        } else {
+            format!("{archive_prefix}{name}")
+        }
+    });
+    let mut found = [false; 4];
     if cfg!(windows) {
         let mut archive = zip::ZipArchive::new(File::open(package)?)?;
+        archive.validate_header_consistency()?;
         if archive.len() > 1024 {
             return Err(io::Error::other("archive member limit"));
         }
         for index in 0..archive.len() {
             let mut entry = archive.by_index(index)?;
-            if let Some(index) = names
-                .iter()
-                .position(|name| entry.name() == format!("{archive_prefix}{name}"))
-            {
-                if entry
-                    .unix_mode()
-                    .is_some_and(|mode| mode & 0o170000 == 0o120000)
+            let entry_name = entry.name()?;
+            if let Some(index) = members.iter().position(|name| entry_name == name.as_str()) {
+                if entry.is_dir()
+                    || entry
+                        .unix_mode()
+                        .is_some_and(|mode| !matches!(mode & 0o170000, 0 | 0o100000))
                 {
                     return Err(io::Error::other("archive link"));
                 }
@@ -536,10 +614,7 @@ fn extract_binaries(
             }
             let mut entry = entry?;
             let path = entry.path()?.into_owned();
-            if let Some(index) = names
-                .iter()
-                .position(|name| path == Path::new(&format!("{archive_prefix}{name}")))
-            {
+            if let Some(index) = members.iter().position(|name| path == Path::new(name)) {
                 if !entry.header().entry_type().is_file() {
                     return Err(io::Error::other("archive link"));
                 }
@@ -547,15 +622,30 @@ fn extract_binaries(
             }
         }
     }
-    if found != [true; 2] {
-        return Err(io::Error::other("missing release binary"));
+    if found != [true; 4] {
+        return Err(io::Error::other("missing release member"));
     }
     let directory = executable
         .parent()
         .ok_or_else(|| io::Error::other("missing binary directory"))?;
+    let release_root = if !cfg!(target_os = "linux")
+        && directory
+            .file_name()
+            .is_some_and(|name| name.to_string_lossy().eq_ignore_ascii_case("bin"))
+    {
+        directory
+            .parent()
+            .ok_or_else(|| io::Error::other("missing release directory"))?
+    } else {
+        directory
+    };
     let mut binaries = Vec::new();
-    for name in names {
+    for (index, name) in names.into_iter().enumerate() {
         let source = workspace.join(name);
+        if index >= 2 {
+            binaries.push((source, release_root.join(name)));
+            continue;
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -583,6 +673,22 @@ fn extract_member(reader: &mut impl Read, path: &Path, found: &mut bool) -> io::
         return Err(io::Error::other("expanded member limit"));
     }
     file.sync_all()
+}
+
+/// Unix 暂存目录在创建时即限于所有者访问；Windows 保留平台默认 ACL。
+/// Unix staging directories are owner-only from creation; Windows retains platform-default ACLs.
+fn private_tempdir(prefix: &str, directory: Option<&Path>) -> io::Result<tempfile::TempDir> {
+    let mut builder = tempfile::Builder::new();
+    builder.prefix(prefix);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        builder.permissions(fs::Permissions::from_mode(0o700));
+    }
+    match directory {
+        Some(directory) => builder.tempdir_in(directory),
+        None => builder.tempdir(),
+    }
 }
 
 /// 在下载前验证目标目录权限，系统安装要求调用者显式使用 sudo。
@@ -619,44 +725,155 @@ fn install_with(program: &str, args: &[&str], package: &Path) -> io::Result<()> 
     }
 }
 
-/// 在目标文件系统暂存并备份，任一步失败恢复先前的两个程序。
-/// Stages on the destination filesystem and restores both prior binaries on any failed step.
+/// 拒绝遗留的未完成更新，并给出可反复执行的完整恢复脚本位置。
+/// Rejects interrupted updates and locates the repeatable complete-version recovery script.
 #[cfg(unix)]
-fn replace_binaries(binaries: &[(PathBuf, PathBuf)]) -> io::Result<()> {
-    use std::os::unix::fs::PermissionsExt;
-    let directory = binaries[0]
-        .1
+fn pending_portable_recovery(executable: &Path) -> io::Result<()> {
+    let directory = executable
         .parent()
         .ok_or_else(|| io::Error::other("missing directory"))?;
-    let stage = tempfile::Builder::new()
-        .prefix(".ling-update-")
-        .tempdir_in(directory)?;
-    for (index, (source, _)) in binaries.iter().enumerate() {
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        if entry.file_type()?.is_dir()
+            && entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".ling-update-recovery-")
+            && entry.path().join("recovery.json").is_file()
+        {
+            eprintln!(
+                "Interrupted update; restore all previous release files with: sh {}",
+                shell_quote(&entry.path().join("restore.sh"))
+            );
+            return Err(io::Error::other("interrupted update requires recovery"));
+        }
+    }
+    Ok(())
+}
+
+/// 单引号路径保持空格、换行和 shell 元字符为普通文件名。
+/// Single-quoted paths keep spaces, newlines and shell metacharacters literal.
+#[cfg(unix)]
+fn shell_quote(path: &Path) -> String {
+    format!("'{}'", path.to_string_lossy().replace('\'', "'\"'\"'"))
+}
+
+/// 在目标文件系统暂存和复制旧版，任一步失败恢复整个发行文件集合。
+/// Stages and copies old files on the target filesystem, restoring the complete release on failure.
+#[cfg(unix)]
+fn replace_binaries(binaries: &[(PathBuf, PathBuf)]) -> io::Result<()> {
+    replace_binaries_with_checkpoint(binaries, |_| {})
+}
+
+/// 检查点仅供隔离子进程中断测试，生产调用不执行额外动作。
+/// Checkpoints enable isolated process-interruption tests; production supplies a no-op.
+#[cfg(unix)]
+fn replace_binaries_with_checkpoint(
+    binaries: &[(PathBuf, PathBuf)],
+    mut checkpoint: impl FnMut(usize),
+) -> io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    let current = &binaries
+        .first()
+        .ok_or_else(|| io::Error::other("missing release files"))?
+        .1;
+    pending_portable_recovery(current)?;
+    let directory = current
+        .parent()
+        .ok_or_else(|| io::Error::other("missing directory"))?;
+    let stage = private_tempdir(".ling-update-recovery-", Some(directory))?;
+    let mut existed = Vec::new();
+    let mut manifest = Vec::new();
+    let mut script = String::from(
+        "#!/bin/sh\n# Recover every previous release file; retain backups for repeatable recovery.\n# 恢复完整旧版；保留备份，恢复中断后可以重新运行。\nset -eu\n",
+    );
+    script.push_str(&format!("recovery_dir={}\n", shell_quote(stage.path())));
+    for (index, (source, destination)) in binaries.iter().enumerate() {
+        if destination.to_str().is_none() {
+            return Err(io::Error::other("release path is not valid UTF-8"));
+        }
         let target = stage.path().join(format!("new-{index}"));
         fs::copy(source, &target)?;
-        fs::set_permissions(&target, fs::Permissions::from_mode(0o755))?;
+        let is_notice = destination
+            .file_name()
+            .is_some_and(|name| name == "LICENSE" || name == "THIRD-PARTY-NOTICES.txt");
+        fs::set_permissions(
+            &target,
+            fs::Permissions::from_mode(if is_notice { 0o644 } else { 0o755 }),
+        )?;
         File::open(&target)?.sync_all()?;
-    }
-    let mut backed_up = Vec::new();
-    let result = (|| {
-        for (index, (_, destination)) in binaries.iter().enumerate() {
+        let prior = match destination.symlink_metadata() {
+            Ok(metadata) if metadata.is_file() => true,
+            Err(error) if error.kind() == io::ErrorKind::NotFound && is_notice => false,
+            Ok(_) => return Err(io::Error::other("release target is not a regular file")),
+            Err(error) => return Err(error),
+        };
+        if prior {
             let backup = stage.path().join(format!("old-{index}"));
-            fs::rename(destination, &backup)?;
-            backed_up.push((backup, destination));
-            fs::rename(stage.path().join(format!("new-{index}")), destination)?;
+            fs::copy(destination, &backup)?;
+            File::open(&backup)?.sync_all()?;
+            script.push_str(&format!(
+                "cp -p \"$recovery_dir/old-{index}\" \"$recovery_dir/restore-{index}\"\nmv -f \"$recovery_dir/restore-{index}\" {}\n",
+                shell_quote(destination)
+            ));
+        } else {
+            script.push_str(&format!("rm -f {}\n", shell_quote(destination)));
         }
-        File::open(directory)?.sync_all()
+        manifest.push(serde_json::json!({
+            "target": destination,
+            "previous_existed": prior,
+            "backup": prior.then(|| format!("old-{index}")),
+        }));
+        existed.push(prior);
+    }
+    script.push_str("sync\nrm -f \"$recovery_dir/recovery.json\"\nprintf '%s\\n' 'Previous release restored. Backups remain in:' \"$recovery_dir\"\n");
+    fs::write(stage.path().join("restore.sh"), script)?;
+    File::open(stage.path().join("restore.sh"))?.sync_all()?;
+    fs::write(
+        stage.path().join("recovery.json"),
+        serde_json::to_vec_pretty(&manifest).map_err(io::Error::other)?,
+    )?;
+    File::open(stage.path().join("recovery.json"))?.sync_all()?;
+    File::open(stage.path())?.sync_all()?;
+    File::open(directory)?.sync_all()?;
+    // 从首次替换前开始持久保留恢复资料，进程退出不依赖析构清理。
+    // Preserve recovery data before the first replacement, independently of process destructors.
+    let stage = stage.keep();
+    checkpoint(0);
+    let result: io::Result<()> = (|| {
+        for (index, (_, destination)) in binaries.iter().enumerate() {
+            fs::rename(stage.join(format!("new-{index}")), destination)?;
+            File::open(destination.parent().unwrap())?.sync_all()?;
+            checkpoint(index + 1);
+        }
+        Ok(())
     })();
     if result.is_err() {
-        for (backup, destination) in backed_up.into_iter().rev() {
-            // rename 覆盖已应用的新文件；回滚失败时保留备份目录供恢复。
-            // rename replaces an applied new file; preserve backups if rollback itself fails.
-            if fs::rename(backup, destination).is_err() {
-                let _ = stage.keep();
+        for (index, (_, destination)) in binaries.iter().enumerate().rev() {
+            let restored = if existed[index] {
+                let temporary = stage.join(format!("restore-{index}"));
+                fs::copy(stage.join(format!("old-{index}")), &temporary)
+                    .and_then(|_| File::open(&temporary)?.sync_all())
+                    .and_then(|_| fs::rename(&temporary, destination))
+            } else {
+                match fs::remove_file(destination) {
+                    Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+                    result => result,
+                }
+            };
+            if restored.is_err() {
+                let _ = pending_portable_recovery(current);
                 return Err(io::Error::other("rollback requires recovery"));
             }
+            File::open(destination.parent().unwrap())?.sync_all()?;
         }
     }
+    fs::remove_file(stage.join("recovery.json"))?;
+    File::open(&stage)?.sync_all()?;
+    File::open(directory)?.sync_all()?;
+    // 提交或回滚已落盘后，清理失败只留下无活动清单的备份。
+    // After a durable commit or rollback, cleanup failure leaves only inactive backups.
+    let _ = fs::remove_dir_all(stage);
     result
 }
 
@@ -696,6 +913,57 @@ fn text(language: Language, key: &str) -> &'static str {
 mod tests {
     use super::*;
     use std::{net::TcpListener, thread};
+
+    /// 隔离子进程验证下载、验证器、信任根和恢复目录均不向组或其他用户开放。
+    /// An isolated child verifies that download, verifier, trust-root and recovery directories stay owner-only.
+    #[cfg(unix)]
+    #[test]
+    fn private_temporary_directories_child() {
+        use std::os::unix::fs::PermissionsExt;
+        if std::env::var_os("LING_TEST_PRIVATE_DIRECTORIES").is_none() {
+            return;
+        }
+        let installation = private_tempdir("ling-test-install-", None).unwrap();
+        for (prefix, directory) in [
+            ("ling-update-", None),
+            ("ling-verifier-", None),
+            ("ling-provenance-", None),
+            (".ling-update-recovery-", Some(installation.path())),
+        ] {
+            let workspace = private_tempdir(prefix, directory).unwrap();
+            assert_eq!(
+                fs::metadata(workspace.path()).unwrap().permissions().mode() & 0o777,
+                0o700,
+                "{prefix}"
+            );
+        }
+        println!("LING_PRIVATE_DIRECTORIES_OK");
+    }
+
+    /// 宽松 umask 只在子进程生效，不影响同进程并发测试的全局权限设置。
+    /// Permissive umasks affect only child processes, preserving concurrent tests' global permissions.
+    #[cfg(unix)]
+    #[test]
+    fn private_temporary_directories_ignore_permissive_umask() {
+        for mask in ["000", "002"] {
+            let outcome = Command::new("sh")
+                .args([
+                    "-c",
+                    "umask \"$1\"; exec \"$2\" --exact update::tests::private_temporary_directories_child --nocapture",
+                    "ling-private-tempdirs",
+                    mask,
+                ])
+                .arg(std::env::current_exe().unwrap())
+                .env("LING_TEST_PRIVATE_DIRECTORIES", "1")
+                .output()
+                .unwrap();
+            assert!(outcome.status.success(), "umask {mask}: {outcome:?}");
+            assert!(
+                String::from_utf8_lossy(&outcome.stdout).contains("LING_PRIVATE_DIRECTORIES_OK"),
+                "permission checks did not run: {outcome:?}"
+            );
+        }
+    }
 
     /// 构造本地发行目录，不依赖 GitHub 可用性。
     /// Builds local release metadata without depending on GitHub availability.
@@ -787,6 +1055,217 @@ mod tests {
             stream.write_all(&body).unwrap();
         });
         (format!("http://{address}/package"), handle)
+    }
+
+    /// 按 HTTP 头边界读取本地请求，防止 TCP 分段影响令牌断言。
+    /// Reads complete local HTTP headers so TCP fragmentation cannot weaken token assertions.
+    fn request_headers(stream: &mut std::net::TcpStream) -> String {
+        stream
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
+        let mut request = Vec::new();
+        let mut buffer = [0; 1024];
+        while !request.windows(4).any(|window| window == b"\r\n\r\n") {
+            let count = stream.read(&mut buffer).unwrap();
+            assert!(count > 0 && request.len() + count <= 16 * 1024);
+            request.extend_from_slice(&buffer[..count]);
+        }
+        String::from_utf8(request).unwrap()
+    }
+
+    /// 两个本地源实际执行跨主机 302，目标端记录完整请求头。
+    /// Two local origins exercise a real cross-host 302 and record destination headers.
+    #[test]
+    fn cross_host_redirect_does_not_forward_authorization() {
+        let source = TcpListener::bind("127.0.0.1:0").unwrap();
+        let target = TcpListener::bind("127.0.0.1:0").unwrap();
+        let source_url = format!("http://{}/start", source.local_addr().unwrap());
+        let target_url = format!(
+            "http://localhost:{}/finish",
+            target.local_addr().unwrap().port()
+        );
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let redirect = thread::spawn(move || {
+            let (mut stream, _) = source.accept().unwrap();
+            assert!(
+                request_headers(&mut stream)
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer fixture-token")
+            );
+            write!(stream, "HTTP/1.1 302 Found\r\nLocation: {target_url}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").unwrap();
+        });
+        let destination = thread::spawn(move || {
+            let (mut stream, _) = target.accept().unwrap();
+            sender.send(request_headers(&mut stream)).unwrap();
+            write!(
+                stream,
+                "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok"
+            )
+            .unwrap();
+        });
+        let client = Client::builder()
+            .no_proxy()
+            .redirect(redirect_policy())
+            .timeout(Duration::from_secs(5))
+            .build()
+            .unwrap();
+        assert_eq!(
+            client
+                .get(source_url)
+                .bearer_auth("fixture-token")
+                .send()
+                .unwrap()
+                .text()
+                .unwrap(),
+            "ok"
+        );
+        let received = receiver.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(received.starts_with("GET /finish HTTP/1.1\r\n"));
+        assert!(!received.to_ascii_lowercase().contains("authorization:"));
+        redirect.join().unwrap();
+        destination.join().unwrap();
+    }
+
+    /// 固定 API 域经本地解析模拟重定向，生产策略保留 302 并停止发送令牌。
+    /// Resolves the fixed API host locally and confirms production policy stops at its 302 response.
+    #[test]
+    fn api_redirect_policy_stops_before_another_origin() {
+        let source = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = source.local_addr().unwrap();
+        let worker = thread::spawn(move || {
+            let (mut stream, _) = source.accept().unwrap();
+            assert!(
+                request_headers(&mut stream)
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer api-fixture-token")
+            );
+            write!(stream, "HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:1/must-not-follow\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").unwrap();
+        });
+        let client = Client::builder()
+            .no_proxy()
+            .resolve("api.github.com", address)
+            .redirect(redirect_policy())
+            .timeout(Duration::from_secs(5))
+            .build()
+            .unwrap();
+        let response = client
+            .get(format!(
+                "http://api.github.com:{}/repos/921108257/ling/releases",
+                address.port()
+            ))
+            .bearer_auth("api-fixture-token")
+            .send()
+            .unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::FOUND);
+        worker.join().unwrap();
+    }
+
+    /// 包、校验表或证明任一失真均不得进入安装阶段，即使本机缺少外部验证器。
+    /// Corrupt packages, forged checksums and invalid proofs never reach installation, even without a verifier.
+    #[test]
+    fn verification_failures_leave_installed_files_unchanged() {
+        let trusted = b"trusted release";
+        let forged = b"altered release";
+        let trusted_hash = format!("{:x}", Sha256::digest(trusted));
+        let forged_hash = format!("{:x}", Sha256::digest(forged));
+        let wrong_credential = br#"{"mediaType":"application/vnd.dev.sigstore.bundle.v0.3+json","verificationMaterial":{"certificate":{"rawBytes":"wrong-repository"}},"dsseEnvelope":{"payloadType":"application/vnd.in-toto+json","payload":"e30=","signatures":[]}}"#;
+        for (case, package_body, expected, proof_body, declared_proof_size, expected_error) in [
+            (
+                "tampered-asset",
+                forged.as_slice(),
+                trusted_hash.as_str(),
+                b"{}".as_slice(),
+                2,
+                "LOCAL_UPDATE_CHECKSUM",
+            ),
+            (
+                "forged-checksum-and-proof",
+                forged.as_slice(),
+                forged_hash.as_str(),
+                b"{}".as_slice(),
+                2,
+                "LOCAL_UPDATE_PROVENANCE",
+            ),
+            (
+                "truncated-proof",
+                trusted.as_slice(),
+                trusted_hash.as_str(),
+                b"{".as_slice(),
+                8,
+                "LOCAL_UPDATE_PROVENANCE",
+            ),
+            (
+                "mismatched-credential",
+                trusted.as_slice(),
+                trusted_hash.as_str(),
+                wrong_credential.as_slice(),
+                wrong_credential.len() as u64,
+                "LOCAL_UPDATE_PROVENANCE",
+            ),
+            (
+                "missing-proof",
+                trusted.as_slice(),
+                trusted_hash.as_str(),
+                b"".as_slice(),
+                1,
+                "LOCAL_UPDATE_PROVENANCE",
+            ),
+        ] {
+            let directory = tempfile::tempdir().unwrap();
+            let installed = directory.path().join("installed-ling");
+            let cli = directory.path().join("installed-ling-cli");
+            let config = directory.path().join("ling.toml");
+            for path in [&installed, &cli, &config] {
+                fs::write(path, "unchanged installation").unwrap();
+            }
+            let (package_url, package_worker) = response(package_body);
+            let package = Asset {
+                name: "package.zip".into(),
+                browser_download_url: package_url,
+                size: package_body.len() as u64,
+            };
+            // 摘要失败后不会获取证明，因此仅为可通过摘要的情形启动证明服务器。
+            // A digest failure never fetches proof, so start that server only after matching package digests.
+            let proof_response =
+                (expected_error != "LOCAL_UPDATE_CHECKSUM").then(|| response(proof_body));
+            let proof = Asset {
+                name: "package.zip.sigstore.json".into(),
+                browser_download_url: proof_response.as_ref().map_or_else(
+                    || "http://127.0.0.1:1/unreachable".into(),
+                    |(url, _)| url.clone(),
+                ),
+                size: declared_proof_size,
+            };
+            let client = Client::builder()
+                .no_proxy()
+                .redirect(redirect_policy())
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap();
+            assert_eq!(
+                download_and_verify(
+                    &client,
+                    &package,
+                    &proof,
+                    &directory.path().join("package.zip"),
+                    expected,
+                    &Version::new(0, 1, 6)
+                ),
+                Err(expected_error),
+                "{case}"
+            );
+            package_worker.join().unwrap();
+            if let Some((_, worker)) = proof_response {
+                worker.join().unwrap();
+            }
+            for path in [&installed, &cli, &config] {
+                assert_eq!(
+                    fs::read_to_string(path).unwrap(),
+                    "unchanged installation",
+                    "{case}"
+                );
+            }
+        }
     }
 
     /// 真实下载路径验证字节数与摘要；校验失败不修改旁边的安装文件。
@@ -913,6 +1392,159 @@ mod tests {
         assert_eq!(fs::read_to_string(first).unwrap(), "new-binary");
         assert_eq!(fs::read_to_string(second).unwrap(), "new-binary");
         assert_eq!(fs::read_to_string(config).unwrap(), "keep configuration");
+    }
+
+    /// 子进程在指定替换边界立即退出，不运行析构或触及真实安装。
+    /// The isolated child exits at a replacement boundary without destructors or access to real installations.
+    #[cfg(unix)]
+    #[test]
+    fn portable_interruption_child() {
+        let Some(directory) = std::env::var_os("LING_TEST_RECOVERY_DIR") else {
+            return;
+        };
+        let directory = PathBuf::from(directory);
+        let boundary: usize = std::env::var("LING_TEST_RECOVERY_BOUNDARY")
+            .unwrap()
+            .parse()
+            .unwrap();
+        let files = ["ling", "ling-cli", "LICENSE", "THIRD-PARTY-NOTICES.txt"]
+            .map(|name| (directory.join(format!("new-{name}")), directory.join(name)));
+        replace_binaries_with_checkpoint(&files, |step| {
+            if step == boundary {
+                std::process::exit(71);
+            }
+        })
+        .unwrap();
+        panic!("interruption checkpoint not reached");
+    }
+
+    /// 每个替换边界中断后均拒绝报成功，并能恢复完整旧版及原有缺失声明。
+    /// Every interruption boundary blocks success and restores the entire old version, including absent notices.
+    #[cfg(unix)]
+    #[test]
+    fn portable_interruption_recovers_complete_previous_release() {
+        for boundary in 0..=4 {
+            let directory = tempfile::Builder::new()
+                .prefix("ling recovery ' space-")
+                .tempdir()
+                .unwrap();
+            for name in ["ling", "ling-cli", "LICENSE", "THIRD-PARTY-NOTICES.txt"] {
+                fs::write(directory.path().join(format!("new-{name}")), "new release").unwrap();
+                if name != "THIRD-PARTY-NOTICES.txt" {
+                    fs::write(directory.path().join(name), format!("old {name}")).unwrap();
+                }
+            }
+            fs::write(directory.path().join("ling.toml"), "user configuration").unwrap();
+            let outcome = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "update::tests::portable_interruption_child"])
+                .env("LING_TEST_RECOVERY_DIR", directory.path())
+                .env("LING_TEST_RECOVERY_BOUNDARY", boundary.to_string())
+                .output()
+                .unwrap();
+            assert_eq!(outcome.status.code(), Some(71), "{outcome:?}");
+            assert!(pending_portable_recovery(&directory.path().join("ling")).is_err());
+            let recovery = fs::read_dir(directory.path())
+                .unwrap()
+                .map(Result::unwrap)
+                .find(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with(".ling-update-recovery-")
+                })
+                .unwrap()
+                .path();
+            let manifest: serde_json::Value =
+                serde_json::from_slice(&fs::read(recovery.join("recovery.json")).unwrap()).unwrap();
+            assert_eq!(manifest.as_array().unwrap().len(), 4);
+            for _ in 0..2 {
+                let restored = Command::new("sh")
+                    .arg(recovery.join("restore.sh"))
+                    .output()
+                    .unwrap();
+                assert!(restored.status.success(), "{restored:?}");
+            }
+            for name in ["ling", "ling-cli", "LICENSE"] {
+                assert_eq!(
+                    fs::read_to_string(directory.path().join(name)).unwrap(),
+                    format!("old {name}")
+                );
+            }
+            assert!(!directory.path().join("THIRD-PARTY-NOTICES.txt").exists());
+            assert_eq!(
+                fs::read_to_string(directory.path().join("ling.toml")).unwrap(),
+                "user configuration"
+            );
+            pending_portable_recovery(&directory.path().join("ling")).unwrap();
+        }
+    }
+
+    /// 正常便携提交同时刷新两个程序与声明，并保留用户配置。
+    /// A normal portable commit refreshes both programs and notices while retaining configuration.
+    #[cfg(unix)]
+    #[test]
+    fn portable_replacement_refreshes_release_notices() {
+        use std::os::unix::fs::PermissionsExt;
+        let directory = tempfile::tempdir().unwrap();
+        let files = ["ling", "ling-cli", "LICENSE", "THIRD-PARTY-NOTICES.txt"].map(|name| {
+            let target = directory.path().join(name);
+            let source = directory.path().join(format!("new-{name}"));
+            fs::write(&source, format!("new {name}")).unwrap();
+            if name != "THIRD-PARTY-NOTICES.txt" {
+                fs::write(&target, "old version").unwrap();
+            }
+            (source, target)
+        });
+        let config = directory.path().join("ling.toml");
+        fs::write(&config, "user configuration").unwrap();
+        replace_binaries(&files).unwrap();
+        for (index, (source, target)) in files.iter().enumerate() {
+            assert_eq!(fs::read(source).unwrap(), fs::read(target).unwrap());
+            assert_eq!(
+                fs::metadata(target).unwrap().permissions().mode() & 0o777,
+                if index < 2 { 0o755 } else { 0o644 }
+            );
+        }
+        assert_eq!(fs::read_to_string(config).unwrap(), "user configuration");
+        pending_portable_recovery(&files[0].1).unwrap();
+    }
+
+    /// 已替换第一个程序后发生应用失败，仍恢复所有旧程序和声明。
+    /// An apply failure after the first replacement restores every prior program and notice.
+    #[cfg(unix)]
+    #[test]
+    fn portable_apply_failure_restores_all_previous_release_files() {
+        let directory = tempfile::tempdir().unwrap();
+        let files = ["ling", "ling-cli", "LICENSE", "THIRD-PARTY-NOTICES.txt"].map(|name| {
+            let source = directory.path().join(format!("new-{name}"));
+            let target = directory.path().join(name);
+            fs::write(&source, "new release").unwrap();
+            fs::write(&target, format!("old {name}")).unwrap();
+            (source, target)
+        });
+        let result = replace_binaries_with_checkpoint(&files, |boundary| {
+            if boundary == 1 {
+                let recovery = fs::read_dir(directory.path())
+                    .unwrap()
+                    .map(Result::unwrap)
+                    .find(|entry| {
+                        entry
+                            .file_name()
+                            .to_string_lossy()
+                            .starts_with(".ling-update-recovery-")
+                    })
+                    .unwrap();
+                fs::remove_file(recovery.path().join("new-1")).unwrap();
+            }
+        });
+        assert!(result.is_err());
+        for (_, target) in &files {
+            assert_eq!(
+                fs::read_to_string(target).unwrap(),
+                format!("old {}", target.file_name().unwrap().to_string_lossy())
+            );
+        }
+        pending_portable_recovery(&files[0].1).unwrap();
     }
 
     /// 所有进度消息都有七语译文且不含开发说明。

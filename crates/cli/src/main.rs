@@ -519,13 +519,13 @@ async fn run_input(
             break;
         }
     }
-    if let Some(mut client) = client {
-        if !client.is_closed() {
-            client
-                .close()
-                .await
-                .map_err(|error| sdk_error(&error, language, Context::Client))?;
-        }
+    if let Some(mut client) = client
+        && !client.is_closed()
+    {
+        client
+            .close()
+            .await
+            .map_err(|error| sdk_error(&error, language, Context::Client))?;
     }
     Ok(success)
 }
@@ -645,12 +645,12 @@ fn sdk_error(error: &ling_client::Error, language: Language, context: Context) -
 /// CONFIG 子操作只有白名单名称可进入诊断上下文，其余参数不进入文本。
 /// Only allowlisted CONFIG subcommands enter diagnostic context; other arguments never enter text.
 fn request_topic(request: &ling_protocol::Request) -> String {
-    if request.command == "CONFIG" {
-        if let Some(ling_client::Value::String(subcommand)) = request.arguments.first() {
-            let subcommand = subcommand.to_ascii_uppercase();
-            if matches!(subcommand.as_str(), "GET" | "SET" | "RELOAD") {
-                return format!("CONFIG {subcommand}");
-            }
+    if request.command == "CONFIG"
+        && let Some(ling_client::Value::String(subcommand)) = request.arguments.first()
+    {
+        let subcommand = subcommand.to_ascii_uppercase();
+        if matches!(subcommand.as_str(), "GET" | "SET" | "RELOAD") {
+            return format!("CONFIG {subcommand}");
         }
     }
     request.command.clone()

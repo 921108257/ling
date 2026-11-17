@@ -4,9 +4,9 @@ ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 �
 
 [官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-当前版本为 **0.1.5 预发布版**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
+当前源码为 **0.1.6 开发版**，已发布版本为 **0.1.5 Preview**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
-0.1.5 已完成本轮可观测性、可复现测量与五平台构建；交付范围、实测结果和顺延项见 [版本计划](docs/version/v0.1.5-preview.md)。
+0.1.6 正在实现来源证明、升级验证和原生安装验收，范围与结果见 [版本计划](docs/version/v0.1.6-preview.md)。已发布 0.1.5 的可观测性和测量证据保留于 [0.1.5 计划](docs/version/v0.1.5-preview.md)。
 
 ## 安装
 
@@ -81,7 +81,7 @@ ling update --stable
 
 默认包含预发布版，`--stable` 只选择正式版；指定版本不能降级。Linux / macOS 的系统安装包使用 `sudo ling update` 安装更新，检查更新不需要 sudo。**0.1.2 尚无内置更新，请先手动安装 0.1.3。**
 
-Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。便携更新替换 `ling` 和 `ling-cli`，保留配置；手动启动的进程需自行停止并重新启动。详细步骤见 [安装指南](docs/install.md)。
+Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。0.1.6 便携更新同时刷新两个程序与许可声明，保留配置；手动启动的进程需自行停止并重新启动。0.1.6 更新器还要求 GitHub CLI 2.97.0+，验证来源证明失败时拒绝安装，独立验证与恢复步骤见 [安装指南](docs/install.md)。
 
 ## 配置与认证
 
@@ -139,7 +139,7 @@ ling 使用自定义二进制协议，不兼容 Redis；仅支持独立单机服
 <details>
 <summary>贡献者：源码构建、测试与文档维护</summary>
 
-需要 Rust 2024 工具链，最低 Rust 1.85。在仓库根目录构建并启动服务：
+需要 Rust 2024 工具链，最低 Rust 1.88。在仓库根目录构建并启动服务：
 
 ```sh
 cargo build --workspace

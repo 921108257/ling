@@ -35,7 +35,7 @@ struct Installer {
     install_dir: PathBuf,
 }
 
-/// 便携二进制与预先计算的摘要；Portable binary and its precomputed digest.
+/// 便携发行成员与预先计算的摘要；Portable release member and its precomputed digest.
 #[derive(Serialize)]
 struct Binary {
     source: PathBuf,
@@ -64,8 +64,8 @@ pub(super) fn schedule(
     Ok(plan.with_file_name("result.json"))
 }
 
-/// 来源必须位于本次工作目录，目标只能是当前安装的两个二进制。
-/// Sources must belong to this update workspace and targets are limited to the current installation's two binaries.
+/// 来源必须位于本次工作目录，目标限于两个程序和根目录的许可声明。
+/// Sources belong to this workspace; targets are limited to two programs and root license notices.
 fn prepare(
     workspace: &Path,
     current: &Path,
@@ -77,6 +77,14 @@ fn prepare(
     let workspace = fs::canonicalize(workspace)?;
     let current = fs::canonicalize(current)?;
     let directory = current.parent().ok_or_else(invalid)?;
+    let release_root = if directory
+        .file_name()
+        .is_some_and(|name| name.to_string_lossy().eq_ignore_ascii_case("bin"))
+    {
+        directory.parent().ok_or_else(invalid)?
+    } else {
+        directory
+    };
     if expected_current_sha256.len() != 64
         || !expected_current_sha256
             .bytes()
@@ -124,10 +132,25 @@ fn prepare(
         let source = fs::canonicalize(source)?;
         let parent = target.parent().ok_or_else(invalid)?;
         let name = target.file_name().ok_or_else(invalid)?;
+        let name_text = name.to_string_lossy();
+        let expected_parent = if ["ling.exe", "ling-cli.exe"]
+            .iter()
+            .any(|allowed| name_text.eq_ignore_ascii_case(allowed))
+        {
+            directory
+        } else if ["LICENSE", "THIRD-PARTY-NOTICES.txt"]
+            .iter()
+            .any(|allowed| name_text.eq_ignore_ascii_case(allowed))
+        {
+            release_root
+        } else {
+            return Err(invalid());
+        };
         if !source.starts_with(&workspace)
-            || fs::canonicalize(parent)? != directory
-            || !(name.to_string_lossy().eq_ignore_ascii_case("ling.exe")
-                || name.to_string_lossy().eq_ignore_ascii_case("ling-cli.exe"))
+            || fs::canonicalize(parent)? != expected_parent
+            || target
+                .symlink_metadata()
+                .is_ok_and(|metadata| !metadata.is_file())
             || prepared.iter().any(|binary: &Binary| {
                 binary.target.file_name().is_some_and(|prior| {
                     prior
@@ -141,7 +164,7 @@ fn prepare(
         prepared.push(Binary {
             sha256: digest(&source)?,
             source: ordinary_path(&source)?,
-            target: ordinary_path(&directory.join(name))?,
+            target: ordinary_path(&expected_parent.join(name))?,
         });
     }
     let plan = workspace.join("plan.json");
@@ -160,7 +183,19 @@ fn prepare(
     fs::write(workspace.join("apply.ps1"), SCRIPT)?;
     fs::write(
         workspace.join("result.json"),
-        b"{\"status\":\"scheduled\",\"code\":null,\"phase\":\"handoff\"}\n",
+        serde_json::to_vec(&serde_json::json!({
+            "status": "scheduled",
+            "code": null,
+            "phase": "handoff",
+            "helper_pid": null,
+            "installer_pid": null,
+            "installer_started": false,
+            "updated_at_unix_ms": std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_err(io::Error::other)?
+                .as_millis(),
+        }))
+        .map_err(io::Error::other)?,
     )?;
     ordinary_path(&plan)
 }
@@ -247,7 +282,12 @@ mod tests {
             .tempdir()
             .unwrap();
         let mut binaries = Vec::new();
-        for name in ["ling.exe", "ling-cli.exe"] {
+        for name in [
+            "ling.exe",
+            "ling-cli.exe",
+            "LICENSE",
+            "THIRD-PARTY-NOTICES.txt",
+        ] {
             let source = workspace.path().join(name);
             let target = install.path().join(name);
             fs::write(&source, format!("new {name}")).unwrap();
@@ -264,14 +304,14 @@ mod tests {
         let deadline = Instant::now() + Duration::from_secs(20);
         loop {
             let status = child.try_wait().unwrap();
-            if let Some(value) = read_result(plan) {
-                if matches!(
+            if let Some(value) = read_result(plan)
+                && matches!(
                     value["status"].as_str(),
                     Some("success" | "failed" | "unknown")
-                ) {
-                    child.wait().unwrap();
-                    return value;
-                }
+                )
+            {
+                child.wait().unwrap();
+                return value;
             }
             assert!(
                 status.is_none(),
@@ -299,8 +339,8 @@ mod tests {
         }
     }
 
-    /// 便携更新仅替换发行二进制，不修改配置。
-    /// Portable updates replace only distribution binaries and preserve configuration.
+    /// 便携更新同时刷新程序与许可声明，不修改配置。
+    /// Portable updates refresh programs and license notices together while preserving configuration.
     #[test]
     fn portable_apply_preserves_configuration() {
         let (workspace, install, current, binaries) = fixture();
@@ -316,6 +356,9 @@ mod tests {
         .unwrap();
         let mut child = launch(&plan).unwrap();
         let completed = result(&plan, &mut child);
+        assert!(completed["helper_pid"].as_u64().unwrap() > 0);
+        assert!(completed["updated_at_unix_ms"].as_u64().unwrap() > 0);
+        assert_eq!(completed["installer_started"], false);
         assert_eq!(
             completed["status"],
             "success",
@@ -433,7 +476,7 @@ mod tests {
                 fs::read_to_string(&binaries[1].1).unwrap(),
                 "old ling-cli.exe"
             );
-            assert_eq!(fs::read_dir(install.path()).unwrap().count(), 3);
+            assert_eq!(fs::read_dir(install.path()).unwrap().count(), 5);
         }
     }
 
@@ -510,6 +553,133 @@ mod tests {
             "another native update"
         );
         fs::remove_file(lock_path).unwrap();
+    }
+
+    /// 原生启动前失败可确认未改动；启动后失败或超时保留未知状态和防重试标记。
+    /// Prelaunch failures confirm no changes; postlaunch failures and timeout remain unknown and block retries.
+    #[test]
+    fn native_start_failure_and_started_failure_have_distinct_results() {
+        for outcome in ["cancelled", "failed", "timeout"] {
+            let workspace = tempfile::tempdir().unwrap();
+            let install = tempfile::tempdir().unwrap();
+            let bin = install.path().join("bin");
+            fs::create_dir(&bin).unwrap();
+            let current = bin.join("ling.exe");
+            fs::write(&current, "old native").unwrap();
+            let installer = workspace.path().join("not-an-installer.exe");
+            fs::write(&installer, "never execute this placeholder").unwrap();
+            let plan = prepare(
+                workspace.path(),
+                &current,
+                &digest(&current).unwrap(),
+                Some((&installer, &digest(&installer).unwrap())),
+                &[],
+                0,
+            )
+            .unwrap();
+            // 固定测试桩拦截进程创建，不触发 UAC 或真实安装器。
+            // A fixed stub intercepts process creation without UAC or a real installer.
+            let stub = if outcome == "cancelled" {
+                "function Start-Process { throw 'simulated UAC cancellation' }\n".to_owned()
+            } else {
+                format!(
+                    "function Start-Process {{\n$p = New-Object PSObject -Property @{{ Id = 12345; StartTime = [DateTime]::UtcNow; ExitCode = 7 }}\n$p | Add-Member ScriptMethod WaitForExit {{ {} }}\n$p | Add-Member ScriptMethod Refresh {{ }}\nreturn $p\n}}\n",
+                    if outcome == "timeout" {
+                        "$false"
+                    } else {
+                        "$true"
+                    }
+                )
+            };
+            let script = SCRIPT.replacen(
+                "$ErrorActionPreference = 'Stop'",
+                &format!("$ErrorActionPreference = 'Stop'\n{stub}"),
+                1,
+            );
+            let script = if outcome == "timeout" {
+                script.replace(".AddMinutes(10)", ".AddSeconds(-1)")
+            } else {
+                script
+            };
+            fs::write(plan.with_file_name("apply.ps1"), script).unwrap();
+            let contents: serde_json::Value =
+                serde_json::from_slice(&fs::read(&plan).unwrap()).unwrap();
+            let lock = PathBuf::from(contents["lock_path"].as_str().unwrap());
+            let pending = PathBuf::from(format!("{}.pending.json", lock.display()));
+            let mut child = launch(&plan).unwrap();
+            let completed = result(&plan, &mut child);
+            assert_eq!(fs::read_to_string(&current).unwrap(), "old native");
+            if outcome == "cancelled" {
+                assert_eq!(completed["status"], "failed", "{completed}");
+                assert_eq!(completed["phase"], "installer-start");
+                assert_eq!(completed["rollback_complete"], true);
+                assert_eq!(completed["installer_started"], false);
+                assert!(!pending.exists());
+            } else {
+                assert_eq!(completed["status"], "unknown", "{completed}");
+                assert!(completed["rollback_complete"].is_null());
+                assert_eq!(completed["installer_started"], true);
+                assert_eq!(completed["installer_pid"], 12345);
+                assert!(pending.exists());
+                // 相同计划再次执行也不得绕过尚未确认的原生安装结果。
+                // Replaying the plan cannot bypass an unconfirmed native installation result.
+                fs::write(
+                    plan.with_file_name("result.json"),
+                    b"{\"status\":\"scheduled\"}",
+                )
+                .unwrap();
+                let mut child = launch(&plan).unwrap();
+                let repeated = result(&plan, &mut child);
+                assert_eq!(repeated["phase"], "installer-pending");
+                assert_eq!(repeated["code"], "LOCAL_UPDATE_PENDING");
+                fs::remove_file(pending).unwrap();
+            }
+            fs::remove_file(lock).unwrap();
+        }
+    }
+
+    /// 二进制目录与根目录声明同时更新，额外路径被白名单拒绝。
+    /// Updates bin programs and root notices together while rejecting paths outside the whitelist.
+    #[test]
+    fn portable_bin_layout_updates_root_notices() {
+        let (workspace, install, _, mut binaries) = fixture();
+        let bin = install.path().join("bin");
+        fs::create_dir(&bin).unwrap();
+        for (_, target) in binaries.iter_mut().take(2) {
+            let moved = bin.join(target.file_name().unwrap());
+            fs::rename(&*target, &moved).unwrap();
+            *target = moved;
+        }
+        // 旧发行版可能未携带声明，新版应创建该白名单文件。
+        // An older release may lack a notice; create the new whitelisted file.
+        fs::remove_file(&binaries[3].1).unwrap();
+        let current = binaries[0].1.clone();
+        let plan = prepare(
+            workspace.path(),
+            &current,
+            &digest(&current).unwrap(),
+            None,
+            &binaries,
+            0,
+        )
+        .unwrap();
+        let mut child = launch(&plan).unwrap();
+        assert_eq!(result(&plan, &mut child)["status"], "success");
+        for (source, target) in &binaries {
+            assert_eq!(fs::read(source).unwrap(), fs::read(target).unwrap());
+        }
+        binaries[2].1 = bin.join("LICENSE");
+        assert!(
+            prepare(
+                workspace.path(),
+                &current,
+                &digest(&current).unwrap(),
+                None,
+                &binaries,
+                0
+            )
+            .is_err()
+        );
     }
 
     /// 等待已知父进程退出后才更新；仅启动读取标准输入的隔离测试进程。

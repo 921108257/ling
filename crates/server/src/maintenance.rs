@@ -54,18 +54,16 @@ pub(crate) async fn run(
             }
             // 即使到期记账遇到容量限制，保留清理仍可让后续重试恢复。
             // Retention cleanup can unblock later retries even when expiry accounting is capacity-limited.
-            if compact {
-                if let Some(events) = engine.events() {
-                    let now = std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .map_err(|_| {
-                            ling_types::DbError::new(
-                                ling_types::ErrorCode::Busy,
-                                "System clock unavailable",
-                            )
-                        })?;
-                    events.maintain(now.as_millis().min(u128::from(u64::MAX)) as u64)?;
-                }
+            if compact && let Some(events) = engine.events() {
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map_err(|_| {
+                        ling_types::DbError::new(
+                            ling_types::ErrorCode::Busy,
+                            "System clock unavailable",
+                        )
+                    })?;
+                events.maintain(now.as_millis().min(u128::from(u64::MAX)) as u64)?;
             }
             engine.expire_due(budget)
         })

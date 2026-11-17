@@ -23,7 +23,7 @@ pub fn is_value_argument(command: &str, index: usize) -> bool {
         "MSET" => index % 2 == 1,
         "LPUSH" | "RPUSH" | "SADD" | "SREM" | "SISMEMBER" | "SMISMEMBER" => index >= 1,
         "LSET" | "LREM" => index == 2,
-        "FSET" | "FSETNX" => index >= 2 && index % 2 == 0,
+        "FSET" | "FSETNX" => index >= 2 && index.is_multiple_of(2),
         _ => false,
     }
 }

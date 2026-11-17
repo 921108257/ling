@@ -111,6 +111,7 @@ fn updater(locale: &str) -> Command {
 /// 非法版本和降级在任何网络进度输出前拒绝，七语诊断保留正确更新指导。
 /// Invalid versions and downgrades fail before network progress output, retaining update guidance in seven locales.
 #[test]
+#[cfg(feature = "self-update")]
 fn invalid_update_versions_fail_before_download_and_config_loading() {
     for (locale, examples) in [
         ("en-US", "Usage examples"),
@@ -133,6 +134,25 @@ fn invalid_update_versions_fail_before_download_and_config_loading() {
             assert!(!text.contains("private-update"));
             assert!(!text.contains("ling --config"));
         }
+    }
+}
+
+/// 禁用构建在网络和配置加载前给出明确原因；Disabled builds explain the missing feature before any I/O.
+#[test]
+#[cfg(not(feature = "self-update"))]
+fn disabled_update_has_explicit_local_diagnostic() {
+    for arguments in [
+        vec!["--check"],
+        vec!["--version", "0.0.0"],
+        vec!["--stable"],
+    ] {
+        let text = error(
+            updater("en-US").args(arguments).output().unwrap(),
+            "LOCAL_UPDATE_DISABLED",
+            "Usage examples",
+        );
+        assert!(text.contains("self-update"));
+        assert!(!text.contains("private-update"));
     }
 }
 

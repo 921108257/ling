@@ -9,6 +9,12 @@ rust-version.workspace = true
 name = "ling"
 path = "src/main.rs"
 
+[features]
+default = ["self-update"]
+# 官方发行版保留更新；源码部署可省去仅更新器使用的依赖。
+# Official packages retain updates; source deployments can omit updater-only dependencies.
+self-update = ["dep:reqwest", "dep:semver", "dep:tempfile", "dep:flate2", "dep:tar", "dep:zip"]
+
 [dependencies]
 ling-cli-help.workspace = true
 ling-types.workspace = true
@@ -24,14 +30,14 @@ toml.workspace = true
 clap.workspace = true
 serde_json.workspace = true
 fs2.workspace = true
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+reqwest = { version = "0.12", optional = true, default-features = false, features = ["blocking", "rustls-tls"] }
 sha2 = "0.10"
 subtle = "2.6"
-semver = "1"
-tempfile = "3"
-flate2 = "1"
-tar = "0.4"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+semver = { version = "1", optional = true }
+tempfile = { version = "3", optional = true }
+flate2 = { version = "1", optional = true }
+tar = { version = "0.4", optional = true }
+zip = { version = "9.6.1", optional = true, default-features = false, features = ["deflate-flate2"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rustix = { version = "1.1", default-features = false, features = ["time"] }

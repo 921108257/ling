@@ -47,7 +47,7 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.value }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - id: matrix
@@ -86,14 +86,17 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           path: tooling
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ matrix.revision }}
           path: measured
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable action; Rust version pinned below
+        with:
+          toolchain: 1.94.0
+      - run: rustc --version --verbose
       - name: Validate measurement contracts
         run: python3 -B -m unittest discover -s tooling/benchmarks -p 'test_v015.py' -v
       - name: Measure clean source with recorded driver overlay
@@ -102,7 +105,7 @@ jobs:
         run: |
           python3 tooling/benchmarks/v015.py "$RUNNER_TEMP/measurements" \
             --source-root measured --suite "$SUITE" --seed 20261117
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: benchmarks-${{ matrix.label }}-${{ inputs.suite }}-${{ github.run_id }}

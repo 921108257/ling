@@ -1,0 +1,40 @@
+{
+  "rust": {
+    "version": "1.94.0",
+    "msrv": "1.88.0"
+  },
+  "tools": {
+    "nfpm": {
+      "version": "2.49.0",
+      "repository": "goreleaser/nfpm",
+      "tag": "v2.49.0",
+      "output": "nfpm.tar.gz",
+      "assets": {
+        "x86_64": {
+          "name": "nfpm_2.49.0_Linux_x86_64.tar.gz",
+          "sha256": "2afaa5ffb5e3493402e31e7c67a5a1fb42133e3f66fc315ca0051934125561c7"
+        },
+        "aarch64": {
+          "name": "nfpm_2.49.0_Linux_arm64.tar.gz",
+          "sha256": "d4eee71839e92c68cbd3b101640bad32d2856fc551acae0635be9118e48c9d9c"
+        }
+      }
+    },
+    "appimagetool": {
+      "version": "1.9.1",
+      "repository": "AppImage/appimagetool",
+      "tag": "1.9.1",
+      "output": "appimagetool",
+      "assets": {
+        "x86_64": {
+          "name": "appimagetool-x86_64.AppImage",
+          "sha256": "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+        },
+        "aarch64": {
+          "name": "appimagetool-aarch64.AppImage",
+          "sha256": "f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158"
+        }
+      }
+    }
+  }
+}
