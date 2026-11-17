@@ -145,6 +145,26 @@ public final class Contracts {
         } else
           check(client.execute(row[1], values).equals(Codec.decodeValue(unhex(row[3]))), row[0]);
       }
+      // 三语言共用 INFO 字段类型，动态计数不经 JSON。 Shared INFO types retain dynamic counters without JSON.
+      Value info = client.execute("INFO");
+      for (String[] row : lines(fixtures, "info-fields.tsv")) {
+        Value value = info.fields().get(row[0]).fields().get(row[1]);
+        boolean valid =
+            switch (row[2]) {
+              case "UInt" -> value.kind() == Value.Kind.UINT;
+              case "Bool" -> value.kind() == Value.Kind.BOOL;
+              case "Float" -> value.kind() == Value.Kind.FLOAT;
+              case "UIntOrNull" -> value.kind() == Value.Kind.UINT || value.kind() == Value.Kind.NULL;
+              case "FloatOrNull" -> value.kind() == Value.Kind.FLOAT || value.kind() == Value.Kind.NULL;
+              case "Histogram" -> value.kind() == Value.Kind.MAP
+                  && value.fields().get("count").kind() == Value.Kind.UINT
+                  && value.fields().get("sum").kind() == Value.Kind.UINT
+                  && ((List<?>) value.fields().get("bounds").data()).size() == 6
+                  && ((List<?>) value.fields().get("buckets").data()).size() == 7;
+              default -> false;
+            };
+        check(valid, "INFO " + row[0] + "." + row[1]);
+      }
       for (String[] row : lines(fixtures, "values.tsv")) {
         Value value = Codec.decodeValue(unhex(row[1])), key = Value.string("java:" + row[0]);
         client.execute("SET", key, value);

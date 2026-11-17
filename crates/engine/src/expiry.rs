@@ -84,6 +84,19 @@ impl Engine {
             .len())
     }
 
+    /// 本进程由到期维护实际回收的累计条目数，饱和而不回绕。
+    /// Cumulative entries actually reclaimed by expiry maintenance in this process, saturating without wrapping.
+    /// 即使同批次后续失败也保留已提交回收；不含读路径过期、显式删除或旧定时项清理。
+    /// Includes committed reclamations before a later batch error; excludes read-path expiry, explicit deletion and stale timer cleanup.
+    /// 预算锁中毒时返回 ERR_BUSY；Returns ERR_BUSY when the budget lock is poisoned.
+    pub fn maintenance_reclaimed(&self) -> Result<u64, DbError> {
+        Ok(self
+            .budget
+            .lock()
+            .map_err(|_| unavailable())?
+            .reclaimed_by_maintenance)
+    }
+
     /// 最多检查 limit 个到期候选并返回回收数；零预算不执行任何工作。
     /// Checks at most limit due candidates and returns the reclaimed count; a zero budget does no work.
     /// 不持提交锁等待分片锁；事件禁用时直接回收，逻辑可见性始终由读路径保证。
@@ -153,6 +166,7 @@ impl Transaction<'_> {
                 // Metadata came from this entry and the shard lock spans Journal commit and this callback, preventing removal in between.
                 let entry = self.guards[position].1.remove(&task.key).unwrap();
                 budget.memory -= entry.bytes;
+                budget.reclaimed_by_maintenance = budget.reclaimed_by_maintenance.saturating_add(1);
             }
             metadata.is_some()
         };

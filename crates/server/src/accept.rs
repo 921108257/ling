@@ -139,13 +139,16 @@ impl Throttle {
     }
 }
 
-/// 接入层内部计数与限频告警，不含地址、Key 或口令；对外指标放到 0.1.5，避免本版改动 INFO 契约。
-/// Internal accept-side counters and rate-limited warnings without addresses, keys or passwords; public metrics wait for 0.1.5 so this version leaves the INFO contract alone.
+/// 接入计数与限频告警，不含地址、Key 或口令。
+/// Accept counters and rate-limited warnings without addresses, keys or passwords.
 pub(crate) struct AcceptStats {
     /// 因连接上限被拒绝的连接累计数；Connections rejected at the connection limit.
     rejected: AtomicU64,
     /// accept 错误累计数，含已恢复的；Accept errors seen, including recovered ones.
     failures: AtomicU64,
+    /// 分监听器累计错误数，标签只取 data / metrics。
+    /// Per-listener cumulative errors, labelled only data / metrics.
+    listener_failures: [AtomicU64; 2],
     /// 连接任务 panic 累计数；Connection task panics seen.
     panics: AtomicU64,
     /// 连接拒绝告警；Connection-rejection warning.
@@ -168,6 +171,7 @@ impl AcceptStats {
         Self {
             rejected: AtomicU64::new(0),
             failures: AtomicU64::new(0),
+            listener_failures: std::array::from_fn(|_| AtomicU64::new(0)),
             reject_warning: Throttle::new(),
             data_warning: Throttle::new(),
             metrics_warning: Throttle::new(),
@@ -204,6 +208,7 @@ impl AcceptStats {
         warn: impl FnOnce(&str),
     ) {
         self.failures.fetch_add(1, Ordering::Relaxed);
+        self.listener_failures[usize::from(metrics)].fetch_add(1, Ordering::Relaxed);
         let (throttle, listener) = if metrics {
             (&self.metrics_warning, "Metrics")
         } else {
@@ -218,6 +223,17 @@ impl AcceptStats {
                 "{listener} listener accept error ({cause}); continuing"
             ));
         }
+    }
+
+    /// 拒绝、业务接入错误、指标接入错误与连接 panic；字段各自采样。
+    /// Rejections, business accept errors, metrics accept errors, and connection panics; sampled independently.
+    pub(crate) fn snapshot(&self) -> [u64; 4] {
+        [
+            self.rejected.load(Ordering::Relaxed),
+            self.listener_failures[0].load(Ordering::Relaxed),
+            self.listener_failures[1].load(Ordering::Relaxed),
+            self.panics.load(Ordering::Relaxed),
+        ]
     }
 
     /// 连接任务 panic 只终止该连接：每次都计数，告警限频，消息不含任务内容。
@@ -476,6 +492,7 @@ mod tests {
         stats.failed(false, &detailed, start, warn);
         stats.failed(true, &detailed, start, warn);
         assert_eq!(stats.failures.load(Ordering::Relaxed), 3);
+        assert_eq!(stats.snapshot(), [0, 2, 1, 0]);
         let seen = warnings.borrow();
         assert_eq!(seen.len(), 2);
         assert!(seen[0].starts_with("Business"), "{}", seen[0]);

@@ -233,6 +233,7 @@ fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
     let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
     store.commit(&[change("a", 0)], || ()).unwrap();
     let e = store.next(&sub, Instant::now()).unwrap().unwrap();
+    store.set_metrics_enabled(true).unwrap();
     store.fail_next_sync();
     let mut published = false;
     code(
@@ -247,6 +248,11 @@ fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
         ErrorCode::JournalUnavailable,
     );
     code(store.ack(&sub, e.id), ErrorCode::JournalUnavailable);
+    let stats = store.stats().unwrap();
+    assert_eq!(stats.committed, 1);
+    assert_eq!(stats.journal_errors, 1);
+    assert_eq!(stats.journal_fsync_duration_us.count, 1);
+    assert_eq!(stats.journal_transaction_bytes.count, 1);
     drop(store);
     // 完整但同步结果未知的记录可能幸存；A complete record with an unknown sync outcome may survive.
     let store = EventStore::open(dir.config(), 1, 1).unwrap();
@@ -800,4 +806,72 @@ fn maintenance_only_rewrites_when_retention_can_advance() {
     assert_eq!(fs::read(&path).unwrap(), retained);
     store.maintain(1500).unwrap();
     assert_eq!(store.stats().unwrap().oldest_retained_ms, None);
+}
+
+/// 压缩全流程计数与时延包含失败，文件和目录同步分开计数，重写不冒充追加事务。
+/// Full compaction counts and latency include failures; file and directory syncs count separately and rewrites are not append transactions.
+#[cfg(unix)]
+#[test]
+fn journal_metrics_preserve_compaction_and_recovery_boundaries() {
+    let dir = Directory::new();
+    let mut config = dir.config();
+    config.retention_ms = 100;
+    let store = EventStore::open(config.clone(), 1, 1).unwrap();
+    store.commit(&[change("first", 0)], || ()).unwrap();
+    let initial = store.stats().unwrap();
+    assert_eq!(initial.journal_fsync_duration_us.count, 0);
+    assert_eq!(initial.journal_transaction_bytes.count, 0);
+    store.set_metrics_enabled(true).unwrap();
+    store.commit(&[change("second", 0)], || ()).unwrap();
+    let appended = store.stats().unwrap();
+    assert_eq!(appended.journal_fsync_duration_us.count, 1);
+    assert_eq!(appended.journal_transaction_bytes.count, 1);
+    store.maintain(1099).unwrap();
+    assert_eq!(store.stats().unwrap().journal_compactions, 0);
+    store.maintain(1100).unwrap();
+    let compacted = store.stats().unwrap();
+    assert_eq!(compacted.journal_compactions, 1);
+    assert_eq!(compacted.journal_compaction_successes, 1);
+    assert_eq!(compacted.journal_compaction_failures, 0);
+    assert_eq!(compacted.journal_compaction_duration_us.count, 1);
+    assert_eq!(compacted.journal_fsync_duration_us.count, 3);
+    assert_eq!(
+        compacted.journal_transaction_bytes,
+        appended.journal_transaction_bytes
+    );
+    store.set_metrics_enabled(false).unwrap();
+    store.commit(&[change("third", 0)], || ()).unwrap();
+    store.maintain(1100).unwrap();
+    let disabled = store.stats().unwrap();
+    assert_eq!(disabled.journal_compactions, 2);
+    assert_eq!(disabled.journal_compaction_successes, 2);
+    assert_eq!(
+        disabled.journal_compaction_duration_us,
+        compacted.journal_compaction_duration_us
+    );
+    assert_eq!(
+        disabled.journal_fsync_duration_us,
+        compacted.journal_fsync_duration_us
+    );
+    assert_eq!(
+        disabled.journal_transaction_bytes,
+        appended.journal_transaction_bytes
+    );
+    drop(store);
+    let store = EventStore::open(config, 1, 1).unwrap();
+    assert_eq!(store.stats().unwrap().journal_compactions, 0);
+    assert_eq!(store.stats().unwrap().journal_fsync_duration_us.count, 0);
+    store.set_metrics_enabled(true).unwrap();
+    store.commit(&[change("fourth", 0)], || ()).unwrap();
+    let before = fs::read(dir.0.join("journal.lgj")).unwrap();
+    fs::create_dir(dir.0.join("journal.next")).unwrap();
+    code(store.maintain(1100), ErrorCode::JournalUnavailable);
+    let failed = store.stats().unwrap();
+    assert_eq!(failed.journal_compactions, 1);
+    assert_eq!(failed.journal_compaction_successes, 0);
+    assert_eq!(failed.journal_compaction_failures, 1);
+    assert_eq!(failed.journal_compaction_duration_us.count, 1);
+    assert_eq!(failed.journal_fsync_duration_us.count, 1);
+    assert_eq!(failed.oldest_retained_ms, Some(1000));
+    assert_eq!(fs::read(dir.0.join("journal.lgj")).unwrap(), before);
 }

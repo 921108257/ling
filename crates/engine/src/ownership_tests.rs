@@ -176,6 +176,74 @@ fn cross_shard_writes_have_fixed_order_and_atomic_observers() {
     }
 }
 
+/// 跨分片来回重命名时，协调观察者始终只看见一个完整条目。
+/// During cross-shard renames, coordinated observers always see exactly one complete entry.
+#[test]
+fn cross_shard_rename_is_atomic_to_observers() {
+    let engine = Arc::new(
+        Engine::new(
+            Config {
+                shard_count: 4,
+                ..Config::default()
+            },
+            11,
+        )
+        .unwrap(),
+    );
+    let (first, second) = distinct(&engine);
+    engine
+        .execute(
+            0,
+            "SET",
+            &[Value::String(first.clone()), Value::Int(7)],
+            4096,
+        )
+        .unwrap();
+    let other = engine.clone();
+    let keys = [first.clone(), second.clone()];
+    let start = Arc::new(std::sync::Barrier::new(2));
+    let ready = start.clone();
+    let (done, received) = mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        ready.wait();
+        for step in 0..1000 {
+            let from = step % 2;
+            other
+                .execute(
+                    0,
+                    "RENAME",
+                    &[
+                        Value::String(keys[from].clone()),
+                        Value::String(keys[1 - from].clone()),
+                    ],
+                    4096,
+                )
+                .unwrap();
+        }
+        done.send(()).unwrap();
+    });
+    start.wait();
+    for _ in 0..1000 {
+        let tx = engine
+            .lock(vec![
+                engine.location(0, &first).unwrap(),
+                engine.location(0, &second).unwrap(),
+            ])
+            .unwrap();
+        let now = std::time::Instant::now();
+        let values = [tx.entry(0, &first, now), tx.entry(0, &second, now)];
+        assert_eq!(values.iter().filter(|entry| entry.is_ok()).count(), 1);
+        assert_eq!(
+            values.into_iter().flatten().next().unwrap().value,
+            Value::Int(7)
+        );
+    }
+    received
+        .recv_timeout(Duration::from_secs(10))
+        .expect("rename lock-order deadlock");
+    worker.join().unwrap();
+}
+
 /// 双库互换时，另一个多库观察者始终看见完整的一对值。
 /// While databases swap, an observer locking both databases always sees a complete pair.
 #[test]

@@ -26,7 +26,7 @@ pub(crate) async fn run(
         let permit = tokio::select! {
             biased;
             _ = closing.changed() => return Ok(()),
-            permit = slots.clone().acquire_owned() => permit.map_err(|_| io::Error::other("Execution permits closed"))?,
+            permit = crate::telemetry::acquire(slots.clone(), 0, runtime.as_ref().map(|runtime| runtime.telemetry.clone()), true) => permit.map_err(|_| io::Error::other("Execution permits closed"))?,
         };
         if *closing.borrow() {
             return Ok(());
@@ -47,8 +47,11 @@ pub(crate) async fn run(
             }
         }
         let engine = engine.clone();
-        let result = tokio::task::spawn_blocking(move || {
-            let _permit = permit;
+        let metrics = runtime.as_ref().map(|runtime| runtime.telemetry.clone());
+        let result = crate::telemetry::blocking(permit, move || {
+            if let Some(metrics) = &metrics {
+                crate::telemetry::add(&metrics.maintenance_cycles, 1);
+            }
             // 即使到期记账遇到容量限制，保留清理仍可让后续重试恢复。
             // Retention cleanup can unblock later retries even when expiry accounting is capacity-limited.
             if compact {
@@ -135,12 +138,15 @@ mod tests {
             .unwrap();
         assert!(engine.memory_usage().unwrap() > 0);
         let (closing, receiver) = watch::channel(false);
+        let runtime = Arc::new(crate::operations::Runtime::new(Arc::new(
+            crate::Config::default(),
+        )));
         let task = tokio::spawn(run(
             engine.clone(),
             Arc::new(Semaphore::new(1)),
             1,
             receiver,
-            None,
+            Some(runtime.clone()),
         ));
         tokio::time::timeout(Duration::from_secs(2), async {
             while engine.memory_usage().unwrap() != 0 {
@@ -150,6 +156,14 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(engine.scheduled_expirations().unwrap(), 0);
+        assert_eq!(engine.maintenance_reclaimed().unwrap(), 1);
+        assert!(
+            runtime
+                .telemetry
+                .maintenance_cycles
+                .load(std::sync::atomic::Ordering::Relaxed)
+                > 0
+        );
         closing.send_replace(true);
         task.await.unwrap().unwrap();
     }
@@ -234,13 +248,48 @@ mod tests {
         let slots = Arc::new(Semaphore::new(0));
         let engine = Arc::new(Engine::new(ling_engine::Config::default(), 1).unwrap());
         let (closing, receiver) = watch::channel(false);
-        let task = tokio::spawn(run(engine, slots, 1, receiver, None));
-        tokio::time::sleep(Duration::from_millis(10)).await;
+        let runtime = Arc::new(crate::operations::Runtime::new(Arc::new(
+            crate::Config::default(),
+        )));
+        let task = tokio::spawn(run(engine, slots, 1, receiver, Some(runtime.clone())));
+        tokio::time::timeout(Duration::from_secs(2), async {
+            while runtime
+                .telemetry
+                .execution_queued
+                .load(std::sync::atomic::Ordering::Relaxed)
+                == 0
+            {
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(
+            runtime
+                .telemetry
+                .maintenance_deferred
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
         closing.send_replace(true);
         tokio::time::timeout(Duration::from_secs(1), task)
             .await
             .unwrap()
             .unwrap()
             .unwrap();
+        assert_eq!(
+            runtime
+                .telemetry
+                .execution_queued
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        assert_eq!(
+            runtime
+                .telemetry
+                .execution_wait_cancelled
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
     }
 }

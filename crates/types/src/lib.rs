@@ -4,10 +4,14 @@
 mod error;
 mod event;
 pub use event::{Event, EventKind};
+mod metrics;
 mod pattern;
 mod value;
 
 pub use error::{DbError, ErrorCode};
+pub use metrics::{
+    HistogramSnapshot, JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES, LATENCY_BUCKET_BOUNDS_US,
+};
 pub use pattern::key_pattern_matches;
 pub use value::{Float, Scalar, Value, ValueLimits};
 

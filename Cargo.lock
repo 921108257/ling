@@ -691,7 +691,7 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "ling-cli"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "ling-cli-help"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "sys-locale",
@@ -714,7 +714,7 @@ dependencies = [
 
 [[package]]
 name = "ling-client"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "ling-network",
  "ling-protocol",
@@ -725,7 +725,7 @@ dependencies = [
 
 [[package]]
 name = "ling-engine"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "ling-events",
  "ling-types",
@@ -734,7 +734,7 @@ dependencies = [
 
 [[package]]
 name = "ling-events"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "crc32fast",
  "fs2",
@@ -744,7 +744,7 @@ dependencies = [
 
 [[package]]
 name = "ling-network"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "ling-types",
  "rustls-pemfile",
@@ -755,7 +755,7 @@ dependencies = [
 
 [[package]]
 name = "ling-protocol"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "ling-types",
  "tokio",
@@ -763,7 +763,7 @@ dependencies = [
 
 [[package]]
 name = "ling-server"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "clap",
  "flate2",
@@ -777,6 +777,7 @@ dependencies = [
  "ling-types",
  "rand 0.9.5",
  "reqwest",
+ "rustix",
  "semver",
  "serde",
  "serde_json",
@@ -792,7 +793,7 @@ dependencies = [
 
 [[package]]
 name = "ling-types"
-version = "0.1.4"
+version = "0.1.5"
 
 [[package]]
 name = "linux-raw-sys"

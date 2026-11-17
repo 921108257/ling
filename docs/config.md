@@ -18,7 +18,7 @@ Windows 当前仅支持 Fast 模式；设置 `events.mode="reliable"` 会在打�
 
 AUTH 对输入与配置口令分别计算 SHA-256，再使用 `subtle` 常量时间比较两个固定长度摘要；不按原口令长度分支，也不逐字符提前返回。这不改变配置中的口令存储方式，摘要计算本身仍需处理完整输入。失败重新认证立即撤销已有认证状态。
 
-连接内连续错误口令的应答延迟依次为 100、200、400、800、1600 ms；实际延迟不超过启用的 request / idle 超时中较短者的一半。延迟是异步等待，不持有引擎执行许可。第五次连续失败仍返回原 `ERR_AUTH_FAILED` 响应，随后关闭该连接；成功认证清零次数。次数仅随连接保存，不建立源地址表，重新连接会重新计数。实例的失败告警最多每 60 秒一次，不记录口令或源地址，不增加 AUTH 专属 INFO / Prometheus 字段。
+连接内连续错误口令的应答延迟依次为 100、200、400、800、1600 ms；实际延迟不超过启用的 request / idle 超时中较短者的一半。延迟是异步等待，不持有引擎执行许可。第五次连续失败仍返回原 `ERR_AUTH_FAILED` 响应，随后关闭该连接；成功认证清零次数。次数仅随连接保存，不建立源地址表，重新连接会重新计数。实例的失败告警最多每 60 秒一次，不记录口令或源地址；每次错误口令计入 INFO clients.auth_failures 与 linger_auth_failures_total，成功认证不清零累计指标。
 
 启动时对「业务监听非回环且未认证」「启用认证但未启用 TLS」「Prometheus 监听非回环」分别告警；这些告警不会拒绝合法配置或改变默认设置。
 
@@ -132,7 +132,40 @@ TLS 使用 rustls；开启后该端口只接受 TLS。证书与私钥在绑定�
 
 日志使用配置的最低级别、text / JSON 格式及 stdout / stderr 输出；启动信息包含实际分片数、监听地址与事件模式，维护错误只记录稳定错误码，不输出请求参数。日志级别改变不增加当前未实现的逐命令追踪能力。
 
-Prometheus 是独立的明文 HTTP GET 端点，默认关闭。最多 16 个并发请求，头部最多 4096 字节、单次处理期限 5 秒；仅匹配 `metrics.path`。采样可能等待引擎执行权，超时会关闭连接。输出请求 / 错误 / 连接计数、请求时延固定桶、受管内存、TTL 队列、事件分类与聚合、Journal 字节与错误，不包含密码、Key、Value 或组名标签。此端点不承载业务协议的 AUTH / TLS，按配置监听地址部署。
+Prometheus 是独立的明文 HTTP GET 端点，默认关闭。最多 16 个并发请求，头部最多 4096 字节、单次处理期限 5 秒；仅匹配 `metrics.path`。采样可能等待引擎执行权，超时会关闭连接。此端点不承载业务协议的 AUTH / TLS，按配置监听地址部署。所有名称沿用 `linger_` 前缀；只允许固定 `kind`、`listener` 和直方图 `le` 标签，不包含密码、Key、Value、组名或地址。
+
+`metrics.enabled` 同时控制请求、执行许可等待与 Journal 的直方图采集，默认关闭。关闭时高频路径不为这些直方图读取时钟或采集样本；INFO 的 timing_enabled 为 false，启动后直方图 count / sum / buckets 均为零，廉价累计计数和当前数量仍更新。开关是启动配置，不可在线修改。INFO 字段及可用性见 [commands.md](commands.md#数据库与服务器)。
+
+以下名称均省略 `linger_` 前缀；累计计数自进程启动，不随抓取或 INFO 清零。执行统计覆盖数据、Batch、INFO / CONFIG、订阅 / ACK 和 TTL 维护共用的执行许可，不包含独立 HTTP 抓取并发许可。当前占用包含已交给阻塞线程池而尚未结束的任务；调用方取消不会提前归还，等待超时和取消会立即移除排队数。
+
+| 名称 | Prometheus 类型 / 单位 | 口径 |
+|---|---|---|
+| requests_total、errors_total | counter / 次 | 已完成业务请求及其中失败响应；保留原口径 |
+| request_duration_seconds | histogram / 秒 | 从合法命令开始处理到结果就绪，包含执行排队，不含帧接收和响应发送 |
+| execution_wait_seconds | histogram / 秒 | 每次许可取得尝试，包含立即取得、排队成功、等待超时、取消或许可池关闭 |
+| execution_occupied、execution_queued | gauge / 个 | 当前持有许可的任务、实际等待许可的任务 |
+| execution_wait_timeouts_total、execution_wait_cancelled_total | counter / 次 | 取得许可前的期限超时、调用方取消；许可池关闭不算调用方取消 |
+| maintenance_cycles_total | counter / 轮 | 已派发并开始运行的维护批次，失败批次也计数 |
+| maintenance_reclaimed_total | counter / 条 | expire_due 实际回收的缓存条目，失败批次的先前回收仍计入；不含旧定时项清理、读路径记账或清库 |
+| maintenance_deferred_total | counter / 次 | 维护轮次遇到许可忙而进入等待，每轮至多一次 |
+| accept_errors_total{listener="data"\|"metrics"} | counter / 次 | 对应监听器的所有 accept 错误，含恢复和致命错误 |
+| connections_rejected_total、connection_panics_total | counter / 次 | 因业务连接上限被拒绝的连接、业务连接任务 panic |
+| first_frame_timeouts_total | counter / 次 | TCP / TLS 流建立后，首帧完整读取期限超时关闭；不含 TLS 握手或后续 idle 超时 |
+| auth_failures_total | counter / 次 | 口令比较失败，不含错误参数或未认证的普通命令 |
+| clients、subscriptions | gauge / 个 | 当前业务连接、当前活跃订阅；订阅包含尚未结束的在途消费者操作 |
+| subscription_polls_total、subscription_empty_polls_total | counter / 次 | 实际调用事件存储 next 的次数、其中正常返回无事件的次数；许可等待失败不算轮询 |
+| subscription_empty_poll_ratio | gauge / 比例 [0,1] | 自启动累计空轮询 / 全部轮询，无轮询为 0；并发采样限制在 [0,1] |
+| journal_fsync_duration_seconds | histogram / 秒 | 启用采集后的实际文件 / 目录 sync_all，失败调用也计，排除启动恢复与初始化 |
+| journal_transaction_bytes | histogram / 字节 | 实际开始 append 的完整事务记录，含 16 字节头；失败尝试计入，不含压缩重写 |
+| journal_compactions_total、journal_compaction_successes_total、journal_compaction_failures_total | counter / 次 | 运行期压缩尝试、成功与失败；关闭直方图仍计数 |
+| journal_compaction_duration_seconds | histogram / 秒 | 运行期压缩预扫描、编码与物理替换全流程，失败尝试也计 |
+| timing_enabled | gauge / 0或1 | 直方图采集是否开启 |
+| process_resident_memory_bytes | gauge / 字节 | Linux /proc/self/status 的 VmRSS，与 managed_bytes 分开；不可读时省略 |
+| process_cpu_seconds_total | counter / CPU秒 | Linux 进程所有线程累计用户态与内核态 CPU 时间；抓取时通过安全系统接口采样 |
+| process_rss_available、process_cpu_available | gauge / 0或1 | 进程采样是否可用；非 Linux 为 0 并省略对应数值 |
+| managed_bytes、scheduled_expirations、journal_bytes、journal_errors_total、events_pending | 原有 gauge / counter | 受管字节、定时项、Journal 文件字节、Journal 错误和待 ACK 数，口径不变 |
+
+所有时延直方图的固定上界为 10 / 100 μs、1 / 10 / 100 ms、1 s、+Inf；现有 request_duration_seconds 保留原桶并增加 10 μs 桶。事务字节直方图上界为 256、1024、4096、16384、65536、1048576、+Inf。Prometheus 使用累积桶及 `_count` / `_sum`；INFO 使用原单位的互斥桶。直方图计数和总和饱和而不回绕。字段分别采样，并非跨指标原子快照。
 
 配置文件中的相对证书、私钥和 Journal 路径均相对于配置文件所在目录解析；默认路径选择由入口完成后保持一致。环境变量插值、远程配置中心和命令行覆盖每个字段均不在当前版本范围。
 

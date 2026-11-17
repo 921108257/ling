@@ -163,6 +163,44 @@ func TestLiveContracts(t *testing.T) {
 			}
 		}
 	}
+	// 三语言共用 INFO 类型契约，动态计数保持 UInt；Shared INFO types retain dynamic counters as UInt.
+	info, e := c.Execute(ctx, "INFO")
+	if e != nil || info.Kind != Map {
+		t.Fatalf("INFO: %v", e)
+	}
+	for _, row := range fixtures(t, "info-fields.tsv") {
+		section := info.Data.(map[string]Value)[row[0]]
+		if section.Kind != Map {
+			t.Fatalf("INFO section: %s", row[0])
+		}
+		value, present := section.Data.(map[string]Value)[row[1]]
+		if !present {
+			t.Fatalf("missing INFO field: %v", row)
+		}
+		valid := false
+		switch row[2] {
+		case "UInt":
+			valid = value.Kind == UInt
+		case "Bool":
+			valid = value.Kind == Bool
+		case "Float":
+			valid = value.Kind == Float
+		case "UIntOrNull":
+			valid = value.Kind == UInt || value.Kind == Null
+		case "FloatOrNull":
+			valid = value.Kind == Float || value.Kind == Null
+		case "Histogram":
+			if value.Kind == Map {
+				histogram := value.Data.(map[string]Value)
+				valid = histogram["count"].Kind == UInt && histogram["sum"].Kind == UInt &&
+					histogram["bounds"].Kind == List && len(histogram["bounds"].Data.([]Value)) == 6 &&
+					histogram["buckets"].Kind == List && len(histogram["buckets"].Data.([]Value)) == 7
+			}
+		}
+		if !valid {
+			t.Fatalf("INFO field %v: %v", row, value.Kind)
+		}
+	}
 	for _, line := range fixtures(t, "values.tsv") {
 		v, e := DecodeValue(unhex(t, line[1]))
 		if e != nil {

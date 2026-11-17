@@ -7,6 +7,7 @@ mod config;
 mod connection;
 mod maintenance;
 mod operations;
+mod telemetry;
 pub use config::{
     AuthConfig, Config, DatabaseConfig, EngineConfig, EventJournalConfig, EventsConfig,
     EvictionConfig, LogConfig, MetricsConfig, ProtocolConfig, ServerConfig, TlsConfig, TtlConfig,
@@ -56,6 +57,7 @@ impl Server {
             engine_config.databases,
             engine_config.resolved_shards(),
         )?);
+        events.set_metrics_enabled(config.metrics.enabled)?;
         let engine = Arc::new(ling_engine::Engine::with_events(
             engine_config,
             rand::random(),
@@ -98,6 +100,7 @@ impl Server {
             engine_config.databases,
             engine_config.resolved_shards(),
         )?);
+        events.set_metrics_enabled(config.metrics.enabled)?;
         let engine = Arc::new(ling_engine::Engine::with_events(
             engine_config,
             rand::random(),
@@ -242,7 +245,13 @@ impl Server {
                     &mut backoff,
                     |error| runtime.accept.failed(false, error, std::time::Instant::now(), |m| runtime.log("warn", m)),
                 ) => {
-                    let (stream, _) = match accepted { Ok(value) => value, Err(e) => break Err(e) };
+                    let (stream, _) = match accepted {
+                        Ok(value) => value,
+                        Err(e) => {
+                            runtime.accept.failed(false, &e, std::time::Instant::now(), |m| runtime.log("error", m));
+                            break Err(e);
+                        }
+                    };
                     let Ok(permit) = semaphore.clone().try_acquire_owned() else {
                         drop(stream);
                         runtime.accept.rejected(std::time::Instant::now(), |m| runtime.log("warn", m));

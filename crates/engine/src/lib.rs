@@ -149,6 +149,9 @@ struct Budget {
     memory: usize,
     /// 只在发布成功时消耗的创建计数；Creation counter consumed only on publication.
     creations: u64,
+    /// 维护实际删除的累计条目数，失败批次已提交的部分也保留。
+    /// Cumulative entries actually removed by maintenance, retaining committed progress from failed batches.
+    reclaimed_by_maintenance: u64,
     /// 每个有期限条目至多一个定时项，与变更在同一提交锁下发布。
     /// At most one timer per expiring entry, published under the same commit lock as mutations.
     expirations: BTreeSet<expiry::ExpiryTask>,

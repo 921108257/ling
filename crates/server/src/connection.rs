@@ -32,13 +32,21 @@ pub(crate) async fn serve(
     let (mut reader, mut stream) = tokio::io::split(stream);
     let (frames, mut incoming) = tokio::sync::mpsc::channel(1);
     let read_config = config.clone();
+    let read_metrics = runtime.telemetry.clone();
     let mut reading = tokio::task::JoinSet::new();
     // 独立有界读任务保存半帧状态；事件推送不会取消正在进行的帧读取。
     // A bounded reader preserves partial-frame state; event pushes never cancel frame reads.
     reading.spawn(async move {
         let mut first_frame = true;
         loop {
-            let frame = receive(&mut reader, &read_config, first_frame, read_budget.clone()).await;
+            let frame = receive(
+                &mut reader,
+                &read_config,
+                first_frame,
+                read_budget.clone(),
+                Some(&read_metrics),
+            )
+            .await;
             first_frame = false;
             let done = !matches!(frame, Ok(Some(_)));
             let (consumed, resume) = tokio::sync::oneshot::channel::<()>();
@@ -75,7 +83,13 @@ pub(crate) async fn serve(
                 // Poll only with a complete subscription context instead of panicking on inconsistent session state.
                 let (Some(sub), Some(store)) = (&session.subscription, &session.events) else { break; };
                 let (sub, store) = (sub.clone(), store.clone());
-                match event_work(slots.clone(),config,move ||store.next(&sub.token,std::time::Instant::now())).await {
+                let metrics = runtime.telemetry.clone();
+                match event_work(slots.clone(),config,Some(runtime.telemetry.clone()),move ||{
+                    crate::telemetry::add(&metrics.subscription_polls, 1);
+                    let result = store.next(&sub.token,std::time::Instant::now());
+                    if matches!(result, Ok(None)) { crate::telemetry::add(&metrics.subscription_empty_polls, 1); }
+                    result
+                }).await {
                     Ok(Some(event))=>{
                         if send(&mut stream,Frame{request_id:0,body:Body::Event(event.to_value())},config).await.is_err(){break;}
                     }
@@ -156,7 +170,7 @@ pub(crate) async fn serve(
             .await;
             break;
         }
-        let started = std::time::Instant::now();
+        let started = runtime.telemetry.started();
         let shutdown_requested = matches!(&frame.body, Body::Request(r) if r.command == "SHUTDOWN" && r.arguments.is_empty() && session.authenticated && session.subscription.is_none());
         if let Body::BatchRequest(items) = &frame.body {
             let body = if !session.authenticated {
@@ -175,12 +189,17 @@ pub(crate) async fn serve(
                 let config = config.clone();
                 let db = session.db;
                 let read_permit = read_permit.clone();
-                match event_work(slots.clone(), &config.clone(), move || {
-                    // 连接取消不会终止已开始的阻塞任务，许可随其拥有的参数一起保留。
-                    // Cancellation cannot stop a started blocking task; retain its permit alongside the owned arguments.
-                    let _read_permit = read_permit;
-                    crate::batch::execute(&engine, &config, db, items)
-                })
+                match event_work(
+                    slots.clone(),
+                    &config.clone(),
+                    Some(runtime.telemetry.clone()),
+                    move || {
+                        // 连接取消不会终止已开始的阻塞任务，许可随其拥有的参数一起保留。
+                        // Cancellation cannot stop a started blocking task; retain its permit alongside the owned arguments.
+                        let _read_permit = read_permit;
+                        crate::batch::execute(&engine, &config, db, items)
+                    },
+                )
                 .await
                 {
                     Ok(results) => Body::BatchResponse(results),
@@ -238,10 +257,15 @@ pub(crate) async fn serve(
                     (Some(sub), Some(store), Ok(id)) => {
                         let (sub, store) = (sub.clone(), store.clone());
                         let read_permit = read_permit.clone();
-                        event_work(slots.clone(), config, move || {
-                            let _read_permit = read_permit;
-                            store.ack(&sub.token, id).map(|()| Value::Bool(true))
-                        })
+                        event_work(
+                            slots.clone(),
+                            config,
+                            Some(runtime.telemetry.clone()),
+                            move || {
+                                let _read_permit = read_permit;
+                                store.ack(&sub.token, id).map(|()| Value::Bool(true))
+                            },
+                        )
                         .await
                     }
                     (_, _, Err(e)) => Err(e),
@@ -286,34 +310,21 @@ pub(crate) async fn serve(
 async fn event_work<T: Send + 'static>(
     slots: Arc<Semaphore>,
     config: &Config,
+    telemetry: Option<Arc<crate::telemetry::Telemetry>>,
     work: impl FnOnce() -> Result<T, DbError> + Send + 'static,
 ) -> Result<T, DbError> {
-    let waiting = slots.acquire_owned();
-    let permit = if config.server.request_timeout_ms == 0 {
-        waiting.await.ok()
-    } else {
-        timeout(
-            Duration::from_millis(config.server.request_timeout_ms),
-            waiting,
-        )
+    let permit =
+        crate::telemetry::acquire(slots, config.server.request_timeout_ms, telemetry, false)
+            .await
+            .map_err(|()| DbError::new(ErrorCode::Busy, "Event execution queue full"))?;
+    crate::telemetry::blocking(permit, work)
         .await
-        .ok()
-        .and_then(Result::ok)
-    };
-    let Some(permit) = permit else {
-        return Err(DbError::new(ErrorCode::Busy, "Event execution queue full"));
-    };
-    tokio::task::spawn_blocking(move || {
-        let _permit = permit;
-        work()
-    })
-    .await
-    .map_err(|_| {
-        DbError::new(
-            ErrorCode::CommitUnknown,
-            "Event task failed; outcome unknown",
-        )
-    })?
+        .map_err(|_| {
+            DbError::new(
+                ErrorCode::CommitUnknown,
+                "Event task failed; outcome unknown",
+            )
+        })?
 }
 
 /// 构造致命 ERROR 帧，与普通命令错误区分。
@@ -360,6 +371,8 @@ struct Consumer {
     token: ling_events::Subscription,
     /// 保证释放时存储仍存活；Keeps storage alive until cleanup.
     store: Arc<ling_events::EventStore>,
+    /// 最后一个在途操作结束前仍算活跃；Active until the last in-flight operation finishes.
+    _telemetry: Option<crate::telemetry::SubscriptionCount>,
 }
 impl Drop for Consumer {
     /// 最后一个在途操作释放后归还租约；Releases leases after the last in-flight operation.
@@ -470,14 +483,21 @@ impl Session {
                 let engine = engine.clone();
                 let args = args.to_vec();
                 let info = name == "INFO";
-                event_work(slots.clone(), config, move || {
-                    let _read_permit = read_permit;
-                    if info {
-                        runtime.info(&engine, &args)
-                    } else {
-                        runtime.configure(&args)
-                    }
-                })
+                event_work(
+                    slots.clone(),
+                    config,
+                    self.runtime
+                        .as_ref()
+                        .map(|runtime| runtime.telemetry.clone()),
+                    move || {
+                        let _read_permit = read_permit;
+                        if info {
+                            runtime.info(&engine, &args)
+                        } else {
+                            runtime.configure(&args)
+                        }
+                    },
+                )
                 .await
             }
             "SHUTDOWN" if args.is_empty() => Ok(Value::Bool(true)),
@@ -505,12 +525,28 @@ impl Session {
                     match (patterns, self.events.clone()) {
                         (Ok(patterns), Some(store)) => {
                             let db = self.db;
-                            match event_work(slots.clone(), config, move || {
-                                let _read_permit = read_permit;
-                                store
-                                    .subscribe(db, patterns, name.as_deref())
-                                    .map(|token| Consumer { token, store })
-                            })
+                            let telemetry = self
+                                .runtime
+                                .as_ref()
+                                .map(|runtime| runtime.telemetry.clone());
+                            match event_work(
+                                slots.clone(),
+                                config,
+                                self.runtime
+                                    .as_ref()
+                                    .map(|runtime| runtime.telemetry.clone()),
+                                move || {
+                                    let _read_permit = read_permit;
+                                    store.subscribe(db, patterns, name.as_deref()).map(|token| {
+                                        Consumer {
+                                            token,
+                                            store,
+                                            _telemetry: telemetry
+                                                .map(crate::telemetry::SubscriptionCount::new),
+                                        }
+                                    })
+                                },
+                            )
                             .await
                             {
                                 Ok(sub) => {
@@ -593,18 +629,16 @@ impl Session {
                 }
             }
             _ => {
-                let permit = if config.server.request_timeout_ms == 0 {
-                    slots.acquire_owned().await.ok()
-                } else {
-                    timeout(
-                        Duration::from_millis(config.server.request_timeout_ms),
-                        slots.acquire_owned(),
-                    )
-                    .await
-                    .ok()
-                    .and_then(Result::ok)
-                };
-                let Some(permit) = permit else {
+                let permit = crate::telemetry::acquire(
+                    slots,
+                    config.server.request_timeout_ms,
+                    self.runtime
+                        .as_ref()
+                        .map(|runtime| runtime.telemetry.clone()),
+                    false,
+                )
+                .await;
+                let Ok(permit) = permit else {
                     return (
                         Err(DbError::new(
                             ErrorCode::Busy,
@@ -620,8 +654,7 @@ impl Session {
                 let mut scan = std::mem::take(&mut self.scan);
                 // 任务一旦开始就不以超时宣称回滚；客户端失去响应时结果可能未知。
                 // Once started, timeout cannot claim rollback; losing a response may leave the client outcome unknown.
-                match tokio::task::spawn_blocking(move || {
-                    let _permit = permit;
+                match crate::telemetry::blocking(permit, move || {
                     let _read_permit = read_permit;
                     let result = if request.command == "SCAN" {
                         engine.scan(db, &request.arguments, &mut scan, cap)
@@ -683,6 +716,7 @@ async fn receive(
     config: &Config,
     first_frame: bool,
     read_budget: Arc<Semaphore>,
+    telemetry: Option<&crate::telemetry::Telemetry>,
 ) -> Result<Option<(Frame, OwnedSemaphorePermit)>, ReadError> {
     if first_frame {
         // 首字节前就开始计时，慢速发送头部也不能延长同一个期限。
@@ -696,9 +730,15 @@ async fn receive(
         return if millis == 0 {
             read.await
         } else {
-            timeout(Duration::from_millis(millis), read)
-                .await
-                .unwrap_or(Ok(None))
+            match timeout(Duration::from_millis(millis), read).await {
+                Ok(result) => result,
+                Err(_) => {
+                    if let Some(metrics) = telemetry {
+                        crate::telemetry::add(&metrics.first_frame_timeouts, 1);
+                    }
+                    Ok(None)
+                }
+            }
         };
     }
     let mut first = [0];
@@ -795,15 +835,28 @@ mod tests {
             let mut config = Config::default();
             config.server.request_timeout_ms = request_ms;
             config.server.idle_timeout_ms = idle_ms;
+            let metrics = crate::telemetry::Telemetry::new(false);
             let (_writer, mut reader) = tokio::io::duplex(32);
             let start = Instant::now();
             assert!(
-                receive(&mut reader, &config, first, Arc::new(Semaphore::new(1)))
-                    .await
-                    .unwrap()
-                    .is_none()
+                receive(
+                    &mut reader,
+                    &config,
+                    first,
+                    Arc::new(Semaphore::new(1)),
+                    Some(&metrics)
+                )
+                .await
+                .unwrap()
+                .is_none()
             );
             assert_eq!(start.elapsed(), Duration::from_millis(expected_ms));
+            assert_eq!(
+                metrics
+                    .first_frame_timeouts
+                    .load(std::sync::atomic::Ordering::Relaxed),
+                u64::from(first)
+            );
         }
         for (request_ms, idle_ms, expected_ms) in [(100, 10, 100), (0, 20, 20)] {
             let mut config = Config::default();
@@ -813,10 +866,16 @@ mod tests {
             writer.write_all(b"L").await.unwrap();
             let start = Instant::now();
             assert!(
-                receive(&mut reader, &config, true, Arc::new(Semaphore::new(1)))
-                    .await
-                    .unwrap()
-                    .is_none()
+                receive(
+                    &mut reader,
+                    &config,
+                    true,
+                    Arc::new(Semaphore::new(1)),
+                    None
+                )
+                .await
+                .unwrap()
+                .is_none()
             );
             assert_eq!(start.elapsed(), Duration::from_millis(expected_ms));
         }
@@ -840,7 +899,7 @@ mod tests {
             writer.write_all(&bytes).await.unwrap();
             let started = Instant::now();
             assert!(
-                receive(&mut reader, &config, first, budget.clone())
+                receive(&mut reader, &config, first, budget.clone(), None)
                     .await
                     .unwrap()
                     .is_none()
@@ -856,7 +915,7 @@ mod tests {
                 .await
                 .unwrap();
             assert!(
-                receive(&mut reader, &config, first, budget.clone())
+                receive(&mut reader, &config, first, budget.clone(), None)
                     .await
                     .unwrap()
                     .is_none()
@@ -929,6 +988,8 @@ mod tests {
             Arc::new(ling_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
         let slots = Arc::new(Semaphore::new(0));
         let mut bad = session(&config);
+        let runtime = Arc::new(crate::operations::Runtime::new(Arc::new(config.clone())));
+        bad.runtime = Some(runtime.clone());
         bad.authenticated = true;
         let mut other = session(&config);
         let started = Instant::now();
@@ -955,6 +1016,13 @@ mod tests {
         }
         assert!(!bad.authenticated);
         assert_eq!(bad.auth_failures, 1);
+        assert_eq!(
+            runtime
+                .telemetry
+                .auth_failures
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
         let (result, close, fatal) = bad
             .execute(
                 Request::new("AUTH", vec![Value::String("secret".into())]),
@@ -968,6 +1036,13 @@ mod tests {
         assert!(!close && !fatal);
         assert!(bad.authenticated);
         assert_eq!(bad.auth_failures, 0);
+        assert_eq!(
+            runtime
+                .telemetry
+                .auth_failures
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
     }
 
     /// 单份全局许可下，错误 AUTH 及已排队下一帧不能阻挡另一个完整会话的 HELLO/PING。

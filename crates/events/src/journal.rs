@@ -7,11 +7,15 @@ use crate::{
     err,
 };
 use fs2::FileExt;
-use ling_types::{DbError, ErrorCode};
+use ling_types::{
+    DbError, ErrorCode, HistogramSnapshot, JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES,
+    LATENCY_BUCKET_BOUNDS_US,
+};
 use std::{
     fs::{self, File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::PathBuf,
+    time::Instant,
 };
 
 /// 固定格式魔数；Fixed format magic.
@@ -39,6 +43,13 @@ pub(crate) struct Journal {
     pub failed: bool,
     /// 启动内存预算同时约束恢复分配；Startup memory budget also bounds recovery allocations.
     record_limit: usize,
+    /// 显式开启后才采样；只有运行期操作计入直方图。
+    /// Samples are opt-in; only runtime operations contribute to histograms.
+    pub metrics_enabled: bool,
+    /// 运行期文件及目录同步时延；Runtime file and directory sync latency.
+    pub fsync_duration_us: HistogramSnapshot,
+    /// 通过校验后尝试追加的完整记录字节；Full record bytes attempted after validation.
+    pub transaction_bytes: HistogramSnapshot,
     /// 测试在完整写入后模拟同步失败；Tests simulate sync failure after a complete write.
     #[cfg(test)]
     pub fail_sync: bool,
@@ -117,7 +128,7 @@ impl Journal {
             }
             stream
         };
-        let journal = Self {
+        let mut journal = Self {
             _lock: lock,
             file,
             dir: config.directory.clone(),
@@ -126,6 +137,9 @@ impl Journal {
             max: config.max_bytes,
             failed: false,
             record_limit: codec::MAX_RECORD.min(config.buffer_bytes / 2),
+            metrics_enabled: false,
+            fsync_duration_us: HistogramSnapshot::default(),
+            transaction_bytes: HistogramSnapshot::default(),
             #[cfg(test)]
             fail_sync: false,
         };
@@ -284,16 +298,24 @@ impl Journal {
                 "Journal capacity reserved or exhausted",
             ));
         }
+        if self.metrics_enabled {
+            self.transaction_bytes.observe(
+                (payload.len() + 16) as u64,
+                &JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES,
+            );
+        }
         let result = self
             .file
             .seek(SeekFrom::End(0))
             .and_then(|_| write_record(&mut self.file, payload))
             .and_then(|_| {
-                #[cfg(test)]
-                if std::mem::take(&mut self.fail_sync) {
-                    return Err(std::io::Error::other("injected sync failure"));
-                }
-                self.file.sync_all()
+                observe_sync(self.metrics_enabled, &mut self.fsync_duration_us, || {
+                    #[cfg(test)]
+                    if std::mem::take(&mut self.fail_sync) {
+                        return Err(std::io::Error::other("injected sync failure"));
+                    }
+                    self.file.sync_all()
+                })
             });
         if result.is_err() {
             self.failed = true;
@@ -356,7 +378,10 @@ impl Journal {
                 }
                 write_record(&mut next, group).map_err(|_| unavailable())?;
             }
-            next.sync_all().map_err(|_| unavailable())?;
+            observe_sync(self.metrics_enabled, &mut self.fsync_duration_us, || {
+                next.sync_all()
+            })
+            .map_err(|_| unavailable())?;
             fs::rename(&path, self.dir.join("journal.lgj")).map_err(|_| unavailable())?;
             self.sync_dir()?;
             self.file = next;
@@ -377,11 +402,31 @@ impl Journal {
         result
     }
     /// 新文件名与替换需要同步目录；New names and replacements require directory sync.
-    fn sync_dir(&self) -> Result<(), DbError> {
-        File::open(&self.dir)
-            .and_then(|d| d.sync_all())
-            .map_err(|_| unavailable())
+    fn sync_dir(&mut self) -> Result<(), DbError> {
+        let directory = File::open(&self.dir).map_err(|_| unavailable())?;
+        observe_sync(self.metrics_enabled, &mut self.fsync_duration_us, || {
+            directory.sync_all()
+        })
+        .map_err(|_| unavailable())
     }
+}
+
+/// 同步失败同样计时；关闭度量时不读取时钟，也不改变原始 I/O 结果。
+/// Failed syncs are timed too; disabling metrics avoids clock reads and preserves the original I/O result.
+fn observe_sync(
+    enabled: bool,
+    histogram: &mut HistogramSnapshot,
+    sync: impl FnOnce() -> std::io::Result<()>,
+) -> std::io::Result<()> {
+    let started = enabled.then(Instant::now);
+    let result = sync();
+    if let Some(started) = started {
+        histogram.observe(
+            u64::try_from(started.elapsed().as_micros()).unwrap_or(u64::MAX),
+            &LATENCY_BUCKET_BOUNDS_US,
+        );
+    }
+    result
 }
 /// 底层记录边界，不等于已持久化成功；Raw record boundary, not a durability acknowledgement.
 fn write_record(file: &mut File, payload: &[u8]) -> std::io::Result<()> {
@@ -460,6 +505,9 @@ mod tests {
             max: 1024 * 1024,
             failed: false,
             record_limit: 4096,
+            metrics_enabled: false,
+            fsync_duration_us: HistogramSnapshot::default(),
+            transaction_bytes: HistogramSnapshot::default(),
             fail_sync: false,
         }
     }
@@ -480,6 +528,36 @@ mod tests {
         bytes.extend(payload);
         bytes.extend(b"LGCMT001");
         bytes
+    }
+
+    /// 仅通过校验后的追加尝试计字节，失败同步仍采样，故障后的拒绝不重复记账。
+    /// Only validated append attempts count bytes; failed syncs are sampled and later faulted rejections are not recounted.
+    #[test]
+    fn runtime_metrics_are_opt_in_and_count_failed_sync() {
+        let mut journal = fixture(&[0; HEADER]);
+        journal.append(b"disabled", false).unwrap();
+        assert_eq!(journal.fsync_duration_us.count, 0);
+        assert_eq!(journal.transaction_bytes.count, 0);
+        journal.metrics_enabled = true;
+        journal.append(b"one", false).unwrap();
+        assert_eq!(journal.fsync_duration_us.count, 1);
+        assert_eq!(journal.transaction_bytes.count, 1);
+        assert_eq!(journal.transaction_bytes.sum, 19);
+        assert_eq!(journal.transaction_bytes.buckets[0], 1);
+        let error = journal.append(&[0; 4097], false).unwrap_err();
+        assert_eq!(error.code, ErrorCode::LimitExceeded.as_str());
+        assert_eq!(journal.transaction_bytes.count, 1);
+        journal.fail_sync = true;
+        let error = journal.append(b"unknown", false).unwrap_err();
+        assert_eq!(error.code, ErrorCode::CommitUnknown.as_str());
+        assert_eq!(journal.fsync_duration_us.count, 2);
+        assert_eq!(journal.transaction_bytes.count, 2);
+        assert_eq!(journal.transaction_bytes.sum, 42);
+        let error = journal.append(b"rejected", false).unwrap_err();
+        assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+        assert_eq!(journal.fsync_duration_us.count, 2);
+        assert_eq!(journal.transaction_bytes.count, 2);
+        cleanup(journal);
     }
 
     /// 运行期完整与续读遍历遇到任何短尾都必须保留原件。

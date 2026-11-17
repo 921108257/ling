@@ -553,6 +553,7 @@ fn renewal_is_bounded_and_stale_tasks_cannot_delete_current_state() {
 #[test]
 fn expiry_reclaims_memory_in_bounded_batches_with_current_revisions() {
     let (e, clock) = engine();
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 0);
     for i in 0..25 {
         run(
             &e,
@@ -566,11 +567,84 @@ fn expiry_reclaims_memory_in_bounded_batches_with_current_revisions() {
     assert_eq!(run(&e, "DBSIZE", &[]), Value::UInt(0));
     assert!(e.managed_bytes() > 0);
     assert_eq!(e.expire_due(0).unwrap(), 0);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 0);
     assert_eq!(e.expire_due(7).unwrap(), 7);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 7);
     assert_eq!(e.scheduled_expirations().unwrap(), 18);
     assert_eq!(e.expire_due(100).unwrap(), 18);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 25);
     assert_eq!(e.managed_bytes(), 0);
     assert_eq!(e.scheduled_expirations().unwrap(), 0);
+}
+
+/// 同批首条回收后时钟失败，累计数保留已发布进度，未回收条目仍占预算但逻辑不可见。
+/// A clock failure after the first reclamation preserves committed progress; unreclaimed entries retain their charge but remain logically invisible.
+#[test]
+fn maintenance_count_survives_a_later_batch_clock_error() {
+    /// 允许指定次数的成功观测后失败，不向生产时钟添加故障开关。
+    /// Fails after a chosen number of successful observations without adding production clock failpoints.
+    struct BatchClock {
+        time: Arc<TestClock>,
+        reads_left: Mutex<Option<usize>>,
+    }
+    impl Clock for BatchClock {
+        /// 未启用故障时复用可控时钟；Uses the controllable clock while no fault is armed.
+        fn now(&self) -> Result<TimeSnapshot, DbError> {
+            let mut reads_left = self.reads_left.lock().unwrap();
+            if let Some(left) = reads_left.as_mut() {
+                if *left == 0 {
+                    return Err(DbError::new(ErrorCode::Overflow, "Clock unavailable"));
+                }
+                *left -= 1;
+            }
+            self.time.now()
+        }
+    }
+    let clock = Arc::new(BatchClock {
+        time: TestClock::new(),
+        reads_left: Mutex::new(None),
+    });
+    let e = Engine::with_clock(
+        Config {
+            databases: 1,
+            shard_count: 1,
+            ..Config::default()
+        },
+        1,
+        clock.clone(),
+    )
+    .unwrap();
+    for key in ["a", "b"] {
+        run(&e, "SET", &[s(key), Value::Int(0), s("PX"), Value::Int(10)]);
+    }
+    let charged = e.memory_usage().unwrap();
+    clock.time.advance(10);
+    // 每项先取候选时钟，再在取得分片后重验；第三次观测属于下一项。
+    // Each item samples before selection and again after ownership; the third observation starts the next item.
+    *clock.reads_left.lock().unwrap() = Some(2);
+    let error = e.expire_due(2).unwrap_err();
+    assert_eq!(error.code, ErrorCode::Overflow.as_str());
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 1);
+    assert_eq!(e.memory_usage().unwrap(), charged / 2);
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    *clock.reads_left.lock().unwrap() = None;
+    for key in ["a", "b"] {
+        assert_eq!(
+            e.metadata(0, key).unwrap_err().code,
+            ErrorCode::KeyNotFound.as_str()
+        );
+    }
+    assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    assert_eq!(e.expire_due(2).unwrap(), 1);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 2);
+    assert_eq!(e.memory_usage().unwrap(), 0);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    assert_eq!(run(&e, "DBSIZE", &[]), Value::UInt(0));
+    run(&e, "SET", &[s("c"), Value::Null, s("PX"), Value::Int(1)]);
+    clock.time.advance(1);
+    e.budget.lock().unwrap().reclaimed_by_maintenance = u64::MAX;
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), u64::MAX);
 }
 
 /// 复制、移动、重命名与交换沿用原期限，为新存储位置发布新定时身份。
@@ -602,6 +676,7 @@ fn relocation_and_flush_keep_timer_ownership_consistent() {
     run(&e, "SET", &[s("d"), Value::Null, s("PX"), Value::Int(20)]);
     run(&e, "FLUSHALL", &[]);
     assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    assert_eq!(e.maintenance_reclaimed().unwrap(), 2);
 }
 
 /// 失败写入不发布定时项，ttl-first 淘汰会同时移除原条目的调度信息。

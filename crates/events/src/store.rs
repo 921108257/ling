@@ -7,7 +7,10 @@ use crate::{
     err,
     journal::Journal,
 };
-use ling_types::{DbError, ErrorCode, Event, EventId, key_pattern_matches as matches};
+use ling_types::{
+    DbError, ErrorCode, Event, EventId, HistogramSnapshot, LATENCY_BUCKET_BOUNDS_US,
+    key_pattern_matches as matches,
+};
 use std::{
     collections::{BTreeMap, VecDeque},
     sync::Mutex,
@@ -116,6 +119,21 @@ pub struct Stats {
     pub redelivered: u64,
     /// 当前日志字节；Current journal bytes.
     pub journal_bytes: usize,
+    /// 开启度量后的运行期文件及目录同步时延，含失败；不含启动恢复，单位微秒。
+    /// Runtime file and directory sync latency including failures after metrics are enabled; excludes recovery, in microseconds.
+    pub journal_fsync_duration_us: HistogramSnapshot,
+    /// 开启度量后通过校验的追加尝试字节，含记录封套；不含压缩重写。
+    /// Validated append-attempt bytes after metrics are enabled, including record envelopes and excluding compaction rewrites.
+    pub journal_transaction_bytes: HistogramSnapshot,
+    /// 本进程压缩尝试次数；Compaction attempts in this process.
+    pub journal_compactions: u64,
+    /// 本进程成功压缩次数；Successful compactions in this process.
+    pub journal_compaction_successes: u64,
+    /// 本进程失败压缩次数；Failed compactions in this process.
+    pub journal_compaction_failures: u64,
+    /// 开启度量后的完整压缩时延，含扫描、编码及失败，单位微秒。
+    /// Full compaction latency after metrics are enabled, including scans, encoding and failures, in microseconds.
+    pub journal_compaction_duration_us: HistogramSnapshot,
     /// 当前命名组与临时会话数；Current named groups and temporary sessions.
     pub groups: usize,
     /// 当前交付窗口项数；Current delivery-window entries.
@@ -346,6 +364,14 @@ impl EventStore {
     /// 固定可靠模式；Fixed reliable mode.
     pub fn reliable(&self) -> bool {
         self.config.reliable
+    }
+    /// 开启或关闭后续 Journal 直方图采样，默认关闭；切换保留既有样本及压缩计数。
+    /// Enables or disables subsequent Journal histogram sampling, off by default; preserves existing samples and compaction counts.
+    pub fn set_metrics_enabled(&self, enabled: bool) -> Result<(), DbError> {
+        if let Some(journal) = self.lock()?.journal.as_mut() {
+            journal.metrics_enabled = enabled;
+        }
+        Ok(())
     }
     /// HELLO 中使用的流身份；Stream identity exposed by HELLO.
     pub fn stream_id(&self) -> Result<u128, DbError> {
@@ -731,6 +757,10 @@ impl EventStore {
         stats.groups = s.groups.len();
         stats.pending = s.groups.values().map(|g| g.pending.len()).sum();
         stats.journal_bytes = s.journal.as_ref().map_or(0, |j| j.bytes);
+        if let Some(journal) = s.journal.as_ref() {
+            stats.journal_fsync_duration_us = journal.fsync_duration_us;
+            stats.journal_transaction_bytes = journal.transaction_bytes;
+        }
         Ok(stats)
     }
     /// 观测租约与水位；恢复后的租约年龄未知，保持 None。
@@ -931,6 +961,32 @@ fn find(s: &mut State, db: u16, shard: u32, sequence: u64) -> Result<Option<Even
 /// 原子重写检查点及仍在保留期内的完整事务，不拆开多分片事务。
 /// Atomically rewrites checkpoints and retained complete transactions without splitting cross-shard transactions.
 fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
+    let enabled = s
+        .journal
+        .as_ref()
+        .ok_or_else(|| err(ErrorCode::JournalUnavailable, "Journal unavailable"))?
+        .metrics_enabled;
+    let started = enabled.then(Instant::now);
+    s.stats.journal_compactions = s.stats.journal_compactions.saturating_add(1);
+    let result = compact_contents(s, c, now);
+    if result.is_ok() {
+        s.stats.journal_compaction_successes =
+            s.stats.journal_compaction_successes.saturating_add(1);
+    } else {
+        s.stats.journal_compaction_failures = s.stats.journal_compaction_failures.saturating_add(1);
+    }
+    if let Some(started) = started {
+        s.stats.journal_compaction_duration_us.observe(
+            u64::try_from(started.elapsed().as_micros()).unwrap_or(u64::MAX),
+            &LATENCY_BUCKET_BOUNDS_US,
+        );
+    }
+    result
+}
+
+/// 只有完整替换成功后才发布消费状态；度量包装不会改变错误或提交边界。
+/// Publishes consumer state only after full replacement succeeds; the metrics wrapper preserves errors and commit boundaries.
+fn compact_contents(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
     let cutoff = now.checked_sub(c.retention_ms);
     let stream = s.stream;
     let mut floors = s.floors.clone();

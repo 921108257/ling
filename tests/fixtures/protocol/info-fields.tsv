@@ -1,0 +1,33 @@
+# section | field | Value type；只列新增稳定字段，不依赖动态值。
+# section | field | Value type; new stable fields only, independent of dynamic values.
+server|process_cpu_available|Bool
+server|process_cpu_seconds|FloatOrNull
+memory|rss_available|Bool
+memory|rss_bytes|UIntOrNull
+stats|timing_enabled|Bool
+stats|request_duration_us|Histogram
+stats|execution_wait_us|Histogram
+stats|execution_occupied|UInt
+stats|execution_queued|UInt
+stats|execution_wait_timeouts|UInt
+stats|execution_wait_cancelled|UInt
+stats|maintenance_cycles|UInt
+stats|maintenance_reclaimed|UInt
+stats|maintenance_deferred|UInt
+clients|rejected|UInt
+clients|accept_errors_data|UInt
+clients|accept_errors_metrics|UInt
+clients|panics|UInt
+clients|first_frame_timeouts|UInt
+clients|auth_failures|UInt
+clients|subscriptions|UInt
+events|timing_enabled|Bool
+events|journal_fsync_duration_us|Histogram
+events|journal_transaction_bytes|Histogram
+events|journal_compaction_duration_us|Histogram
+events|journal_compactions|UInt
+events|journal_compaction_successes|UInt
+events|journal_compaction_failures|UInt
+events|subscription_polls|UInt
+events|subscription_empty_polls|UInt
+events|subscription_empty_poll_ratio|Float

@@ -2,7 +2,10 @@
 //! Runtime state, config reload, and metrics without business labels; locks never span network waits.
 
 use crate::Config;
-use ling_types::{DbError, ErrorCode, Value};
+use ling_types::{
+    DbError, ErrorCode, HistogramSnapshot, JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES,
+    LATENCY_BUCKET_BOUNDS_US, Value,
+};
 use std::{
     collections::BTreeMap,
     sync::{
@@ -38,17 +41,14 @@ pub(crate) struct Runtime {
     pub clients: AtomicU64,
     /// 认证失败告警每实例至多每分钟一次；Authentication warnings occur at most once per minute per instance.
     last_auth_warning: Mutex<Option<Instant>>,
-    /// 接入层内部计数与限频告警；对外指标放到 0.1.5。
-    /// Internal accept-side counters and rate-limited warnings; public metrics arrive in 0.1.5.
+    /// 接入层计数与限频告警；Accept-side counters and rate-limited warnings.
     pub accept: crate::accept::AcceptStats,
     /// 本实例指标接入的测试错误源；发行构建不包含。
     /// Test error source for this instance's metrics accept loop, absent from release builds.
     #[cfg(test)]
     pub fail_metrics_accept: std::sync::atomic::AtomicBool,
-    /// 请求时延固定桶，无 Key 或命令标签；Fixed latency buckets without key or command labels.
-    latency: [AtomicU64; 6],
-    /// 总延迟微秒用于 histogram sum；Total latency microseconds for histogram sum.
-    latency_micros: AtomicU64,
+    /// 生命周期指标共享句柄；Shared lifecycle telemetry handle.
+    pub telemetry: Arc<crate::telemetry::Telemetry>,
 }
 impl Runtime {
     /// 启动时建立控制状态；Creates control state at startup.
@@ -56,6 +56,7 @@ impl Runtime {
         let (stop, _) = watch::channel(false);
         Self {
             level: Mutex::new(config.log.level.clone()),
+            telemetry: Arc::new(crate::telemetry::Telemetry::new(config.metrics.enabled)),
             config,
             start: Instant::now(),
             stop,
@@ -66,28 +67,20 @@ impl Runtime {
             accept: crate::accept::AcceptStats::new(),
             #[cfg(test)]
             fail_metrics_accept: std::sync::atomic::AtomicBool::new(false),
-            latency: std::array::from_fn(|_| AtomicU64::new(0)),
-            latency_micros: AtomicU64::new(0),
         }
     }
     /// 请求结束统计，时间包含排队执行；Records completed requests including queue time.
-    pub fn record(&self, started: Instant, failed: bool) {
+    pub fn record(&self, started: Option<Instant>, failed: bool) {
         self.requests.fetch_add(1, Ordering::Relaxed);
         if failed {
             self.errors.fetch_add(1, Ordering::Relaxed);
         }
-        let micros = started.elapsed().as_micros();
-        self.latency_micros
-            .fetch_add(micros.min(u128::from(u64::MAX)) as u64, Ordering::Relaxed);
-        let bucket = [100, 1000, 10000, 100000, 1000000]
-            .iter()
-            .position(|n| micros <= *n)
-            .unwrap_or(5);
-        self.latency[bucket].fetch_add(1, Ordering::Relaxed);
+        self.telemetry.record_request(started);
     }
-    /// 限频日志不记录源地址、口令或业务参数，也不新增对外指标。
-    /// Rate-limited logs omit source addresses, passwords, and business arguments without adding public metrics.
+    /// 每次认证失败都计数，限频日志不记录源地址、口令或业务参数。
+    /// Counts every authentication failure; rate-limited logs omit addresses, passwords, and business arguments.
     pub fn auth_failed(&self) {
+        crate::telemetry::add(&self.telemetry.auth_failures, 1);
         let Ok(mut last) = self.last_auth_warning.lock() else {
             return;
         };
@@ -199,8 +192,8 @@ impl Runtime {
         );
         Ok(out)
     }
-    /// INFO 固定分类，未提供伪造 RSS 或未测量的性能数据。
-    /// INFO uses fixed sections without invented RSS or unmeasured performance claims.
+    /// INFO 固定分类，进程采样不可用时明确表示。
+    /// INFO uses fixed sections and explicitly marks unavailable process samples.
     pub fn info(&self, engine: &ling_engine::Engine, args: &[Value]) -> Result<Value, DbError> {
         let section = match args {
             [] => "all".to_owned(),
@@ -222,6 +215,11 @@ impl Runtime {
                 "Invalid INFO section",
             ));
         }
+        let process = if matches!(section.as_str(), "all" | "server" | "memory") {
+            crate::telemetry::ProcessSample::collect()
+        } else {
+            crate::telemetry::ProcessSample::default()
+        };
         let mut out = BTreeMap::new();
         let mut add = |name: &str, fields: BTreeMap<String, Value>| {
             if section == "all" || section == name {
@@ -231,6 +229,14 @@ impl Runtime {
         add(
             "server",
             BTreeMap::from([
+                (
+                    "process_cpu_available".into(),
+                    Value::Bool(process.cpu_seconds.is_some()),
+                ),
+                (
+                    "process_cpu_seconds".into(),
+                    process.cpu_seconds.map_or(Value::Null, float_value),
+                ),
                 (
                     "version".into(),
                     Value::String(env!("CARGO_PKG_VERSION").into()),
@@ -249,6 +255,14 @@ impl Runtime {
             "memory",
             BTreeMap::from([
                 (
+                    "rss_available".into(),
+                    Value::Bool(process.rss_bytes.is_some()),
+                ),
+                (
+                    "rss_bytes".into(),
+                    process.rss_bytes.map_or(Value::Null, Value::UInt),
+                ),
+                (
                     "managed_bytes".into(),
                     Value::UInt(engine.memory_usage()? as u64),
                 ),
@@ -262,25 +276,62 @@ impl Runtime {
                 ),
             ]),
         );
-        add(
-            "stats",
-            BTreeMap::from([
-                (
-                    "requests".into(),
-                    Value::UInt(self.requests.load(Ordering::Relaxed)),
+        let metrics = &self.telemetry;
+        let mut stats = BTreeMap::from([
+            (
+                "requests".into(),
+                Value::UInt(self.requests.load(Ordering::Relaxed)),
+            ),
+            (
+                "errors".into(),
+                Value::UInt(self.errors.load(Ordering::Relaxed)),
+            ),
+            ("timing_enabled".into(), Value::Bool(metrics.enabled)),
+            (
+                "request_duration_us".into(),
+                histogram_value(
+                    metrics.request_duration.snapshot(),
+                    &LATENCY_BUCKET_BOUNDS_US,
                 ),
-                (
-                    "errors".into(),
-                    Value::UInt(self.errors.load(Ordering::Relaxed)),
-                ),
-            ]),
+            ),
+            (
+                "execution_wait_us".into(),
+                histogram_value(metrics.execution_wait.snapshot(), &LATENCY_BUCKET_BOUNDS_US),
+            ),
+        ]);
+        for (name, counter) in self.execution_counters() {
+            stats.insert(name.into(), Value::UInt(counter.load(Ordering::Relaxed)));
+        }
+        stats.insert(
+            "maintenance_reclaimed".into(),
+            Value::UInt(engine.maintenance_reclaimed()?),
         );
+        add("stats", stats);
+        let [rejected, data_errors, metrics_errors, panics] = self.accept.snapshot();
         add(
             "clients",
-            BTreeMap::from([(
-                "connected".into(),
-                Value::UInt(self.clients.load(Ordering::Relaxed)),
-            )]),
+            BTreeMap::from([
+                (
+                    "connected".into(),
+                    Value::UInt(self.clients.load(Ordering::Relaxed)),
+                ),
+                ("rejected".into(), Value::UInt(rejected)),
+                ("accept_errors_data".into(), Value::UInt(data_errors)),
+                ("accept_errors_metrics".into(), Value::UInt(metrics_errors)),
+                ("panics".into(), Value::UInt(panics)),
+                (
+                    "first_frame_timeouts".into(),
+                    Value::UInt(metrics.first_frame_timeouts.load(Ordering::Relaxed)),
+                ),
+                (
+                    "auth_failures".into(),
+                    Value::UInt(metrics.auth_failures.load(Ordering::Relaxed)),
+                ),
+                (
+                    "subscriptions".into(),
+                    Value::UInt(metrics.subscriptions.load(Ordering::Relaxed)),
+                ),
+            ]),
         );
         if section == "all" || section == "keyspace" {
             let mut keys = BTreeMap::new();
@@ -302,6 +353,49 @@ impl Runtime {
         {
             let stats = store.stats()?;
             let mut fields = BTreeMap::from([
+                ("timing_enabled".into(), Value::Bool(self.telemetry.enabled)),
+                (
+                    "journal_fsync_duration_us".into(),
+                    histogram_value(stats.journal_fsync_duration_us, &LATENCY_BUCKET_BOUNDS_US),
+                ),
+                (
+                    "journal_transaction_bytes".into(),
+                    histogram_value(
+                        stats.journal_transaction_bytes,
+                        &JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES,
+                    ),
+                ),
+                (
+                    "journal_compaction_duration_us".into(),
+                    histogram_value(
+                        stats.journal_compaction_duration_us,
+                        &LATENCY_BUCKET_BOUNDS_US,
+                    ),
+                ),
+                (
+                    "journal_compactions".into(),
+                    Value::UInt(stats.journal_compactions),
+                ),
+                (
+                    "journal_compaction_successes".into(),
+                    Value::UInt(stats.journal_compaction_successes),
+                ),
+                (
+                    "journal_compaction_failures".into(),
+                    Value::UInt(stats.journal_compaction_failures),
+                ),
+                (
+                    "subscription_polls".into(),
+                    Value::UInt(metrics.subscription_polls.load(Ordering::Relaxed)),
+                ),
+                (
+                    "subscription_empty_polls".into(),
+                    Value::UInt(metrics.subscription_empty_polls.load(Ordering::Relaxed)),
+                ),
+                (
+                    "subscription_empty_poll_ratio".into(),
+                    float_value(empty_poll_ratio(metrics)),
+                ),
                 ("committed".into(), Value::UInt(stats.committed)),
                 ("dropped".into(), Value::UInt(stats.dropped)),
                 ("redelivered".into(), Value::UInt(stats.redelivered)),
@@ -367,6 +461,22 @@ impl Runtime {
         }
         Ok(Value::Map(out))
     }
+    /// INFO 名称也是 Prometheus 的固定基础名称；仅累计量追加 _total。
+    /// INFO names are fixed Prometheus base names; only cumulative values gain _total.
+    fn execution_counters(&self) -> [(&'static str, &AtomicU64); 6] {
+        let metrics = &self.telemetry;
+        [
+            ("execution_occupied", &metrics.execution_occupied),
+            ("execution_queued", &metrics.execution_queued),
+            ("execution_wait_timeouts", &metrics.execution_wait_timeouts),
+            (
+                "execution_wait_cancelled",
+                &metrics.execution_wait_cancelled,
+            ),
+            ("maintenance_cycles", &metrics.maintenance_cycles),
+            ("maintenance_deferred", &metrics.maintenance_deferred),
+        ]
+    }
     /// Prometheus 文本只使用固定标签，避免业务高基数。
     /// Prometheus text uses fixed labels to avoid business cardinality.
     fn metrics(&self, engine: &ling_engine::Engine) -> Result<String, DbError> {
@@ -378,24 +488,133 @@ impl Runtime {
             engine.memory_usage()?,
             engine.scheduled_expirations()?
         );
-        let mut count = 0;
-        text.push_str("# TYPE linger_request_duration_seconds histogram\n");
-        for (index, bound) in ["0.0001", "0.001", "0.01", "0.1", "1", "+Inf"]
-            .iter()
-            .enumerate()
-        {
-            count += self.latency[index].load(Ordering::Relaxed);
-            text.push_str(&format!(
-                "linger_request_duration_seconds_bucket{{le=\"{bound}\"}} {count}\n"
-            ));
+        for (name, counter) in self.execution_counters() {
+            let kind = if matches!(name, "execution_occupied" | "execution_queued") {
+                "gauge"
+            } else {
+                "counter"
+            };
+            let suffix = if kind == "counter" { "_total" } else { "" };
+            metric(
+                &mut text,
+                &format!("{name}{suffix}"),
+                kind,
+                counter.load(Ordering::Relaxed),
+            );
         }
-        text.push_str(&format!("linger_request_duration_seconds_count {count}\n"));
-        text.push_str(&format!(
-            "linger_request_duration_seconds_sum {}\n",
-            self.latency_micros.load(Ordering::Relaxed) as f64 / 1_000_000.0
-        ));
+        let metrics = &self.telemetry;
+        metric(
+            &mut text,
+            "maintenance_reclaimed_total",
+            "counter",
+            engine.maintenance_reclaimed()?,
+        );
+        let [rejected, data_errors, metrics_errors, panics] = self.accept.snapshot();
+        for (name, value) in [
+            ("connections_rejected_total", rejected),
+            ("connection_panics_total", panics),
+            (
+                "first_frame_timeouts_total",
+                metrics.first_frame_timeouts.load(Ordering::Relaxed),
+            ),
+            (
+                "auth_failures_total",
+                metrics.auth_failures.load(Ordering::Relaxed),
+            ),
+            (
+                "subscription_polls_total",
+                metrics.subscription_polls.load(Ordering::Relaxed),
+            ),
+            (
+                "subscription_empty_polls_total",
+                metrics.subscription_empty_polls.load(Ordering::Relaxed),
+            ),
+        ] {
+            metric(&mut text, name, "counter", value);
+        }
+        metric(
+            &mut text,
+            "subscriptions",
+            "gauge",
+            metrics.subscriptions.load(Ordering::Relaxed),
+        );
+        text.push_str(&format!("# TYPE linger_accept_errors_total counter\nlinger_accept_errors_total{{listener=\"data\"}} {data_errors}\nlinger_accept_errors_total{{listener=\"metrics\"}} {metrics_errors}\n"));
+        metric(
+            &mut text,
+            "timing_enabled",
+            "gauge",
+            u64::from(metrics.enabled),
+        );
+        text.push_str(&format!("# TYPE linger_subscription_empty_poll_ratio gauge\nlinger_subscription_empty_poll_ratio {}\n", empty_poll_ratio(metrics)));
+        histogram_text(
+            &mut text,
+            "request_duration_seconds",
+            metrics.request_duration.snapshot(),
+            &LATENCY_BUCKET_BOUNDS_US,
+            1_000_000.0,
+        );
+        histogram_text(
+            &mut text,
+            "execution_wait_seconds",
+            metrics.execution_wait.snapshot(),
+            &LATENCY_BUCKET_BOUNDS_US,
+            1_000_000.0,
+        );
+        let process = crate::telemetry::ProcessSample::collect();
+        metric(
+            &mut text,
+            "process_rss_available",
+            "gauge",
+            u64::from(process.rss_bytes.is_some()),
+        );
+        metric(
+            &mut text,
+            "process_cpu_available",
+            "gauge",
+            u64::from(process.cpu_seconds.is_some()),
+        );
+        if let Some(rss) = process.rss_bytes {
+            metric(&mut text, "process_resident_memory_bytes", "gauge", rss);
+        }
+        if let Some(cpu) = process.cpu_seconds {
+            text.push_str(&format!("# TYPE linger_process_cpu_seconds_total counter\nlinger_process_cpu_seconds_total {cpu}\n"));
+        }
         if let Some(store) = engine.events() {
             let s = store.stats()?;
+            histogram_text(
+                &mut text,
+                "journal_fsync_duration_seconds",
+                s.journal_fsync_duration_us,
+                &LATENCY_BUCKET_BOUNDS_US,
+                1_000_000.0,
+            );
+            histogram_text(
+                &mut text,
+                "journal_transaction_bytes",
+                s.journal_transaction_bytes,
+                &JOURNAL_TRANSACTION_BUCKET_BOUNDS_BYTES,
+                1.0,
+            );
+            histogram_text(
+                &mut text,
+                "journal_compaction_duration_seconds",
+                s.journal_compaction_duration_us,
+                &LATENCY_BUCKET_BOUNDS_US,
+                1_000_000.0,
+            );
+            for (name, value) in [
+                ("journal_compactions_total", s.journal_compactions),
+                (
+                    "journal_compaction_successes_total",
+                    s.journal_compaction_successes,
+                ),
+                (
+                    "journal_compaction_failures_total",
+                    s.journal_compaction_failures,
+                ),
+            ] {
+                metric(&mut text, name, "counter", value);
+            }
             for (index, kind) in [
                 "created",
                 "updated",
@@ -426,6 +645,73 @@ impl Runtime {
         Ok(text)
     }
 }
+/// INFO 保留整数单位和互斥桶；INFO preserves integer units and mutually exclusive buckets.
+fn histogram_value(snapshot: HistogramSnapshot, bounds: &[u64; 6]) -> Value {
+    Value::Map(BTreeMap::from([
+        (
+            "bounds".into(),
+            Value::List(bounds.iter().copied().map(Value::UInt).collect()),
+        ),
+        (
+            "buckets".into(),
+            Value::List(snapshot.buckets.into_iter().map(Value::UInt).collect()),
+        ),
+        ("count".into(), Value::UInt(snapshot.count)),
+        ("sum".into(), Value::UInt(snapshot.sum)),
+    ]))
+}
+
+/// 浮点采样失效时显式不可用；Invalid floating-point samples are explicitly unavailable.
+fn float_value(value: f64) -> Value {
+    ling_types::Float::new(value).map_or(Value::Null, Value::Float)
+}
+
+/// Prometheus 对外采用累积桶并转换单位；Exports cumulative Prometheus buckets with converted units.
+fn histogram_text(
+    text: &mut String,
+    name: &str,
+    snapshot: HistogramSnapshot,
+    bounds: &[u64; 6],
+    divisor: f64,
+) {
+    text.push_str(&format!("# TYPE linger_{name} histogram\n"));
+    let mut count = 0u64;
+    for (index, bucket) in snapshot.buckets.into_iter().enumerate() {
+        count = count.saturating_add(bucket);
+        let bound = bounds.get(index).map_or_else(
+            || "+Inf".into(),
+            |bound| (*bound as f64 / divisor).to_string(),
+        );
+        text.push_str(&format!("linger_{name}_bucket{{le=\"{bound}\"}} {count}\n"));
+    }
+    text.push_str(&format!(
+        "linger_{name}_count {}\nlinger_{name}_sum {}\n",
+        snapshot.count,
+        snapshot.sum as f64 / divisor
+    ));
+}
+
+/// 输出稳定名称与类型；Outputs stable names and metric types.
+fn metric(text: &mut String, name: &str, kind: &str, value: u64) {
+    text.push_str(&format!(
+        "# TYPE linger_{name} {kind}\nlinger_{name} {value}\n"
+    ));
+}
+
+/// 无轮询时比例定义为零；No polls means a zero ratio.
+fn empty_poll_ratio(metrics: &crate::telemetry::Telemetry) -> f64 {
+    let polls = metrics.subscription_polls.load(Ordering::Relaxed);
+    if polls == 0 {
+        0.0
+    } else {
+        metrics
+            .subscription_empty_polls
+            .load(Ordering::Relaxed)
+            .min(polls) as f64
+            / polls as f64
+    }
+}
+
 /// 名称匹配使用有界星号回退，无递归或分配。
 /// Name matching uses bounded star fallback without recursion or allocation.
 fn matches(pattern: &[u8], key: &[u8]) -> bool {

@@ -50,6 +50,37 @@ async fn shared_command_contracts() {
             );
         }
     }
+    // 三语言共用 INFO 字段类型，动态计数不写死数值。
+    // The three SDKs share INFO field types without fixing dynamic counter values.
+    let Value::Map(sections) = client.execute("INFO", vec![]).await.unwrap() else {
+        panic!()
+    };
+    for line in include_str!("../../../tests/fixtures/protocol/info-fields.tsv")
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let fields: Vec<_> = line.split('|').collect();
+        let Value::Map(section) = &sections[fields[0]] else {
+            panic!("{line}")
+        };
+        let value = &section[fields[1]];
+        assert!(
+            match fields[2] {
+                "UInt" => matches!(value, Value::UInt(_)),
+                "Bool" => matches!(value, Value::Bool(_)),
+                "Float" => matches!(value, Value::Float(_)),
+                "UIntOrNull" => matches!(value, Value::UInt(_) | Value::Null),
+                "FloatOrNull" => matches!(value, Value::Float(_) | Value::Null),
+                "Histogram" => matches!(value, Value::Map(histogram)
+                if matches!(histogram.get("count"), Some(Value::UInt(_)))
+                && matches!(histogram.get("sum"), Some(Value::UInt(_)))
+                && matches!(histogram.get("bounds"), Some(Value::List(bounds)) if bounds.len() == 6)
+                && matches!(histogram.get("buckets"), Some(Value::List(buckets)) if buckets.len() == 7)),
+                _ => false,
+            },
+            "{line}: {value:?}"
+        );
+    }
     client.close().await.unwrap();
     stop.send(()).unwrap();
     task.await.unwrap().unwrap();

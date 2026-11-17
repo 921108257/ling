@@ -177,12 +177,16 @@ INFO 返回以 section 名为顶层键的 Map；即使只请求一个 section，
 
 | section | 字段 |
 |---|---|
-| server | version、uptime_ms、shards_per_database |
-| memory | managed_bytes、limit_bytes、scheduled_expirations |
-| stats | requests、errors（已完成请求，不包含当前 INFO） |
-| clients | connected |
+| server | version、uptime_ms、shards_per_database、process_cpu_available、process_cpu_seconds |
+| memory | managed_bytes、limit_bytes、scheduled_expirations、rss_available、rss_bytes |
+| stats | requests、errors（已完成请求，不包含当前 INFO）、timing_enabled、request_duration_us、execution_wait_us、execution_occupied、execution_queued、execution_wait_timeouts、execution_wait_cancelled、maintenance_cycles、maintenance_reclaimed、maintenance_deferred |
+| clients | connected、rejected、accept_errors_data、accept_errors_metrics、panics、first_frame_timeouts、auth_failures、subscriptions |
 | keyspace | db0、db1 等，对应活跃 Key 数 UInt |
-| events | committed、dropped、redelivered、journal_bytes、journal_errors、groups、pending、oldest_retained_ms、by_kind、consumer_groups |
+| events | committed、dropped、redelivered、journal_bytes、journal_errors、groups、pending、oldest_retained_ms、by_kind、consumer_groups、timing_enabled、journal_fsync_duration_us、journal_transaction_bytes、journal_compaction_duration_us、journal_compactions、journal_compaction_successes、journal_compaction_failures、subscription_polls、subscription_empty_polls、subscription_empty_poll_ratio |
+
+新增数量与累计量使用 UInt；available / timing_enabled 使用 Bool。Linux 的 rss_bytes 为 UInt 字节，process_cpu_seconds 为 Float CPU 秒；不可用时对应 available 为 false、数值为 Null，非 Linux 不采样。订阅空轮询占比为 Float，范围 [0,1]，从未轮询时为 0。执行占用与排队各自采样，当前 INFO 自己持有的执行许可也在占用中。
+
+所有直方图为 Map：bounds 是 6 个 UInt 上界的 List，buckets 是 7 个 UInt 互斥桶的 List（最后一个大于最大上界），count / sum 为 UInt；名称以 `_us` 结尾时 bounds / sum 单位为微秒，journal_transaction_bytes 为字节。时延上界为 `[10,100,1000,10000,100000,1000000]`，字节上界为 `[256,1024,4096,16384,65536,1048576]`。metrics.enabled=false 时 timing_enabled=false，启动后这些直方图保持全零，其余计数持续更新。直方图值、累计量与当前数量都不是跨字段原子快照；完整指标名称、类型及计数边界见 [config.md](config.md#字段语义与校验)。
 
 事件统计可用时返回 events；by_kind 按 CREATED / UPDATED / EXPIRED / DELETED / EVICTED / TTL_CHANGED 顺序排列。consumer_groups 为 Map 列表，包含 name、db、expired、pending、oldest_pending_ms 和 `[shard, sequence]` watermarks；无可用时间时返回 Null。结果超过响应预算返回 `ERR_LIMIT_EXCEEDED`。
 
