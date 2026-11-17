@@ -89,7 +89,10 @@ if [ -n "${PREVIOUS_VERSION:-}" ]; then
     if [ -n "${UPDATE_VERSION:-}" ]; then
         test "$UPDATE_VERSION" = "$VERSION"
         install_package "$previous" "$PREVIOUS_VERSION"
-        sudo --preserve-env=LING_GITHUB_TOKEN /usr/local/bin/ling --lang en-US update --version "$UPDATE_VERSION"
+        # Library 中的固定验证器不依赖 Homebrew 或 sudo 的 PATH。
+        # The fixed Library verifier does not depend on Homebrew or sudo's PATH.
+        sudo /Library/ling-ci/bin/gh --version
+        sudo --preserve-env=LING_GITHUB_TOKEN env PATH=/Library/ling-ci/bin:/usr/bin:/bin:/usr/sbin:/sbin /usr/local/bin/ling --lang en-US update --version "$UPDATE_VERSION"
         wait_for_service
         assert_versions "$VERSION"
         assert_preserved

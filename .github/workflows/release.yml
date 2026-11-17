@@ -43,12 +43,18 @@ jobs:
     timeout-minutes: 25
     outputs:
       version: ${{ steps.version.outputs.version }}
+      baseline_version: ${{ steps.baseline.outputs.version }}
+      baseline_ref: ${{ steps.baseline.outputs.ref }}
+      baseline_commit: ${{ steps.baseline.outputs.commit }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Validate pinned CI inputs
         run: |
           python3 scripts/ci-inputs.py check
           python3 -B -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Read fixed upgrade baseline
+        id: baseline
+        run: python3 scripts/ci-inputs.py baseline >> "$GITHUB_OUTPUT"
       - name: Validate release version
         id: version
         env:
@@ -224,6 +230,9 @@ jobs:
       TARGET: ${{ matrix.target }}
       ARCH: ${{ matrix.arch }}
       RUSTFLAGS: ${{ matrix.rustflags }}
+      PREVIOUS_VERSION: ${{ needs.checks.outputs.baseline_version }}
+      PREVIOUS_REF: ${{ needs.checks.outputs.baseline_ref }}
+      PREVIOUS_COMMIT: ${{ needs.checks.outputs.baseline_commit }}
     defaults:
       run:
         shell: bash
@@ -272,35 +281,42 @@ jobs:
         run: cargo test --locked --target "$TARGET" --workspace
       - name: Build server and CLI
         run: cargo build --locked --release --target "$TARGET" -p ling-server -p ling-cli
+      - name: Install pinned official verification tool
+        run: python3 scripts/install-gh.py
       - name: Download previous release for isolated upgrade acceptance
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p target/previous-release
-          gh release download v0.1.6 --repo 921108257/ling --pattern "ling_0.1.6_${{ matrix.platform }}_${ARCH}*" --dir target/previous-release
+          gh release download "${PREVIOUS_REF#refs/tags/}" --repo 921108257/ling --pattern "ling_${PREVIOUS_VERSION}_${{ matrix.platform }}_${ARCH}*" --pattern SHA256SUMS --pattern PROVENANCE.sigstore.json --dir target/previous-release
+      - name: Verify previous release before native installation
+        run: |
+          mkdir -p target/native-acceptance
+          arguments=(--dist target/previous-release --ref "$PREVIOUS_REF" --source-digest "$PREVIOUS_COMMIT")
+          prefix="ling_${PREVIOUS_VERSION}_${{ matrix.platform }}_${ARCH}"
+          case '${{ matrix.platform }}' in
+            linux) arguments+=(--asset "$prefix.deb" --asset "$prefix.rpm") ;;
+            macos) arguments+=(--asset "$prefix.pkg") ;;
+            windows) arguments+=(--asset "${prefix}_setup.exe") ;;
+          esac
+          python3 tests/provenance_contracts.py "${arguments[@]}" 2>&1 | tee "target/native-acceptance/baseline-${{ matrix.platform }}-${ARCH}.log"
       - name: Build and verify Linux packages
         if: runner.os == 'Linux'
         run: |
           bash packaging/linux/build.sh
           bash packaging/linux/verify.sh
           python3 scripts/smoke-package.py --appimage "dist/ling_${VERSION}_linux_${ARCH}.AppImage"
-        env:
-          PREVIOUS_VERSION: 0.1.6
       - name: Build and verify macOS packages
         if: runner.os == 'macOS'
         run: |
           bash packaging/macos/build.sh
           bash packaging/macos/verify.sh
-        env:
-          PREVIOUS_VERSION: 0.1.6
       - name: Build and verify Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           ./packaging/windows/build.ps1 -Version $env:VERSION
           ./packaging/windows/verify.ps1 -Version $env:VERSION
-        env:
-          PREVIOUS_VERSION: 0.1.6
       - name: Smoke-test Unix portable package
         if: runner.os != 'Windows'
         run: |

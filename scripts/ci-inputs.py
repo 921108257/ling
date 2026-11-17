@@ -20,6 +20,11 @@ def load_manifest(path=MANIFEST):
     for version in manifest["rust"].values():
         if not re.fullmatch(r"\d+\.\d+\.\d+", version):
             raise ValueError("Rust versions must include an exact patch version")
+    baseline = manifest["release_baseline"]
+    if not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", baseline["version"]):
+        raise ValueError("Release baseline must use an exact version")
+    if not re.fullmatch(r"[0-9a-f]{40}", baseline["commit"]):
+        raise ValueError("Release baseline must use a full lowercase commit")
     for name, tool in manifest["tools"].items():
         expected_tag = ("v" if name == "nfpm" else "") + tool["version"]
         if tool["tag"] != expected_tag:
@@ -92,6 +97,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check")
+    commands.add_parser("baseline")
     download = commands.add_parser("download")
     download.add_argument("tool", choices=("nfpm", "appimagetool"))
     download.add_argument("arch", choices=("x86_64", "aarch64"))
@@ -101,6 +107,12 @@ def main():
     if args.command == "check":
         check_workflows(ROOT, manifest)
         print("CI action, Rust and packaging-tool inputs are pinned")
+    elif args.command == "baseline":
+        # 同一固定身份供两个工作流使用；Both workflows consume the same pinned identity.
+        baseline = manifest["release_baseline"]
+        print(f"version={baseline['version']}")
+        print(f"ref=refs/tags/v{baseline['version']}")
+        print(f"commit={baseline['commit']}")
     else:
         download_tool(manifest, args.tool, args.arch, args.directory)
 

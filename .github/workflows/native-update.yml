@@ -1,0 +1,174 @@
+name: Published native update acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published target version newer than the fixed baseline
+        required: true
+        default: '0.3.0'
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    if: github.repository == '921108257/ling'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.target.outputs.version }}
+      commit: ${{ steps.target.outputs.commit }}
+      baseline_version: ${{ steps.baseline.outputs.version }}
+      baseline_ref: ${{ steps.baseline.outputs.ref }}
+      baseline_commit: ${{ steps.baseline.outputs.commit }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Read fixed upgrade baseline
+        id: baseline
+        run: python3 scripts/ci-inputs.py baseline >> "$GITHUB_OUTPUT"
+      - name: Resolve the published target and exact source commit
+        id: target
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          BASELINE_VERSION: ${{ steps.baseline.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, tomllib
+          from pathlib import Path
+
+          version = os.environ['REQUESTED_VERSION']
+          if not re.fullmatch(r'(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)', version):
+              raise ValueError('Use an exact target version')
+          if tuple(map(int, version.split('.'))) <= tuple(map(int, os.environ['BASELINE_VERSION'].split('.'))):
+              raise ValueError('Target version must be newer than the fixed baseline')
+          tag = f'v{version}'
+          release = json.loads(subprocess.check_output([
+              'gh', 'release', 'view', tag, '--repo', '921108257/ling', '--json', 'tagName,isDraft,url',
+          ], text=True))
+          if release['tagName'] != tag or release['isDraft']:
+              raise ValueError('The exact target release must already be public')
+          subprocess.run(['git', 'fetch', '--no-tags', 'origin', f'refs/tags/{tag}'], check=True)
+          commit = subprocess.check_output(['git', 'rev-parse', 'FETCH_HEAD^{commit}'], text=True).strip()
+          if not re.fullmatch(r'[0-9a-f]{40}', commit):
+              raise ValueError('Target tag did not resolve to a complete commit')
+          cargo = subprocess.check_output(['git', 'show', f'{commit}:Cargo.toml'], text=True)
+          if tomllib.loads(cargo)['workspace']['package']['version'] != version:
+              raise ValueError('Published tag and source version differ')
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as output:
+              output.write(f'version={version}\ncommit={commit}\n')
+          print(f'Published native update target: {tag} / {commit} / {release["url"]}')
+          PY
+
+  native-update:
+    needs: resolve
+    name: Update ${{ matrix.platform }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            arch: x86_64
+            runner: ubuntu-24.04
+          - platform: macos
+            arch: x86_64
+            runner: macos-15-intel
+          - platform: windows
+            arch: x86_64
+            runner: windows-2022
+    env:
+      VERSION: ${{ needs.resolve.outputs.version }}
+      ARCH: ${{ matrix.arch }}
+      PREVIOUS_VERSION: ${{ needs.resolve.outputs.baseline_version }}
+      PREVIOUS_REF: ${{ needs.resolve.outputs.baseline_ref }}
+      PREVIOUS_COMMIT: ${{ needs.resolve.outputs.baseline_commit }}
+      PREVIOUS_DIST: target/previous-release
+      UPDATE_VERSION: ${{ needs.resolve.outputs.version }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+      - name: Install pinned official verification tool
+        run: python3 scripts/install-gh.py
+      - name: Download and verify both public releases before installation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_COMMIT: ${{ needs.resolve.outputs.commit }}
+        run: |
+          mkdir -p target/native-acceptance
+          download_and_verify() {
+            local version="$1" directory="$2" reference="$3" commit="$4" role="$5"
+            local prefix="ling_${version}_${{ matrix.platform }}_${ARCH}"
+            local arguments=(--dist "$directory" --ref "$reference" --source-digest "$commit")
+            case '${{ matrix.platform }}' in
+              linux)
+                arguments+=(--asset "$prefix.deb" --asset "$prefix.rpm")
+                if [ "$role" = candidate ]; then arguments+=(--asset "$prefix.AppImage" --asset "$prefix.tar.gz"); fi
+                ;;
+              macos)
+                arguments+=(--asset "$prefix.pkg")
+                if [ "$role" = candidate ]; then arguments+=(--asset "$prefix.tar.gz"); fi
+                ;;
+              windows)
+                arguments+=(--asset "${prefix}_setup.exe")
+                if [ "$role" = candidate ]; then arguments+=(--asset "$prefix.zip"); fi
+                ;;
+            esac
+            mkdir -p "$directory" || return
+            gh release download "${reference#refs/tags/}" --repo 921108257/ling --pattern "$prefix*" --pattern SHA256SUMS --pattern PROVENANCE.sigstore.json --dir "$directory" || return
+            printf 'role=%s version=%s ref=%s commit=%s\n' "$role" "$version" "$reference" "$commit"
+            python3 tests/provenance_contracts.py "${arguments[@]}"
+          }
+          download_and_verify "$PREVIOUS_VERSION" "$PREVIOUS_DIST" "$PREVIOUS_REF" "$PREVIOUS_COMMIT" baseline 2>&1 | tee target/native-acceptance/baseline-provenance.log
+          download_and_verify "$VERSION" dist "refs/tags/v$VERSION" "$CANDIDATE_COMMIT" candidate 2>&1 | tee target/native-acceptance/candidate-provenance.log
+      - name: Install the verified gh in a root controlled search path
+        if: runner.os != 'Windows'
+        run: |
+          if [ '${{ runner.os }}' = Linux ]; then parent=/opt; else parent=/Library; fi
+          python3 - "$parent" <<'PY'
+          import os, stat, sys
+          for path in ('/', sys.argv[1]):
+              info = os.lstat(path)
+              if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
+                  raise ValueError(f'gh parent is not a root controlled directory: {path}')
+          PY
+          directory="$parent/ling-ci"
+          sudo test ! -e "$directory"
+          sudo test ! -L "$directory"
+          sudo install -d -o 0 -g 0 -m 755 "$directory/bin"
+          sudo install -o 0 -g 0 -m 755 "$(command -v gh)" "$directory/bin/gh"
+          sudo "$directory/bin/gh" --version
+      - name: Install Linux native acceptance tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+      - name: Exercise Linux native installation and real published update
+        if: runner.os == 'Linux'
+        env:
+          LING_GITHUB_TOKEN: ${{ github.token }}
+        run: bash packaging/linux/verify.sh
+      - name: Exercise macOS native installation and real published update
+        if: runner.os == 'macOS'
+        env:
+          LING_GITHUB_TOKEN: ${{ github.token }}
+        run: bash packaging/macos/verify.sh
+      - name: Exercise Windows native installation and real published update
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          LING_GITHUB_TOKEN: ${{ github.token }}
+        run: ./packaging/windows/verify.ps1 -Version $env:VERSION
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: published-native-update-${{ matrix.platform }}-${{ matrix.arch }}
+          path: target/native-acceptance/*
+          if-no-files-found: warn
+          retention-days: 14

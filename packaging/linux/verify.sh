@@ -122,7 +122,10 @@ for package in ${PACKAGES:-deb rpm}; do
         if [ -n "${UPDATE_VERSION:-}" ]; then
             test "$UPDATE_VERSION" = "$VERSION"
             install_package "$previous" "$PREVIOUS_VERSION"
-            sudo --preserve-env=LING_GITHUB_TOKEN /usr/bin/ling --lang en-US update --version "$UPDATE_VERSION"
+            # 专用固定验证器不依赖 sudo 保留 runner PATH。
+            # The dedicated verifier does not depend on sudo preserving the runner PATH.
+            sudo /opt/ling-ci/bin/gh --version
+            sudo --preserve-env=LING_GITHUB_TOKEN env PATH=/opt/ling-ci/bin:/usr/bin:/bin:/usr/sbin:/sbin /usr/bin/ling --lang en-US update --version "$UPDATE_VERSION"
             wait_for_service
             assert_versions "$VERSION"
             assert_preserved

@@ -3,6 +3,10 @@
     "version": "1.94.0",
     "msrv": "1.88.0"
   },
+  "release_baseline": {
+    "version": "0.2.0",
+    "commit": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a"
+  },
   "tools": {
     "nfpm": {
       "version": "2.49.0",
