@@ -53,7 +53,19 @@ Windows 支持 Fast，不提供 Reliable 所需的目录同步与原子替换路
 
 Windows 仍执行 `windows_reliable_rejected_without_creating_directory`，同时检查 Fast 提交可用、Reliable 返回 `ERR_CONFIG_INVALID` 且不创建目录。Linux / macOS CI 保留全部本平台测试；Linux 的 `/dev/full` 契约不计为 macOS 通过项。
 
-2026-11-17 在本机 Windows x86_64、rustc 1.94.0 上执行 `cargo test --locked --workspace --no-fail-fast`：182 项通过、0 失败、0 ignored（47 个测试目标及文档测试汇总）；上述平台条件排除的测试未编译，不计入 182 项。`cargo fmt --all -- --check`、`cargo clippy --locked --workspace --all-targets -- -D warnings`、`RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps` 及 `npm --prefix site run build` / `check` 同机通过。该记录对应 v0.1.4 实现中的未提交工作区，不是 v0.1.3 历史结果，也不代表 GitHub Actions 已执行；Windows CI 原生发行目标及 Linux / macOS 全量结果待实际运行回填。
+2026-11-17 在本机 Windows x86_64、rustc 1.94.0 上执行 `cargo test --locked --workspace --no-fail-fast`：182 项通过、0 失败、0 ignored（47 个测试目标及文档测试汇总）；上述平台条件排除的测试未编译，不计入 182 项。`cargo fmt --all -- --check`、`cargo clippy --locked --workspace --all-targets -- -D warnings`、`RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps` 及 `npm --prefix site run build` / `check` 同机通过。该记录对应随后提交为 `601a1e9` 的 v0.1.4 首批实现工作区，不是 v0.1.3 历史结果。
+
+同日 GitHub Actions 的 `Cross-platform packages` 运行 `44043386846` 对验证分支 `codex/v0.1.4-baseline`、完整提交 `601a1e944a843a5472b98b754af2d7f32da89c95` 执行成功。Linux `checks` 实际通过 fmt、workspace clippy（所有目标、拒绝警告）、严格 rustdoc、打包源码检查及 `python3 tests/sdk_contracts.py`；后者的 Go race / Java `-Xlint:all -Werror` 在 TCP 与双向 TLS 两轮通过。各包任务的测试数量由日志中所有 `test result: ok` 汇总：
+
+| CI 平台 | 测试命令 | 通过 | 失败 / ignored | 构建与包验证 |
+|---|---|---:|---|---|
+| Linux x86_64 | `cargo test --locked --workspace` | 198 | 0 / 0 | 通过 |
+| Linux aarch64 | `cargo test --locked --workspace` | 198 | 0 / 0 | 通过 |
+| macOS x86_64 | `cargo test --locked --workspace` | 197 | 0 / 0 | 通过 |
+| macOS aarch64 | `cargo test --locked --workspace` | 197 | 0 / 0 | 通过 |
+| Windows x86_64 | `cargo test --locked --target x86_64-pc-windows-msvc --workspace` | 182 | 0 / 0 | 通过 |
+
+Linux 比 macOS 多一项 `/dev/full` 契约；Windows 未编译上表列明的 Unix 条件测试，不把它们计为通过。Linux 测试使用宿主目标，包构建使用 musl 目标，本次尚未完成版本计划 7.3 的 musl 目标测试。非标签手动运行未执行 Release 发布；CI 包验证也不代替目标部署主机的安装、升级或物理断电验收。
 
 ## 验证原则
 
