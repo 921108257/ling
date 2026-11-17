@@ -400,9 +400,37 @@ Python 输入与构建工具契约 15 项通过；覆盖固定动作与工具版
 
 固定 `cargo-audit 0.22.1` 和 RustSec 数据库提交 `233155b4025b854c68a4b199c0e32d7fd53291a2` 的审计没有已知漏洞，保留 `rustls-pemfile 2.2.0` 的停止维护提示 `RUSTSEC-2025-0134`。ZIP 升级至 9.6.1 后最低 Rust 版本提高为 1.88，未对旧版 ZIP 公告设置忽略项。
 
-GitHub Actions 将执行五平台构建、原生安装脚本、每包 CycloneDX SBOM、30 个 subject 的来源证明及三种操作系统的独立离线验证，并记录更新器依赖／体积和同一提交的两次独立构建结果。当前尚未取得本轮运行结果，不能将工作流配置视为通过证据。
+### Actions 构建与来源证明
 
-真实 Windows 11 管理员虚拟机、原生 RPM 系 systemd 主机、干净标签的来源证明演练，以及公开候选上的 `ling update` 尚未执行。托管 Windows Server 2022 和 Ubuntu 上 RPM 兼容安装不能替代前两项。Unix 恢复测试模拟进程中断，不构成物理断电验收；重复恢复按顺序执行，不宣称并发恢复安全。
+2026-11-17，提交 `c1070396e1ecb8c6b12c1c233fbcd1d429d20f8e` 的 Actions [`44087465734`](https://github.com/921108257/ling/actions/runs/44087465734) 已完成五平台测试、14 个包构建、原生安装脚本、每包 SBOM 和来源证明。公共检查的 fmt、严格 Clippy／rustdoc、最低 Rust 1.88.0 两种配置、关闭更新器 workspace 测试（228 项）以及 Java／Go TCP 与双向 TLS 契约通过。固定版本和数据库的依赖审计扫描 212 个锁定依赖、1,527 条公告，0 个漏洞；保留上文停止维护提示。数据库提交固定于工作流及日志，审计 JSON 自带的数据库提交／更新时间为 null，不能从这两个字段推断数据库版本。
+
+| 构建目标 | 实际系统 | 默认 workspace 测试 | 额外目标测试 |
+|---|---|---:|---:|
+| Linux x86_64 | Ubuntu 24.04.5 LTS | 246 | musl server／CLI 119 |
+| Linux ARM64 | Ubuntu 24.04.5 LTS | 246 | musl server／CLI 119 |
+| macOS Intel | macOS 15.7.9，24G830 | 245 | — |
+| macOS ARM64 | macOS 26.7.2，25G332 | 245 | — |
+| Windows x86_64 | Server 2022 Datacenter，10.0.20348 | 225 | — |
+
+以上日志均为零失败、零 ignored。包任务的 workspace 统计包含未设置真实 bundle 环境时提前返回的验签入口；之后单独的 Linux／Windows／macOS 验证任务提供真实产物，各实际运行一项 Rust 更新器验证测试，通过有效证明、篡改字节、改名、错误 ref 与缺失证明检查。三个系统还各用独立 Python 驱动，在无令牌、空配置与不可用网络代理下真实验证全部 30 个 subject，并通过六类反向用例；不以模拟验证器代替密码学检查。新增宽松 umask 目录权限与便携替换中断恢复测试已在 Unix 实际运行，不改变父测试进程的 umask。
+
+五份原生安装日志均以 `native_acceptance_exit_code=0` 结束，覆盖首装、服务停止／启动／重启、同版重装、0.1.5 包升级到 0.1.6、卸载注销与配置摘要保留。Unix 同时验证真实 Reliable Journal 的摘要保留；Windows 使用 Fast，验证状态标记及双程序版本，不声称支持 Journal。Ubuntu 上的 RPM 使用 `--nodeps`，仅计兼容演练。Linux AppImage 与五个平台便携包的 PING／SET／GET／PTTL／SHUTDOWN 烟测通过。
+
+实际下载 `verified-release` 全部 31 个附件后，再次通过固定文件集与 SHA-256 校验：14 个包、14 份 CycloneDX SBOM、审计 JSON、`SHA256SUMS` 与 `PROVENANCE.sigstore.json`。全部 SBOM 通过官方 1.6 schema 和 SPDX 表达式校验：Linux 每份 163 个组件，macOS 每份 164 个，Windows ZIP 163 个、含 WinSW 的 Setup 164 个。本机中文 Windows 的独立验签复核发现 Python 子进程默认采用 GBK，补充显式 UTF-8 后再次通过 30 个 subject 及六类反向测试；下载的 Windows 便携包也通过真实 TCP 烟测。该测试脚本编码修正及本节记录不改变上述构建的产品源码。
+
+### 更新器依赖和双构建测量
+
+同一干净提交、Linux x86_64 GNU 目标、Rust 1.94.0 的独立 release 构建结果如下；normal／build 依赖按 crate 名称和版本去重，排除开发依赖与服务端自身，包含构建工具。数字对应本次 GNU 测量，不代替 musl 包体积。
+
+| 配置 | 依赖数量 | `ling` 字节数 |
+|---|---:|---:|
+| 默认开启 `self-update` | 161 | 9,270,528 |
+| 关闭默认 feature | 84 | 6,378,688 |
+| 差值 | 77 | 2,891,840（约 2.758 MiB） |
+
+两次独立 target 目录构建固定提交时间、禁用增量并映射源码／输出路径；`ling` 和 `ling-cli` 的大小与 SHA-256 均一致，前后源码保持干净。服务端摘要为 `c1a6131357e9c5dba052f7123cfaada0d4f48f1a99a0552d95da9651ddf387c7`；CLI 为 `17c02f39bb55f8f309fce9ce06274a2b9ef67f83c54499219332d5d5a9561762`，4,692,440 字节。该结果只覆盖同一 runner、同一工具链和同一提交，不证明跨机器或同标签逐位可复现。原始测量、审计、包、验收和证明可从本次运行对应 artifact 复核，本机副本位于 `target/ci-44087465734/`。
+
+真实 Windows 11 管理员虚拟机、原生 RPM 系 systemd 主机、交互 UAC 取消、干净标签的来源证明演练，以及公开候选上的 `ling update` 尚未执行。托管 Windows Server 2022 和 Ubuntu 上 RPM 兼容安装不能替代前两项。当前证明绑定开发分支 ref，生产更新器只接受目标版本的标签身份；本轮未打标签、未创建 Release。Unix 恢复测试模拟进程中断，不构成物理断电验收；重复恢复按顺序执行，不宣称并发恢复安全。
 
 ## Redis 对比边界
 

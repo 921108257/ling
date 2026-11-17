@@ -40,7 +40,8 @@ def main():
                                      f"https://github.com/921108257/ling/.github/workflows/release.yml@{ref}",
                                      "--source-ref", ref, "--cert-oidc-issuer", "https://token.actions.githubusercontent.com",
                                      "--predicate-type", "https://slsa.dev/provenance/v1", "--deny-self-hosted-runners",
-                                     "--format", "json"], env=environment, capture_output=True, text=True, timeout=60)
+                                     "--format", "json"], env=environment, capture_output=True,
+                                    text=True, encoding="utf-8", timeout=60)
             assert (result.returncode == 0) == success, result.stderr
             if success:
                 verified = json.loads(result.stdout)
