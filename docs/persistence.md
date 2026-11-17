@@ -8,6 +8,8 @@ Reliable 通过同步 Journal 保存事件及消费元数据。缓存值与 TTL 
 
 当前 Reliable 实现面向支持文件及目录同步、原子替换的 Linux / macOS 文件系统。Windows 尚未实现对应的目录同步与替换持久化路径，Reliable 配置在文件操作前返回 `ERR_CONFIG_INVALID`；服务端和 CLI 的默认 Fast 模式仍可使用。不会通过省略目录同步或静默降级为 Fast 来绕过这一限制。
 
+2026-11-18 的 Windows 11 / NTFS / Rust 1.94.0 最小实验中，文件 `sync_all` 和覆盖重命名成功；普通目录打开同步失败（OS 5），安全标准库 `OpenOptionsExt::custom_flags(FILE_FLAG_BACKUP_SEMANTICS)` 加读写访问后的目录同步成功。这只是 API 调用实验，没有验证替换与设备写缓存的断电边界。Rust Windows 实现使用 `FlushFileBuffers`，其句柄要求写访问；Microsoft 的 `ReplaceFileW` 文档也注明 `REPLACEFILE_WRITE_THROUGH` 不受支持。不能据此断言必须写 unsafe，也不能据调用成功宣称持久化完成。参考 [Rust 1.94 实现](https://github.com/rust-lang/rust/blob/1.94.0/library/std/src/sys/fs/windows.rs)、[FlushFileBuffers](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-flushfilebuffers) 和 [ReplaceFileW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew)。
+
 不支持 `SAVE`、`SHUTDOWN NOSAVE`、缓存 Snapshot 或数据 WAL，也不提供从事件重建缓存的功能。
 
 | 数据 | Fast | Reliable |
@@ -22,6 +24,8 @@ Reliable 通过同步 Journal 保存事件及消费元数据。缓存值与 TTL 
 ## 提交保证
 
 Reliable 必须在完整事务完成 fsync 后才能向客户端确认成功。恢复接受有效且有完整提交标记的事务；即使崩溃前未收到 fsync 返回或响应，完整事务也可能幸存，因此结果未知的请求仍可能恢复可见。当前每个事务直接 fsync，不主动等待合并；`group_commit_ms` 仅限定允许的最大主动等待预算，不改变提交保证。
+
+0.2.0 评审决定继续逐事务同步：前序测量没有 fsync 时延占比及互不相交事务的并发数据，不满足组提交立项条件。订阅提交通知必须在 fsync 和状态发布之后发出，不能以已追加但尚未确认的字节唤醒并交付事件。Journal 故障也唤醒等待者，让其获得既有明确错误。
 
 普通数据变更的处理顺序：
 

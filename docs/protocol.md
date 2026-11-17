@@ -10,6 +10,8 @@
 
 底层为有序 TCP 字节流，可直接使用 TLS 包装；启用 TLS 时先完成 TLS 握手，再发送本协议。当前版本不支持压缩、明文连接内升级 TLS 或 Embedded 通道。
 
+0.2.0 连接准入契约：明文 TCP 超过连接上限时尝试发送 ID=0 的 `ERR_BUSY` ERROR，最多等待 50 ms 后关闭；最多一个拒绝写入任务，拒绝预算满则直接关闭。因此拒绝帧是尽力交付，不能保证过载客户端都收到。TLS 在握手前超限时直接关闭，不发送明文协议字节；正常 TLS 握手继续受 `server.shutdown_timeout_ms` 约束。实现与互操作验收进度见版本计划。
+
 客户端首个应用帧必须是普通 `REQUEST HELLO`，参数为单个 `UInt(1)`。头部 Version 与 HELLO 参数都必须为 1；当前版本仅接受这一版本，不宣称支持多版本自动降级。
 
 HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`events: Bool`、`reliable_events: Bool`、`stream_id: Bytes(16) | Null`。server_version 为服务端版本。两个能力字段说明当前实例已启用的模式；事件禁用时 stream_id 为 Null。重连订阅前 SDK 比较保存的 stream_id，不同则上报 ERR_STREAM_MISMATCH 并等待调用方显式重置，不静默新建同名组。

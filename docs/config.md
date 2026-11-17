@@ -78,6 +78,7 @@ max_pending_events = 10000
 max_groups = 1024
 consumer_timeout_ms = 30000
 retry_interval_ms = 5000
+notification_enabled = true # 0.2.0 设计项：false 保留 10 ms 派发
 
 [event_journal]
 dir = ""

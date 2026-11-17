@@ -88,6 +88,8 @@ Reliable 命名组的 ACK 状态需 fsync 后才返回成功。ACK 提交前断�
 
 `events.consumer_timeout_ms` 控制未确认交付的租约，`events.retry_interval_ms` 控制重投间隔。连接失效或租约到期后可以交给另一消费者；旧消费者晚到的有效 ACK 按组幂等处理。首次发送按流内顺序，重投可能与新交付交错；业务完成顺序不保证。
 
+0.2.0 派发契约：`events.notification_enabled=true` 时先登记状态通知，再检查已提交事件；提交、ACK 释放窗口、断开释放租约、保留范围变化及 Journal 故障唤醒等待者。通知不承载事件，不改变组进度。积压立即续取，分段过滤尚未追平时只继续当前消费者，预算不足则等待；没有事件和 pending 时不周期性派发。恢复的 pending 立即可重投；无所有者 pending 的期限为发送时刻加 retry_interval，有所有者时加 retry_interval 与 consumer_timeout 中较大者。false 保留原 10 ms 检查路径，重投条件相同。该契约的实现与实测状态见版本计划。
+
 当前版本不设“重试若干次后自动确认”，不实现死信队列。失败事件持续按有界窗口重投；单个消费者不能无限占用内存，运维通过积压指标定位处理失败。
 
 ## 保留与容量
