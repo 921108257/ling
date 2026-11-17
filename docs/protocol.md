@@ -10,7 +10,7 @@
 
 底层为有序 TCP 字节流，可直接使用 TLS 包装；启用 TLS 时先完成 TLS 握手，再发送本协议。当前版本不支持压缩、明文连接内升级 TLS 或 Embedded 通道。
 
-0.2.0 连接准入契约：明文 TCP 超过连接上限时尝试发送 ID=0 的 `ERR_BUSY` ERROR，最多等待 50 ms 后关闭；最多一个拒绝写入任务，拒绝预算满则直接关闭。因此拒绝帧是尽力交付，不能保证过载客户端都收到。TLS 在握手前超限时直接关闭，不发送明文协议字节；正常 TLS 握手继续受 `server.shutdown_timeout_ms` 约束。实现与互操作验收进度见版本计划。
+0.2.0 连接准入契约：明文 TCP 超过连接上限时尝试发送 ID=0 的 `ERR_BUSY` ERROR，写出后关闭写侧，并在共用的 50 ms 总期限内用固定 1 KiB 缓冲最多排空 8 KiB 输入后关闭连接；这避免参考客户端已发送 HELLO 时立即关闭产生的 TCP 重置遮蔽错误帧。最多一个拒绝任务，拒绝预算满则直接关闭。因此拒绝帧是尽力交付，不能保证过载客户端都收到。TLS 在握手前超限时直接关闭，不发送明文协议字节；正常 TLS 握手继续受 `server.shutdown_timeout_ms` 约束。互操作验收进度见版本计划。
 
 客户端首个应用帧必须是普通 `REQUEST HELLO`，参数为单个 `UInt(1)`。头部 Version 与 HELLO 参数都必须为 1；当前版本仅接受这一版本，不宣称支持多版本自动降级。
 
@@ -41,7 +41,7 @@ HELLO 成功返回 Map：`protocol: UInt(1)`、`server_version: String`、`event
 | EVENT | `0x03` | 服务端已提交事件推送 |
 | ACK | `0x04` | 客户端确认事件 |
 | HEARTBEAT | `0x05` | 任一端发送的传输活跃通知 |
-| ERROR | `0x06` | 服务端致命协议错误，随后关闭连接 |
+| ERROR | `0x06` | 服务端连接级错误，随后关闭连接 |
 
 Flags 的 `0x0001` 表示 BATCH，仅允许用于 REQUEST / RESPONSE。其他位必须为 0；当前版本不得将保留位解释为压缩或其他能力。普通响应、EVENT、ACK、HEARTBEAT 和 ERROR 的 Flags 均为 0。
 

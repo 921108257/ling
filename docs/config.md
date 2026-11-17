@@ -8,7 +8,7 @@ Windows 当前仅支持 Fast 模式；设置 `events.mode="reliable"` 会在打�
 
 `engine.shard_count` 在启动时固定，0 按系统可用并行度解析，至少为 1；数据库 × 分片的索引控制块超过内部 128 MiB 预算时拒绝启动。每个 (db, shard) 独占有序索引与锁，执行线程不按数据库和分片数量相乘创建。引擎保守统计索引、Key、Value 和元数据的受管字节；`max_memory_bytes` 在全实例生效，`max_keys` 在单数据库生效。默认 noeviction；其他策略先选足够受害者，完整预检成功后才与写入一起发布，无候选或容量仍不足返回 `ERR_OUT_OF_MEMORY`。解码、重复读取响应和 KEYS 复制另有内部 128 MiB 分配预算，KEYS / SCAN 还受内部 64 MiB 结果上限约束；这些均不代表进程 RSS。
 
-当前每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。数据命令在取得全局有界许可后进入阻塞线程池，最多 min(系统可用并行度, max_connections) 个任务；请求等待者总量不超过连接数，另有最多一个后台维护等待者。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后直接关闭新连接；半帧超时后关闭连接且无业务修改，执行许可等待超时返回 `ERR_BUSY` 且尚未执行。取得许可后不以超时假定回滚；关闭排空期限也不能强制停止已开始的阻塞命令。
+当前每连接串行处理请求，在途数实际为 1（不超过配置上限）；`pipeline_enabled` 不改变这一执行基线，连续发送的帧可在 TCP 中排队。数据命令在取得全局有界许可后进入阻塞线程池，最多 min(系统可用并行度, max_connections) 个任务；请求等待者总量不超过连接数，另有最多一个后台维护等待者。完整响应受响应上限限制，并按 `write_buffer_bytes` 分块写出；慢写入受 request 超时限制，request 超时为 0 时使用 shutdown 超时约束写入。连接数满后，明文 TCP 尝试在 50 ms 内发送 ID=0 的 `ERR_BUSY` ERROR 后关闭，最多保留一个拒绝写入任务；拒绝预算满或 TLS 握手前超限时直接关闭，详见[连接准入](protocol.md#连接与版本)。半帧超时后关闭连接且无业务修改，执行许可等待超时返回 `ERR_BUSY` 且尚未执行。取得许可后不以超时假定回滚；关闭排空期限也不能强制停止已开始的阻塞命令。
 
 接收路径在验证固定帧头后才申请独立的全局帧许可，并随实际收到的字节增长缓冲。许可数量同为 `min(系统可用并行度, max_connections)`，每份保守覆盖 `max_frame_bytes + 2 × 128 MiB`（当前单帧解码预算及必要参数副本）；连接的固定头和 8 KiB 临时块另受连接数约束。许可一直保留到解码请求和其阻塞执行任务释放，避免取消连接后漏计在途数据。等待帧许可与读取共用首帧/半帧期限，超时关闭该连接；未新增配置键或缩小合法帧上限。接收预算、执行预算和引擎受管内存是独立约束，不能将它们当成进程 RSS 上限。
 
@@ -78,7 +78,7 @@ max_pending_events = 10000
 max_groups = 1024
 consumer_timeout_ms = 30000
 retry_interval_ms = 5000
-notification_enabled = true # 0.2.0 设计项：false 保留 10 ms 派发
+notification_enabled = true # false 保留原 10 ms 派发路径
 
 [event_journal]
 dir = ""

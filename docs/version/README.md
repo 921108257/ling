@@ -16,7 +16,7 @@
 | [v0.1.5-preview.md](v0.1.5-preview.md) | 可观测性与热路径证据：先测量，再按数据优化 |
 | [v0.1.6-preview.md](v0.1.6-preview.md) | 供应链与升级可信：签名、来源证明、原生安装验收 |
 | [v0.1.7-preview.md](v0.1.7-preview.md) | 第三方客户端互操作、共享测试向量与 CLI 排错；SDK 发包可选 |
-| [v0.2.0-preview.md](v0.2.0-preview.md) | Reliable 与连接模型：组提交、Windows Reliable、连接内流水线 |
+| [v0.2.0-preview.md](v0.2.0-preview.md) | 订阅通知与有界连接拒绝；组提交不实施、流水线顺延、Windows Reliable 继续不支持 |
 | [v0.3.0-preview.md](v0.3.0-preview.md) | 目标环境验收：多日压力、断电、Redis 8 可比测量、持续模糊 |
 | [v1.0.0-rc.md](v1.0.0-rc.md) | 稳定候选：冻结清单、兼容名称处置、发布门槛 |
 
@@ -30,7 +30,7 @@
 |---|---|
 | 1 更名、2 帮助 | 已交付，不再排期 |
 | 3 三平台安装与系统服务 | v0.1.6 |
-| 4 目标环境正确性、可靠性与资源验收 | v0.2.0（Windows Reliable）、v0.3.0 |
+| 4 目标环境正确性、可靠性与资源验收 | v0.2.0（Windows Reliable 支持矩阵决定）、v0.3.0 |
 | 5 按数据优化瓶颈并回归 | v0.1.5、v0.2.0 |
 | 6 稳定候选与发行验收 | v1.0.0-rc |
 
@@ -61,7 +61,7 @@
 | DEC-06 | 是否发布任何 Rust crate；CLI 使用仓内依赖无需上架 | 可选；发包前 |
 | DEC-07 | 引擎或连接任务故障策略（建议 fail-stop，见 v0.1.4 工作包 1） | v0.1.4 |
 | DEC-08 | 兼容名称（`linger_*` 指标、`linger.toml`、`LINGER_PASSWORD`、Java / Go 包名）的弃用时间表 | v1.0.0-rc 之前 |
-| DEC-09 | 目标验收环境的硬件、系统、文件系统与持续时长 | v0.3.0 |
+| DEC-09 | 所有者已指定专用 WSL，发布前 Fast 与 Reliable 各连续运行 72 小时；记录宿主、内核、文件系统及存储条件，物理断电仍待目标环境验收 | v0.3.0 |
 | DEC-10 | 是否把官方容器镜像纳入范围（目前不在 architecture.md 内） | 另行评估 |
-| DEC-11 | 是否允许为 Windows 持久化 API 在隔离的小范围内放宽工作区的 unsafe_code = forbid（仅当不使用 unsafe 的路径被验证无效时才需要决定） | v0.2.0 |
+| DEC-11 | 本轮不放宽 unsafe_code = forbid，Windows Reliable 继续不支持；目录同步 API 实验不作为断电持久性证据 | 已完成本轮决定，v0.2.0 |
 | DEC-12 | rc 观察期的长度，以及提升为 1.0.0 的批准人 | v1.0.0-rc |
