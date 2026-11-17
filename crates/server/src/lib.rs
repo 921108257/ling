@@ -279,6 +279,12 @@ impl Server {
                         let _permit = permit;
                         #[cfg(test)]
                         assert!(!panic_connection, "failpoint: connection task panic");
+                        // 事件与 ACK 响应可能连续为小帧；禁用 Nagle，避免等待对端的延迟 TCP ACK。
+                        // Events and ACK responses can be consecutive small frames; disable Nagle to avoid waiting for delayed TCP ACKs.
+                        if stream.set_nodelay(true).is_err() {
+                            runtime.log("warn", "failed to configure admitted TCP connection");
+                            return;
+                        }
                         let stream: ling_network::Stream = if let Some(tls) = tls {
                             let mut closing = receiver.clone();
                             let handshake = tokio::time::timeout(Duration::from_millis(config.server.shutdown_timeout_ms), tls.accept(stream));
