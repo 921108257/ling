@@ -1,0 +1,5116 @@
+{
+  "run_id": "open-full-20261118-0420",
+  "stage": "pre-release",
+  "binary": {
+    "version": "ling 0.2.0",
+    "revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+    "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285"
+  },
+  "tool_source": {
+    "revision": "32ad7de6c26516619c8b97d361444f804e8bf04c",
+    "status": ""
+  },
+  "plan": {
+    "created_utc": "2026-11-17T20:18:54.137650+00:00",
+    "release_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+    "release_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+    "release_version": "ling 0.2.0",
+    "source_head": "32ad7de6c26516619c8b97d361444f804e8bf04c",
+    "source_status": "",
+    "stage": "pre-release",
+    "phases_seconds_each": 60,
+    "repeats": 3,
+    "baseline_rate": 100,
+    "overload_rate": 5000,
+    "recovery_rate": 100,
+    "connections": 32,
+    "queue_capacity": 512,
+    "server_request_timeout_ms": 50,
+    "server_cpus": [
+      0,
+      1
+    ],
+    "client_cpus": [
+      2,
+      3
+    ],
+    "sample_sleep_seconds": 1,
+    "sample_timing": "actual monotonic timestamps; INFO may add up to its 2-second deadline",
+    "scope": "shared WSL host; Python client/logging/queue can limit arrivals; errors and drops remain distinct"
+  },
+  "original_passed": true,
+  "independent_evidence_consistent": true,
+  "audit_diagnostics": {},
+  "accounting_semantics": [
+    "Counts are raw records assigned to each request's scheduled phase; no throughput rate is inferred.",
+    "Successful completions and result_unknown SET records are separate; unknown does not imply committed or lost.",
+    "request_start_ns means the request call began, not proof that socket transmission completed.",
+    "Per-request pairing permits completion before arrival in file order.",
+    "Evidence consistency is independent of product acceptance and original valid/passed flags.",
+    "Temporary SQLite stores request identities; malformed rows and missing final files invalidate consistency."
+  ],
+  "cases": [
+    {
+      "name": "fast-0",
+      "mode": "fast",
+      "repeat": 0,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\fast-0\\load\\requests.jsonl",
+        "sha256": "f441e3acaa73f118c854f71d076a1e92e2291c339c8c83e138267f38b44a6c72",
+        "bytes": 169098593,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 269793098803,
+        "confirmed_ns": 270000756348,
+        "from_scheduled_arrivals_end_seconds": 0.252032954,
+        "from_actual_arrivals_end_seconds": 0.25173701,
+        "from_overload_end_seconds": 60.252032954,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 3335,
+          "max_us": 3617,
+          "p50_us": 3391,
+          "p95_us": 3647,
+          "p99_us": 3647,
+          "p999_us": 3647
+        }
+      },
+      "maximum_queued": 80,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 26,
+              "max_us": 670,
+              "p50_us": 100,
+              "p95_us": 189,
+              "p99_us": 241,
+              "p999_us": 323
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 184,
+              "max_us": 1437,
+              "p50_us": 371,
+              "p95_us": 599,
+              "p99_us": 775,
+              "p999_us": 1023
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 34,
+              "max_us": 663,
+              "p50_us": 82,
+              "p95_us": 163,
+              "p99_us": 225,
+              "p999_us": 323
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 78,
+              "max_us": 808,
+              "p50_us": 179,
+              "p95_us": 327,
+              "p99_us": 447,
+              "p999_us": 583
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 76,
+              "max_us": 805,
+              "p50_us": 175,
+              "p95_us": 323,
+              "p99_us": 439,
+              "p999_us": 583
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 184,
+              "max_us": 1437,
+              "p50_us": 371,
+              "p95_us": 599,
+              "p99_us": 775,
+              "p999_us": 1023
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 11155,
+              "p50_us": 73,
+              "p95_us": 153,
+              "p99_us": 259,
+              "p999_us": 1439
+            },
+            "scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 136,
+              "max_us": 36471,
+              "p50_us": 259,
+              "p95_us": 559,
+              "p99_us": 895,
+              "p999_us": 9855
+            },
+            "queue_wait": {
+              "count": 300000,
+              "min_us": 10,
+              "max_us": 15515,
+              "p50_us": 56,
+              "p95_us": 133,
+              "p99_us": 211,
+              "p999_us": 2527
+            },
+            "dispatch_to_completion": {
+              "count": 300000,
+              "min_us": 42,
+              "max_us": 33612,
+              "p50_us": 127,
+              "p95_us": 303,
+              "p99_us": 567,
+              "p999_us": 3263
+            },
+            "request_to_completion": {
+              "count": 300000,
+              "min_us": 40,
+              "max_us": 33610,
+              "p50_us": 126,
+              "p95_us": 303,
+              "p99_us": 559,
+              "p999_us": 3263
+            },
+            "success_scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 136,
+              "max_us": 36471,
+              "p50_us": 259,
+              "p95_us": 559,
+              "p99_us": 895,
+              "p999_us": 9855
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 31,
+              "max_us": 568,
+              "p50_us": 106,
+              "p95_us": 211,
+              "p99_us": 263,
+              "p999_us": 403
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 212,
+              "max_us": 1120,
+              "p50_us": 415,
+              "p95_us": 631,
+              "p99_us": 783,
+              "p999_us": 983
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 37,
+              "max_us": 452,
+              "p50_us": 93,
+              "p95_us": 167,
+              "p99_us": 229,
+              "p999_us": 347
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 81,
+              "max_us": 863,
+              "p50_us": 195,
+              "p95_us": 335,
+              "p99_us": 447,
+              "p999_us": 623
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 79,
+              "max_us": 860,
+              "p50_us": 191,
+              "p95_us": 331,
+              "p99_us": 443,
+              "p999_us": 615
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 212,
+              "max_us": 1120,
+              "p50_us": 415,
+              "p95_us": 631,
+              "p99_us": 783,
+              "p999_us": 983
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 180,
+        "first_monotonic_ns": 89615786787,
+        "last_monotonic_ns": 269099096202,
+        "sample_span_seconds": 179.483309415,
+        "actual_gap_seconds": {
+          "minimum": 1.002305297,
+          "maximum": 1.004251305,
+          "mean": 1.0027000525977654
+        },
+        "info_error_samples": 0,
+        "info_error_counts": {},
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 24.16,
+            "minimum": 0.0,
+            "maximum_observed": 24.16
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4321280,
+            "last": 24698880,
+            "minimum": 4321280,
+            "maximum_observed": 24698880
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4321280,
+            "last": 24698880,
+            "minimum": 4321280,
+            "maximum_observed": 24698880
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 11,
+            "last": 43,
+            "minimum": 11,
+            "maximum_observed": 43
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 50.68,
+            "minimum": 0.0,
+            "maximum_observed": 50.68
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4087808,
+            "last": 30842880,
+            "minimum": 4087808,
+            "maximum_observed": 30842880
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4206592,
+            "last": 30842880,
+            "minimum": 4206592,
+            "maximum_observed": 30842880
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 3,
+            "last": 37,
+            "minimum": 3,
+            "maximum_observed": 37
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 34,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 0,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 0,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 86921,
+            "maintenance_deferred": 6,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 312148,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              154944,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 155968,
+            "consumer_groups": [],
+            "dropped": 41056,
+            "groups": 0,
+            "journal_bytes": 0,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794946809571,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 24698880,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 33,
+            "first_frame_timeouts": 0,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.901660146
+      }
+    },
+    {
+      "name": "fast-1",
+      "mode": "fast",
+      "repeat": 1,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\fast-1\\load\\requests.jsonl",
+        "sha256": "ebcd18793594444d1c0df750784cc615444caf8bf38e92ca51e385fb52e0b871",
+        "bytes": 169106088,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 450340435340,
+        "confirmed_ns": 450548278569,
+        "from_scheduled_arrivals_end_seconds": 0.252352008,
+        "from_actual_arrivals_end_seconds": 0.252110973,
+        "from_overload_end_seconds": 60.252352008,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 3358,
+          "max_us": 3455,
+          "p50_us": 3423,
+          "p95_us": 3455,
+          "p99_us": 3455,
+          "p999_us": 3455
+        }
+      },
+      "maximum_queued": 40,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 29,
+              "max_us": 541,
+              "p50_us": 105,
+              "p95_us": 197,
+              "p99_us": 259,
+              "p999_us": 295
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 218,
+              "max_us": 1438,
+              "p50_us": 379,
+              "p95_us": 591,
+              "p99_us": 735,
+              "p999_us": 943
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 33,
+              "max_us": 706,
+              "p50_us": 92,
+              "p95_us": 173,
+              "p99_us": 223,
+              "p999_us": 311
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 73,
+              "max_us": 742,
+              "p50_us": 173,
+              "p95_us": 307,
+              "p99_us": 423,
+              "p999_us": 567
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 70,
+              "max_us": 735,
+              "p50_us": 171,
+              "p95_us": 307,
+              "p99_us": 419,
+              "p999_us": 559
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 218,
+              "max_us": 1438,
+              "p50_us": 379,
+              "p95_us": 591,
+              "p99_us": 735,
+              "p999_us": 943
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 6220,
+              "p50_us": 73,
+              "p95_us": 157,
+              "p99_us": 263,
+              "p999_us": 759
+            },
+            "scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 140,
+              "max_us": 17719,
+              "p50_us": 263,
+              "p95_us": 575,
+              "p99_us": 943,
+              "p999_us": 4031
+            },
+            "queue_wait": {
+              "count": 300000,
+              "min_us": 10,
+              "max_us": 3870,
+              "p50_us": 56,
+              "p95_us": 137,
+              "p99_us": 217,
+              "p999_us": 687
+            },
+            "dispatch_to_completion": {
+              "count": 300000,
+              "min_us": 38,
+              "max_us": 16765,
+              "p50_us": 129,
+              "p95_us": 315,
+              "p99_us": 591,
+              "p999_us": 2719
+            },
+            "request_to_completion": {
+              "count": 300000,
+              "min_us": 37,
+              "max_us": 16763,
+              "p50_us": 127,
+              "p95_us": 311,
+              "p99_us": 591,
+              "p999_us": 2719
+            },
+            "success_scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 140,
+              "max_us": 17719,
+              "p50_us": 263,
+              "p95_us": 575,
+              "p99_us": 943,
+              "p999_us": 4031
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 18,
+              "max_us": 711,
+              "p50_us": 114,
+              "p95_us": 223,
+              "p99_us": 275,
+              "p999_us": 351
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 215,
+              "max_us": 2212,
+              "p50_us": 431,
+              "p95_us": 671,
+              "p99_us": 847,
+              "p999_us": 1119
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 34,
+              "max_us": 580,
+              "p50_us": 107,
+              "p95_us": 193,
+              "p99_us": 267,
+              "p999_us": 411
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 70,
+              "max_us": 1966,
+              "p50_us": 193,
+              "p95_us": 363,
+              "p99_us": 491,
+              "p999_us": 759
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 68,
+              "max_us": 1963,
+              "p50_us": 189,
+              "p95_us": 359,
+              "p99_us": 487,
+              "p999_us": 743
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 215,
+              "max_us": 2212,
+              "p50_us": 431,
+              "p95_us": 671,
+              "p99_us": 847,
+              "p999_us": 1119
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 180,
+        "first_monotonic_ns": 270139434807,
+        "last_monotonic_ns": 449622512774,
+        "sample_span_seconds": 179.483077967,
+        "actual_gap_seconds": {
+          "minimum": 1.00230283,
+          "maximum": 1.003748663,
+          "mean": 1.0026987595921788
+        },
+        "info_error_samples": 0,
+        "info_error_counts": {},
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 24.15,
+            "minimum": 0.0,
+            "maximum_observed": 24.15
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4325376,
+            "last": 24711168,
+            "minimum": 4325376,
+            "maximum_observed": 24711168
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4325376,
+            "last": 24711168,
+            "minimum": 4325376,
+            "maximum_observed": 24711168
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 11,
+            "last": 43,
+            "minimum": 11,
+            "maximum_observed": 43
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 51.41,
+            "minimum": 0.0,
+            "maximum_observed": 51.41
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 3682304,
+            "last": 31318016,
+            "minimum": 3682304,
+            "maximum_observed": 31318016
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 3932160,
+            "last": 31318016,
+            "minimum": 3932160,
+            "maximum_observed": 31318016
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 3,
+            "last": 37,
+            "minimum": 3,
+            "maximum_observed": 37
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 34,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 0,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 0,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 84035,
+            "maintenance_deferred": 5,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 312145,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              154942,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 155966,
+            "consumer_groups": [],
+            "dropped": 41054,
+            "groups": 0,
+            "journal_bytes": 0,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794946990117,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 24711168,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 33,
+            "first_frame_timeouts": 0,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.925765795
+      }
+    },
+    {
+      "name": "fast-2",
+      "mode": "fast",
+      "repeat": 2,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\fast-2\\load\\requests.jsonl",
+        "sha256": "29b0e123a5be7f441d29a29ab0b809fb4a8992311e20a8c28c4908468ab6404b",
+        "bytes": 169107185,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 630844814752,
+        "confirmed_ns": 631051988744,
+        "from_scheduled_arrivals_end_seconds": 0.252313837,
+        "from_actual_arrivals_end_seconds": 0.25206781,
+        "from_overload_end_seconds": 60.252313837,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 3273,
+          "max_us": 3586,
+          "p50_us": 3327,
+          "p95_us": 3615,
+          "p99_us": 3615,
+          "p999_us": 3615
+        }
+      },
+      "maximum_queued": 43,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 14,
+              "max_us": 742,
+              "p50_us": 102,
+              "p95_us": 195,
+              "p99_us": 247,
+              "p999_us": 327
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 201,
+              "max_us": 1565,
+              "p50_us": 403,
+              "p95_us": 647,
+              "p99_us": 823,
+              "p999_us": 1071
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 33,
+              "max_us": 709,
+              "p50_us": 89,
+              "p95_us": 181,
+              "p99_us": 263,
+              "p999_us": 375
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 79,
+              "max_us": 983,
+              "p50_us": 199,
+              "p95_us": 347,
+              "p99_us": 459,
+              "p999_us": 655
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 78,
+              "max_us": 980,
+              "p50_us": 195,
+              "p95_us": 343,
+              "p99_us": 451,
+              "p999_us": 639
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 201,
+              "max_us": 1565,
+              "p50_us": 403,
+              "p95_us": 647,
+              "p99_us": 823,
+              "p999_us": 1071
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 7588,
+              "p50_us": 74,
+              "p95_us": 171,
+              "p99_us": 451,
+              "p999_us": 2111
+            },
+            "scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 128,
+              "max_us": 31948,
+              "p50_us": 263,
+              "p95_us": 623,
+              "p99_us": 2751,
+              "p999_us": 10623
+            },
+            "queue_wait": {
+              "count": 300000,
+              "min_us": 10,
+              "max_us": 5268,
+              "p50_us": 57,
+              "p95_us": 153,
+              "p99_us": 455,
+              "p999_us": 2367
+            },
+            "dispatch_to_completion": {
+              "count": 300000,
+              "min_us": 41,
+              "max_us": 27003,
+              "p50_us": 131,
+              "p95_us": 359,
+              "p99_us": 1631,
+              "p999_us": 7807
+            },
+            "request_to_completion": {
+              "count": 300000,
+              "min_us": 39,
+              "max_us": 27001,
+              "p50_us": 129,
+              "p95_us": 355,
+              "p99_us": 1615,
+              "p999_us": 7807
+            },
+            "success_scheduled_to_completion": {
+              "count": 300000,
+              "min_us": 128,
+              "max_us": 31948,
+              "p50_us": 263,
+              "p95_us": 623,
+              "p99_us": 2751,
+              "p999_us": 10623
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 30,
+              "max_us": 784,
+              "p50_us": 108,
+              "p95_us": 213,
+              "p99_us": 259,
+              "p999_us": 343
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 208,
+              "max_us": 1451,
+              "p50_us": 439,
+              "p95_us": 671,
+              "p99_us": 847,
+              "p999_us": 1087
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 39,
+              "max_us": 547,
+              "p50_us": 96,
+              "p95_us": 183,
+              "p99_us": 267,
+              "p999_us": 387
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 78,
+              "max_us": 1159,
+              "p50_us": 209,
+              "p95_us": 363,
+              "p99_us": 479,
+              "p999_us": 703
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 76,
+              "max_us": 1156,
+              "p50_us": 205,
+              "p95_us": 359,
+              "p99_us": 471,
+              "p999_us": 695
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 208,
+              "max_us": 1451,
+              "p50_us": 439,
+              "p95_us": 671,
+              "p99_us": 847,
+              "p999_us": 1087
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 180,
+        "first_monotonic_ns": 450662770042,
+        "last_monotonic_ns": 630141719792,
+        "sample_span_seconds": 179.47894975,
+        "actual_gap_seconds": {
+          "minimum": 1.002276276,
+          "maximum": 1.003867374,
+          "mean": 1.0026756969273742
+        },
+        "info_error_samples": 0,
+        "info_error_counts": {},
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 24.01,
+            "minimum": 0.0,
+            "maximum_observed": 24.01
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4321280,
+            "last": 24702976,
+            "minimum": 4321280,
+            "maximum_observed": 24702976
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4321280,
+            "last": 24772608,
+            "minimum": 4321280,
+            "maximum_observed": 24772608
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 11,
+            "last": 43,
+            "minimum": 11,
+            "maximum_observed": 43
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 52.38,
+            "minimum": 0.0,
+            "maximum_observed": 52.38
+          },
+          "rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4218880,
+            "last": 31182848,
+            "minimum": 4218880,
+            "maximum_observed": 31182848
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 4403200,
+            "last": 31182848,
+            "minimum": 4403200,
+            "maximum_observed": 31182848
+          },
+          "handles": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 3,
+            "last": 37,
+            "minimum": 3,
+            "maximum_observed": 37
+          },
+          "threads": {
+            "valid_samples": 180,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 34,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 0,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 0,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 87241,
+            "maintenance_deferred": 5,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 312147,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              154943,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 155967,
+            "consumer_groups": [],
+            "dropped": 41055,
+            "groups": 0,
+            "journal_bytes": 0,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794947170621,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 24702976,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 33,
+            "first_frame_timeouts": 0,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.910268952
+      }
+    },
+    {
+      "name": "reliable-0",
+      "mode": "reliable",
+      "repeat": 0,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\reliable-0\\load\\requests.jsonl",
+        "sha256": "559ef8685069b90ce48c3b1ceba9cfad2ceb48efa2c675b18bd0ba5f8affe57c",
+        "bytes": 78437791,
+        "lines": 362625,
+        "indexed_records": 354018,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 811394070009,
+        "confirmed_ns": 811601620546,
+        "from_scheduled_arrivals_end_seconds": 0.261188601,
+        "from_actual_arrivals_end_seconds": 0.260879945,
+        "from_overload_end_seconds": 60.261188601,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 2985,
+          "max_us": 3488,
+          "p50_us": 3263,
+          "p95_us": 3519,
+          "p99_us": 3519,
+          "p999_us": 3519
+        }
+      },
+      "maximum_queued": 512,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 25,
+              "max_us": 586,
+              "p50_us": 95,
+              "p95_us": 169,
+              "p99_us": 207,
+              "p999_us": 287
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 195,
+              "max_us": 15929,
+              "p50_us": 959,
+              "p95_us": 7359,
+              "p99_us": 7807,
+              "p999_us": 10879
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 32,
+              "max_us": 425,
+              "p50_us": 77,
+              "p95_us": 147,
+              "p99_us": 201,
+              "p999_us": 271
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 83,
+              "max_us": 15651,
+              "p50_us": 351,
+              "p95_us": 7167,
+              "p99_us": 7551,
+              "p999_us": 10751
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 82,
+              "max_us": 15648,
+              "p50_us": 347,
+              "p95_us": 7167,
+              "p99_us": 7551,
+              "p999_us": 10751
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 195,
+              "max_us": 15929,
+              "p50_us": 959,
+              "p95_us": 7359,
+              "p99_us": 7807,
+              "p999_us": 10879
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 30019,
+            "dropped": 269981,
+            "completion_records": 30019,
+            "success": 19769,
+            "dispatched": 30019,
+            "request_started": 28296,
+            "unknown_SET": 4121,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19769,
+              "client_transport_error": 10250
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10250
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10250
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 4121
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 4121
+            },
+            "unknown_SET_by_stage": {
+              "request": 4121
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15006,
+                "dropped": 134994,
+                "completion_records": 15006,
+                "success": 9705,
+                "dispatched": 15006,
+                "request_started": 14111,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9705,
+                  "client_transport_error": 5301
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5301
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5301
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15013,
+                "dropped": 134987,
+                "completion_records": 15013,
+                "success": 10064,
+                "dispatched": 15013,
+                "request_started": 14185,
+                "unknown_SET": 4121,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10064,
+                  "client_transport_error": 4949
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4949
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4949
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 4121
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 4121
+                },
+                "unknown_SET_by_stage": {
+                  "request": 4121
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 12703,
+              "p50_us": 66,
+              "p95_us": 1471,
+              "p99_us": 3103,
+              "p999_us": 5823
+            },
+            "scheduled_to_completion": {
+              "count": 30019,
+              "min_us": 251,
+              "max_us": 1248229,
+              "p50_us": 1114111,
+              "p95_us": 1179647,
+              "p99_us": 1212415,
+              "p999_us": 1228799
+            },
+            "queue_wait": {
+              "count": 30019,
+              "min_us": 43,
+              "max_us": 1126399,
+              "p50_us": 1040383,
+              "p95_us": 1097727,
+              "p99_us": 1114111,
+              "p999_us": 1130495
+            },
+            "dispatch_to_completion": {
+              "count": 30019,
+              "min_us": 127,
+              "max_us": 162222,
+              "p50_us": 53247,
+              "p95_us": 114687,
+              "p99_us": 123903,
+              "p999_us": 135167
+            },
+            "request_to_completion": {
+              "count": 28296,
+              "min_us": 125,
+              "max_us": 98926,
+              "p50_us": 51199,
+              "p95_us": 61951,
+              "p99_us": 67583,
+              "p999_us": 72703
+            },
+            "success_scheduled_to_completion": {
+              "count": 19769,
+              "min_us": 251,
+              "max_us": 1248229,
+              "p50_us": 1097727,
+              "p95_us": 1179647,
+              "p99_us": 1196031,
+              "p999_us": 1228799
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5954,
+            "dispatched": 5999,
+            "request_started": 5993,
+            "unknown_SET": 14,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 5954,
+              "client_transport_error": 44,
+              "server_error": 1
+            },
+            "error_codes": {
+              "LOCAL_EOF": 44,
+              "ERR_BUSY": 1
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 44,
+              "server_error:ERR_BUSY": 1
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 14
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 14
+            },
+            "unknown_SET_by_stage": {
+              "request": 14
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2972,
+                "dispatched": 2999,
+                "request_started": 2996,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2972,
+                  "client_transport_error": 27
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 27
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 27
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2982,
+                "dispatched": 3000,
+                "request_started": 2997,
+                "unknown_SET": 14,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2982,
+                  "client_transport_error": 17,
+                  "server_error": 1
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 17,
+                  "ERR_BUSY": 1
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 17,
+                  "server_error:ERR_BUSY": 1
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 14
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 14
+                },
+                "unknown_SET_by_stage": {
+                  "request": 14
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 26,
+              "max_us": 4356,
+              "p50_us": 97,
+              "p95_us": 179,
+              "p99_us": 225,
+              "p999_us": 831
+            },
+            "scheduled_to_completion": {
+              "count": 5999,
+              "min_us": 167,
+              "max_us": 1113954,
+              "p50_us": 6207,
+              "p95_us": 7295,
+              "p99_us": 630783,
+              "p999_us": 1040383
+            },
+            "queue_wait": {
+              "count": 5999,
+              "min_us": 35,
+              "max_us": 1022661,
+              "p50_us": 81,
+              "p95_us": 165,
+              "p99_us": 581631,
+              "p999_us": 991231
+            },
+            "dispatch_to_completion": {
+              "count": 5999,
+              "min_us": 86,
+              "max_us": 133789,
+              "p50_us": 6015,
+              "p95_us": 7103,
+              "p99_us": 56319,
+              "p999_us": 115711
+            },
+            "request_to_completion": {
+              "count": 5993,
+              "min_us": 78,
+              "max_us": 74420,
+              "p50_us": 6015,
+              "p95_us": 7039,
+              "p99_us": 51711,
+              "p999_us": 66559
+            },
+            "success_scheduled_to_completion": {
+              "count": 5954,
+              "min_us": 167,
+              "max_us": 1113954,
+              "p50_us": 6207,
+              "p95_us": 7231,
+              "p99_us": 458751,
+              "p999_us": 1040383
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 177,
+        "first_monotonic_ns": 631182264194,
+        "last_monotonic_ns": 811307190815,
+        "sample_span_seconds": 180.124926621,
+        "actual_gap_seconds": {
+          "minimum": 1.002344408,
+          "maximum": 1.115531407,
+          "mean": 1.0234370830738635
+        },
+        "info_error_samples": 19,
+        "info_error_counts": {
+          "WireError('LOCAL_EOF: incomplete response')": 19
+        },
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 9.04,
+            "minimum": 0.0,
+            "maximum_observed": 9.04
+          },
+          "rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4390912,
+            "last": 6057984,
+            "minimum": 4390912,
+            "maximum_observed": 6057984
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4390912,
+            "last": 6057984,
+            "minimum": 4390912,
+            "maximum_observed": 6057984
+          },
+          "handles": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 13,
+            "last": 45,
+            "minimum": 13,
+            "maximum_observed": 45
+          },
+          "threads": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 50.47,
+            "minimum": 0.0,
+            "maximum_observed": 50.47
+          },
+          "rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 3964928,
+            "last": 33681408,
+            "minimum": 3964928,
+            "maximum_observed": 33681408
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4100096,
+            "last": 33681408,
+            "minimum": 4100096,
+            "maximum_observed": 33681408
+          },
+          "handles": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 37,
+            "minimum": 4,
+            "maximum_observed": 41
+          },
+          "threads": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 34,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 1,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 1,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 46878,
+            "maintenance_deferred": 4481,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 40490,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              15020,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 16044,
+            "consumer_groups": [],
+            "dropped": 0,
+            "groups": 0,
+            "journal_bytes": 1572352,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794947275950,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 6057984,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 33,
+            "first_frame_timeouts": 1735,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.294429731
+      }
+    },
+    {
+      "name": "reliable-1",
+      "mode": "reliable",
+      "repeat": 1,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\reliable-1\\load\\requests.jsonl",
+        "sha256": "b49ebe47a09d3757d4f29b4637e7d9852c0e20be848473c7f5416a7c5ed044b5",
+        "bytes": 78412940,
+        "lines": 362473,
+        "indexed_records": 353991,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 992550413165,
+        "confirmed_ns": 992757682504,
+        "from_scheduled_arrivals_end_seconds": 0.262944159,
+        "from_actual_arrivals_end_seconds": 0.262510653,
+        "from_overload_end_seconds": 60.262944159,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 3183,
+          "max_us": 4089,
+          "p50_us": 3391,
+          "p95_us": 4095,
+          "p99_us": 4095,
+          "p999_us": 4095
+        }
+      },
+      "maximum_queued": 512,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 22,
+              "max_us": 604,
+              "p50_us": 97,
+              "p95_us": 171,
+              "p99_us": 209,
+              "p999_us": 267
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 183,
+              "max_us": 20637,
+              "p50_us": 871,
+              "p95_us": 7039,
+              "p99_us": 7551,
+              "p999_us": 10495
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 33,
+              "max_us": 682,
+              "p50_us": 75,
+              "p95_us": 139,
+              "p99_us": 195,
+              "p999_us": 291
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 84,
+              "max_us": 20488,
+              "p50_us": 459,
+              "p95_us": 6847,
+              "p99_us": 7359,
+              "p999_us": 10239
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 82,
+              "max_us": 20485,
+              "p50_us": 459,
+              "p95_us": 6847,
+              "p99_us": 7359,
+              "p999_us": 10239
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 183,
+              "max_us": 20637,
+              "p50_us": 871,
+              "p95_us": 7039,
+              "p99_us": 7551,
+              "p999_us": 10495
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 29992,
+            "dropped": 270008,
+            "completion_records": 29992,
+            "success": 19799,
+            "dispatched": 29992,
+            "request_started": 28209,
+            "unknown_SET": 3936,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19799,
+              "client_transport_error": 10193
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10193
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10193
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 3936
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 3936
+            },
+            "unknown_SET_by_stage": {
+              "request": 3936
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15159,
+                "dropped": 134841,
+                "completion_records": 15159,
+                "success": 9734,
+                "dispatched": 15159,
+                "request_started": 14208,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9734,
+                  "client_transport_error": 5425
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5425
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5425
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14833,
+                "dropped": 135167,
+                "completion_records": 14833,
+                "success": 10065,
+                "dispatched": 14833,
+                "request_started": 14001,
+                "unknown_SET": 3936,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10065,
+                  "client_transport_error": 4768
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4768
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4768
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 3936
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 3936
+                },
+                "unknown_SET_by_stage": {
+                  "request": 3936
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 10697,
+              "p50_us": 68,
+              "p95_us": 1343,
+              "p99_us": 2815,
+              "p999_us": 5311
+            },
+            "scheduled_to_completion": {
+              "count": 29992,
+              "min_us": 460,
+              "max_us": 1231473,
+              "p50_us": 1114111,
+              "p95_us": 1179647,
+              "p99_us": 1196031,
+              "p999_us": 1228799
+            },
+            "queue_wait": {
+              "count": 29992,
+              "min_us": 42,
+              "max_us": 1119996,
+              "p50_us": 1048575,
+              "p95_us": 1081343,
+              "p99_us": 1097727,
+              "p999_us": 1114111
+            },
+            "dispatch_to_completion": {
+              "count": 29992,
+              "min_us": 109,
+              "max_us": 164254,
+              "p50_us": 53247,
+              "p95_us": 114687,
+              "p99_us": 123903,
+              "p999_us": 135167
+            },
+            "request_to_completion": {
+              "count": 28209,
+              "min_us": 106,
+              "max_us": 107497,
+              "p50_us": 51199,
+              "p95_us": 61951,
+              "p99_us": 67583,
+              "p999_us": 72703
+            },
+            "success_scheduled_to_completion": {
+              "count": 19799,
+              "min_us": 460,
+              "max_us": 1231473,
+              "p50_us": 1114111,
+              "p95_us": 1179647,
+              "p99_us": 1196031,
+              "p999_us": 1228799
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5953,
+            "dispatched": 5999,
+            "request_started": 5984,
+            "unknown_SET": 13,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 5953,
+              "client_transport_error": 46
+            },
+            "error_codes": {
+              "LOCAL_EOF": 46
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 46
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 13
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 13
+            },
+            "unknown_SET_by_stage": {
+              "request": 13
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2973,
+                "dispatched": 2999,
+                "request_started": 2991,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2973,
+                  "client_transport_error": 26
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 26
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 26
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2980,
+                "dispatched": 3000,
+                "request_started": 2993,
+                "unknown_SET": 13,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2980,
+                  "client_transport_error": 20
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 20
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 20
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 13
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 13
+                },
+                "unknown_SET_by_stage": {
+                  "request": 13
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 36,
+              "max_us": 3571,
+              "p50_us": 94,
+              "p95_us": 167,
+              "p99_us": 219,
+              "p999_us": 2079
+            },
+            "scheduled_to_completion": {
+              "count": 5999,
+              "min_us": 195,
+              "max_us": 1125717,
+              "p50_us": 6271,
+              "p95_us": 7359,
+              "p99_us": 614399,
+              "p999_us": 1040383
+            },
+            "queue_wait": {
+              "count": 5999,
+              "min_us": 36,
+              "max_us": 1012820,
+              "p50_us": 83,
+              "p95_us": 175,
+              "p99_us": 548863,
+              "p999_us": 974847
+            },
+            "dispatch_to_completion": {
+              "count": 5999,
+              "min_us": 83,
+              "max_us": 117756,
+              "p50_us": 6079,
+              "p95_us": 7167,
+              "p99_us": 54783,
+              "p999_us": 108543
+            },
+            "request_to_completion": {
+              "count": 5984,
+              "min_us": 81,
+              "max_us": 71164,
+              "p50_us": 6079,
+              "p95_us": 7103,
+              "p99_us": 50687,
+              "p999_us": 61439
+            },
+            "success_scheduled_to_completion": {
+              "count": 5953,
+              "min_us": 195,
+              "max_us": 1125717,
+              "p50_us": 6271,
+              "p95_us": 7295,
+              "p99_us": 339967,
+              "p999_us": 1040383
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 177,
+        "first_monotonic_ns": 812341060531,
+        "last_monotonic_ns": 992553300546,
+        "sample_span_seconds": 180.212240015,
+        "actual_gap_seconds": {
+          "minimum": 1.002381279,
+          "maximum": 1.120117049,
+          "mean": 1.023933181903409
+        },
+        "info_error_samples": 18,
+        "info_error_counts": {
+          "WireError('LOCAL_EOF: incomplete response')": 18
+        },
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 9.14,
+            "minimum": 0.0,
+            "maximum_observed": 9.14
+          },
+          "rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4386816,
+            "last": 5394432,
+            "minimum": 4386816,
+            "maximum_observed": 6053888
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4386816,
+            "last": 6012928,
+            "minimum": 4386816,
+            "maximum_observed": 6053888
+          },
+          "handles": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 13,
+            "last": 13,
+            "minimum": 13,
+            "maximum_observed": 45
+          },
+          "threads": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 50.88,
+            "minimum": 0.0,
+            "maximum_observed": 50.88
+          },
+          "rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 3973120,
+            "last": 32153600,
+            "minimum": 3973120,
+            "maximum_observed": 32759808
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 4190208,
+            "last": 32608256,
+            "minimum": 4190208,
+            "maximum_observed": 32759808
+          },
+          "handles": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 3,
+            "last": 5,
+            "minimum": 3,
+            "maximum_observed": 41
+          },
+          "threads": {
+            "valid_samples": 177,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 1,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 0,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 0,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 47199,
+            "maintenance_deferred": 4474,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 40402,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              15021,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 16045,
+            "consumer_groups": [],
+            "dropped": 0,
+            "groups": 0,
+            "journal_bytes": 1572450,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794947457104,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 5394432,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 1,
+            "first_frame_timeouts": 1800,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.204381958
+      }
+    },
+    {
+      "name": "reliable-2",
+      "mode": "reliable",
+      "repeat": 2,
+      "passed": true,
+      "driver_exit": 0,
+      "server_exit": 0,
+      "shutdown_response": true,
+      "cleanup_errors": [],
+      "evidence_consistent": true,
+      "diagnostics": {},
+      "raw_records": {
+        "path": "target\\open-full-20261118-0420\\reliable-2\\load\\requests.jsonl",
+        "sha256": "98ac8fc8b8c8b4bb3d2a6541d57dbcfc3a7fb117c1f2ba82f2fccf1d87c9f330",
+        "bytes": 79230629,
+        "lines": 362527,
+        "indexed_records": 353881,
+        "stable_during_read": true
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "recovery": {
+        "recovered": true,
+        "attempts": 3,
+        "stable_first_completion_ns": 1173802586071,
+        "confirmed_ns": 1174010285115,
+        "from_scheduled_arrivals_end_seconds": 0.26141962,
+        "from_actual_arrivals_end_seconds": 0.260986439,
+        "from_overload_end_seconds": 60.26141962,
+        "includes_drain": true,
+        "threshold_ms_including_connect_hello": 100,
+        "consecutive_required": 3,
+        "latency": {
+          "count": 3,
+          "min_us": 2987,
+          "max_us": 3840,
+          "p50_us": 3167,
+          "p95_us": 3871,
+          "p99_us": 3871,
+          "p999_us": 3871
+        }
+      },
+      "maximum_queued": 512,
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 25,
+              "max_us": 722,
+              "p50_us": 95,
+              "p95_us": 171,
+              "p99_us": 213,
+              "p999_us": 311
+            },
+            "scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 196,
+              "max_us": 39527,
+              "p50_us": 5759,
+              "p95_us": 7359,
+              "p99_us": 8447,
+              "p999_us": 25087
+            },
+            "queue_wait": {
+              "count": 6000,
+              "min_us": 34,
+              "max_us": 584,
+              "p50_us": 82,
+              "p95_us": 157,
+              "p99_us": 213,
+              "p999_us": 319
+            },
+            "dispatch_to_completion": {
+              "count": 6000,
+              "min_us": 84,
+              "max_us": 39294,
+              "p50_us": 5567,
+              "p95_us": 7103,
+              "p99_us": 8191,
+              "p999_us": 24831
+            },
+            "request_to_completion": {
+              "count": 6000,
+              "min_us": 82,
+              "max_us": 39290,
+              "p50_us": 5567,
+              "p95_us": 7103,
+              "p99_us": 8191,
+              "p999_us": 24831
+            },
+            "success_scheduled_to_completion": {
+              "count": 6000,
+              "min_us": 196,
+              "max_us": 39527,
+              "p50_us": 5759,
+              "p95_us": 7359,
+              "p99_us": 8447,
+              "p999_us": 25087
+            }
+          }
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 29882,
+            "dropped": 270118,
+            "completion_records": 29882,
+            "success": 19618,
+            "dispatched": 29882,
+            "request_started": 28186,
+            "unknown_SET": 4094,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19618,
+              "client_transport_error": 10264
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10264
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10264
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 4094
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 4094
+            },
+            "unknown_SET_by_stage": {
+              "request": 4094
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14909,
+                "dropped": 135091,
+                "completion_records": 14909,
+                "success": 9514,
+                "dispatched": 14909,
+                "request_started": 13988,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9514,
+                  "client_transport_error": 5395
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5395
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5395
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14973,
+                "dropped": 135027,
+                "completion_records": 14973,
+                "success": 10104,
+                "dispatched": 14973,
+                "request_started": 14198,
+                "unknown_SET": 4094,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10104,
+                  "client_transport_error": 4869
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4869
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4869
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 4094
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 4094
+                },
+                "unknown_SET_by_stage": {
+                  "request": 4094
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 300000,
+              "min_us": 1,
+              "max_us": 11767,
+              "p50_us": 66,
+              "p95_us": 1471,
+              "p99_us": 3167,
+              "p999_us": 5759
+            },
+            "scheduled_to_completion": {
+              "count": 29882,
+              "min_us": 307,
+              "max_us": 1244501,
+              "p50_us": 1114111,
+              "p95_us": 1179647,
+              "p99_us": 1196031,
+              "p999_us": 1228799
+            },
+            "queue_wait": {
+              "count": 29882,
+              "min_us": 49,
+              "max_us": 1122834,
+              "p50_us": 1048575,
+              "p95_us": 1081343,
+              "p99_us": 1097727,
+              "p999_us": 1130495
+            },
+            "dispatch_to_completion": {
+              "count": 29882,
+              "min_us": 138,
+              "max_us": 146235,
+              "p50_us": 53247,
+              "p95_us": 114687,
+              "p99_us": 123903,
+              "p999_us": 135167
+            },
+            "request_to_completion": {
+              "count": 28186,
+              "min_us": 135,
+              "max_us": 92577,
+              "p50_us": 51199,
+              "p95_us": 61951,
+              "p99_us": 67583,
+              "p999_us": 71679
+            },
+            "success_scheduled_to_completion": {
+              "count": 19618,
+              "min_us": 307,
+              "max_us": 1244288,
+              "p50_us": 1114111,
+              "p95_us": 1179647,
+              "p99_us": 1196031,
+              "p999_us": 1228799
+            }
+          }
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5959,
+            "dispatched": 5999,
+            "request_started": 5996,
+            "unknown_SET": 18,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "client_transport_error": 40,
+              "success": 5959
+            },
+            "error_codes": {
+              "LOCAL_EOF": 40
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 40
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 18
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 18
+            },
+            "unknown_SET_by_stage": {
+              "request": 18
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2978,
+                "dispatched": 2999,
+                "request_started": 2997,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2978,
+                  "client_transport_error": 21
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 21
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 21
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2981,
+                "dispatched": 3000,
+                "request_started": 2999,
+                "unknown_SET": 18,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "client_transport_error": 19,
+                  "success": 2981
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 19
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 19
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 18
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 18
+                },
+                "unknown_SET_by_stage": {
+                  "request": 18
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {},
+          "reported_latencies": {
+            "scheduler_lag": {
+              "count": 6000,
+              "min_us": 21,
+              "max_us": 3948,
+              "p50_us": 97,
+              "p95_us": 175,
+              "p99_us": 221,
+              "p999_us": 1039
+            },
+            "scheduled_to_completion": {
+              "count": 5999,
+              "min_us": 207,
+              "max_us": 1099277,
+              "p50_us": 6207,
+              "p95_us": 7231,
+              "p99_us": 647167,
+              "p999_us": 1081343
+            },
+            "queue_wait": {
+              "count": 5999,
+              "min_us": 35,
+              "max_us": 1040551,
+              "p50_us": 79,
+              "p95_us": 167,
+              "p99_us": 581631,
+              "p999_us": 1007615
+            },
+            "dispatch_to_completion": {
+              "count": 5999,
+              "min_us": 85,
+              "max_us": 117518,
+              "p50_us": 6015,
+              "p95_us": 7039,
+              "p99_us": 56831,
+              "p999_us": 113663
+            },
+            "request_to_completion": {
+              "count": 5996,
+              "min_us": 83,
+              "max_us": 68838,
+              "p50_us": 6015,
+              "p95_us": 6975,
+              "p99_us": 51199,
+              "p999_us": 59391
+            },
+            "success_scheduled_to_completion": {
+              "count": 5959,
+              "min_us": 207,
+              "max_us": 1099277,
+              "p50_us": 6143,
+              "p95_us": 7167,
+              "p99_us": 356351,
+              "p999_us": 1064959
+            }
+          }
+        }
+      },
+      "resources": {
+        "samples": 176,
+        "first_monotonic_ns": 993588945066,
+        "last_monotonic_ns": 1173060356088,
+        "sample_span_seconds": 179.471411022,
+        "actual_gap_seconds": {
+          "minimum": 1.002349111,
+          "maximum": 1.110632518,
+          "mean": 1.0255509201257142
+        },
+        "info_error_samples": 26,
+        "info_error_counts": {
+          "WireError('LOCAL_EOF: incomplete response')": 26
+        },
+        "server": {
+          "cpu_seconds": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 9.05,
+            "minimum": 0.0,
+            "maximum_observed": 9.05
+          },
+          "rss_bytes": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 4390912,
+            "last": 6066176,
+            "minimum": 4390912,
+            "maximum_observed": 6066176
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 4390912,
+            "last": 6066176,
+            "minimum": 4390912,
+            "maximum_observed": 6066176
+          },
+          "handles": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 13,
+            "last": 45,
+            "minimum": 13,
+            "maximum_observed": 45
+          },
+          "threads": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 4,
+            "last": 6,
+            "minimum": 4,
+            "maximum_observed": 6
+          }
+        },
+        "driver": {
+          "cpu_seconds": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 0.0,
+            "last": 50.95,
+            "minimum": 0.0,
+            "maximum_observed": 50.95
+          },
+          "rss_bytes": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 1294336,
+            "last": 34246656,
+            "minimum": 1294336,
+            "maximum_observed": 34246656
+          },
+          "peak_rss_bytes": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 2199552,
+            "last": 34246656,
+            "minimum": 2199552,
+            "maximum_observed": 34246656
+          },
+          "handles": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 3,
+            "last": 37,
+            "minimum": 3,
+            "maximum_observed": 40
+          },
+          "threads": {
+            "valid_samples": 176,
+            "missing_samples": 0,
+            "first": 1,
+            "last": 34,
+            "minimum": 1,
+            "maximum_observed": 34
+          }
+        },
+        "native_error_counts": {},
+        "last_available_info": {
+          "stats": {
+            "errors": 0,
+            "execution_occupied": 1,
+            "execution_queued": 0,
+            "execution_wait_cancelled": 0,
+            "execution_wait_timeouts": 0,
+            "execution_wait_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "maintenance_cycles": 46703,
+            "maintenance_deferred": 4507,
+            "maintenance_reclaimed": 0,
+            "request_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "requests": 40316,
+            "timing_enabled": false
+          },
+          "events": {
+            "by_kind": [
+              1024,
+              15027,
+              0,
+              0,
+              0,
+              0
+            ],
+            "committed": 16051,
+            "consumer_groups": [],
+            "dropped": 0,
+            "groups": 0,
+            "journal_bytes": 1573038,
+            "journal_compaction_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_compaction_failures": 0,
+            "journal_compaction_successes": 0,
+            "journal_compactions": 0,
+            "journal_errors": 0,
+            "journal_fsync_duration_us": {
+              "bounds": [
+                10,
+                100,
+                1000,
+                10000,
+                100000,
+                1000000
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "journal_transaction_bytes": {
+              "bounds": [
+                256,
+                1024,
+                4096,
+                16384,
+                65536,
+                1048576
+              ],
+              "buckets": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "count": 0,
+              "sum": 0
+            },
+            "oldest_retained_ms": 1794947638358,
+            "pending": 0,
+            "redelivered": 0,
+            "subscription_empty_poll_ratio": 0.0,
+            "subscription_empty_polls": 0,
+            "subscription_polls": 0,
+            "timing_enabled": false
+          },
+          "memory": {
+            "limit_bytes": 268435456,
+            "managed_bytes": 4067328,
+            "rss_available": true,
+            "rss_bytes": 6066176,
+            "scheduled_expirations": 0
+          },
+          "clients": {
+            "accept_errors_data": 0,
+            "accept_errors_metrics": 0,
+            "auth_failures": 0,
+            "connected": 33,
+            "first_frame_timeouts": 1705,
+            "panics": 0,
+            "rejected": 0,
+            "subscriptions": 0
+          }
+        },
+        "last_sample_before_recovery_confirmation_seconds": 0.949929027
+      }
+    }
+  ],
+  "totals": {
+    "scheduled": 1872000,
+    "accepted": 1061890,
+    "dropped": 810110,
+    "completion_records": 1061890,
+    "success": 1031052,
+    "dispatched": 1061890,
+    "request_started": 1056664,
+    "unknown_SET": 12196,
+    "queued_cancellations": 0,
+    "error_codes": {
+      "LOCAL_EOF": 30837,
+      "ERR_BUSY": 1
+    },
+    "outcomes": {
+      "success": 1031052,
+      "client_transport_error": 30837,
+      "server_error": 1
+    }
+  },
+  "limitations": [
+    "Original valid/passed describes complete tool accounting and final PING recovery; it does not mean zero request failures or production acceptance.",
+    "Successful completions, tester-dropped arrivals, queued cancellations and unknown SET outcomes remain separate; an unknown result proves neither commitment nor loss.",
+    "Baseline, overload and recovery labels refer to scheduled phases. Planned 5000 requests/s is not inferred achieved throughput or proof of server saturation.",
+    "This was one shared WSL host, Python client, 32 serial connections and a bounded queue; client CPU/GIL, logging and scheduling may limit generated load.",
+    "The recovery confirmation begins after the 60-second recovery phase and queue drain; it is not the first instant of service recovery after overload.",
+    "Resource samples use actual monotonic timestamps. One-second sleep plus INFO time is not a strict one-second sampling interval; missing INFO remains missing.",
+    "Each sample timestamps before reading native resources and INFO, without a completion-time bracket. CPU seconds is cumulative CPU time; handles is Linux /proc/PID/fd count; peak_rss_bytes is the separately observed /proc VmHWM value.",
+    "Resource maxima are observed samples only. No terminal resource sample follows driver exit, so this does not prove peak bounds, a stable plateau, leak absence or three-day behavior.",
+    "Every last resource sample precedes final recovery confirmation. INFO stats/events timing_enabled is false; zero INFO histograms are not latency distributions.",
+    "Fast event drops are visible in the resource INFO records; this test has no subscribers and does not claim event-delivery reliability.",
+    "The archived Windows copy does not establish the original Linux file owner or mode metadata.",
+    "No physical power failure, release 0.3.0 binary or post-release test was run in this evidence set."
+  ]
+}

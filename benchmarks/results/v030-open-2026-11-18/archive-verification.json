@@ -1,0 +1,75 @@
+{
+  "method": "per-file SHA256 and byte size before archiving; safe temporary extraction and independent rehash; full gzip EOF; source rehash after archive",
+  "archives": [
+    {
+      "path": "raw-root.tar.gz",
+      "members": 5,
+      "original_file_bytes": 9192315,
+      "gzip_uncompressed_tar_bytes": 9205760,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-fast-0.tar.gz",
+      "members": 13,
+      "original_file_bytes": 178734413,
+      "gzip_uncompressed_tar_bytes": 178759680,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-fast-1.tar.gz",
+      "members": 13,
+      "original_file_bytes": 178741946,
+      "gzip_uncompressed_tar_bytes": 178769920,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-fast-2.tar.gz",
+      "members": 13,
+      "original_file_bytes": 178743089,
+      "gzip_uncompressed_tar_bytes": 178769920,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-reliable-0.tar.gz",
+      "members": 15,
+      "original_file_bytes": 89603035,
+      "gzip_uncompressed_tar_bytes": 89630720,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-reliable-1.tar.gz",
+      "members": 15,
+      "original_file_bytes": 89579958,
+      "gzip_uncompressed_tar_bytes": 89610240,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    },
+    {
+      "path": "raw-reliable-2.tar.gz",
+      "members": 15,
+      "original_file_bytes": 90383485,
+      "gzip_uncompressed_tar_bytes": 90419200,
+      "duplicate_or_unsafe_members": 0,
+      "extracted_size_sha256_matches": true,
+      "gzip_read_to_eof": true,
+      "source_unchanged": true
+    }
+  ]
+}

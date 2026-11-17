@@ -1,0 +1,22 @@
+test_balanced_missing_and_duplicate_completions_fail_exact_ids (test_analyze_open_results.AnalyzeTests.test_balanced_missing_and_duplicate_completions_fail_exact_ids) ... ok
+test_completion_can_precede_arrival (test_analyze_open_results.AnalyzeTests.test_completion_can_precede_arrival) ... ok
+test_completion_without_arrival_and_duplicate_arrival (test_analyze_open_results.AnalyzeTests.test_completion_without_arrival_and_duplicate_arrival) ... ok
+test_dropped_request_must_not_complete (test_analyze_open_results.AnalyzeTests.test_dropped_request_must_not_complete) ... ok
+test_false_unknown_flag_is_diagnostic (test_analyze_open_results.AnalyzeTests.test_false_unknown_flag_is_diagnostic) ... ok
+test_full_job_identity_is_compared (test_analyze_open_results.AnalyzeTests.test_full_job_identity_is_compared) ... ok
+test_incomplete_json_is_reported (test_analyze_open_results.AnalyzeTests.test_incomplete_json_is_reported) ... ok
+test_missing_final_newline_is_reported (test_analyze_open_results.AnalyzeTests.test_missing_final_newline_is_reported) ... ok
+test_missing_final_summary_is_reported (test_analyze_open_results.AnalyzeTests.test_missing_final_summary_is_reported) ... ok
+test_missing_unknown_flag_is_diagnostic (test_analyze_open_results.AnalyzeTests.test_missing_unknown_flag_is_diagnostic) ... ok
+test_mode_repeat_and_phase_survive_root_discovery (test_analyze_open_results.AnalyzeTests.test_mode_repeat_and_phase_survive_root_discovery) ... ok
+test_non_string_terminal_is_diagnostic (test_analyze_open_results.AnalyzeTests.test_non_string_terminal_is_diagnostic) ... ok
+test_partial_root_cannot_be_consistent (test_analyze_open_results.AnalyzeTests.test_partial_root_cannot_be_consistent) ... ok
+test_plan_not_just_summary_controls_scheduled_count (test_analyze_open_results.AnalyzeTests.test_plan_not_just_summary_controls_scheduled_count) ... ok
+test_recovery_and_connection_events_are_separate (test_analyze_open_results.AnalyzeTests.test_recovery_and_connection_events_are_separate) ... ok
+test_summary_mismatch_is_reported (test_analyze_open_results.AnalyzeTests.test_summary_mismatch_is_reported) ... ok
+test_unknown_set_results_are_not_success (test_analyze_open_results.AnalyzeTests.test_unknown_set_results_are_not_success) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.108s
+
+OK

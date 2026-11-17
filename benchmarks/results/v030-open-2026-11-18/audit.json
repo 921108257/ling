@@ -1,0 +1,2558 @@
+{
+  "schema_version": 1,
+  "root": "target\\open-full-20261118-0420",
+  "analyzer_sha256": "a765f6bdfa26e10e93ffd3d6f850338dca311b9fa1ea5dcec8455d22df16b4fe",
+  "semantics": [
+    "Counts are raw records assigned to each request's scheduled phase; no throughput rate is inferred.",
+    "Successful completions and result_unknown SET records are separate; unknown does not imply committed or lost.",
+    "request_start_ns means the request call began, not proof that socket transmission completed.",
+    "Per-request pairing permits completion before arrival in file order.",
+    "Evidence consistency is independent of product acceptance and original valid/passed flags.",
+    "Temporary SQLite stores request identities; malformed rows and missing final files invalidate consistency."
+  ],
+  "evidence_consistent": true,
+  "diagnostics": {},
+  "rounds": [
+    {
+      "mode": "fast",
+      "repeat": 0,
+      "load_directory": "target\\open-full-20261118-0420\\fast-0\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\fast-0\\load\\requests.jsonl",
+        "sha256": "f441e3acaa73f118c854f71d076a1e92e2291c339c8c83e138267f38b44a6c72",
+        "bytes": 169098593,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 269793098803,
+          "confirmed_ns": 270000756348,
+          "from_scheduled_arrivals_end_seconds": 0.252032954,
+          "from_actual_arrivals_end_seconds": 0.25173701,
+          "from_overload_end_seconds": 60.252032954,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 3335,
+            "max_us": 3617,
+            "p50_us": 3391,
+            "p95_us": 3647,
+            "p99_us": 3647,
+            "p999_us": 3647
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 312000,
+        "phase_end": 3,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    },
+    {
+      "mode": "fast",
+      "repeat": 1,
+      "load_directory": "target\\open-full-20261118-0420\\fast-1\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\fast-1\\load\\requests.jsonl",
+        "sha256": "ebcd18793594444d1c0df750784cc615444caf8bf38e92ca51e385fb52e0b871",
+        "bytes": 169106088,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 450340435340,
+          "confirmed_ns": 450548278569,
+          "from_scheduled_arrivals_end_seconds": 0.252352008,
+          "from_actual_arrivals_end_seconds": 0.252110973,
+          "from_overload_end_seconds": 60.252352008,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 3358,
+            "max_us": 3455,
+            "p50_us": 3423,
+            "p95_us": 3455,
+            "p99_us": 3455,
+            "p999_us": 3455
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 312000,
+        "phase_end": 3,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    },
+    {
+      "mode": "fast",
+      "repeat": 2,
+      "load_directory": "target\\open-full-20261118-0420\\fast-2\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\fast-2\\load\\requests.jsonl",
+        "sha256": "29b0e123a5be7f441d29a29ab0b809fb4a8992311e20a8c28c4908468ab6404b",
+        "bytes": 169107185,
+        "lines": 624041,
+        "indexed_records": 624000,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 630844814752,
+          "confirmed_ns": 631051988744,
+          "from_scheduled_arrivals_end_seconds": 0.252313837,
+          "from_actual_arrivals_end_seconds": 0.25206781,
+          "from_overload_end_seconds": 60.252313837,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 3273,
+            "max_us": 3586,
+            "p50_us": 3327,
+            "p95_us": 3615,
+            "p99_us": 3615,
+            "p999_us": 3615
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 312000,
+        "phase_end": 3,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 300000,
+            "dropped": 0,
+            "completion_records": 300000,
+            "success": 300000,
+            "dispatched": 300000,
+            "request_started": 300000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 300000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 150000,
+                "dropped": 0,
+                "completion_records": 150000,
+                "success": 150000,
+                "dispatched": 150000,
+                "request_started": 150000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 150000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    },
+    {
+      "mode": "reliable",
+      "repeat": 0,
+      "load_directory": "target\\open-full-20261118-0420\\reliable-0\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\reliable-0\\load\\requests.jsonl",
+        "sha256": "559ef8685069b90ce48c3b1ceba9cfad2ceb48efa2c675b18bd0ba5f8affe57c",
+        "bytes": 78437791,
+        "lines": 362625,
+        "indexed_records": 354018,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 811394070009,
+          "confirmed_ns": 811601620546,
+          "from_scheduled_arrivals_end_seconds": 0.261188601,
+          "from_actual_arrivals_end_seconds": 0.260879945,
+          "from_overload_end_seconds": 60.261188601,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 2985,
+            "max_us": 3488,
+            "p50_us": 3263,
+            "p95_us": 3519,
+            "p99_us": 3519,
+            "p999_us": 3519
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 42018,
+        "phase_end": 3,
+        "connection_replaced": 8566,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 30019,
+            "dropped": 269981,
+            "completion_records": 30019,
+            "success": 19769,
+            "dispatched": 30019,
+            "request_started": 28296,
+            "unknown_SET": 4121,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19769,
+              "client_transport_error": 10250
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10250
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10250
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 4121
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 4121
+            },
+            "unknown_SET_by_stage": {
+              "request": 4121
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15006,
+                "dropped": 134994,
+                "completion_records": 15006,
+                "success": 9705,
+                "dispatched": 15006,
+                "request_started": 14111,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9705,
+                  "client_transport_error": 5301
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5301
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5301
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15013,
+                "dropped": 134987,
+                "completion_records": 15013,
+                "success": 10064,
+                "dispatched": 15013,
+                "request_started": 14185,
+                "unknown_SET": 4121,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10064,
+                  "client_transport_error": 4949
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4949
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4949
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 4121
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 4121
+                },
+                "unknown_SET_by_stage": {
+                  "request": 4121
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5954,
+            "dispatched": 5999,
+            "request_started": 5993,
+            "unknown_SET": 14,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 5954,
+              "client_transport_error": 44,
+              "server_error": 1
+            },
+            "error_codes": {
+              "LOCAL_EOF": 44,
+              "ERR_BUSY": 1
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 44,
+              "server_error:ERR_BUSY": 1
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 14
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 14
+            },
+            "unknown_SET_by_stage": {
+              "request": 14
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2972,
+                "dispatched": 2999,
+                "request_started": 2996,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2972,
+                  "client_transport_error": 27
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 27
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 27
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2982,
+                "dispatched": 3000,
+                "request_started": 2997,
+                "unknown_SET": 14,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2982,
+                  "client_transport_error": 17,
+                  "server_error": 1
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 17,
+                  "ERR_BUSY": 1
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 17,
+                  "server_error:ERR_BUSY": 1
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 14
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 14
+                },
+                "unknown_SET_by_stage": {
+                  "request": 14
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    },
+    {
+      "mode": "reliable",
+      "repeat": 1,
+      "load_directory": "target\\open-full-20261118-0420\\reliable-1\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\reliable-1\\load\\requests.jsonl",
+        "sha256": "b49ebe47a09d3757d4f29b4637e7d9852c0e20be848473c7f5416a7c5ed044b5",
+        "bytes": 78412940,
+        "lines": 362473,
+        "indexed_records": 353991,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 992550413165,
+          "confirmed_ns": 992757682504,
+          "from_scheduled_arrivals_end_seconds": 0.262944159,
+          "from_actual_arrivals_end_seconds": 0.262510653,
+          "from_overload_end_seconds": 60.262944159,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 3183,
+            "max_us": 4089,
+            "p50_us": 3391,
+            "p95_us": 4095,
+            "p99_us": 4095,
+            "p999_us": 4095
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 41991,
+        "phase_end": 3,
+        "connection_replaced": 8441,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 29992,
+            "dropped": 270008,
+            "completion_records": 29992,
+            "success": 19799,
+            "dispatched": 29992,
+            "request_started": 28209,
+            "unknown_SET": 3936,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19799,
+              "client_transport_error": 10193
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10193
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10193
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 3936
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 3936
+            },
+            "unknown_SET_by_stage": {
+              "request": 3936
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 15159,
+                "dropped": 134841,
+                "completion_records": 15159,
+                "success": 9734,
+                "dispatched": 15159,
+                "request_started": 14208,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9734,
+                  "client_transport_error": 5425
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5425
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5425
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14833,
+                "dropped": 135167,
+                "completion_records": 14833,
+                "success": 10065,
+                "dispatched": 14833,
+                "request_started": 14001,
+                "unknown_SET": 3936,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10065,
+                  "client_transport_error": 4768
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4768
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4768
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 3936
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 3936
+                },
+                "unknown_SET_by_stage": {
+                  "request": 3936
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5953,
+            "dispatched": 5999,
+            "request_started": 5984,
+            "unknown_SET": 13,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 5953,
+              "client_transport_error": 46
+            },
+            "error_codes": {
+              "LOCAL_EOF": 46
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 46
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 13
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 13
+            },
+            "unknown_SET_by_stage": {
+              "request": 13
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2973,
+                "dispatched": 2999,
+                "request_started": 2991,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2973,
+                  "client_transport_error": 26
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 26
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 26
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2980,
+                "dispatched": 3000,
+                "request_started": 2993,
+                "unknown_SET": 13,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2980,
+                  "client_transport_error": 20
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 20
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 20
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 13
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 13
+                },
+                "unknown_SET_by_stage": {
+                  "request": 13
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    },
+    {
+      "mode": "reliable",
+      "repeat": 2,
+      "load_directory": "target\\open-full-20261118-0420\\reliable-2\\load",
+      "raw": {
+        "path": "target\\open-full-20261118-0420\\reliable-2\\load\\requests.jsonl",
+        "sha256": "98ac8fc8b8c8b4bb3d2a6541d57dbcfc3a7fb117c1f2ba82f2fccf1d87c9f330",
+        "bytes": 79230629,
+        "lines": 362527,
+        "indexed_records": 353881,
+        "stable_during_read": true
+      },
+      "input_summary_flags": {
+        "valid": true,
+        "passed": true,
+        "failure": null,
+        "threads_alive": [],
+        "recovery": {
+          "recovered": true,
+          "attempts": 3,
+          "stable_first_completion_ns": 1173802586071,
+          "confirmed_ns": 1174010285115,
+          "from_scheduled_arrivals_end_seconds": 0.26141962,
+          "from_actual_arrivals_end_seconds": 0.260986439,
+          "from_overload_end_seconds": 60.26141962,
+          "includes_drain": true,
+          "threshold_ms_including_connect_hello": 100,
+          "consecutive_required": 3,
+          "latency": {
+            "count": 3,
+            "min_us": 2987,
+            "max_us": 3840,
+            "p50_us": 3167,
+            "p95_us": 3871,
+            "p99_us": 3871,
+            "p999_us": 3871
+          }
+        }
+      },
+      "input_process_flags": {
+        "passed": true,
+        "failure": null,
+        "driver_exit": 0,
+        "cleanup_errors": []
+      },
+      "events": {
+        "connection_ready": 32,
+        "phase_start": 3,
+        "arrival": 312000,
+        "completion": 41881,
+        "phase_end": 3,
+        "connection_replaced": 8605,
+        "recovery_ping": 3
+      },
+      "request_sequence": {
+        "distinct_arrival_ids": 312000,
+        "minimum": 0,
+        "maximum": 311999,
+        "contiguous_from_zero": true
+      },
+      "identity_examples": {},
+      "phases": {
+        "baseline": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 6000,
+            "dropped": 0,
+            "completion_records": 6000,
+            "success": 6000,
+            "dispatched": 6000,
+            "request_started": 6000,
+            "unknown_SET": 0,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 6000
+            },
+            "error_codes": {},
+            "outcome_error_codes": {},
+            "unknown_SET_by_outcome": {},
+            "unknown_SET_by_error_code": {},
+            "unknown_SET_by_stage": {}
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 3000,
+                "dispatched": 3000,
+                "request_started": 3000,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 3000
+                },
+                "error_codes": {},
+                "outcome_error_codes": {},
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "overload": {
+          "planned_scheduled": 300000,
+          "totals": {
+            "scheduled": 300000,
+            "accepted": 29882,
+            "dropped": 270118,
+            "completion_records": 29882,
+            "success": 19618,
+            "dispatched": 29882,
+            "request_started": 28186,
+            "unknown_SET": 4094,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "success": 19618,
+              "client_transport_error": 10264
+            },
+            "error_codes": {
+              "LOCAL_EOF": 10264
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 10264
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 4094
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 4094
+            },
+            "unknown_SET_by_stage": {
+              "request": 4094
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14909,
+                "dropped": 135091,
+                "completion_records": 14909,
+                "success": 9514,
+                "dispatched": 14909,
+                "request_started": 13988,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 9514,
+                  "client_transport_error": 5395
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 5395
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 5395
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 150000,
+                "accepted": 14973,
+                "dropped": 135027,
+                "completion_records": 14973,
+                "success": 10104,
+                "dispatched": 14973,
+                "request_started": 14198,
+                "unknown_SET": 4094,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 10104,
+                  "client_transport_error": 4869
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 4869
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 4869
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 4094
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 4094
+                },
+                "unknown_SET_by_stage": {
+                  "request": 4094
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        },
+        "recovery": {
+          "planned_scheduled": 6000,
+          "totals": {
+            "scheduled": 6000,
+            "accepted": 5999,
+            "dropped": 1,
+            "completion_records": 5999,
+            "success": 5959,
+            "dispatched": 5999,
+            "request_started": 5996,
+            "unknown_SET": 18,
+            "queued_cancellations": 0,
+            "outcomes": {
+              "client_transport_error": 40,
+              "success": 5959
+            },
+            "error_codes": {
+              "LOCAL_EOF": 40
+            },
+            "outcome_error_codes": {
+              "client_transport_error:LOCAL_EOF": 40
+            },
+            "unknown_SET_by_outcome": {
+              "client_transport_error": 18
+            },
+            "unknown_SET_by_error_code": {
+              "LOCAL_EOF": 18
+            },
+            "unknown_SET_by_stage": {
+              "request": 18
+            }
+          },
+          "by_command": {
+            "PING": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 2999,
+                "dropped": 1,
+                "completion_records": 2999,
+                "success": 2978,
+                "dispatched": 2999,
+                "request_started": 2997,
+                "unknown_SET": 0,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "success": 2978,
+                  "client_transport_error": 21
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 21
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 21
+                },
+                "unknown_SET_by_outcome": {},
+                "unknown_SET_by_error_code": {},
+                "unknown_SET_by_stage": {}
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            },
+            "SET": {
+              "counts": {
+                "scheduled": 3000,
+                "accepted": 3000,
+                "dropped": 0,
+                "completion_records": 3000,
+                "success": 2981,
+                "dispatched": 3000,
+                "request_started": 2999,
+                "unknown_SET": 18,
+                "queued_cancellations": 0,
+                "outcomes": {
+                  "client_transport_error": 19,
+                  "success": 2981
+                },
+                "error_codes": {
+                  "LOCAL_EOF": 19
+                },
+                "outcome_error_codes": {
+                  "client_transport_error:LOCAL_EOF": 19
+                },
+                "unknown_SET_by_outcome": {
+                  "client_transport_error": 18
+                },
+                "unknown_SET_by_error_code": {
+                  "LOCAL_EOF": 18
+                },
+                "unknown_SET_by_stage": {
+                  "request": 18
+                }
+              },
+              "aggregate_accounting": {
+                "scheduled_equals_accepted_plus_dropped": true,
+                "accepted_equals_terminal_records": true
+              },
+              "identity_anomalies": {
+                "duplicate_arrival_ids": 0,
+                "duplicate_completion_ids": 0,
+                "completion_without_arrival_ids": 0,
+                "accepted_without_exactly_one_completion_ids": 0,
+                "dropped_with_completion_ids": 0,
+                "invalid_acceptance_ids": 0,
+                "identity_mismatch_ids": 0,
+                "acceptance_mismatch_ids": 0
+              }
+            }
+          },
+          "aggregate_accounting": {
+            "scheduled_equals_accepted_plus_dropped": true,
+            "accepted_equals_terminal_records": true
+          },
+          "identity_anomalies": {
+            "duplicate_arrival_ids": 0,
+            "duplicate_completion_ids": 0,
+            "completion_without_arrival_ids": 0,
+            "accepted_without_exactly_one_completion_ids": 0,
+            "dropped_with_completion_ids": 0,
+            "invalid_acceptance_ids": 0,
+            "identity_mismatch_ids": 0,
+            "acceptance_mismatch_ids": 0
+          },
+          "summary_count_differences": {},
+          "summary_error_differences": {}
+        }
+      },
+      "evidence_consistent": true,
+      "diagnostics": {}
+    }
+  ]
+}
