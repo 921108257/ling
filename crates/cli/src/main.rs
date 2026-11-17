@@ -265,10 +265,15 @@ async fn run() -> Result<bool, Diagnostic> {
             } else {
                 Some(subscription_input(language))
             };
+            // 同一监听器贯穿事件和确认等待，避免输出期间的 Ctrl-C 落入重新注册的空窗。
+            // Keep one listener across event and acknowledgement waits so Ctrl-C during output is retained.
+            let cancelled = tokio::signal::ctrl_c();
+            tokio::pin!(cancelled);
             loop {
                 let event = tokio::select! {
+                    biased;
+                    _=cancelled.as_mut()=>break,
                     result=subscriber.next_event()=>result.map_err(|error| sdk_error(&error, language, Context::Subscription))?,
-                    _=tokio::signal::ctrl_c()=>break
                 };
                 // 输出成功后才确认；下游应按 event_id 幂等处理。
                 // Acknowledge only after successful output; downstream processing should be idempotent by event_id.
@@ -282,8 +287,7 @@ async fn run() -> Result<bool, Diagnostic> {
                 )?;
                 if let Some(input) = input.as_mut() {
                     loop {
-                        let line = match subscription_control(input, tokio::signal::ctrl_c()).await
-                        {
+                        let line = match subscription_control(input, cancelled.as_mut()).await {
                             SubscriptionControl::Line(line) => line?,
                             SubscriptionControl::Eof => {
                                 // 清理失败也不能掩盖未确认状态；Drop 仍会关闭专用连接。
@@ -634,11 +638,12 @@ async fn subscription_control(
     cancelled: impl std::future::Future<Output = io::Result<()>>,
 ) -> SubscriptionControl {
     tokio::select! {
+        biased;
+        _=cancelled=>SubscriptionControl::Cancelled,
         line=input.recv()=>match line {
             Some(line)=>SubscriptionControl::Line(line),
             None=>SubscriptionControl::Eof,
         },
-        _=cancelled=>SubscriptionControl::Cancelled,
     }
 }
 
@@ -751,5 +756,27 @@ mod tests {
             subscription_control(&mut input, std::future::pending()).await,
             SubscriptionControl::Eof
         ));
+    }
+
+    /// 控制行不能消费取消监听器，两个等待之间到达的取消优先于排队输入。
+    /// Control lines preserve the cancellation listener, and cancellation between waits precedes queued input.
+    #[tokio::test]
+    async fn subscription_cancellation_survives_control_lines() {
+        let (sender, mut input) = tokio::sync::mpsc::channel(1);
+        let (cancel, cancelled) = tokio::sync::oneshot::channel();
+        let cancelled = async move { cancelled.await.map_err(std::io::Error::other) };
+        tokio::pin!(cancelled);
+        sender.send(Ok("PING\n".into())).await.unwrap();
+        assert!(matches!(
+            subscription_control(&mut input, cancelled.as_mut()).await,
+            SubscriptionControl::Line(Ok(line)) if line == "PING\n"
+        ));
+        cancel.send(()).unwrap();
+        sender.send(Ok("ACK queued\n".into())).await.unwrap();
+        assert!(matches!(
+            subscription_control(&mut input, cancelled.as_mut()).await,
+            SubscriptionControl::Cancelled
+        ));
+        assert!(matches!(input.try_recv(), Ok(Ok(line)) if line == "ACK queued\n"));
     }
 }
