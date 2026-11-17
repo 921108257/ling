@@ -1,0 +1,229 @@
+{
+  "source": "../v030-calibration-2026-11-18/extra.json",
+  "method": "Existing frozen generator capacity_projection; read-only independent review after first plan-generation failure",
+  "adjustment": "Repeat full calibration with 3 cycles/second/worker; unchanged 4 GiB Journal and unchanged acceptance rules. Historical projections alone do not prove the new rate fits.",
+  "phases": [
+    {
+      "phase": "reliable-shadow-noeviction",
+      "projection": {
+        "startup_scenario_seconds": 86400,
+        "startup_scenario_below_event_admission": false,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "79834445000000000000/8250158649617499",
+          "positive_max_adjacent_start_normalized": "15622400000000000000/1002676282199991",
+          "maximum_fixed_60s_lower_bound": "138983/15"
+        },
+        "selected_rate_exact": "15622400000000000000/1002676282199991",
+        "initial_active_bytes": "1382",
+        "observed_active_peak_bytes": "31935160",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "1682717160",
+            "with_record_checkpoint_reserve_bytes": "1684814617",
+            "remaining_to_event_admission_bytes": "-74201881"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "1009630849",
+            "with_record_checkpoint_reserve_bytes": "1011728306",
+            "remaining_to_event_admission_bytes": "598884430"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "5053991479",
+            "with_record_checkpoint_reserve_bytes": "5056088936",
+            "remaining_to_event_admission_bytes": "-3445476200"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    },
+    {
+      "phase": "reliable-pressure-noeviction",
+      "projection": {
+        "startup_scenario_seconds": 51840,
+        "startup_scenario_below_event_admission": true,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "515552000000000/120015205437",
+          "positive_max_adjacent_start_normalized": "16581500000000000000/1252599600499991",
+          "maximum_fixed_60s_lower_bound": "65284/15"
+        },
+        "selected_rate_exact": "16581500000000000000/1252599600499991",
+        "initial_active_bytes": "1808",
+        "observed_active_peak_bytes": "2579568",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "1429670155",
+            "with_record_checkpoint_reserve_bytes": "1431767612",
+            "remaining_to_event_admission_bytes": "178845124"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "857802817",
+            "with_record_checkpoint_reserve_bytes": "859900274",
+            "remaining_to_event_admission_bytes": "750712462"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "4293970975",
+            "with_record_checkpoint_reserve_bytes": "4296068432",
+            "remaining_to_event_admission_bytes": "-2685455696"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    },
+    {
+      "phase": "reliable-pressure-lru",
+      "projection": {
+        "startup_scenario_seconds": 51840,
+        "startup_scenario_below_event_admission": false,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "108612740000000000000/6000860244350001",
+          "positive_max_adjacent_start_normalized": "138168000000000000000/5020945933999883",
+          "maximum_fixed_60s_lower_bound": "35885/2"
+        },
+        "selected_rate_exact": "138168000000000000000/5020945933999883",
+        "initial_active_bytes": "1808",
+        "observed_active_peak_bytes": "10863082",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "2971980435",
+            "with_record_checkpoint_reserve_bytes": "2974077892",
+            "remaining_to_event_admission_bytes": "-1363465156"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "1783188984",
+            "with_record_checkpoint_reserve_bytes": "1785286441",
+            "remaining_to_event_admission_bytes": "-174673705"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "8926257058",
+            "with_record_checkpoint_reserve_bytes": "8928354515",
+            "remaining_to_event_admission_bytes": "-7317741779"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    },
+    {
+      "phase": "reliable-pressure-lfu",
+      "projection": {
+        "startup_scenario_seconds": 51840,
+        "startup_scenario_below_event_admission": false,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "105672500000000000000/6000873262739999",
+          "positive_max_adjacent_start_normalized": "142168000000000000000/5043898804000037",
+          "maximum_fixed_60s_lower_bound": "1030247/60"
+        },
+        "selected_rate_exact": "142168000000000000000/5043898804000037",
+        "initial_active_bytes": "1808",
+        "observed_active_peak_bytes": "10569058",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "3044104118",
+            "with_record_checkpoint_reserve_bytes": "3046201575",
+            "remaining_to_event_admission_bytes": "-1435588839"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "1826463194",
+            "with_record_checkpoint_reserve_bytes": "1828560651",
+            "remaining_to_event_admission_bytes": "-217947915"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "9142878538",
+            "with_record_checkpoint_reserve_bytes": "9144975995",
+            "remaining_to_event_admission_bytes": "-7534363259"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    },
+    {
+      "phase": "reliable-pressure-random",
+      "projection": {
+        "startup_scenario_seconds": 51840,
+        "startup_scenario_below_event_admission": false,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "1567180000000000/85726645337",
+          "positive_max_adjacent_start_normalized": "152225000000000000000/5006581660999927",
+          "maximum_fixed_60s_lower_bound": "552341/30"
+        },
+        "selected_rate_exact": "152225000000000000000/5006581660999927",
+        "initial_active_bytes": "1412",
+        "observed_active_peak_bytes": "10971672",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "3283738923",
+            "with_record_checkpoint_reserve_bytes": "3285836380",
+            "remaining_to_event_admission_bytes": "-1675223644"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "1970243919",
+            "with_record_checkpoint_reserve_bytes": "1972341376",
+            "remaining_to_event_admission_bytes": "-361728640"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "9862615811",
+            "with_record_checkpoint_reserve_bytes": "9864713268",
+            "remaining_to_event_admission_bytes": "-8254100532"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    },
+    {
+      "phase": "reliable-pressure-ttl-first",
+      "projection": {
+        "startup_scenario_seconds": 51840,
+        "startup_scenario_below_event_admission": true,
+        "append_rates_exact": {
+          "whole_sample_start_normalized": "9601225000000000000/3000493302760001",
+          "positive_max_adjacent_start_normalized": "10292375000000000000/632789529625029",
+          "maximum_fixed_60s_lower_bound": "233257/60"
+        },
+        "selected_rate_exact": "10292375000000000000/632789529625029",
+        "initial_active_bytes": "1808",
+        "observed_active_peak_bytes": "1922053",
+        "event_total_active_admission_bytes": "1610612736",
+        "maximum_record_reserve_bytes": "2097168",
+        "topology_checkpoint_reserve_bytes": "289",
+        "projections": {
+          "86400": {
+            "active_bytes_historical_scenario": "1756630905",
+            "with_record_checkpoint_reserve_bytes": "1758728362",
+            "remaining_to_event_admission_bytes": "-148115626"
+          },
+          "51840": {
+            "active_bytes_historical_scenario": "1053979267",
+            "with_record_checkpoint_reserve_bytes": "1056076724",
+            "remaining_to_event_admission_bytes": "554536012"
+          },
+          "259500": {
+            "active_bytes_historical_scenario": "5275988506",
+            "with_record_checkpoint_reserve_bytes": "5278085963",
+            "remaining_to_event_admission_bytes": "-3667473227"
+          }
+        },
+        "scope": "1.25 times observed-rate scenarios, not statistical or future upper bounds; 259500-second no-reclamation projection is not an automatic rejection",
+        "retention_validation": "After 24 hours verify real compaction/reclamation evidence, retained events and clean Journal counters; 72-hour capacity remains a test hypothesis."
+      }
+    }
+  ]
+}

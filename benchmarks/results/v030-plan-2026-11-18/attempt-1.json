@@ -1,0 +1,22 @@
+{
+  "scope": "Formal plan generation rejected; not a formal plan and no endurance start authorized by this attempt",
+  "started_utc": "2026-11-17T22:37:30.676263+00:00",
+  "ended_utc": "2026-11-17T22:37:32.081505+00:00",
+  "command": [
+    "python",
+    "-B",
+    "benchmarks/generate-v030-acceptance-plan.py",
+    "--calibration-root",
+    "target/v030-calibration-20261118-0540",
+    "--archive",
+    "benchmarks/results/v030-calibration-2026-11-18",
+    "--source-root",
+    "/root/ling-acceptance/v030-endurance-20261118-a91f",
+    "--output",
+    "C:\\Users\\92110\\Desktop\\Linger\\ling\\benchmarks\\results\\v030-plan-2026-11-18\\plan.json"
+  ],
+  "exit_code": 1,
+  "output_exists": false,
+  "tool_sha256": "de1b1d5991c96dacdb9929d32be75143e1afeff7424b023ed2abe334beb2cf4e",
+  "diagnosis": "Both shadow first full minute windows have one missing worker counter sample before first completed cycle. Historical data and analyzer unchanged; initialize future driver counters explicitly and repeat full calibration."
+}

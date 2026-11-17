@@ -1,0 +1,1636 @@
+{
+  "source_root": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540",
+  "source_files": 152,
+  "files": [
+    {
+      "path": "raw/driver-exits.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\driver-exits.json",
+      "bytes": 499,
+      "sha256": "a10455adaaf319cb91229f49d11280fb4acd537ef87ef3361b7d79b0b08d4b2b",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/environment.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\environment.json",
+      "bytes": 101191,
+      "sha256": "7e33c76209f6265479b8256fc09b54e980e5b091cd2122904ca503a18b9576ba",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\consumer-events.jsonl.gz",
+      "bytes": 5857,
+      "sha256": "e8caf2ff2e39056580e894cc4ef089fc7c2eef96a5c3ee01be788650f97e5a1a",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\errors.jsonl.gz",
+      "bytes": 7041,
+      "sha256": "bd7fbf9f12d6488cfa1533f38414dfb43f648096614940dce63d5ca627ce8526",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\ling.toml",
+      "bytes": 446,
+      "sha256": "74ee6e5a02041b2ee8a01e37917e4a1124ea0a6321f684f326bd234e3835e0d4",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\progress.json",
+      "bytes": 8646,
+      "sha256": "3f114628f99270a74440e8c6aa707147b7309ad88aa7616725b7b5384f1d7c76",
+      "source_mtime_ns": 1794953323000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\resources.jsonl.gz",
+      "bytes": 100728,
+      "sha256": "ef4be3101f1788fe532742e983a8029632ca1686e5d3f1bc346f6f48127185cc",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\result.json",
+      "bytes": 41390,
+      "sha256": "ebdf1e9934db77d464696bce402f2f50277cd047df02e5b105ca87202323ae8f",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "0f02d5bcd276e9962bcf5b89aea98dc2294d1c1937912d1c182e5a65f79d4d7e",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lfu/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\consumer-events.jsonl.gz",
+      "bytes": 5867,
+      "sha256": "ac5d50044776d27b7fb40cca31f2dfffff07b9e3f7f52adb6b368d0777327963",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\errors.jsonl.gz",
+      "bytes": 1009,
+      "sha256": "b2dfdd60977db47d053382f45c3818203c162737f0936f0da5012f045c5c0523",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\ling.toml",
+      "bytes": 446,
+      "sha256": "a527d3a7d83201360a2cb9cf5529c590c4ef2da1cbcbd65972eac406546d5684",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\progress.json",
+      "bytes": 8514,
+      "sha256": "2d554445bc254f3c85a50e7ab84b3dda0f5e4d8bd9b93f0b2a0ef76632a3b9c9",
+      "source_mtime_ns": 1794952723000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\resources.jsonl.gz",
+      "bytes": 98717,
+      "sha256": "f696ffa116f6a2f0a7c71217f2109adefdccb24fa809ced49753ba0d2d4b824e",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\result.json",
+      "bytes": 41113,
+      "sha256": "f9245a6a8fa13a3a38eee754cae0adfad86b6d29f83f3a15be28064ec0492abb",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "f3b695adcc0b87f9f890679a6f1d3622c7812cc5eb53ce36eef8a38c10c85ca9",
+      "source_mtime_ns": 1794952726000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-lru/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 2211,
+      "sha256": "36054182694a85766132463546d2f5036e868bebbec89be53b6df4edfcfe6941",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\errors.jsonl.gz",
+      "bytes": 308234,
+      "sha256": "baeb9d37b4b55a80d82e5edb5a50afa595848fd72a5bee4ec06ab89c492977a2",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\ling.toml",
+      "bytes": 453,
+      "sha256": "74122595fadf57ddbbf3b4ab839fdeb303eb1766853dfa47612069fc3a28b6b0",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\progress.json",
+      "bytes": 8546,
+      "sha256": "0b24a956723c0569f26fb5fdbd24c7d70fcc66e809be42a5b231ac418043296a",
+      "source_mtime_ns": 1794952123000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\resources.jsonl.gz",
+      "bytes": 92384,
+      "sha256": "685b340f4f31a7b2ee235c602672898e3045ee727fa13fc0e32e1b6f3fb41ee3",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\result.json",
+      "bytes": 41133,
+      "sha256": "b58b7b6b881ce952b1564c4ca6d77978ae4cd92c0ff00676e84c5f8df72b6a86",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "23796dff0fad1ffba4bc88fc7ea7d0a4f5d624bdcf66ec3674eb357bd45ea0bc",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-noeviction/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\consumer-events.jsonl.gz",
+      "bytes": 5974,
+      "sha256": "d235738165c7b67959a238197e88ee5596ad992c84d3f5da74f878cdd9f071cf",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\errors.jsonl.gz",
+      "bytes": 3155,
+      "sha256": "331c344e9fd39e4c3e16d0b9bf22ea3e208ccc52956f704a6fa29feda4e3d4ac",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\ling.toml",
+      "bytes": 449,
+      "sha256": "e8f2e8035849d1e9f265a4cf748cf8b96f9ef0f5df83f318371cb39312627f0d",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\progress.json",
+      "bytes": 8644,
+      "sha256": "66dfc165db73afab878fdaa563db02cb01bc14fd8b6bf8f73ee7cb26cb1d3e57",
+      "source_mtime_ns": 1794953923000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\resources.jsonl.gz",
+      "bytes": 100080,
+      "sha256": "0e996fda47e16a6798448488e033ecda0f05051d53b4b6fefd4df022fc8ac559",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\result.json",
+      "bytes": 41355,
+      "sha256": "9932593846111520a0815be499af9ab7c7f271b6617cf35a48ca349701ad8908",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "04bbb7f8f729c5333006a6b7047db34b7001cfef8bede90e9925311e5fdbdd7b",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-random/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\consumer-events.jsonl.gz",
+      "bytes": 1360,
+      "sha256": "22a9ef5cf695169cdcaaab8010352eb657bcd241baeb52e6900261db1c2c13da",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\errors.jsonl.gz",
+      "bytes": 397128,
+      "sha256": "04356d5910c1a2a12d50f3e6b89d35a3b8d755af6ae00064dba8dd7d804a046b",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\ling.toml",
+      "bytes": 452,
+      "sha256": "8237bdc6b478aecb6c855a480863699c3ffd88a97382064b6e96edfd866b32ac",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\progress.json",
+      "bytes": 8640,
+      "sha256": "dc5f3de768219a2f1a42a3a082d9a20826d4862d725250ab60cdbfd57091030a",
+      "source_mtime_ns": 1794954523000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\resources.jsonl.gz",
+      "bytes": 86606,
+      "sha256": "96221e64ff8da7e1f701a76d65cf4988bdcd2c5ac948d35a128cc78d11e44f4c",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\result.json",
+      "bytes": 41320,
+      "sha256": "1911f866c9bcef0e80e66b0dd715ce8ba9d342bd77f5f935af70ab91bd06d1c7",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "072079ef96dd36a4c5ec66afdbabc6650c9fe4b37f8a045b8c13ce94a694dc0d",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/ling",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/summary.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\summary.json",
+      "bytes": 236298,
+      "sha256": "afa8faab23cd3c44a77633932d6c5b26c7bbbbddf744d73c42858618a7d8e3ce",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/tool_source/v020.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure/tool_source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\tool_source\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951451000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-pressure-driver.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure-driver.log",
+      "bytes": 551,
+      "sha256": "4997a7c4ce9943b3f0777f16fab821e6dac2823e315915dcf601df105646a9a1",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/environment.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\environment.json",
+      "bytes": 101185,
+      "sha256": "e5803c08e8baca63330ffdf120db9d4b16b97a0201a2940fc68dd53fefc6baba",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 17019,
+      "sha256": "47d519c6c6038fcb09ec2a5b1f54048a9a0fd6c0eef9fbdba1f0f17a73b6986a",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 615278,
+      "sha256": "a08d567a8a6fc8c16133c4ca078890f7c34c7148c4fcbd8980b01fae37abe797",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\ling.toml",
+      "bytes": 456,
+      "sha256": "671c8e5c81a972b0c1eae5e109484e5450368d423fead351f4e8f61ac9ef0f4b",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\progress.json",
+      "bytes": 8988,
+      "sha256": "881a791f932935fe0209a16ca171de1e641336b651115c70d16a303844064791",
+      "source_mtime_ns": 1794954818000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 524350,
+      "sha256": "d79a6e6e29cd73ba8bf3d1d751f8e4f04376ba3c3da0108af713593eda7603ca",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\result.json",
+      "bytes": 42141,
+      "sha256": "df903c516cbae63cfe34b3c6e9cf4c6d5096a7c35ca96cfd576d48bbadd95644",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "fb901bbf825ec7bcddc81a8bcaf7c5731274d2608d33664152cf2a150209fbc5",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/summary.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\summary.json",
+      "bytes": 48324,
+      "sha256": "25c3084cc70860514ce468c81e045cf2f1ee93876bd0ed7e904fc78776d39855",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/tool_source/v020.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow/tool_source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\tool_source\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951451000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/fast-shadow-driver.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow-driver.log",
+      "bytes": 112,
+      "sha256": "0e461eb9f6fc968a5a03d615c35b5c4a3e2ee4dce7a0e3156ddd26ece944f7c1",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/layout-result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\layout-result.json",
+      "bytes": 3930,
+      "sha256": "4ec4c9209f18d6ee4f57b9a0fa2944c3b71ac6dc6cdf24cc8ea82f94237b3ef6",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/layout.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\layout.json",
+      "bytes": 6883,
+      "sha256": "547e769306ba6179865ece9d6e0180d9e630f9ea03ae738994e92f8745401754",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/environment.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\environment.json",
+      "bytes": 101215,
+      "sha256": "f241d53056d6e4b1369c689c366fcee8aafd7f2f27e03f5dea4e6050fd7e79fd",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\consumer-events.jsonl.gz",
+      "bytes": 6065,
+      "sha256": "7d2581dc09303e7058306f2634a638491fdaff7bcd971e18857ebe2a0afdc766",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\errors.jsonl.gz",
+      "bytes": 7461,
+      "sha256": "c5839345a3fcdb13c06d5f1fc8a85be17a31eea829554b872fb40847cc0d2346",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\journal\\journal.lgj",
+      "bytes": 10569058,
+      "sha256": "510546118ff0867da6775fed1ec106076240f702dc1e9c8676160a47f4708875",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\ling.toml",
+      "bytes": 501,
+      "sha256": "de0645e2bb5757d5409d5e76a77c43b58a6472dc198f766d0e638004a15f9989",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\progress.json",
+      "bytes": 8752,
+      "sha256": "2688fcf0b0c94d1e64ded1ab66a7e69836770653fa6e8d4981069235ec3f260c",
+      "source_mtime_ns": 1794953326000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\resources.jsonl.gz",
+      "bytes": 119329,
+      "sha256": "6d35b65b973855f0c062f39d0cda252d93050ef6a565da4156edd2f42f1290df",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\result.json",
+      "bytes": 41653,
+      "sha256": "86ec9025b03351ce9b6c9afc0e9927b2cceba78d22d8a2e616a855aac6e381cb",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "ec1e9e36a8cb774009bb6bef24792e7a30804691255c93bd13454e1fb5686865",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\consumer-events.jsonl.gz",
+      "bytes": 6040,
+      "sha256": "58adc409c6a1f159f6850ea8ffa730172ce3d5b6c6aeaa267a67895b4d929f7a",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\errors.jsonl.gz",
+      "bytes": 1228,
+      "sha256": "38ca9804d4c2476cbd488a07b8b50802e5427894b93ab6c89b8a23be98109f74",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\journal\\journal.lgj",
+      "bytes": 10863082,
+      "sha256": "4a0c1cb09b0d724981ead40fc36d18dc9d31463def3006952d299c771717883e",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\ling.toml",
+      "bytes": 501,
+      "sha256": "878bbef7e594c47eeb43b042a771c05e95f7c10a993ff36049cb1f9426c8cd4f",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\progress.json",
+      "bytes": 8701,
+      "sha256": "45db358da834aec3fa19fc0b5e17090ee9eddbcb55d756e2baad0feb21c17804",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\resources.jsonl.gz",
+      "bytes": 117592,
+      "sha256": "b24a5e069311e6b7b40b70136a6e51388270f2b2dfbd0c7150f83d5fc96ed17e",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\result.json",
+      "bytes": 41568,
+      "sha256": "5e3e4dba45cea11b49a06bd3e54857ba66539e0be3a4002100d5c00b873f428a",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "f3b695adcc0b87f9f890679a6f1d3622c7812cc5eb53ce36eef8a38c10c85ca9",
+      "source_mtime_ns": 1794952727000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-lru/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 1663,
+      "sha256": "8ae9ba532b90b91e53b3c8db2db44e14bdbc98a370bf9323e091ff039c2d949d",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\errors.jsonl.gz",
+      "bytes": 354297,
+      "sha256": "fdbcffe9cbd4d1261e0d34209c28ed9b2d63ee427351ba3b36eb055bae380bdc",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\journal\\journal.lgj",
+      "bytes": 2579568,
+      "sha256": "8ca11554361c2ab9a314dd6b4c960713042fa904c929c31c8ca0072fd26d07ac",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\ling.toml",
+      "bytes": 508,
+      "sha256": "0e856f00e5179f6724e2dca3f83cc039ddfa9edc8a7ed30f33b4e5079136bfc9",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\progress.json",
+      "bytes": 8675,
+      "sha256": "17fb32b4a969f7c6149583a0f39137c4bead34a6eb3a5c078c00f3be9e4aa15b",
+      "source_mtime_ns": 1794952123000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\resources.jsonl.gz",
+      "bytes": 106557,
+      "sha256": "737999429eb883abd3e592f1223bcbf09e0c50276192a6f9b6d91cfb5d2e8522",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\result.json",
+      "bytes": 41471,
+      "sha256": "e4c23fa30b2c51cba0ee85c94f3faf0ac4ba9ee49229d5df2eb5153a88452b11",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "23796dff0fad1ffba4bc88fc7ea7d0a4f5d624bdcf66ec3674eb357bd45ea0bc",
+      "source_mtime_ns": 1794952126000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\consumer-events.jsonl.gz",
+      "bytes": 6150,
+      "sha256": "7ced074d14566055dfa0d260b079eb132b3b5286e1dda2ae1b5ed4aa6ade911d",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\errors.jsonl.gz",
+      "bytes": 2853,
+      "sha256": "b7b300d651881cf9e3d37193d9175c899432df9508d07568b330131291895464",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\journal\\journal.lgj",
+      "bytes": 10971672,
+      "sha256": "aadd2cdbe260eebd74726cc67208890a1de4b3401ec86fd8825402b0c0c71cde",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\ling.toml",
+      "bytes": 504,
+      "sha256": "94c2ce4b5870ef8c56f7e8ba3873879de9ab621a2895058e3c6f1f414f5f96c2",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\progress.json",
+      "bytes": 8788,
+      "sha256": "c8dd2c24cf33eab1e3125d7ae76079b67d81df5e3d66f6ff025646a847ca47c7",
+      "source_mtime_ns": 1794953926000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\resources.jsonl.gz",
+      "bytes": 118466,
+      "sha256": "856196cc4fd1ec0b1883f1044652939d4e4880e533b5d4eb7cfb7d076c667489",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\result.json",
+      "bytes": 41702,
+      "sha256": "6a86a94b65ddf258ed3a54dd809a224b8ede5ff2cd9a7913022d02c1ec0746f3",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "04bbb7f8f729c5333006a6b7047db34b7001cfef8bede90e9925311e5fdbdd7b",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-random/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953327000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\consumer-events.jsonl.gz",
+      "bytes": 1367,
+      "sha256": "d983da1a12cca6619d45ccc9c99c59cf8c4c824bf685e5aa8c46eb983cffd580",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\errors.jsonl.gz",
+      "bytes": 398300,
+      "sha256": "6813f376141302890f5da381ea43269a9d75f61788dcb0ab58de302a092fee29",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\journal\\journal.lgj",
+      "bytes": 1922053,
+      "sha256": "70216cae608a41829da6b45b83e5d28f69b0c40373e09dfab5bc2219c8f51614",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\ling.toml",
+      "bytes": 507,
+      "sha256": "6c638905a757e338547324edd35e17cf886ca338df08430985e20b69839aca97",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\progress.json",
+      "bytes": 8779,
+      "sha256": "193171172d47d472ba227d37ab1341ff9f0e5c861b750a2922351c811062daf3",
+      "source_mtime_ns": 1794954524000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\resources.jsonl.gz",
+      "bytes": 103847,
+      "sha256": "14fd8414da9ae7ebe55f03096eb77d4975af2a60112c88a79c69c50b8f8d142e",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\result.json",
+      "bytes": 41653,
+      "sha256": "3cb086906a114c36a01d12dbec2d408be8f67565e6fcf2cfbf1e9786cdc7c071",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "072079ef96dd36a4c5ec66afdbabc6650c9fe4b37f8a045b8c13ce94a694dc0d",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794953927000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/summary.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\summary.json",
+      "bytes": 238242,
+      "sha256": "1ea58588dfad97d5c907dec0a9b4bfaa1b81c1b7d76bd9977433fe222c3c3141",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/tool_source/v020.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure/tool_source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\tool_source\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951451000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-pressure-driver.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure-driver.log",
+      "bytes": 571,
+      "sha256": "289a0670f727843f1660c7b84a31a32991e761b35cd26b7f470ecf73549d9ac6",
+      "source_mtime_ns": 1794954527000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/environment.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\environment.json",
+      "bytes": 101205,
+      "sha256": "6797aa65137a37002d050438c94957920b1408ea04c37a2659cce1eecd5d21d3",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 17463,
+      "sha256": "fa88264776ae1add815e83eff33e176d84bcc1cb69c756a76e403ea6f86cac45",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 634221,
+      "sha256": "9f450eb331bc2c98718f2ff0ee79221bae80a9355c6be8e03634883521ebfab8",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/findings.jsonl",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-001.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/journal.lgj",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\journal\\journal.lgj",
+      "bytes": 31935160,
+      "sha256": "ba516911bed5e65fcd34a334defd27eafb45ce7e954a694e090c6c1adfa50433",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/LOCK",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\ling.toml",
+      "bytes": 511,
+      "sha256": "070e26e6c6263638e2687b52bc97ed484cb60ad2c0f2d9c2064c129128885915",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/progress.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\progress.json",
+      "bytes": 9161,
+      "sha256": "74531a5b71d36c0908bbeb6754b055f86a8fed1245204994e3fc92edc5224b18",
+      "source_mtime_ns": 1794954817000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 617514,
+      "sha256": "d56b288eb48490a26176c37ded7eb42166228566e48e534f6c73202de0936831",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\result.json",
+      "bytes": 42572,
+      "sha256": "2635eca0db489565643a00c731c1d33a4c33bfd83559557fffe10e3e3e493368",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server-complete.log.gz",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "fb901bbf825ec7bcddc81a8bcaf7c5731274d2608d33664152cf2a150209fbc5",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951521000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/summary.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\summary.json",
+      "bytes": 48803,
+      "sha256": "4e4ba5753cec2df12b4da2a02b40179cc9a59af5b4ff70a2268f5aa412a5e449",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/tool_source/v020.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow/tool_source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\tool_source\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951451000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/reliable-shadow-driver.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow-driver.log",
+      "bytes": 116,
+      "sha256": "d18c7e5ad2938ee1a33a6d0990a45b71ea224381212628f37f9bdaa9c62667ae",
+      "source_mtime_ns": 1794954821000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/shadow-ready.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\shadow-ready.json",
+      "bytes": 20343,
+      "sha256": "078f2167c10925a80ba39f50d5141b43f2d7c26cbd443ea403f2460559329319",
+      "source_mtime_ns": 1794951526000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/tool_source/run-v030-layout.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\tool_source\\run-v030-layout.py",
+      "bytes": 25552,
+      "sha256": "14ed1afb7a3adb5aac6f675c09b913608f651c156ca64de52f3078fd5f67472c",
+      "source_mtime_ns": 1794948999000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/tool_source/test_run_v030_layout.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\tool_source\\test_run_v030_layout.py",
+      "bytes": 29408,
+      "sha256": "50139f1ed85617f5243c2caf4f7e83b431d8f0b35fdefd2b240dcaade4361f6f",
+      "source_mtime_ns": 1794949070000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/tool_source/v020.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "raw/tool_source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\tool_source\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951451000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/raw/ling.toml",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\rss-smoke-20261118-0535\\ling.toml",
+      "bytes": 57,
+      "sha256": "817235c148f3871ecf0a7354f40c3155d3a8d2e80c9c1a583497cf749bf8b415",
+      "source_mtime_ns": 1794951244000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/raw/result.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\rss-smoke-20261118-0535\\result.json",
+      "bytes": 10154,
+      "sha256": "463df3b460f8783378255a0aa2d5aca013da7c7c64926079341539aa2bd7cde9",
+      "source_mtime_ns": 1794951245000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/raw/server.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\rss-smoke-20261118-0535\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794951244000000000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "execution/controller.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540-controller.log",
+      "bytes": 561,
+      "sha256": "e1b69e4309f459d345b8fb9dce41630c7b2af466c38216e53fbc75c5e83bd881",
+      "source_mtime_ns": 1794954821674372000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "execution/exit.txt",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540-exit.txt",
+      "bytes": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_mtime_ns": 1794954821713663000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/analysis.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\layout-smoke-20261118-0454-analysis.json",
+      "bytes": 137290,
+      "sha256": "6a1d732ea57cacbd32849b0297150a97a861baf8e8c767247dd0a4737c26af3c",
+      "source_mtime_ns": 1794949353454691200,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832.json",
+      "bytes": 975369,
+      "sha256": "2bb1d9b45f9f310081a0fbe85e3a6827b6a970d86e3c571584abeceea0f6808a",
+      "source_mtime_ns": 1794950913397666100,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832.stdout.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832.stdout.log",
+      "bytes": 330,
+      "sha256": "f69d74f15fce9b8c3f2695235a1360fc37d1af80f655933894675e16baa605a8",
+      "source_mtime_ns": 1794950913420338200,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832.stderr.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794950912928745500,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832.exit.txt",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+      "source_mtime_ns": 1794950913425347300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832-command.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832-command.json",
+      "bytes": 344,
+      "sha256": "0fb5d1d331881119dc32e336e95f71a744cd5d57266ce75a73836086cc9be72a",
+      "source_mtime_ns": 1794950912923319000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832-independent.stdout.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832-independent.stdout.log",
+      "bytes": 502,
+      "sha256": "0d45cfbee5cfee03e4782c5aba70197f812bd2dc19675fd17b0da22760410453",
+      "source_mtime_ns": 1794950926798853300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832-independent.stderr.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832-independent.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794950926634201100,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832-independent.exit.txt",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832-independent.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+      "source_mtime_ns": 1794950926802813800,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "historical-extra/calibration-extra-smoke-20261118-052832-independent-command.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\calibration-extra-smoke-20261118-052832-independent-command.json",
+      "bytes": 3367,
+      "sha256": "f74552049cc4c0c134f4ea9a88996b31579287a62c1c22d5bcb30bde28c338e1",
+      "source_mtime_ns": 1794950926629200400,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-sampler-tests.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-sampler-tests.log",
+      "bytes": 5608,
+      "sha256": "35a3e56468134bbddd8bafd6f463109d843f464f1e0eff172a3f5845e7963510",
+      "source_mtime_ns": 1794951111315935300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-sampler-tests.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-sampler-tests.json",
+      "bytes": 738,
+      "sha256": "b5e0afa581c402c7675026eeecb8a459d0d0cb6e42e11ce0d95dd170277acd6d",
+      "source_mtime_ns": 1794951111340935300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-wsl-tests.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-wsl-tests.log",
+      "bytes": 6020,
+      "sha256": "e8153a71044d4b17e6e1f191083962867e95edfc41fcbfd79d929eec8c390996",
+      "source_mtime_ns": 1794951203445760300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-wsl-tests-exit.txt",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-wsl-tests-exit.txt",
+      "bytes": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_mtime_ns": 1794951203491521200,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-live-smoke.log",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-live-smoke.log",
+      "bytes": 7598,
+      "sha256": "443c0d3a418b39ccd1811107565d0091cff8019ed3df3c941346e8ad55e7eb0e",
+      "source_mtime_ns": 1794951245065690000,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/v030-rss-live-smoke-exit.txt",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-rss-live-smoke-exit.txt",
+      "bytes": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_mtime_ns": 1794951245096818200,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/smoke-v030-rss.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\smoke-v030-rss.py",
+      "bytes": 2643,
+      "sha256": "1597aea61b53cbd806f21589d065db6e30d77f6455cb943202af65bb1eef2748",
+      "source_mtime_ns": 1794951228254490300,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/source/v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\benchmarks\\v030.py",
+      "bytes": 71410,
+      "sha256": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "source_mtime_ns": 1794951038148760800,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "rss-preflight/source/test_v030.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\benchmarks\\test_v030.py",
+      "bytes": 36487,
+      "sha256": "af1ad5d1cf39f492d38568b661311067730201a457c1894440608482b8dce7d2",
+      "source_mtime_ns": 1794951038149760500,
+      "archive": "raw-002.tar.gz",
+      "storage": "archive"
+    },
+    {
+      "path": "analysis.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540-analysis.json",
+      "bytes": 885412,
+      "sha256": "c03ac16d09a2dbed8ee833453cd2c335c438d23066bcfb290cac10e6f8bea446",
+      "source_mtime_ns": 1794954902486750100,
+      "storage": "direct"
+    },
+    {
+      "path": "extra.json",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540-extra.json",
+      "bytes": 1663620,
+      "sha256": "01ca7653344c94681d21af35dd2b6863e34ed36eed8933dcc8073de23a228a4d",
+      "source_mtime_ns": 1794954911520497500,
+      "storage": "direct"
+    },
+    {
+      "path": "v030_analyze.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\benchmarks\\v030_analyze.py",
+      "bytes": 35793,
+      "sha256": "ad76ea1a635832de59f88da4cab0e2297694092261294c4e9ab2865a45141e4b",
+      "source_mtime_ns": 1794946755952336500,
+      "storage": "direct"
+    },
+    {
+      "path": "analyze-v030-calibration-extra.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\analyze-v030-calibration-extra.py",
+      "bytes": 32380,
+      "sha256": "f782d0c532e66c92024567eb94d1a4aca6a1a475110d776b8540738ef8e2d32a",
+      "source_mtime_ns": 1794950846492029200,
+      "storage": "direct"
+    },
+    {
+      "path": "archive-v030-calibration.py",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\archive-v030-calibration.py",
+      "bytes": 23954,
+      "sha256": "266c362f34efaac1305d48bd4c45beb082d1aca6aee4de990c78cfad4cb44d1a",
+      "source_mtime_ns": 1794951921798152200,
+      "storage": "direct"
+    }
+  ],
+  "exact_binary_aliases": [
+    {
+      "path": "raw/fast-shadow/ling",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000,
+      "stored_as": "raw/fast-pressure/ling",
+      "storage": "exact_binary_alias",
+      "archive": "raw-001.tar.gz"
+    },
+    {
+      "path": "raw/reliable-pressure/ling",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000,
+      "stored_as": "raw/fast-pressure/ling",
+      "storage": "exact_binary_alias",
+      "archive": "raw-001.tar.gz"
+    },
+    {
+      "path": "raw/reliable-shadow/ling",
+      "source_path": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000,
+      "stored_as": "raw/fast-pressure/ling",
+      "storage": "exact_binary_alias",
+      "archive": "raw-001.tar.gz"
+    }
+  ],
+  "scope": "Every original path is inventoried; only verified size+SHA identical frozen binaries use explicit aliases."
+}

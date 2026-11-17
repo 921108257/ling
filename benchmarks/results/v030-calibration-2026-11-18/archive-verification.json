@@ -1,0 +1,276 @@
+{
+  "verified_utc": "2026-11-17T22:35:20.720247+00:00",
+  "archives": [
+    {
+      "archive": "raw-001.tar.gz",
+      "members": 132,
+      "original_bytes": 52202588,
+      "compressed_bytes": 10731613,
+      "sha256": "6d2c2c8ec75aac2da808d8ca69a11d3cc69c1a8be93179fa09a9fe2e0ba5aa59",
+      "all_members_extracted_sha256_size_match": true,
+      "outer_gzip_crc_eof": true,
+      "nested_gzip_checks": [
+        {
+          "path": "raw/fast-pressure/fast-pressure-lfu/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 46338
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lfu/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 62450
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lfu/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2259441
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lfu/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lru/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 46709
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lru/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 3983
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lru/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2246598
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-lru/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-noeviction/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 16398
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-noeviction/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 1545943
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-noeviction/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2245262
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-noeviction/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-random/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 47322
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-random/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 22202
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-random/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2259182
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-random/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-ttl-first/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 8725
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-ttl-first/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 1985205
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-ttl-first/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2254305
+        },
+        {
+          "path": "raw/fast-pressure/fast-pressure-ttl-first/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/fast-shadow/fast-shadow-noeviction/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 145874
+        },
+        {
+          "path": "raw/fast-shadow/fast-shadow-noeviction/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 8076969
+        },
+        {
+          "path": "raw/fast-shadow/fast-shadow-noeviction/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 12545536
+        },
+        {
+          "path": "raw/fast-shadow/fast-shadow-noeviction/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lfu/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 46390
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lfu/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 64347
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lfu/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2282383
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lfu/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lru/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 46651
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lru/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 4282
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lru/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2271030
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-lru/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-noeviction/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 11460
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-noeviction/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 1777066
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-noeviction/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2271123
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-noeviction/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-random/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 46848
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-random/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 18498
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-random/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2283462
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-random/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-ttl-first/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 8671
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-ttl-first/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 1991742
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-ttl-first/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 2278972
+        },
+        {
+          "path": "raw/reliable-pressure/reliable-pressure-ttl-first/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        },
+        {
+          "path": "raw/reliable-shadow/reliable-shadow-noeviction/consumer-events.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 145895
+        },
+        {
+          "path": "raw/reliable-shadow/reliable-shadow-noeviction/errors.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 8059249
+        }
+      ],
+      "nested_gzip_failure_count": 0,
+      "uncompressed_tar_bytes": 52439040
+    },
+    {
+      "archive": "raw-002.tar.gz",
+      "members": 41,
+      "original_bytes": 34188953,
+      "compressed_bytes": 3293818,
+      "sha256": "25934590d4f72cb282d1807d8b0790717013d43c334e82723c8c76ca654121f8",
+      "all_members_extracted_sha256_size_match": true,
+      "outer_gzip_crc_eof": true,
+      "nested_gzip_checks": [
+        {
+          "path": "raw/reliable-shadow/reliable-shadow-noeviction/resources.jsonl.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 12683687
+        },
+        {
+          "path": "raw/reliable-shadow/reliable-shadow-noeviction/server-complete.log.gz",
+          "crc_eof_verified": true,
+          "uncompressed_bytes_read": 0
+        }
+      ],
+      "nested_gzip_failure_count": 0,
+      "uncompressed_tar_bytes": 34273280
+    }
+  ],
+  "all_originals_rehashed": true,
+  "source_file_sets_unchanged": true,
+  "direct_copies_sha256_size_match": true,
+  "nested_gzip_failure_count": 0,
+  "method": "Per-original size/SHA inventory; safe temporary extraction of each stored member; strict outer gzip CRC/EOF; every inner gzip attempted with failures preserved/reported; original and direct-copy rehash."
+}

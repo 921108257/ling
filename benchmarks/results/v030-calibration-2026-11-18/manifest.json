@@ -1,0 +1,65 @@
+{
+  "archived_utc": "2026-11-17T22:35:21.296968+00:00",
+  "run_id": "v030-calibration-20261118-0540",
+  "scope": "calibration evidence only",
+  "source_file_count": 152,
+  "archive_count": 2,
+  "git_path_filters_preserve_bytes": true,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 52,
+      "sha256": "97d1c256af2f55fecf60d1839193db53dcab2679a655b8749c82cf301643b74e"
+    },
+    {
+      "path": "analysis.json",
+      "bytes": 885412,
+      "sha256": "c03ac16d09a2dbed8ee833453cd2c335c438d23066bcfb290cac10e6f8bea446"
+    },
+    {
+      "path": "analyze-v030-calibration-extra.py",
+      "bytes": 32380,
+      "sha256": "f782d0c532e66c92024567eb94d1a4aca6a1a475110d776b8540738ef8e2d32a"
+    },
+    {
+      "path": "archive-v030-calibration.py",
+      "bytes": 23954,
+      "sha256": "266c362f34efaac1305d48bd4c45beb082d1aca6aee4de990c78cfad4cb44d1a"
+    },
+    {
+      "path": "archive-verification.json",
+      "bytes": 10442,
+      "sha256": "ccbdeadb60be289e65822a60b3a28d79ea78f78e16ad16ca8720c98c863434fb"
+    },
+    {
+      "path": "evidence-files.manifest.json",
+      "bytes": 82329,
+      "sha256": "a4d97f971b4e3effb287f6e91b245b2b5f39b9971dd69a71e1a1756f4037b4ac"
+    },
+    {
+      "path": "extra.json",
+      "bytes": 1663620,
+      "sha256": "01ca7653344c94681d21af35dd2b6863e34ed36eed8933dcc8073de23a228a4d"
+    },
+    {
+      "path": "raw-001.tar.gz",
+      "bytes": 10731613,
+      "sha256": "6d2c2c8ec75aac2da808d8ca69a11d3cc69c1a8be93179fa09a9fe2e0ba5aa59"
+    },
+    {
+      "path": "raw-002.tar.gz",
+      "bytes": 3293818,
+      "sha256": "25934590d4f72cb282d1807d8b0790717013d43c334e82723c8c76ca654121f8"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 125643,
+      "sha256": "f0ddc32757434c21a184f4a96119216b0e1a9a6d0051f13c67d2c5e0e9b1faac"
+    },
+    {
+      "path": "v030_analyze.py",
+      "bytes": 35793,
+      "sha256": "ad76ea1a635832de59f88da4cab0e2297694092261294c4e9ab2865a45141e4b"
+    }
+  ]
+}

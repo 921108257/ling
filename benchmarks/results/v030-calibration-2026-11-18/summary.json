@@ -1,0 +1,3820 @@
+{
+  "run_id": "v030-calibration-20261118-0540",
+  "scope": "calibration evidence only; no 72-hour acceptance asserted",
+  "controller_exit": 0,
+  "layout_metadata": {
+    "created_utc": "2026-11-17T21:38:41.230666+00:00",
+    "script_and_tool_sha256": {
+      "/root/ling-acceptance/v030-source/benchmarks/run-v030-layout.py": "14ed1afb7a3adb5aac6f675c09b913608f651c156ca64de52f3078fd5f67472c",
+      "/root/ling-acceptance/v030-source/benchmarks/test_run_v030_layout.py": "50139f1ed85617f5243c2caf4f7e83b431d8f0b35fdefd2b240dcaade4361f6f",
+      "/root/ling-acceptance/v030-source/benchmarks/v030.py": "f8a750bb863873b81287c826213f277de4f9712c70bd4ddf691ad1051578b957",
+      "/root/ling-acceptance/v030-source/benchmarks/v020.py": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    "source_head": "6865199c4a6aa21d3cf0b6b0e330207923079ba1",
+    "source_status": "",
+    "binary_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+    "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+    "platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "python": "3.14.4 (main, Jun 18 2026, 14:25:02) [GCC 15.2.0]",
+    "uid": 0,
+    "cpu_count": 16,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "boot_id": "f7fba259-947f-4c5d-bb8f-a0244dfc9125",
+    "commands": [
+      {
+        "name": "fast-shadow",
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-B",
+          "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+          "--server-binary",
+          "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+          "--binary-revision",
+          "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+          "--stage",
+          "pre-release",
+          "--workers",
+          "2",
+          "--cycles-per-second",
+          "5.0",
+          "--churn-cycles",
+          "100",
+          "--journal-bytes",
+          "4294967296",
+          "--sample-seconds",
+          "5",
+          "--warmup-seconds",
+          "3600",
+          "--slow-consumer-delay",
+          "0.05",
+          "--consumer-reconnect-seconds",
+          "120",
+          "--consumer-disconnect-seconds",
+          "0.2",
+          "--resource-samples",
+          "100000",
+          "--finding-examples",
+          "200",
+          "--min-free-bytes",
+          "10737418240",
+          "/root/ling-acceptance/v030-calibration-20261118-0540/fast-shadow",
+          "--event-mode",
+          "fast",
+          "--phase",
+          "shadow",
+          "--seconds",
+          "3300",
+          "--seed",
+          "3002026",
+          "--server-cpus",
+          "0,1",
+          "--client-cpus",
+          "2,3"
+        ]
+      },
+      {
+        "name": "reliable-shadow",
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-B",
+          "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+          "--server-binary",
+          "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+          "--binary-revision",
+          "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+          "--stage",
+          "pre-release",
+          "--workers",
+          "2",
+          "--cycles-per-second",
+          "5.0",
+          "--churn-cycles",
+          "100",
+          "--journal-bytes",
+          "4294967296",
+          "--sample-seconds",
+          "5",
+          "--warmup-seconds",
+          "3600",
+          "--slow-consumer-delay",
+          "0.05",
+          "--consumer-reconnect-seconds",
+          "120",
+          "--consumer-disconnect-seconds",
+          "0.2",
+          "--resource-samples",
+          "100000",
+          "--finding-examples",
+          "200",
+          "--min-free-bytes",
+          "10737418240",
+          "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-shadow",
+          "--event-mode",
+          "reliable",
+          "--phase",
+          "shadow",
+          "--seconds",
+          "3300",
+          "--seed",
+          "3002028",
+          "--server-cpus",
+          "8,9",
+          "--client-cpus",
+          "10,11"
+        ]
+      },
+      {
+        "name": "fast-pressure",
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-B",
+          "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+          "--server-binary",
+          "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+          "--binary-revision",
+          "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+          "--stage",
+          "pre-release",
+          "--workers",
+          "2",
+          "--cycles-per-second",
+          "5.0",
+          "--churn-cycles",
+          "100",
+          "--journal-bytes",
+          "4294967296",
+          "--sample-seconds",
+          "5",
+          "--warmup-seconds",
+          "3600",
+          "--slow-consumer-delay",
+          "0.05",
+          "--consumer-reconnect-seconds",
+          "120",
+          "--consumer-disconnect-seconds",
+          "0.2",
+          "--resource-samples",
+          "100000",
+          "--finding-examples",
+          "200",
+          "--min-free-bytes",
+          "10737418240",
+          "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+          "--event-mode",
+          "fast",
+          "--phase",
+          "pressure",
+          "--seconds",
+          "600",
+          "--seed",
+          "3002027",
+          "--server-cpus",
+          "4,5",
+          "--client-cpus",
+          "6,7",
+          "--policy",
+          "all",
+          "--payload-bytes",
+          "32768",
+          "--memory-bytes",
+          "1048576",
+          "--max-keys",
+          "16"
+        ]
+      },
+      {
+        "name": "reliable-pressure",
+        "command": [
+          "/usr/bin/python3",
+          "-u",
+          "-B",
+          "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+          "--server-binary",
+          "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+          "--binary-revision",
+          "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+          "--stage",
+          "pre-release",
+          "--workers",
+          "2",
+          "--cycles-per-second",
+          "5.0",
+          "--churn-cycles",
+          "100",
+          "--journal-bytes",
+          "4294967296",
+          "--sample-seconds",
+          "5",
+          "--warmup-seconds",
+          "3600",
+          "--slow-consumer-delay",
+          "0.05",
+          "--consumer-reconnect-seconds",
+          "120",
+          "--consumer-disconnect-seconds",
+          "0.2",
+          "--resource-samples",
+          "100000",
+          "--finding-examples",
+          "200",
+          "--min-free-bytes",
+          "10737418240",
+          "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+          "--event-mode",
+          "reliable",
+          "--phase",
+          "pressure",
+          "--seconds",
+          "600",
+          "--seed",
+          "3002029",
+          "--server-cpus",
+          "12,13",
+          "--client-cpus",
+          "14,15",
+          "--policy",
+          "all",
+          "--payload-bytes",
+          "32768",
+          "--memory-bytes",
+          "1048576",
+          "--max-keys",
+          "16"
+        ]
+      }
+    ],
+    "coverage_contract": "two shadows' common actual load interval must contain all ten pressure intervals",
+    "scope": "orchestration and coverage only; phase and resource acceptance remain separate"
+  },
+  "layout_result": {
+    "orchestration_passed": true,
+    "errors": [],
+    "coverage": {
+      "passed": true,
+      "common_shadow_interval": {
+        "start": 92.475593727,
+        "end": 3392.431939955
+      },
+      "intervals": [
+        {
+          "name": "fast-shadow-noeviction",
+          "phase": "shadow",
+          "start": 92.431571636,
+          "end": 3392.431939955
+        },
+        {
+          "name": "reliable-shadow-noeviction",
+          "phase": "shadow",
+          "start": 92.475593727,
+          "end": 3392.475911083
+        },
+        {
+          "name": "fast-pressure-noeviction",
+          "phase": "pressure",
+          "start": 97.738510974,
+          "end": 697.739248841
+        },
+        {
+          "name": "fast-pressure-lru",
+          "phase": "pressure",
+          "start": 697.823948913,
+          "end": 1297.824233544
+        },
+        {
+          "name": "fast-pressure-lfu",
+          "phase": "pressure",
+          "start": 1297.912880353,
+          "end": 1897.913153954
+        },
+        {
+          "name": "fast-pressure-random",
+          "phase": "pressure",
+          "start": 1898.004910505,
+          "end": 2498.005168834
+        },
+        {
+          "name": "fast-pressure-ttl-first",
+          "phase": "pressure",
+          "start": 2498.097424725,
+          "end": 3098.09773309
+        },
+        {
+          "name": "reliable-pressure-noeviction",
+          "phase": "pressure",
+          "start": 97.794808734,
+          "end": 697.795050393
+        },
+        {
+          "name": "reliable-pressure-lru",
+          "phase": "pressure",
+          "start": 697.97177313,
+          "end": 1297.972115069
+        },
+        {
+          "name": "reliable-pressure-lfu",
+          "phase": "pressure",
+          "start": 1298.159627178,
+          "end": 1898.159876249
+        },
+        {
+          "name": "reliable-pressure-random",
+          "phase": "pressure",
+          "start": 1898.338601642,
+          "end": 2498.338837746
+        },
+        {
+          "name": "reliable-pressure-ttl-first",
+          "phase": "pressure",
+          "start": 2498.483260758,
+          "end": 3098.483518986
+        }
+      ],
+      "errors": []
+    },
+    "driver_exits": [
+      {
+        "name": "fast-shadow",
+        "pid": 436,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 3392.573929826
+      },
+      {
+        "name": "reliable-shadow",
+        "pid": 437,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 3392.574305062
+      },
+      {
+        "name": "fast-pressure",
+        "pid": 533,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 3098.333465389
+      },
+      {
+        "name": "reliable-pressure",
+        "pid": 534,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 3098.737726344
+      }
+    ],
+    "cleanup_events": [],
+    "remaining_processes": [],
+    "owned_process_identities": [
+      {
+        "name": "fast-shadow",
+        "driver": {
+          "pid": 436,
+          "pgrp": 436,
+          "session": 436,
+          "start_ticks": 9218
+        },
+        "pid_start_ticks": {
+          "436": 9218,
+          "499": 9242
+        }
+      },
+      {
+        "name": "reliable-shadow",
+        "driver": {
+          "pid": 437,
+          "pgrp": 437,
+          "session": 437,
+          "start_ticks": 9218
+        },
+        "pid_start_ticks": {
+          "437": 9218,
+          "498": 9242
+        }
+      },
+      {
+        "name": "fast-pressure",
+        "driver": {
+          "pid": 533,
+          "pgrp": 533,
+          "session": 533,
+          "start_ticks": 9760
+        },
+        "pid_start_ticks": {
+          "533": 9760,
+          "594": 9773,
+          "809": 69780,
+          "877": 129788,
+          "939": 189798,
+          "1054": 249807
+        }
+      },
+      {
+        "name": "reliable-pressure",
+        "driver": {
+          "pid": 534,
+          "pgrp": 534,
+          "session": 534,
+          "start_ticks": 9760
+        },
+        "pid_start_ticks": {
+          "534": 9760,
+          "600": 9773,
+          "822": 69787,
+          "890": 129806,
+          "953": 189825,
+          "1067": 249843
+        }
+      }
+    ],
+    "scope": "orchestration and actual coverage; does not replace consumer/resource acceptance"
+  },
+  "expected_phases": 12,
+  "recorded_phases": 12,
+  "phases": [
+    {
+      "name": "fast-shadow-noeviction",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-shadow",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "shadow",
+        "policy": "all",
+        "seconds": 3300.0,
+        "seed": 3002026,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 4096,
+        "memory_bytes": 2097152,
+        "max_keys": 256,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "2,3",
+        "server_cpus": "0,1"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "shadow",
+        "policy": "noeviction",
+        "status": "duration_reached",
+        "requested_seconds": 3300.0,
+        "load_started_monotonic_seconds": 92.431571636,
+        "load_stop_requested_elapsed_seconds": 3300.000368319,
+        "elapsed_seconds": 3300.0126881339997,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_TYPE_MISMATCH": 16500,
+          "ERR_KEY_NOT_FOUND": 330,
+          "ERR_OVERFLOW": 6600,
+          "ERR_INDEX_OUT_OF_RANGE": 3300
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 332,
+          "successful_requests": 199023,
+          "requests": 225753,
+          "producer_write_confirmations": 48840,
+          "producer_read_confirmations": 149466,
+          "expected_rejections": 26730,
+          "shadow_cycles": 33000,
+          "type_null": 3300,
+          "database_isolation_checks": 3300,
+          "ttl_cycles": 330,
+          "worker_1_cycles": 16500,
+          "type_bool": 3300,
+          "worker_0_cycles": 16500,
+          "type_int": 3300,
+          "type_uint": 3300,
+          "type_float": 3300,
+          "type_string": 3300,
+          "type_bytes": 3300,
+          "type_list": 3300,
+          "type_map": 3300,
+          "type_set": 3300,
+          "planned_reconnections": 330,
+          "config_reload_attempts": 54,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 17660,
+            "acks": 17660,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "7537e6cdd40c1d95d864e3b2bf3010fe",
+              "database": 0,
+              "shard": 3,
+              "sequence": "3960",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.011597277,
+            "started_monotonic_seconds": 92.431067653,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3300.011597277,
+            "confirmed_watermarks": {
+              "0": "1653",
+              "1": "5446",
+              "2": "6601",
+              "3": "3960"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 17660,
+            "acks": 17660,
+            "duplicates": 0,
+            "reconnects": 27,
+            "planned_disconnected_seconds": 5.434127813000742,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "7537e6cdd40c1d95d864e3b2bf3010fe",
+              "database": 0,
+              "shard": 3,
+              "sequence": "3960",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.005647854,
+            "started_monotonic_seconds": 92.431223213,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3294.571520040999,
+            "confirmed_watermarks": {
+              "0": "1653",
+              "1": "5446",
+              "2": "6601",
+              "3": "3960"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 17674,
+            "acks": 17674,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "7537e6cdd40c1d95d864e3b2bf3010fe",
+              "database": 1,
+              "shard": 2,
+              "sequence": "8580",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.012727636,
+            "started_monotonic_seconds": 92.43138404,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3300.012727636,
+            "confirmed_watermarks": {
+              "0": "3302",
+              "1": "1",
+              "2": "8580",
+              "3": "5791"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 17674,
+            "acks": 17674,
+            "duplicates": 0,
+            "reconnects": 27,
+            "planned_disconnected_seconds": 5.4260495840009355,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "7537e6cdd40c1d95d864e3b2bf3010fe",
+              "database": 1,
+              "shard": 2,
+              "sequence": "8580",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.0035595100003,
+            "started_monotonic_seconds": 92.431534904,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3294.5775099259995,
+            "confirmed_watermarks": {
+              "0": "3302",
+              "1": "1",
+              "2": "8580",
+              "3": "5791"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 660,
+        "native_resources": {
+          "attempts": 660,
+          "valid": {
+            "cpu_seconds": 660,
+            "rss_bytes": 660,
+            "handles": 660,
+            "threads": 660
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "fast-pressure-noeviction",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002027,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "6,7",
+        "server_cpus": "4,5"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "noeviction",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 97.738510974,
+        "load_stop_requested_elapsed_seconds": 600.000737867,
+        "elapsed_seconds": 600.053468228,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_OUT_OF_MEMORY": 3768
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 4617,
+          "producer_write_confirmations": 2234,
+          "requests": 8385,
+          "producer_read_confirmations": 2234,
+          "pressure_cycles": 6002,
+          "worker_0_cycles": 3001,
+          "worker_1_cycles": 3001,
+          "expected_rejections": 3768,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 1989,
+            "acks": 1989,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "637fa1e4492f5c74897a79820568b8cd",
+              "database": 0,
+              "shard": 2,
+              "sequence": "481",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.003907812,
+            "started_monotonic_seconds": 97.73791166,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.003907812,
+            "confirmed_watermarks": {
+              "0": "457",
+              "1": "418",
+              "2": "481",
+              "3": "633"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 1989,
+            "acks": 1989,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8032115210000939,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "637fa1e4492f5c74897a79820568b8cd",
+              "database": 0,
+              "shard": 2,
+              "sequence": "481",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.053140499,
+            "started_monotonic_seconds": 97.73820556,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.249928978,
+            "confirmed_watermarks": {
+              "0": "457",
+              "1": "418",
+              "2": "481",
+              "3": "633"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 1930,
+            "acks": 1930,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "637fa1e4492f5c74897a79820568b8cd",
+              "database": 1,
+              "shard": 2,
+              "sequence": "721",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.004924103,
+            "started_monotonic_seconds": 97.73834149,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.004924103,
+            "confirmed_watermarks": {
+              "0": "354",
+              "1": "436",
+              "2": "721",
+              "3": "419"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 1930,
+            "acks": 1930,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8035057309999729,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "637fa1e4492f5c74897a79820568b8cd",
+              "database": 1,
+              "shard": 2,
+              "sequence": "721",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.053436531,
+            "started_monotonic_seconds": 97.738474209,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.2499308,
+            "confirmed_watermarks": {
+              "0": "354",
+              "1": "436",
+              "2": "721",
+              "3": "419"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": true,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "fast-pressure-lru",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002027,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "6,7",
+        "server_cpus": "4,5"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "lru",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 697.823948913,
+        "load_stop_requested_elapsed_seconds": 600.000284631,
+        "elapsed_seconds": 600.053551591,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 12149,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 6000,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5625,
+            "acks": 5625,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "4e27000294d07fad92b11ec52d045617",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1339",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0093388769999,
+            "started_monotonic_seconds": 697.823511585,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0093388769999,
+            "confirmed_watermarks": {
+              "0": "1827",
+              "1": "1339",
+              "2": "1271",
+              "3": "1188"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5625,
+            "acks": 5625,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8035365680000268,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "4e27000294d07fad92b11ec52d045617",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1339",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.005155797,
+            "started_monotonic_seconds": 697.823641193,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.201619229,
+            "confirmed_watermarks": {
+              "0": "1827",
+              "1": "1339",
+              "2": "1271",
+              "3": "1188"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5595,
+            "acks": 5595,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "4e27000294d07fad92b11ec52d045617",
+              "database": 1,
+              "shard": 1,
+              "sequence": "1075",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.012322617,
+            "started_monotonic_seconds": 697.82377484,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.012322617,
+            "confirmed_watermarks": {
+              "0": "1316",
+              "1": "1075",
+              "2": "1756",
+              "3": "1448"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5595,
+            "acks": 5595,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8058098949999248,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "4e27000294d07fad92b11ec52d045617",
+              "database": 1,
+              "shard": 1,
+              "sequence": "1075",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.0534729899999,
+            "started_monotonic_seconds": 697.823913519,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.247663095,
+            "confirmed_watermarks": {
+              "0": "1316",
+              "1": "1075",
+              "2": "1756",
+              "3": "1448"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "fast-pressure-lfu",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002027,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "6,7",
+        "server_cpus": "4,5"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "lfu",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 1297.912880353,
+        "load_stop_requested_elapsed_seconds": 600.0002736010001,
+        "elapsed_seconds": 600.055394251,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_KEY_NOT_FOUND": 206
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 11943,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 5794,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "expected_rejections": 206,
+          "pressure_eviction_or_expiry_misses": 206,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5572,
+            "acks": 5572,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "53418521b8a28cbb993f2dde0ebbea53",
+              "database": 0,
+              "shard": 0,
+              "sequence": "1500",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0125799089999,
+            "started_monotonic_seconds": 1297.912314973,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0125799089999,
+            "confirmed_watermarks": {
+              "0": "1500",
+              "1": "1398",
+              "2": "1455",
+              "3": "1219"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5572,
+            "acks": 5572,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8032235420000688,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "53418521b8a28cbb993f2dde0ebbea53",
+              "database": 0,
+              "shard": 0,
+              "sequence": "1500",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.055585501,
+            "started_monotonic_seconds": 1297.912558565,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.2523619589999,
+            "confirmed_watermarks": {
+              "0": "1500",
+              "1": "1398",
+              "2": "1455",
+              "3": "1219"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5531,
+            "acks": 5531,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "53418521b8a28cbb993f2dde0ebbea53",
+              "database": 1,
+              "shard": 1,
+              "sequence": "1219",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0104149820002,
+            "started_monotonic_seconds": 1297.912683697,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0104149820002,
+            "confirmed_watermarks": {
+              "0": "1268",
+              "1": "1219",
+              "2": "2035",
+              "3": "1009"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5531,
+            "acks": 5531,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8032462959997702,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "53418521b8a28cbb993f2dde0ebbea53",
+              "database": 1,
+              "shard": 1,
+              "sequence": "1219",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0030358399999,
+            "started_monotonic_seconds": 1297.912843432,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.1997895440002,
+            "confirmed_watermarks": {
+              "0": "1268",
+              "1": "1219",
+              "2": "2035",
+              "3": "1009"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "fast-pressure-random",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002027,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "6,7",
+        "server_cpus": "4,5"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "random",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 1898.004910505,
+        "load_stop_requested_elapsed_seconds": 600.000258329,
+        "elapsed_seconds": 600.0560523500001,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_KEY_NOT_FOUND": 64
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 12085,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 5936,
+          "pressure_cycles": 6000,
+          "worker_0_cycles": 3000,
+          "worker_1_cycles": 3000,
+          "expected_rejections": 64,
+          "pressure_eviction_or_expiry_misses": 64,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5643,
+            "acks": 5643,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "4ed00d25c4e9905ea143608241948578",
+              "database": 0,
+              "shard": 2,
+              "sequence": "2047",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.011877554,
+            "started_monotonic_seconds": 1898.004452615,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.011877554,
+            "confirmed_watermarks": {
+              "0": "887",
+              "1": "1232",
+              "2": "2047",
+              "3": "1477"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5643,
+            "acks": 5643,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8036811119995946,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "4ed00d25c4e9905ea143608241948578",
+              "database": 0,
+              "shard": 2,
+              "sequence": "2047",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0561599299999,
+            "started_monotonic_seconds": 1898.004586518,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.2524788180003,
+            "confirmed_watermarks": {
+              "0": "887",
+              "1": "1232",
+              "2": "2047",
+              "3": "1477"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5617,
+            "acks": 5617,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "4ed00d25c4e9905ea143608241948578",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1468",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.0102965280003,
+            "started_monotonic_seconds": 1898.004718235,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0102965280003,
+            "confirmed_watermarks": {
+              "0": "1171",
+              "1": "1277",
+              "2": "1468",
+              "3": "1701"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5617,
+            "acks": 5617,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.8050719899999876,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "4ed00d25c4e9905ea143608241948578",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1468",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.0033690350001,
+            "started_monotonic_seconds": 1898.004874627,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.1982970450001,
+            "confirmed_watermarks": {
+              "0": "1171",
+              "1": "1277",
+              "2": "1468",
+              "3": "1701"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "fast-pressure-ttl-first",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/fast-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002027,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "6,7",
+        "server_cpus": "4,5"
+      },
+      "result": {
+        "event_mode": "fast",
+        "phase": "pressure",
+        "policy": "ttl-first",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 2498.097424725,
+        "load_stop_requested_elapsed_seconds": 600.0003083649999,
+        "elapsed_seconds": 600.0558575279997,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_OUT_OF_MEMORY": 4760,
+          "ERR_KEY_NOT_FOUND": 77
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 2552,
+          "producer_write_confirmations": 1240,
+          "requests": 7389,
+          "producer_read_confirmations": 1163,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "expected_rejections": 4837,
+          "pressure_eviction_or_expiry_misses": 77,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 893,
+            "acks": 893,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "0d70c808bcbf0656ec9b6a00cd619e2e",
+              "database": 0,
+              "shard": 1,
+              "sequence": "297",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0032354970003,
+            "started_monotonic_seconds": 2498.096853192,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0032354970003,
+            "confirmed_watermarks": {
+              "0": "214",
+              "1": "297",
+              "2": "159",
+              "3": "223"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 893,
+            "acks": 893,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.803952295000272,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "0d70c808bcbf0656ec9b6a00cd619e2e",
+              "database": 0,
+              "shard": 1,
+              "sequence": "297",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0531644140001,
+            "started_monotonic_seconds": 2498.097029615,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.2492121189998,
+            "confirmed_watermarks": {
+              "0": "214",
+              "1": "297",
+              "2": "159",
+              "3": "223"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 1113,
+            "acks": 1113,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "0d70c808bcbf0656ec9b6a00cd619e2e",
+              "database": 1,
+              "shard": 3,
+              "sequence": "241",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0057402000002,
+            "started_monotonic_seconds": 2498.097221387,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0057402000002,
+            "confirmed_watermarks": {
+              "0": "462",
+              "1": "259",
+              "2": "151",
+              "3": "241"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 1113,
+            "acks": 1113,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.803318591000334,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "0d70c808bcbf0656ec9b6a00cd619e2e",
+              "database": 1,
+              "shard": 3,
+              "sequence": "241",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0557786489999,
+            "started_monotonic_seconds": 2498.097383999,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.2524600579995,
+            "confirmed_watermarks": {
+              "0": "462",
+              "1": "259",
+              "2": "151",
+              "3": "241"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": true,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-shadow-noeviction",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-shadow",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "shadow",
+        "policy": "all",
+        "seconds": 3300.0,
+        "seed": 3002028,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 4096,
+        "memory_bytes": 2097152,
+        "max_keys": 256,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "10,11",
+        "server_cpus": "8,9"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "shadow",
+        "policy": "noeviction",
+        "status": "duration_reached",
+        "requested_seconds": 3300.0,
+        "load_started_monotonic_seconds": 92.475593727,
+        "load_stop_requested_elapsed_seconds": 3300.000317356,
+        "elapsed_seconds": 3300.0640510939998,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_TYPE_MISMATCH": 16462,
+          "ERR_KEY_NOT_FOUND": 330,
+          "ERR_OVERFLOW": 6586,
+          "ERR_INDEX_OUT_OF_RANGE": 3291
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 330,
+          "successful_requests": 186585,
+          "requests": 213254,
+          "producer_write_confirmations": 48707,
+          "producer_read_confirmations": 137163,
+          "expected_rejections": 26669,
+          "shadow_cycles": 32921,
+          "type_null": 3293,
+          "database_isolation_checks": 3293,
+          "ttl_cycles": 330,
+          "worker_1_cycles": 16454,
+          "worker_0_cycles": 16467,
+          "type_bool": 3293,
+          "type_int": 3293,
+          "type_uint": 3293,
+          "type_float": 3292,
+          "type_string": 3292,
+          "type_bytes": 3292,
+          "type_list": 3291,
+          "type_map": 3291,
+          "type_set": 3291,
+          "planned_reconnections": 328,
+          "config_reload_attempts": 54,
+          "ttl_renewal_missed_window": 19,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 17608,
+            "acks": 17608,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "8cecf88b9c6696f7ba675bd410007ad3",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1648",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.0644680429996,
+            "started_monotonic_seconds": 92.475024483,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3300.0644680429996,
+            "confirmed_watermarks": {
+              "0": "8548",
+              "1": "1648",
+              "2": "4118",
+              "3": "3294"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 17608,
+            "acks": 17608,
+            "duplicates": 0,
+            "reconnects": 27,
+            "planned_disconnected_seconds": 5.642343727000423,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "8cecf88b9c6696f7ba675bd410007ad3",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1648",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.008353539,
+            "started_monotonic_seconds": 92.475217821,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3294.3660098119994,
+            "confirmed_watermarks": {
+              "0": "8548",
+              "1": "1648",
+              "2": "4118",
+              "3": "3294"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 17604,
+            "acks": 17604,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "8cecf88b9c6696f7ba675bd410007ad3",
+              "database": 1,
+              "shard": 3,
+              "sequence": "4442",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.049805102,
+            "started_monotonic_seconds": 92.4753993,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3300.049805102,
+            "confirmed_watermarks": {
+              "0": "9871",
+              "1": "1",
+              "2": "3290",
+              "3": "4442"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 17604,
+            "acks": 17604,
+            "duplicates": 0,
+            "reconnects": 27,
+            "planned_disconnected_seconds": 5.839463850000328,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "8cecf88b9c6696f7ba675bd410007ad3",
+              "database": 1,
+              "shard": 3,
+              "sequence": "4442",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 3300.000906854,
+            "started_monotonic_seconds": 92.475559027,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 3294.1614430039995,
+            "confirmed_watermarks": {
+              "0": "9871",
+              "1": "1",
+              "2": "3290",
+              "3": "4442"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 658,
+        "native_resources": {
+          "attempts": 658,
+          "valid": {
+            "cpu_seconds": 658,
+            "rss_bytes": 658,
+            "handles": 658,
+            "threads": 658
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-pressure-noeviction",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002029,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "14,15",
+        "server_cpus": "12,13"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "noeviction",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 97.794808734,
+        "load_stop_requested_elapsed_seconds": 600.000241659,
+        "elapsed_seconds": 600.077324294,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_OUT_OF_MEMORY": 4332
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 3485,
+          "producer_write_confirmations": 1668,
+          "requests": 7817,
+          "producer_read_confirmations": 1668,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "expected_rejections": 4332,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 1469,
+            "acks": 1469,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "0f5ae6653ca9268984bd7622a233b1c6",
+              "database": 0,
+              "shard": 2,
+              "sequence": "435",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.026986446,
+            "started_monotonic_seconds": 97.794327129,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.026986446,
+            "confirmed_watermarks": {
+              "0": "361",
+              "1": "302",
+              "2": "435",
+              "3": "371"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 1469,
+            "acks": 1469,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.9028547260000153,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "0f5ae6653ca9268984bd7622a233b1c6",
+              "database": 0,
+              "shard": 2,
+              "sequence": "435",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.077502125,
+            "started_monotonic_seconds": 97.794485797,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.174647399,
+            "confirmed_watermarks": {
+              "0": "361",
+              "1": "302",
+              "2": "435",
+              "3": "371"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 1273,
+            "acks": 1273,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "0f5ae6653ca9268984bd7622a233b1c6",
+              "database": 1,
+              "shard": 1,
+              "sequence": "365",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.067643731,
+            "started_monotonic_seconds": 97.794623324,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.067643731,
+            "confirmed_watermarks": {
+              "0": "372",
+              "1": "365",
+              "2": "256",
+              "3": "280"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 1273,
+            "acks": 1273,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 0.9385248580000507,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "0f5ae6653ca9268984bd7622a233b1c6",
+              "database": 1,
+              "shard": 1,
+              "sequence": "365",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.047103846,
+            "started_monotonic_seconds": 97.794767953,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.108578988,
+            "confirmed_watermarks": {
+              "0": "372",
+              "1": "365",
+              "2": "256",
+              "3": "280"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": true,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-pressure-lru",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002029,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "14,15",
+        "server_cpus": "12,13"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "lru",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 697.97177313,
+        "load_stop_requested_elapsed_seconds": 600.000341939,
+        "elapsed_seconds": 600.087108127,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_KEY_NOT_FOUND": 1
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 12148,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 5999,
+          "pressure_cycles": 6000,
+          "worker_0_cycles": 3000,
+          "worker_1_cycles": 3000,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "expected_rejections": 1,
+          "pressure_eviction_or_expiry_misses": 1,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5609,
+            "acks": 5609,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "08635c99505d3b41beff17ed48fc6067",
+              "database": 0,
+              "shard": 0,
+              "sequence": "1271",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0120266280001,
+            "started_monotonic_seconds": 697.971093229,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0120266280001,
+            "confirmed_watermarks": {
+              "0": "1271",
+              "1": "2149",
+              "2": "775",
+              "3": "1414"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5609,
+            "acks": 5609,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0042363629999045,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "08635c99505d3b41beff17ed48fc6067",
+              "database": 0,
+              "shard": 0,
+              "sequence": "1271",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.063855208,
+            "started_monotonic_seconds": 697.971374382,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.059618845,
+            "confirmed_watermarks": {
+              "0": "1271",
+              "1": "2149",
+              "2": "775",
+              "3": "1414"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5596,
+            "acks": 5596,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "08635c99505d3b41beff17ed48fc6067",
+              "database": 1,
+              "shard": 3,
+              "sequence": "1686",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0871321949999,
+            "started_monotonic_seconds": 697.971548962,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0871321949999,
+            "confirmed_watermarks": {
+              "0": "1813",
+              "1": "975",
+              "2": "1122",
+              "3": "1686"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5596,
+            "acks": 5596,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.1040196459999834,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "08635c99505d3b41beff17ed48fc6067",
+              "database": 1,
+              "shard": 3,
+              "sequence": "1686",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0560210919999,
+            "started_monotonic_seconds": 697.971733253,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 598.9520014459999,
+            "confirmed_watermarks": {
+              "0": "1813",
+              "1": "975",
+              "2": "1122",
+              "3": "1686"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-pressure-lfu",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002029,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "14,15",
+        "server_cpus": "12,13"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "lfu",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 1298.159627178,
+        "load_stop_requested_elapsed_seconds": 600.0002490710001,
+        "elapsed_seconds": 600.0884909880001,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_KEY_NOT_FOUND": 213
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 11936,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 5787,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "expected_rejections": 213,
+          "pressure_eviction_or_expiry_misses": 213,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5534,
+            "acks": 5534,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "2cabfe5f91c5d8bc66fcf3fdac2adb48",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1526",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.001170928,
+            "started_monotonic_seconds": 1298.159009749,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.001170928,
+            "confirmed_watermarks": {
+              "0": "1657",
+              "1": "1526",
+              "2": "861",
+              "3": "1490"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5534,
+            "acks": 5534,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0442145629999686,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "2cabfe5f91c5d8bc66fcf3fdac2adb48",
+              "database": 0,
+              "shard": 1,
+              "sequence": "1526",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0710172590002,
+            "started_monotonic_seconds": 1298.159199735,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.0268026960002,
+            "confirmed_watermarks": {
+              "0": "1657",
+              "1": "1526",
+              "2": "861",
+              "3": "1490"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5535,
+            "acks": 5535,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "2cabfe5f91c5d8bc66fcf3fdac2adb48",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1982",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0885552290001,
+            "started_monotonic_seconds": 1298.159421036,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0885552290001,
+            "confirmed_watermarks": {
+              "0": "1219",
+              "1": "1204",
+              "2": "1982",
+              "3": "1130"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5535,
+            "acks": 5535,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0170248330000504,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "2cabfe5f91c5d8bc66fcf3fdac2adb48",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1982",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0237986110001,
+            "started_monotonic_seconds": 1298.159591659,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.006773778,
+            "confirmed_watermarks": {
+              "0": "1219",
+              "1": "1204",
+              "2": "1982",
+              "3": "1130"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-pressure-random",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002029,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "14,15",
+        "server_cpus": "12,13"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "random",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 1898.338601642,
+        "load_stop_requested_elapsed_seconds": 600.0002361040001,
+        "elapsed_seconds": 600.08734809,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_KEY_NOT_FOUND": 51
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 12098,
+          "producer_write_confirmations": 6000,
+          "requests": 12149,
+          "producer_read_confirmations": 5949,
+          "pressure_cycles": 6000,
+          "worker_0_cycles": 3000,
+          "worker_1_cycles": 3000,
+          "planned_reconnections": 60,
+          "expected_rejections": 51,
+          "pressure_eviction_or_expiry_misses": 51,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 5629,
+            "acks": 5629,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "a27d3ec205e4091026304286f0326362",
+              "database": 0,
+              "shard": 3,
+              "sequence": "1363",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0009930659999,
+            "started_monotonic_seconds": 1898.338085671,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0009930659999,
+            "confirmed_watermarks": {
+              "0": "1374",
+              "1": "1177",
+              "2": "1715",
+              "3": "1363"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 5629,
+            "acks": 5629,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0757054479997805,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "a27d3ec205e4091026304286f0326362",
+              "database": 0,
+              "shard": 3,
+              "sequence": "1363",
+              "event_type": "KEY_EXPIRED"
+            },
+            "elapsed_seconds": 600.0875547799999,
+            "started_monotonic_seconds": 1898.338256849,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.0118493320001,
+            "confirmed_watermarks": {
+              "0": "1374",
+              "1": "1177",
+              "2": "1715",
+              "3": "1363"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 5590,
+            "acks": 5590,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "a27d3ec205e4091026304286f0326362",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1686",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0823286850002,
+            "started_monotonic_seconds": 1898.338413059,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0823286850002,
+            "confirmed_watermarks": {
+              "0": "1095",
+              "1": "1143",
+              "2": "1686",
+              "3": "1666"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 5590,
+            "acks": 5590,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0851439130003655,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "a27d3ec205e4091026304286f0326362",
+              "database": 1,
+              "shard": 2,
+              "sequence": "1686",
+              "event_type": "KEY_CREATED"
+            },
+            "elapsed_seconds": 600.0203959060002,
+            "started_monotonic_seconds": 1898.338566321,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 598.9352519929998,
+            "confirmed_watermarks": {
+              "0": "1095",
+              "1": "1143",
+              "2": "1686",
+              "3": "1666"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": false,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    },
+    {
+      "name": "reliable-pressure-ttl-first",
+      "present": true,
+      "settings": {
+        "output": "/root/ling-acceptance/v030-calibration-20261118-0540/reliable-pressure",
+        "server_binary": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+        "stage": "pre-release",
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "all",
+        "seconds": 600.0,
+        "seed": 3002029,
+        "workers": 2,
+        "cycles_per_second": 5.0,
+        "churn_cycles": 100,
+        "payload_bytes": 32768,
+        "memory_bytes": 1048576,
+        "max_keys": 16,
+        "journal_bytes": 4294967296,
+        "sample_seconds": 5.0,
+        "warmup_seconds": 3600.0,
+        "finding_examples": 200,
+        "resource_samples": 100000,
+        "slow_consumer_delay": 0.05,
+        "consumer_reconnect_seconds": 120.0,
+        "consumer_disconnect_seconds": 0.2,
+        "min_free_bytes": 10737418240,
+        "client_cpus": "14,15",
+        "server_cpus": "12,13"
+      },
+      "result": {
+        "event_mode": "reliable",
+        "phase": "pressure",
+        "policy": "ttl-first",
+        "status": "duration_reached",
+        "requested_seconds": 600.0,
+        "load_started_monotonic_seconds": 2498.483260758,
+        "load_stop_requested_elapsed_seconds": 600.0002582279999,
+        "elapsed_seconds": 600.0996098599999,
+        "server_exit_code": 0,
+        "shutdown_method": "SHUTDOWN request",
+        "findings": {},
+        "server_errors": {
+          "ERR_OUT_OF_MEMORY": 4772,
+          "ERR_KEY_NOT_FOUND": 84
+        },
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        },
+        "counts": {
+          "connections_opened": 62,
+          "successful_requests": 2521,
+          "producer_write_confirmations": 1228,
+          "requests": 7377,
+          "producer_read_confirmations": 1144,
+          "pressure_cycles": 6000,
+          "worker_1_cycles": 3000,
+          "worker_0_cycles": 3000,
+          "expected_rejections": 4856,
+          "pressure_eviction_or_expiry_misses": 84,
+          "planned_reconnections": 60,
+          "config_reload_attempts": 9,
+          "flushdb_attempts": 9,
+          "workers_requested_stop": 2
+        },
+        "consumers": {
+          "fast-db0": {
+            "received": 867,
+            "acks": 867,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db0",
+              "stream_id": "70190b3c64380540f8a2dcbe8b24fd49",
+              "database": 0,
+              "shard": 2,
+              "sequence": "269",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0445843739999,
+            "started_monotonic_seconds": 2498.482705066,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0445843739999,
+            "confirmed_watermarks": {
+              "0": "229",
+              "1": "146",
+              "2": "269",
+              "3": "223"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db0": {
+            "received": 867,
+            "acks": 867,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0783703140004945,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db0",
+              "stream_id": "70190b3c64380540f8a2dcbe8b24fd49",
+              "database": 0,
+              "shard": 2,
+              "sequence": "269",
+              "event_type": "KEY_UPDATED"
+            },
+            "elapsed_seconds": 600.0998077299996,
+            "started_monotonic_seconds": 2498.482881573,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 599.0214374159991,
+            "confirmed_watermarks": {
+              "0": "229",
+              "1": "146",
+              "2": "269",
+              "3": "223"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "fast-db1": {
+            "received": 1122,
+            "acks": 1122,
+            "duplicates": 0,
+            "reconnects": 0,
+            "planned_disconnected_seconds": 0.0,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "fast-db1",
+              "stream_id": "70190b3c64380540f8a2dcbe8b24fd49",
+              "database": 1,
+              "shard": 3,
+              "sequence": "308",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.0567833290002,
+            "started_monotonic_seconds": 2498.483006899,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 600.0567833290002,
+            "confirmed_watermarks": {
+              "0": "276",
+              "1": "292",
+              "2": "246",
+              "3": "308"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          },
+          "slow-db1": {
+            "received": 1122,
+            "acks": 1122,
+            "duplicates": 0,
+            "reconnects": 4,
+            "planned_disconnected_seconds": 1.0709629409998342,
+            "errors": {},
+            "termination": "requested_stop",
+            "last_received_id": {
+              "consumer": "slow-db1",
+              "stream_id": "70190b3c64380540f8a2dcbe8b24fd49",
+              "database": 1,
+              "shard": 3,
+              "sequence": "308",
+              "event_type": "KEY_EVICTED"
+            },
+            "elapsed_seconds": 600.0293464269998,
+            "started_monotonic_seconds": 2498.483182814,
+            "planned_offline": false,
+            "planned_offline_started_monotonic_seconds": null,
+            "active_seconds": 598.958383486,
+            "confirmed_watermarks": {
+              "0": "276",
+              "1": "292",
+              "2": "246",
+              "3": "308"
+            },
+            "confirmed_above_watermark": {
+              "0": 0,
+              "1": 0,
+              "2": 0,
+              "3": 0
+            }
+          }
+        },
+        "consumer_acceptance": {
+          "valid": true,
+          "failures": [],
+          "expected_fast_lag": [],
+          "scope": "ACKs confirm observed deliveries; pending backlog is reported separately by INFO"
+        },
+        "workload_degraded_by_resource_limit": true,
+        "resource_trends": {},
+        "resource_samples_saved": 121,
+        "native_resources": {
+          "attempts": 121,
+          "valid": {
+            "cpu_seconds": 121,
+            "rss_bytes": 121,
+            "handles": 121,
+            "threads": 121
+          },
+          "missing": {}
+        },
+        "server_log_capture_complete": true,
+        "server_panic_markers": 0
+      }
+    }
+  ],
+  "analysis_format": "ling-v030-observations-1",
+  "analysis_phase_count": 12,
+  "analysis_diagnostics": [
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-shadow\\fast-shadow-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-shadow\\reliable-shadow-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lfu",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-lru",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-random",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\fast-pressure\\fast-pressure-ttl-first",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lfu",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-lru",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-random",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    },
+    {
+      "directory": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v030-calibration-20261118-0540\\reliable-pressure\\reliable-pressure-ttl-first",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      },
+      "resource_trends_recomputed": {
+        "warmup_seconds": 3600.0,
+        "fields": {
+          "rss_bytes": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "handles": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          },
+          "threads": {
+            "samples": 0,
+            "missing_samples": 0,
+            "span_seconds": 0,
+            "peak": null,
+            "max_sample_start_gap_seconds": 0,
+            "slope_per_hour": null
+          }
+        }
+      }
+    }
+  ],
+  "supplementary_integrity": {
+    "all_phase_gzip_eof_crc_complete": true,
+    "expected_phase_count": 12,
+    "phases_with_supplementary_diagnostics": 0,
+    "analysis_phase_count": 12,
+    "supplementary_phase_count": 12
+  },
+  "supplementary_diagnostics": {
+    "counts": {},
+    "examples": []
+  },
+  "supplementary_source_binding": {
+    "root_matches": true,
+    "analysis_report_matches": true,
+    "phase_metadata_matches": 12
+  },
+  "nested_gzip_failure_count": 0,
+  "nested_gzip_failures": [],
+  "supplementary_phase_diagnostics": [
+    {
+      "name": "fast-shadow-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "fast-pressure-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "fast-pressure-lru",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "fast-pressure-lfu",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "fast-pressure-random",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "fast-pressure-ttl-first",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-shadow-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-pressure-noeviction",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-pressure-lru",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-pressure-lfu",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-pressure-random",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    },
+    {
+      "name": "reliable-pressure-ttl-first",
+      "diagnostics": {
+        "counts": {},
+        "examples": []
+      }
+    }
+  ],
+  "metadata_diagnostics": [],
+  "limitations": [
+    "Controller, orchestration, phase failures and analyzer diagnostics remain as recorded; archival integrity is not workload success.",
+    "Planned calibration is 3300-second shadows and five 600-second pressure phases per mode. Actual durations remain in phase records.",
+    "The configured 3600-second warmup exceeds planned calibration phases; absent steady-state resource slopes are expected, not proof of stable resources.",
+    "Supplementary historical-rate/capacity projections do not establish future bounds or choose acceptance thresholds.",
+    "Upstream analysis has no per-input hashes; preserve its stated evidence-binding limitation and supplementary cross-checks.",
+    "Historical extra-analysis smoke and RSS preflight are retained independently; they are not new tests run by this archiver.",
+    "A damaged inner gzip is preserved byte-for-byte and reported as failed; verified outer/member hashes do not make its payload complete.",
+    "Windows copies preserve bytes, not original Linux owners/modes. This script starts no WSL, load, tests, build or analyzer."
+  ]
+}
