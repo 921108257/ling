@@ -1,0 +1,44 @@
+{
+  "seed": 20261118,
+  "jobs": [
+    [
+      "off",
+      2
+    ],
+    [
+      "legacy",
+      3
+    ],
+    [
+      "on",
+      3
+    ],
+    [
+      "legacy",
+      2
+    ],
+    [
+      "on",
+      2
+    ],
+    [
+      "on",
+      1
+    ],
+    [
+      "legacy",
+      1
+    ],
+    [
+      "off",
+      3
+    ],
+    [
+      "off",
+      1
+    ]
+  ],
+  "candidate_product_revision": "508d39c073a92f420627d7ea0a35dfa5a4d94567",
+  "baseline_revision": "89076a4a98b4cd72a732d48eebfc4938d09c7921",
+  "binary_builds": "clean local clones, Rust release locked, same shared build cache"
+}

@@ -1,0 +1,1168 @@
+{
+  "schema": 1,
+  "date_local": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "purpose": "Supplemental Windows Fast idle-100 tail investigation; preserves the original independent five-second dataset and its regression statement.",
+  "platform": "windows",
+  "event_mode": "fast",
+  "scenario": "idle-100",
+  "requested_seconds": 30,
+  "plan": "windows-tail-30s/plan.json",
+  "run_exit_codes": "windows-tail-30s/runs.json",
+  "power_profile": "windows-tail-30s/power-profile.txt",
+  "source_input": "target/v020-windows-tail-20261118",
+  "integrity": {
+    "copied_files": 93,
+    "copied_bytes": 8253689,
+    "copy_sha256_checked": true,
+    "excluded_binary_or_journal_files": 9,
+    "raw_latency_files_recomputed": 9,
+    "runs": 9,
+    "all_functional_acceptance_valid": true
+  },
+  "manifest": [
+    {
+      "path": "windows-tail-30s/legacy-1/environment.json",
+      "bytes": 13418,
+      "sha256": "f89585888420913682293f9f058fc8aba15fb6db924525e25327443c33889012"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 680472,
+      "sha256": "3d488144053f7ddadc85216072a55030b2b866d1b1708d29c7dc0c97758a4163"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/fast-idle-100-1/ling.toml",
+      "bytes": 400,
+      "sha256": "de2b1a31c450db3492ad5bc69dae45c41b664bcb313265a6323800a0072bcd59"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/fast-idle-100-1/result.json",
+      "bytes": 102492,
+      "sha256": "8af7f5eefbe039f7209dd7f7b52c0696167a4d45e54fd8a0128f6334b4e45166"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/plan.json",
+      "bytes": 520,
+      "sha256": "43fa859bf513c220d11107e977ad9d289d0df1294034d98a15d48f145b681ca1"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/results.json",
+      "bytes": 113336,
+      "sha256": "e06a8fa61ba042d52b3626763064eea773ef2e4fd62b91a58f42f4f30b067cb8"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/legacy-1/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/environment.json",
+      "bytes": 13418,
+      "sha256": "fdbc8c0aa7c9028505d5019db56713be07d2765ad74f947f449dd5a42738a9c6"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 664152,
+      "sha256": "9199c9a3e360a5b32a6dafb3fe2c3e42eb0a75a0001eaf0f01b3a7b6bc052c5b"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/fast-idle-100-1/ling.toml",
+      "bytes": 400,
+      "sha256": "d7f87caf77239231cf8e9053e9e516cf5c2f65c8c3d8616def325b6648af0fa8"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/fast-idle-100-1/result.json",
+      "bytes": 102498,
+      "sha256": "46389a02cf2c5b7a43f7bbc5a09484cc5465d8f21606557ddad207cd1458b604"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/plan.json",
+      "bytes": 520,
+      "sha256": "e8d20ff06b28089707a42e316a12a12caeabee5fc691b03674d39c4c9b95d90c"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/results.json",
+      "bytes": 113342,
+      "sha256": "e5bd618955d1d9eb0dcb5e4b32ee422f1dd2a2a3241fe01afe1440e1dc4731e8"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/legacy-2/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/environment.json",
+      "bytes": 13418,
+      "sha256": "8b26b4b0773e5eb1cf87cf7fa62f8fe894b8d85837c7bda0d3ba975f7273be3b"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 670549,
+      "sha256": "f535692ae1fda0fe577273d37d048d7b0d4da0a2467e8d652fabcf60568ffea9"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/fast-idle-100-1/ling.toml",
+      "bytes": 400,
+      "sha256": "3e4c513791d38c171a1a007dd679ccee08bd0343964f49e5fd11b970245c005a"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/fast-idle-100-1/result.json",
+      "bytes": 102501,
+      "sha256": "b9ac932c5d4bbe4cdec1d245fe5e3095e0a69241c194f55af2178ab41f51d85c"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/plan.json",
+      "bytes": 520,
+      "sha256": "1c86a9fab31d5a0c65b6738be884c7ef5e92d9f1b1928c763f60d7cda7cf242d"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/results.json",
+      "bytes": 113345,
+      "sha256": "e3ab8acb018ef0cb3a25265fc79c014b6bc159c100e676f1c825639e262e5fb3"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/legacy-3/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/off-1/environment.json",
+      "bytes": 13545,
+      "sha256": "7d14953bf3fa55c66395aead4011fbd86a17ec12a837478907b98211ff0a3e1e"
+    },
+    {
+      "path": "windows-tail-30s/off-1/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 666122,
+      "sha256": "baa1c53621c0163e2947e598ce881f6cf95a2bc22f51ee574d19486f77ac687e"
+    },
+    {
+      "path": "windows-tail-30s/off-1/fast-idle-100-1/ling.toml",
+      "bytes": 428,
+      "sha256": "5c7303c938ed41483d8fe9990bd019b2b7cd1f6db540235de12a23e4061bf08b"
+    },
+    {
+      "path": "windows-tail-30s/off-1/fast-idle-100-1/result.json",
+      "bytes": 102497,
+      "sha256": "eab261c69ee5c906b66806328f98147057e444047b64068af400f8a096eb61e0"
+    },
+    {
+      "path": "windows-tail-30s/off-1/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/off-1/plan.json",
+      "bytes": 514,
+      "sha256": "1983c0dbc543a22f2c41664809cb93532ce154df35db826c05df9c1f0ecf6b53"
+    },
+    {
+      "path": "windows-tail-30s/off-1/results.json",
+      "bytes": 113341,
+      "sha256": "1fdb4cc3271df5ddf1f177c10f8d7f3e4a780048ed81ea9c2f788dad35aa52ab"
+    },
+    {
+      "path": "windows-tail-30s/off-1/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/off-1/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/off-1/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/off-2/environment.json",
+      "bytes": 13545,
+      "sha256": "1d4cc9ebb19d9749ad815ace60473b427351a83c11ff9e181805b813c66dbc4b"
+    },
+    {
+      "path": "windows-tail-30s/off-2/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 676123,
+      "sha256": "8618478cb2598330d0d700b64d29d53ae5a11bb801b732513dd1a8b1c9faa205"
+    },
+    {
+      "path": "windows-tail-30s/off-2/fast-idle-100-1/ling.toml",
+      "bytes": 428,
+      "sha256": "02eb8015cce8c920e2f96adda9a73bac720c312d309a5e8974cbc4e6d2e74e81"
+    },
+    {
+      "path": "windows-tail-30s/off-2/fast-idle-100-1/result.json",
+      "bytes": 102496,
+      "sha256": "1981002dd5dca09ef5844aebe27bebd06ead6437f852ef050fd2945f4a2849b3"
+    },
+    {
+      "path": "windows-tail-30s/off-2/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/off-2/plan.json",
+      "bytes": 514,
+      "sha256": "9859d9d86fb6a8a5bb22f026b9f2c85aea19f478a03fbfe604b33288467b8327"
+    },
+    {
+      "path": "windows-tail-30s/off-2/results.json",
+      "bytes": 113340,
+      "sha256": "98e8fab94253bb652e6072cf284458ced962cdfea6b773b280c73414cdb07f54"
+    },
+    {
+      "path": "windows-tail-30s/off-2/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/off-2/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/off-2/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/off-3/environment.json",
+      "bytes": 13545,
+      "sha256": "d57078bc5bd92bfddf63bf66b49e2d712ac639e27492ec6858cc3621040731ac"
+    },
+    {
+      "path": "windows-tail-30s/off-3/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 669319,
+      "sha256": "b5c95cd516b6dedeb2a243954023d41ba4d994d12cfb2ff91196345a6ba5bb04"
+    },
+    {
+      "path": "windows-tail-30s/off-3/fast-idle-100-1/ling.toml",
+      "bytes": 428,
+      "sha256": "619fc329dbfd11b9c8b83fa5a498b0acf38196f13a5b99451174c9c5ea869ea5"
+    },
+    {
+      "path": "windows-tail-30s/off-3/fast-idle-100-1/result.json",
+      "bytes": 102486,
+      "sha256": "af1a53a13531555961c9e27f72794769bbd6e5cd3de07c0d4be8f30aca54357e"
+    },
+    {
+      "path": "windows-tail-30s/off-3/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/off-3/plan.json",
+      "bytes": 514,
+      "sha256": "d459737061f6d65a0c1ed0fc06357ef987fc3d17a4bb18ccaf23ddd238ff975d"
+    },
+    {
+      "path": "windows-tail-30s/off-3/results.json",
+      "bytes": 113330,
+      "sha256": "2f9755934fe6e6d233687726b27b0f9113ba55c7bf66cb9f70aa97c07407d16d"
+    },
+    {
+      "path": "windows-tail-30s/off-3/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/off-3/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/off-3/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/on-1/environment.json",
+      "bytes": 13544,
+      "sha256": "9b0ed9a73c168812da74226dfbd6d88cac5c72227e0c005c471dedb526e87300"
+    },
+    {
+      "path": "windows-tail-30s/on-1/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 612218,
+      "sha256": "5e1214e456513dd568acb4b13fbf0d3f2657a91e81c64f50a66e132ea36b618b"
+    },
+    {
+      "path": "windows-tail-30s/on-1/fast-idle-100-1/ling.toml",
+      "bytes": 427,
+      "sha256": "fc3762c8fbdb1122c7f53fa9b73c40ebe9d994c6ac8dc910bb18ac5098383e02"
+    },
+    {
+      "path": "windows-tail-30s/on-1/fast-idle-100-1/result.json",
+      "bytes": 102444,
+      "sha256": "90e9b86fa4be9584e59b40e00a32e3d7805700c6ee0a860f23de64e44ad4b795"
+    },
+    {
+      "path": "windows-tail-30s/on-1/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/on-1/plan.json",
+      "bytes": 512,
+      "sha256": "93d58cae048d9104a3879391e0c1ac6661d09a07ab06b8a0e7e4a388f63914fa"
+    },
+    {
+      "path": "windows-tail-30s/on-1/results.json",
+      "bytes": 113288,
+      "sha256": "eb75694f9051fb4775083f1404d3a1d9b0cebf59eb52a8358e6b501e35cbd4fd"
+    },
+    {
+      "path": "windows-tail-30s/on-1/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/on-1/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/on-1/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/on-2/environment.json",
+      "bytes": 13544,
+      "sha256": "421fbf711a5eef8ef4a7d061ca78ca559cbf285724a3749d80fb6d224338328a"
+    },
+    {
+      "path": "windows-tail-30s/on-2/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 651617,
+      "sha256": "c838d756e873c944d59cf86efc8b0161cd877a8b3dc8e021417c6543deb1985d"
+    },
+    {
+      "path": "windows-tail-30s/on-2/fast-idle-100-1/ling.toml",
+      "bytes": 427,
+      "sha256": "be8302863b70a4c2ec917589318883c693591296cac6ab79476902bb9ca97765"
+    },
+    {
+      "path": "windows-tail-30s/on-2/fast-idle-100-1/result.json",
+      "bytes": 102453,
+      "sha256": "b3ab017407a948246a8b72c3fa355f2a23f378d7d5f681b8dfe506441afce637"
+    },
+    {
+      "path": "windows-tail-30s/on-2/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/on-2/plan.json",
+      "bytes": 512,
+      "sha256": "2756eb2bd52bc49acfbe1fdd9e35de680814afedf4925c0244efcb8871c69758"
+    },
+    {
+      "path": "windows-tail-30s/on-2/results.json",
+      "bytes": 113297,
+      "sha256": "ddb71911bd42b2cf2d78684d153fac2c157fded8b540d119fae256d46aa4438b"
+    },
+    {
+      "path": "windows-tail-30s/on-2/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/on-2/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/on-2/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/on-3/environment.json",
+      "bytes": 13544,
+      "sha256": "a1c4ecf1625fb487be37a314df245253e68772f7c819780d922e2b76999ecfcb"
+    },
+    {
+      "path": "windows-tail-30s/on-3/fast-idle-100-1/latencies-ns.json.gz",
+      "bytes": 624931,
+      "sha256": "a6d0d59e1d7d461cc09a6c369f70eb95dedb3f068c877ddfe04b45d0f15d8f02"
+    },
+    {
+      "path": "windows-tail-30s/on-3/fast-idle-100-1/ling.toml",
+      "bytes": 427,
+      "sha256": "c0b04eab0908bc15448d89514afb2a16d2e8928ccfe987f12c00e2cd058b288d"
+    },
+    {
+      "path": "windows-tail-30s/on-3/fast-idle-100-1/result.json",
+      "bytes": 102452,
+      "sha256": "c7951b0d58465363764bad637cb82a1a3ccbf143c90ddf45f23bc7b59c32b920"
+    },
+    {
+      "path": "windows-tail-30s/on-3/fast-idle-100-1/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows-tail-30s/on-3/plan.json",
+      "bytes": 512,
+      "sha256": "09073ffdb7009c4deefe18af27a685371226347477b98fe9156a73a02ebaf7ed"
+    },
+    {
+      "path": "windows-tail-30s/on-3/results.json",
+      "bytes": 113296,
+      "sha256": "1dcb22d1f9417d4ccc9097e26ab19d863a358315627696c117b56af7259f472f"
+    },
+    {
+      "path": "windows-tail-30s/on-3/schedule.json",
+      "bytes": 99,
+      "sha256": "5a76c9c56fd2dc0aec53bcb7456f8c9bac7bdb90a4689a5ff285dd416cf441c6"
+    },
+    {
+      "path": "windows-tail-30s/on-3/summary.json",
+      "bytes": 69,
+      "sha256": "6c78c7b95a11bd3da3c36119c8bd56bbc818b529c99240c6e39a2404cac18676"
+    },
+    {
+      "path": "windows-tail-30s/on-3/v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+    },
+    {
+      "path": "windows-tail-30s/plan.json",
+      "bytes": 688,
+      "sha256": "fd81c7470563c208834ace9315fc3fd25351ea02b64d21518de2f78fde5b6852"
+    },
+    {
+      "path": "windows-tail-30s/power-profile.txt",
+      "bytes": 74,
+      "sha256": "c9eca3df5fbe39f1f1c071816fb09591fbeaa54e411d5c9bd552886ccf3e7919"
+    },
+    {
+      "path": "windows-tail-30s/runs.json",
+      "bytes": 657,
+      "sha256": "9d41d98fecaa6670314137830f8b5d278b69502f27f1bc743d7ab42e3d1957cf"
+    }
+  ],
+  "provenance": [
+    {
+      "variant": "legacy",
+      "trial": 1,
+      "environment": "windows-tail-30s/legacy-1/environment.json",
+      "tool_observed_revision": "89076a4a98b4cd72a732d48eebfc4938d09c7921",
+      "working_tree_clean": true,
+      "binary_sha256": "489e0c511516b2434be9db63fbc336a634130318cdaeba92ea68eacb063d8f45",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "legacy",
+      "trial": 2,
+      "environment": "windows-tail-30s/legacy-2/environment.json",
+      "tool_observed_revision": "89076a4a98b4cd72a732d48eebfc4938d09c7921",
+      "working_tree_clean": true,
+      "binary_sha256": "489e0c511516b2434be9db63fbc336a634130318cdaeba92ea68eacb063d8f45",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "legacy",
+      "trial": 3,
+      "environment": "windows-tail-30s/legacy-3/environment.json",
+      "tool_observed_revision": "89076a4a98b4cd72a732d48eebfc4938d09c7921",
+      "working_tree_clean": true,
+      "binary_sha256": "489e0c511516b2434be9db63fbc336a634130318cdaeba92ea68eacb063d8f45",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "off",
+      "trial": 1,
+      "environment": "windows-tail-30s/off-1/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "off",
+      "trial": 2,
+      "environment": "windows-tail-30s/off-2/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "off",
+      "trial": 3,
+      "environment": "windows-tail-30s/off-3/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "on",
+      "trial": 1,
+      "environment": "windows-tail-30s/on-1/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "on",
+      "trial": 2,
+      "environment": "windows-tail-30s/on-2/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    },
+    {
+      "variant": "on",
+      "trial": 3,
+      "environment": "windows-tail-30s/on-3/environment.json",
+      "tool_observed_revision": "b5459bcb7f17b16ca23b21e77041a70cfbf92936",
+      "working_tree_clean": true,
+      "binary_sha256": "528abcd25c23256ca4faefd29b3ab339d6e75618f764e1f71fa71c00275f3d97",
+      "binary_version": "ling 0.1.7",
+      "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "cpu_binding": {
+        "status": "not bound",
+        "reason": "Windows: client and server share OS scheduling"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "variant": "legacy",
+      "trials": [
+        {
+          "trial": 1,
+          "result": "windows-tail-30s/legacy-1/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/legacy-1/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.000019600003725,
+          "successes": 573812,
+          "rate_per_second": 19127.054170322233,
+          "p50_us": 47.7,
+          "p95_us": 74.4,
+          "p99_us": 97.1,
+          "p999_us": 137.7,
+          "server_cpu_seconds": 1.90625,
+          "client_cpu_seconds": 7.75,
+          "server_cpu_us_per_success": 3.3220810997330137,
+          "subscription_poll_delta": 300047,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 11870208,
+            "handles": 272,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 1.90625,
+            "rss_bytes": 11866112,
+            "handles": 272,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 2,
+          "result": "windows-tail-30s/legacy-2/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/legacy-2/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00002319998748,
+          "successes": 571681,
+          "rate_per_second": 19056.018596686903,
+          "p50_us": 48.1,
+          "p95_us": 73.0,
+          "p99_us": 97.3,
+          "p999_us": 150.4,
+          "server_cpu_seconds": 1.203125,
+          "client_cpu_seconds": 1.046875,
+          "server_cpu_us_per_success": 2.104539069865887,
+          "subscription_poll_delta": 300049,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 11833344,
+            "handles": 271,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 1.203125,
+            "rss_bytes": 11808768,
+            "handles": 271,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 3,
+          "result": "windows-tail-30s/legacy-3/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/legacy-3/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00005779998901,
+          "successes": 578526,
+          "rate_per_second": 19284.162845853316,
+          "p50_us": 47.8,
+          "p95_us": 70.4,
+          "p99_us": 92.4,
+          "p999_us": 133.7,
+          "server_cpu_seconds": 2.53125,
+          "client_cpu_seconds": 0.265625,
+          "server_cpu_us_per_success": 4.375343545493202,
+          "subscription_poll_delta": 300041,
+          "resources_before": {
+            "cpu_seconds": 0.015625,
+            "rss_bytes": 11919360,
+            "handles": 275,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 2.546875,
+            "rss_bytes": 11882496,
+            "handles": 275,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        }
+      ],
+      "three_run_ranges": {
+        "rate_per_second": {
+          "min": 19056.018596686903,
+          "median": 19127.054170322233,
+          "max": 19284.162845853316
+        },
+        "p50_us": {
+          "min": 47.7,
+          "median": 47.8,
+          "max": 48.1
+        },
+        "p95_us": {
+          "min": 70.4,
+          "median": 73.0,
+          "max": 74.4
+        },
+        "p99_us": {
+          "min": 92.4,
+          "median": 97.1,
+          "max": 97.3
+        },
+        "p999_us": {
+          "min": 133.7,
+          "median": 137.7,
+          "max": 150.4
+        },
+        "server_cpu_seconds": {
+          "min": 1.203125,
+          "median": 1.90625,
+          "max": 2.53125
+        },
+        "client_cpu_seconds": {
+          "min": 0.265625,
+          "median": 1.046875,
+          "max": 7.75
+        },
+        "server_cpu_us_per_success": {
+          "min": 2.104539069865887,
+          "median": 3.3220810997330137,
+          "max": 4.375343545493202
+        },
+        "subscription_poll_delta": {
+          "min": 300041,
+          "median": 300047,
+          "max": 300049
+        }
+      }
+    },
+    {
+      "variant": "off",
+      "trials": [
+        {
+          "trial": 1,
+          "result": "windows-tail-30s/off-1/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/off-1/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.000014600009308,
+          "successes": 578036,
+          "rate_per_second": 19267.857289636806,
+          "p50_us": 48.0,
+          "p95_us": 69.8,
+          "p99_us": 92.3,
+          "p999_us": 126.1,
+          "server_cpu_seconds": 2.15625,
+          "client_cpu_seconds": 0.1875,
+          "server_cpu_us_per_success": 3.7303039949068917,
+          "subscription_poll_delta": 300050,
+          "resources_before": {
+            "cpu_seconds": 0.015625,
+            "rss_bytes": 12402688,
+            "handles": 280,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 2.171875,
+            "rss_bytes": 12152832,
+            "handles": 280,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 2,
+          "result": "windows-tail-30s/off-2/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/off-2/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00002019999374,
+          "successes": 575506,
+          "rate_per_second": 19183.52041643359,
+          "p50_us": 48.2,
+          "p95_us": 71.0,
+          "p99_us": 91.3,
+          "p999_us": 124.7,
+          "server_cpu_seconds": 2.390625,
+          "client_cpu_seconds": 1.140625,
+          "server_cpu_us_per_success": 4.153953216821371,
+          "subscription_poll_delta": 300052,
+          "resources_before": {
+            "cpu_seconds": 0.015625,
+            "rss_bytes": 12120064,
+            "handles": 268,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 2.40625,
+            "rss_bytes": 11911168,
+            "handles": 269,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 3,
+          "result": "windows-tail-30s/off-3/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/off-3/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00001020000491,
+          "successes": 576521,
+          "rate_per_second": 19217.360132761078,
+          "p50_us": 48.1,
+          "p95_us": 70.4,
+          "p99_us": 91.5,
+          "p999_us": 126.0,
+          "server_cpu_seconds": 2.625,
+          "client_cpu_seconds": 0.8125,
+          "server_cpu_us_per_success": 4.553173258216093,
+          "subscription_poll_delta": 300051,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 12251136,
+            "handles": 272,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 2.625,
+            "rss_bytes": 12017664,
+            "handles": 272,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        }
+      ],
+      "three_run_ranges": {
+        "rate_per_second": {
+          "min": 19183.52041643359,
+          "median": 19217.360132761078,
+          "max": 19267.857289636806
+        },
+        "p50_us": {
+          "min": 48.0,
+          "median": 48.1,
+          "max": 48.2
+        },
+        "p95_us": {
+          "min": 69.8,
+          "median": 70.4,
+          "max": 71.0
+        },
+        "p99_us": {
+          "min": 91.3,
+          "median": 91.5,
+          "max": 92.3
+        },
+        "p999_us": {
+          "min": 124.7,
+          "median": 126.0,
+          "max": 126.1
+        },
+        "server_cpu_seconds": {
+          "min": 2.15625,
+          "median": 2.390625,
+          "max": 2.625
+        },
+        "client_cpu_seconds": {
+          "min": 0.1875,
+          "median": 0.8125,
+          "max": 1.140625
+        },
+        "server_cpu_us_per_success": {
+          "min": 3.7303039949068917,
+          "median": 4.153953216821371,
+          "max": 4.553173258216093
+        },
+        "subscription_poll_delta": {
+          "min": 300050,
+          "median": 300051,
+          "max": 300052
+        }
+      }
+    },
+    {
+      "variant": "on",
+      "trials": [
+        {
+          "trial": 1,
+          "result": "windows-tail-30s/on-1/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/on-1/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00002449999738,
+          "successes": 638154,
+          "rate_per_second": 21271.782628046043,
+          "p50_us": 43.6,
+          "p95_us": 54.9,
+          "p99_us": 109.9,
+          "p999_us": 201.2,
+          "server_cpu_seconds": 0.25,
+          "client_cpu_seconds": 0.546875,
+          "server_cpu_us_per_success": 0.3917549682365072,
+          "subscription_poll_delta": 0,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 9863168,
+            "handles": 206,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 0.25,
+            "rss_bytes": 9814016,
+            "handles": 206,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 2,
+          "result": "windows-tail-30s/on-2/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/on-2/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.000030900002457,
+          "successes": 623257,
+          "rate_per_second": 20775.21193486334,
+          "p50_us": 43.6,
+          "p95_us": 64.8,
+          "p99_us": 127.3,
+          "p999_us": 200.5,
+          "server_cpu_seconds": 3.515625,
+          "client_cpu_seconds": 0.328125,
+          "server_cpu_us_per_success": 5.640730870250956,
+          "subscription_poll_delta": 0,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 9863168,
+            "handles": 206,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 3.515625,
+            "rss_bytes": 9850880,
+            "handles": 208,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        },
+        {
+          "trial": 3,
+          "result": "windows-tail-30s/on-3/fast-idle-100-1/result.json",
+          "latencies_ns": "windows-tail-30s/on-3/fast-idle-100-1/latencies-ns.json.gz",
+          "seconds": 30.00001340000017,
+          "successes": 642593,
+          "rate_per_second": 21419.75709917504,
+          "p50_us": 43.5,
+          "p95_us": 52.7,
+          "p99_us": 121.4,
+          "p999_us": 195.4,
+          "server_cpu_seconds": 4.390625,
+          "client_cpu_seconds": 0.109375,
+          "server_cpu_us_per_success": 6.832668578711564,
+          "subscription_poll_delta": 0,
+          "resources_before": {
+            "cpu_seconds": 0.0,
+            "rss_bytes": 9797632,
+            "handles": 205,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "resources_after": {
+            "cpu_seconds": 4.390625,
+            "rss_bytes": 9748480,
+            "handles": 205,
+            "threads": null,
+            "threads_unavailable": "not sampled by the Windows process API"
+          },
+          "acceptance": {
+            "valid": true,
+            "failures": []
+          },
+          "consumer": {
+            "termination": "requested_stop",
+            "errors": {},
+            "unexpected_events": 0
+          }
+        }
+      ],
+      "three_run_ranges": {
+        "rate_per_second": {
+          "min": 20775.21193486334,
+          "median": 21271.782628046043,
+          "max": 21419.75709917504
+        },
+        "p50_us": {
+          "min": 43.5,
+          "median": 43.6,
+          "max": 43.6
+        },
+        "p95_us": {
+          "min": 52.7,
+          "median": 54.9,
+          "max": 64.8
+        },
+        "p99_us": {
+          "min": 109.9,
+          "median": 121.4,
+          "max": 127.3
+        },
+        "p999_us": {
+          "min": 195.4,
+          "median": 200.5,
+          "max": 201.2
+        },
+        "server_cpu_seconds": {
+          "min": 0.25,
+          "median": 3.515625,
+          "max": 4.390625
+        },
+        "client_cpu_seconds": {
+          "min": 0.109375,
+          "median": 0.328125,
+          "max": 0.546875
+        },
+        "server_cpu_us_per_success": {
+          "min": 0.3917549682365072,
+          "median": 5.640730870250956,
+          "max": 6.832668578711564
+        },
+        "subscription_poll_delta": {
+          "min": 0,
+          "median": 0,
+          "max": 0
+        }
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "variant": "off",
+      "reference": "legacy",
+      "median_change_percent": {
+        "rate_per_second": 0.4721373277593477,
+        "p50_us": 0.6276150627615218,
+        "p95_us": -3.561643835616435,
+        "p99_us": -5.767250257466527,
+        "p999_us": -8.496732026143782,
+        "server_cpu_seconds": 25.409836065573764,
+        "client_cpu_seconds": -22.388059701492537,
+        "server_cpu_us_per_success": 25.04069262954516,
+        "subscription_poll_delta": 0.0013331244771652706
+      }
+    },
+    {
+      "variant": "on",
+      "reference": "legacy",
+      "median_change_percent": {
+        "rate_per_second": 11.213062077544578,
+        "p50_us": -8.786610878661083,
+        "p95_us": -24.794520547945208,
+        "p99_us": 25.025746652935133,
+        "p999_us": 45.606390704429934,
+        "server_cpu_seconds": 84.42622950819671,
+        "client_cpu_seconds": -68.65671641791045,
+        "server_cpu_us_per_success": 69.79509834074449,
+        "subscription_poll_delta": -100.0
+      }
+    }
+  ],
+  "limits": [
+    "Three independent 30-second cases per variant with seeded interleaving; no pooled repetition percentiles and no statistical-significance claim.",
+    "Same-host serial Python PING, pipeline one, 100 idle subscriptions; client and server have no Windows CPU-affinity isolation.",
+    "The plan records no parallel build, tests or WSL workload. The power-profile text records only the active profile name; frequency, thermals and background scheduling are not independently controlled.",
+    "Server CPU counters remain quantized even over 30 seconds; zero deltas do not establish zero work.",
+    "Only Fast idle-100 was rerun. This does not replace five-second idle0/idle1/backlog, Linux results, or sustained-load acceptance.",
+    "All binaries still print ling 0.1.7; provenance uses exact tool-observed revision and binary hash, while plan.json separately asserts the product revision.",
+    "This supplement records observations and does not make a release-acceptance decision."
+  ]
+}

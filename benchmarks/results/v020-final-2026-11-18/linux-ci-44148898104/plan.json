@@ -1,0 +1,43 @@
+{
+  "seed": 20261118,
+  "seconds_per_case": 5,
+  "jobs": [
+    [
+      "off",
+      2
+    ],
+    [
+      "legacy",
+      3
+    ],
+    [
+      "on",
+      3
+    ],
+    [
+      "legacy",
+      2
+    ],
+    [
+      "on",
+      2
+    ],
+    [
+      "on",
+      1
+    ],
+    [
+      "legacy",
+      1
+    ],
+    [
+      "off",
+      3
+    ],
+    [
+      "off",
+      1
+    ]
+  ],
+  "scope": "same hosted Linux runner; not physical power loss or target deployment acceptance"
+}

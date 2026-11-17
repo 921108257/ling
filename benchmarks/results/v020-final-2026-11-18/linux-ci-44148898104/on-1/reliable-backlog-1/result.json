@@ -1,0 +1,470 @@
+{
+  "event_mode": "reliable",
+  "scenario": "backlog",
+  "repeat": 1,
+  "notification_mode": "on",
+  "requested_seconds": 5.0,
+  "errors": {},
+  "successes": 12723,
+  "consumer": {
+    "received": 12723,
+    "acks": 12723,
+    "duplicates": 0,
+    "errors": {},
+    "termination": "requested_stop",
+    "unique": 12723
+  },
+  "server_version": "0.1.7",
+  "backlog_events": 20000,
+  "preload_complete": true,
+  "resources_before": {
+    "cpu_seconds": 0.07,
+    "rss_bytes": 15818752,
+    "threads": 6,
+    "handles": 15
+  },
+  "elapsed_seconds": 5.000172496999994,
+  "client_cpu_seconds": 0.7632583969999978,
+  "resources_after": {
+    "cpu_seconds": 2.77,
+    "rss_bytes": 15998976,
+    "threads": 6,
+    "handles": 15
+  },
+  "info_before": {
+    "clients": {
+      "accept_errors_data": 0,
+      "accept_errors_metrics": 0,
+      "auth_failures": 0,
+      "connected": 2,
+      "first_frame_timeouts": 0,
+      "panics": 0,
+      "rejected": 0,
+      "subscriptions": 1
+    },
+    "events": {
+      "by_kind": [
+        20000,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "committed": 20000,
+      "consumer_groups": [
+        {
+          "db": 0,
+          "expired": false,
+          "name": "n:backlog",
+          "oldest_pending_ms": 113,
+          "pending": 128,
+          "watermarks": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ]
+          ]
+        }
+      ],
+      "dropped": 0,
+      "groups": 1,
+      "journal_bytes": 1592337,
+      "journal_compaction_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 0,
+        "sum": 0
+      },
+      "journal_compaction_failures": 0,
+      "journal_compaction_successes": 0,
+      "journal_compactions": 0,
+      "journal_errors": 0,
+      "journal_fsync_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          0,
+          77,
+          209,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 286,
+        "sum": 44791
+      },
+      "journal_transaction_bytes": {
+        "bounds": [
+          256,
+          1024,
+          4096,
+          16384,
+          65536,
+          1048576
+        ],
+        "buckets": [
+          7,
+          59,
+          64,
+          156,
+          0,
+          0,
+          0
+        ],
+        "count": 286,
+        "sum": 1592297
+      },
+      "oldest_retained_ms": 1794940720986,
+      "pending": 128,
+      "redelivered": 0,
+      "subscription_empty_poll_ratio": 0.4458874458874459,
+      "subscription_empty_polls": 103,
+      "subscription_polls": 231,
+      "timing_enabled": true
+    },
+    "keyspace": {
+      "db0": 20000,
+      "db1": 0,
+      "db10": 0,
+      "db11": 0,
+      "db12": 0,
+      "db13": 0,
+      "db14": 0,
+      "db15": 0,
+      "db2": 0,
+      "db3": 0,
+      "db4": 0,
+      "db5": 0,
+      "db6": 0,
+      "db7": 0,
+      "db8": 0,
+      "db9": 0
+    },
+    "memory": {
+      "limit_bytes": 268435456,
+      "managed_bytes": 78160000,
+      "rss_available": true,
+      "rss_bytes": 15818752,
+      "scheduled_expirations": 0
+    },
+    "server": {
+      "process_cpu_available": true,
+      "process_cpu_seconds": 0.080315177,
+      "shards_per_database": 4,
+      "uptime_ms": 132,
+      "version": "0.1.7"
+    },
+    "stats": {
+      "errors": 0,
+      "execution_occupied": 1,
+      "execution_queued": 0,
+      "execution_wait_cancelled": 0,
+      "execution_wait_timeouts": 0,
+      "execution_wait_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          448,
+          2,
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 455,
+        "sum": 1392
+      },
+      "maintenance_cycles": 65,
+      "maintenance_deferred": 2,
+      "maintenance_reclaimed": 0,
+      "request_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          2,
+          0,
+          158,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 160,
+        "sum": 80891
+      },
+      "requests": 160,
+      "timing_enabled": true
+    }
+  },
+  "info_after": {
+    "clients": {
+      "accept_errors_data": 0,
+      "accept_errors_metrics": 0,
+      "auth_failures": 0,
+      "connected": 2,
+      "first_frame_timeouts": 0,
+      "panics": 0,
+      "rejected": 0,
+      "subscriptions": 1
+    },
+    "events": {
+      "by_kind": [
+        20000,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "committed": 20000,
+      "consumer_groups": [
+        {
+          "db": 0,
+          "expired": false,
+          "name": "n:backlog",
+          "oldest_pending_ms": 49,
+          "pending": 128,
+          "watermarks": [
+            [
+              0,
+              3164
+            ],
+            [
+              1,
+              3138
+            ],
+            [
+              2,
+              3239
+            ],
+            [
+              3,
+              3182
+            ]
+          ]
+        }
+      ],
+      "dropped": 0,
+      "groups": 1,
+      "journal_bytes": 48044010,
+      "journal_compaction_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 0,
+        "sum": 0
+      },
+      "journal_compaction_failures": 0,
+      "journal_compaction_successes": 0,
+      "journal_compactions": 0,
+      "journal_errors": 0,
+      "journal_fsync_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          0,
+          11367,
+          14364,
+          1,
+          0,
+          0,
+          0
+        ],
+        "count": 25732,
+        "sum": 3175239
+      },
+      "journal_transaction_bytes": {
+        "bounds": [
+          256,
+          1024,
+          4096,
+          16384,
+          65536,
+          1048576
+        ],
+        "buckets": [
+          7,
+          59,
+          25510,
+          156,
+          0,
+          0,
+          0
+        ],
+        "count": 25732,
+        "sum": 48043970
+      },
+      "oldest_retained_ms": 1794940720986,
+      "pending": 128,
+      "redelivered": 0,
+      "subscription_empty_poll_ratio": 0.3732442450253609,
+      "subscription_empty_polls": 7653,
+      "subscription_polls": 20504,
+      "timing_enabled": true
+    },
+    "keyspace": {
+      "db0": 20000,
+      "db1": 0,
+      "db10": 0,
+      "db11": 0,
+      "db12": 0,
+      "db13": 0,
+      "db14": 0,
+      "db15": 0,
+      "db2": 0,
+      "db3": 0,
+      "db4": 0,
+      "db5": 0,
+      "db6": 0,
+      "db7": 0,
+      "db8": 0,
+      "db9": 0
+    },
+    "memory": {
+      "limit_bytes": 268435456,
+      "managed_bytes": 78160000,
+      "rss_available": true,
+      "rss_bytes": 15998976,
+      "scheduled_expirations": 0
+    },
+    "server": {
+      "process_cpu_available": true,
+      "process_cpu_seconds": 2.78262829,
+      "shards_per_database": 4,
+      "uptime_ms": 5134,
+      "version": "0.1.7"
+    },
+    "stats": {
+      "errors": 0,
+      "execution_occupied": 1,
+      "execution_queued": 0,
+      "execution_wait_cancelled": 0,
+      "execution_wait_timeouts": 0,
+      "execution_wait_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          35940,
+          6,
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        "count": 35951,
+        "sum": 1580
+      },
+      "maintenance_cycles": 2564,
+      "maintenance_deferred": 2,
+      "maintenance_reclaimed": 0,
+      "request_duration_us": {
+        "bounds": [
+          10,
+          100,
+          1000,
+          10000,
+          100000,
+          1000000
+        ],
+        "buckets": [
+          2,
+          49,
+          12831,
+          2,
+          0,
+          0,
+          0
+        ],
+        "count": 12884,
+        "sum": 2191380
+      },
+      "requests": 12884,
+      "timing_enabled": true
+    }
+  },
+  "server_exit_after_cleanup": 0,
+  "p50_us": null,
+  "p99_us": null,
+  "p999_us": null,
+  "successes_per_second": 2544.512215855263,
+  "server_cpu_seconds": 2.7,
+  "acceptance": {
+    "valid": true,
+    "failures": []
+  }
+}

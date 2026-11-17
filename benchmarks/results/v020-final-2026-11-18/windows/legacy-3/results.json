@@ -1,0 +1,6779 @@
+[
+  {
+    "event_mode": "fast",
+    "scenario": "idle-0",
+    "repeat": 1,
+    "notification_mode": "legacy",
+    "requested_seconds": 5.0,
+    "errors": {},
+    "successes": 99167,
+    "consumer": {
+      "termination": "requested_stop",
+      "errors": {},
+      "unexpected_events": 0
+    },
+    "server_version": "0.1.7",
+    "subscribers": 0,
+    "resources_before": {
+      "cpu_seconds": 0.0,
+      "rss_bytes": 7094272,
+      "handles": 100,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "elapsed_seconds": 5.000077000004239,
+    "client_cpu_seconds": 0.03125,
+    "resources_after": {
+      "cpu_seconds": 0.609375,
+      "rss_bytes": 7147520,
+      "handles": 102,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "subscription_poll_delta": 0,
+    "info_before": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 1,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 0
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [],
+        "dropped": 0,
+        "groups": 0,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 0.0,
+        "subscription_empty_polls": 0,
+        "subscription_polls": 0,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 497,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            40,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 40,
+          "sum": 5
+        },
+        "maintenance_cycles": 39,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            50,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 51,
+          "sum": 21
+        },
+        "requests": 51,
+        "timing_enabled": true
+      }
+    },
+    "info_after": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 1,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 0
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [],
+        "dropped": 0,
+        "groups": 0,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 0.0,
+        "subscription_empty_polls": 0,
+        "subscription_polls": 0,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 5501,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            2543,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 2543,
+          "sum": 6
+        },
+        "maintenance_cycles": 2541,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            99209,
+            9,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 99219,
+          "sum": 1121
+        },
+        "requests": 99219,
+        "timing_enabled": true
+      }
+    },
+    "server_exit_after_cleanup": 1,
+    "p50_us": 45.7,
+    "p99_us": 134.2,
+    "p999_us": 203.6,
+    "successes_per_second": 19833.0945703268,
+    "server_cpu_seconds": 0.609375,
+    "acceptance": {
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "event_mode": "fast",
+    "scenario": "idle-100",
+    "repeat": 1,
+    "notification_mode": "legacy",
+    "requested_seconds": 5.0,
+    "errors": {},
+    "successes": 93360,
+    "consumer": {
+      "termination": "requested_stop",
+      "errors": {},
+      "unexpected_events": 0
+    },
+    "server_version": "0.1.7",
+    "subscribers": 100,
+    "resources_before": {
+      "cpu_seconds": 0.0,
+      "rss_bytes": 11898880,
+      "handles": 272,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "elapsed_seconds": 5.00001859999611,
+    "client_cpu_seconds": 0.0,
+    "resources_after": {
+      "cpu_seconds": 0.25,
+      "rss_bytes": 11919360,
+      "handles": 272,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "subscription_poll_delta": 50046,
+    "info_before": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 101,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 100
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-0",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-1",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-10",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-11",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-12",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-13",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-14",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-15",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-16",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-17",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-18",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-19",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-2",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-20",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-21",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-22",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-23",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-24",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-25",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-26",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-27",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-28",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-29",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-3",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-30",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-31",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-32",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-33",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-34",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-35",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-36",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-37",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-38",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-39",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-4",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-40",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-41",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-42",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-43",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-44",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-45",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-46",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-47",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-48",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-49",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-5",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-50",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-51",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-52",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-53",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-54",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-55",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-56",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-57",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-58",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-59",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-6",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-60",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-61",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-62",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-63",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-64",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-65",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-66",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-67",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-68",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-69",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-7",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-70",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-71",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-72",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-73",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-74",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-75",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-76",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-77",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-78",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-79",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-8",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-80",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-81",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-82",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-83",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-84",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-85",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-86",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-87",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-88",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-89",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-9",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-90",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-91",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-92",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-93",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-94",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-95",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-96",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-97",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-98",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-99",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 100,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 1.0,
+        "subscription_empty_polls": 5652,
+        "subscription_polls": 5652,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 2062,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            2992,
+            1563,
+            1365,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 5920,
+          "sum": 336124
+        },
+        "maintenance_cycles": 167,
+        "maintenance_deferred": 22,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            112,
+            90,
+            49,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 251,
+          "sum": 13010
+        },
+        "requests": 251,
+        "timing_enabled": true
+      }
+    },
+    "info_after": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 101,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 100
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-0",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-1",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-10",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-11",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-12",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-13",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-14",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-15",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-16",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-17",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-18",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-19",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-2",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-20",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-21",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-22",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-23",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-24",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-25",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-26",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-27",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-28",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-29",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-3",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-30",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-31",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-32",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-33",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-34",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-35",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-36",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-37",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-38",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-39",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-4",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-40",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-41",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-42",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-43",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-44",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-45",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-46",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-47",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-48",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-49",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-5",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-50",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-51",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-52",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-53",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-54",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-55",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-56",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-57",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-58",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-59",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-6",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-60",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-61",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-62",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-63",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-64",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-65",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-66",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-67",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-68",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-69",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-7",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-70",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-71",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-72",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-73",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-74",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-75",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-76",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-77",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-78",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-79",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-8",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-80",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-81",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-82",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-83",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-84",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-85",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-86",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-87",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-88",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-89",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-9",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-90",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-91",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-92",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-93",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-94",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-95",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-96",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-97",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-98",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          },
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-99",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 100,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 0.9999820460339689,
+        "subscription_empty_polls": 55697,
+        "subscription_polls": 55698,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 7067,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 7,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            55541,
+            1564,
+            1365,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 58470,
+          "sum": 336149
+        },
+        "maintenance_cycles": 2669,
+        "maintenance_deferred": 22,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            93472,
+            90,
+            50,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 93612,
+          "sum": 13916
+        },
+        "requests": 93612,
+        "timing_enabled": true
+      }
+    },
+    "server_exit_after_cleanup": 1,
+    "p50_us": 48.3,
+    "p99_us": 97.5,
+    "p999_us": 133.9,
+    "successes_per_second": 18671.930540432913,
+    "server_cpu_seconds": 0.25,
+    "acceptance": {
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "event_mode": "fast",
+    "scenario": "backlog",
+    "repeat": 1,
+    "notification_mode": "legacy",
+    "requested_seconds": 5.0,
+    "errors": {},
+    "successes": 347,
+    "consumer": {
+      "received": 347,
+      "acks": 347,
+      "duplicates": 0,
+      "errors": {},
+      "termination": "requested_stop",
+      "unique": 347
+    },
+    "server_version": "0.1.7",
+    "backlog_events": 20000,
+    "preload_complete": true,
+    "resources_before": {
+      "cpu_seconds": 0.0,
+      "rss_bytes": 19537920,
+      "handles": 104,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "elapsed_seconds": 5.008678600002895,
+    "client_cpu_seconds": 0.0,
+    "resources_after": {
+      "cpu_seconds": 0.015625,
+      "rss_bytes": 19554304,
+      "handles": 104,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "info_before": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 2,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 1
+      },
+      "events": {
+        "by_kind": [
+          20000,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 20000,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:backlog",
+            "oldest_pending_ms": 80,
+            "pending": 9,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 1,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": 1794940866284,
+        "pending": 9,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 0.1,
+        "subscription_empty_polls": 1,
+        "subscription_polls": 10,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 20000,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 78160000,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 603,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            250,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 250,
+          "sum": 3
+        },
+        "maintenance_cycles": 81,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            1,
+            2,
+            157,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 160,
+          "sum": 37219
+        },
+        "requests": 160,
+        "timing_enabled": true
+      }
+    },
+    "info_after": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 2,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 1
+      },
+      "events": {
+        "by_kind": [
+          20000,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 20000,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:backlog",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                78
+              ],
+              [
+                1,
+                86
+              ],
+              [
+                2,
+                86
+              ],
+              [
+                3,
+                97
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 1,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": 1794940866284,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 0.0028735632183908046,
+        "subscription_empty_polls": 1,
+        "subscription_polls": 348,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 20000,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 78160000,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 5613,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            1309,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 1311,
+          "sum": 64
+        },
+        "maintenance_cycles": 456,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            1,
+            148,
+            359,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 508,
+          "sum": 74858
+        },
+        "requests": 508,
+        "timing_enabled": true
+      }
+    },
+    "server_exit_after_cleanup": 1,
+    "p50_us": null,
+    "p99_us": null,
+    "p999_us": null,
+    "successes_per_second": 69.2797497527191,
+    "server_cpu_seconds": 0.015625,
+    "acceptance": {
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "event_mode": "fast",
+    "scenario": "idle-1",
+    "repeat": 1,
+    "notification_mode": "legacy",
+    "requested_seconds": 5.0,
+    "errors": {},
+    "successes": 99029,
+    "consumer": {
+      "termination": "requested_stop",
+      "errors": {},
+      "unexpected_events": 0
+    },
+    "server_version": "0.1.7",
+    "subscribers": 1,
+    "resources_before": {
+      "cpu_seconds": 0.0,
+      "rss_bytes": 7274496,
+      "handles": 104,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "elapsed_seconds": 5.000036400000681,
+    "client_cpu_seconds": 0.046875,
+    "resources_after": {
+      "cpu_seconds": 0.3125,
+      "rss_bytes": 7344128,
+      "handles": 106,
+      "threads": null,
+      "threads_unavailable": "not sampled by the Windows process API"
+    },
+    "subscription_poll_delta": 500,
+    "info_before": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 2,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 1
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-0",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 1,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 1.0,
+        "subscription_empty_polls": 2,
+        "subscription_polls": 2,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 517,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            46,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 46,
+          "sum": 0
+        },
+        "maintenance_cycles": 42,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            51,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 53,
+          "sum": 149
+        },
+        "requests": 53,
+        "timing_enabled": true
+      }
+    },
+    "info_after": {
+      "clients": {
+        "accept_errors_data": 0,
+        "accept_errors_metrics": 0,
+        "auth_failures": 0,
+        "connected": 2,
+        "first_frame_timeouts": 0,
+        "panics": 0,
+        "rejected": 0,
+        "subscriptions": 1
+      },
+      "events": {
+        "by_kind": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "committed": 0,
+        "consumer_groups": [
+          {
+            "db": 0,
+            "expired": false,
+            "name": "n:idle-0",
+            "oldest_pending_ms": null,
+            "pending": 0,
+            "watermarks": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ],
+              [
+                3,
+                0
+              ]
+            ]
+          }
+        ],
+        "dropped": 0,
+        "groups": 1,
+        "journal_bytes": 0,
+        "journal_compaction_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_compaction_failures": 0,
+        "journal_compaction_successes": 0,
+        "journal_compactions": 0,
+        "journal_errors": 0,
+        "journal_fsync_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "journal_transaction_bytes": {
+          "bounds": [
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            1048576
+          ],
+          "buckets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 0,
+          "sum": 0
+        },
+        "oldest_retained_ms": null,
+        "pending": 0,
+        "redelivered": 0,
+        "subscription_empty_poll_ratio": 1.0,
+        "subscription_empty_polls": 502,
+        "subscription_polls": 502,
+        "timing_enabled": true
+      },
+      "keyspace": {
+        "db0": 0,
+        "db1": 0,
+        "db10": 0,
+        "db11": 0,
+        "db12": 0,
+        "db13": 0,
+        "db14": 0,
+        "db15": 0,
+        "db2": 0,
+        "db3": 0,
+        "db4": 0,
+        "db5": 0,
+        "db6": 0,
+        "db7": 0,
+        "db8": 0,
+        "db9": 0
+      },
+      "memory": {
+        "limit_bytes": 268435456,
+        "managed_bytes": 0,
+        "rss_available": false,
+        "rss_bytes": null,
+        "scheduled_expirations": 0
+      },
+      "server": {
+        "process_cpu_available": false,
+        "process_cpu_seconds": null,
+        "shards_per_database": 4,
+        "uptime_ms": 5518,
+        "version": "0.1.7"
+      },
+      "stats": {
+        "errors": 0,
+        "execution_occupied": 1,
+        "execution_queued": 0,
+        "execution_wait_cancelled": 0,
+        "execution_wait_timeouts": 0,
+        "execution_wait_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            3048,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 3048,
+          "sum": 16
+        },
+        "maintenance_cycles": 2543,
+        "maintenance_deferred": 0,
+        "maintenance_reclaimed": 0,
+        "request_duration_us": {
+          "bounds": [
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000
+          ],
+          "buckets": [
+            99074,
+            6,
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 99083,
+          "sum": 1137
+        },
+        "requests": 99083,
+        "timing_enabled": true
+      }
+    },
+    "server_exit_after_cleanup": 1,
+    "p50_us": 45.4,
+    "p99_us": 145.6,
+    "p999_us": 214.3,
+    "successes_per_second": 19805.65581482297,
+    "server_cpu_seconds": 0.3125,
+    "acceptance": {
+      "valid": true,
+      "failures": []
+    }
+  }
+]

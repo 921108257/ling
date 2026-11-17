@@ -1,0 +1,46 @@
+{
+  "seed": 2026111802,
+  "jobs": [
+    [
+      "off",
+      3
+    ],
+    [
+      "legacy",
+      1
+    ],
+    [
+      "on",
+      1
+    ],
+    [
+      "on",
+      3
+    ],
+    [
+      "off",
+      1
+    ],
+    [
+      "legacy",
+      2
+    ],
+    [
+      "off",
+      2
+    ],
+    [
+      "on",
+      2
+    ],
+    [
+      "legacy",
+      3
+    ]
+  ],
+  "seconds": 30,
+  "scenario": "idle-100",
+  "purpose": "investigate unresolved Windows tail regression; no parallel build, tests or WSL workload",
+  "candidate_product_revision": "508d39c073a92f420627d7ea0a35dfa5a4d94567",
+  "baseline_revision": "89076a4a98b4cd72a732d48eebfc4938d09c7921"
+}
