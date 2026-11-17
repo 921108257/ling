@@ -1,0 +1,79 @@
+name: Reproducible benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Source revision to measure
+        type: choice
+        options: [baseline, candidate, both]
+        default: baseline
+      baseline_revision:
+        description: Clean 0.1.4 source revision
+        default: b1220f4
+      candidate_revision:
+        description: Candidate ref (blank uses this workflow commit)
+        default: ''
+      suite:
+        description: Full matrix and 600-second soaks, or isolated metrics comparison
+        type: choice
+        options: [full, matrix, soak, metrics]
+        default: full
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - id: matrix
+        env:
+          SELECTED: ${{ inputs.target }}
+          BASELINE: ${{ inputs.baseline_revision }}
+          CANDIDATE: ${{ inputs.candidate_revision || github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          rows = [{'label': name, 'revision': os.environ[name.upper()]}
+                  for name in ('baseline', 'candidate')
+                  if os.environ['SELECTED'] in (name, 'both')]
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('value=' + json.dumps(rows) + '\n')
+          PY
+
+  measure:
+    needs: plan
+    name: Measure ${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tooling
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.revision }}
+          path: measured
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate measurement contracts
+        run: python3 -B -m unittest discover -s tooling/benchmarks -p 'test_v015.py' -v
+      - name: Measure clean source with recorded driver overlay
+        env:
+          SUITE: ${{ inputs.suite }}
+        run: |
+          python3 tooling/benchmarks/v015.py "$RUNNER_TEMP/measurements" \
+            --source-root measured --suite "$SUITE" --seed 20261117
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmarks-${{ matrix.label }}-${{ inputs.suite }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/measurements
+          retention-days: 30
+          if-no-files-found: warn

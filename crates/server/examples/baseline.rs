@@ -362,9 +362,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let slow = args.consumer == "slow";
         let mut stopped = stopped;
         consumer.spawn(async move {
+            let started = Instant::now();
             let mut count = 0u64;
             let mut errors = BTreeMap::<String, u64>::new();
             let mut age = BTreeMap::<u64,u64>::new();
+            let mut failure_phase = None;
             loop {
                 tokio::select! {
                     biased;
@@ -374,14 +376,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
                             *age.entry(now.saturating_sub(event.timestamp_ms) / 10 * 10).or_default() += 1;
                             if slow { tokio::time::sleep(Duration::from_millis(20)).await; }
-                            if let Err(e) = subscriber.ack(event.id).await { *errors.entry(e.to_string()).or_default() += 1; break; }
+                            if let Err(e) = subscriber.ack(event.id).await { *errors.entry(e.to_string()).or_default() += 1; failure_phase = Some("ack"); break; }
                             count += 1;
                         }
-                        Err(e) => { *errors.entry(e.to_string()).or_default() += 1; break; }
+                        Err(e) => { *errors.entry(e.to_string()).or_default() += 1; failure_phase = Some("receive"); break; }
                     }
                 }
             }
-            (count, errors, age)
+            // 保留原始三元组，并另外记录是否因错误提前结束。
+            // Retain the original tuple and separately record premature error termination.
+            let status = serde_json::json!({
+                "termination": if failure_phase.is_some() { "error" } else { "requested_stop" },
+                "failure_phase": failure_phase, "elapsed_seconds": started.elapsed().as_secs_f64(),
+            });
+            ((count, errors, age), status)
         });
     }
     drop(setup);
@@ -424,6 +432,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let elapsed = started.elapsed().as_secs_f64();
     stop_consumer.send_replace(true);
     let consumption = consumer.join_next().await.transpose()?;
+    let (consumption, consumer_status) = match consumption {
+        Some((consumption, status)) => (Some(consumption), Some(status)),
+        None => (None, None),
+    };
     let mut inspect = target(&args, &engine).await?;
     let final_memory = observe(memory(&mut inspect).await?);
     let event_stats = if args.engine {
@@ -457,6 +469,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             "ttl_ms": args.ttl_ms, "tls": args.tls_server_name.is_some(), "rate_per_client": args.rate,
             "preloaded_memory": preloaded_memory, "final_memory": final_memory, "deleted_memory": deleted_memory,
             "event_stats": event_stats, "consumer": args.consumer, "consumption": consumption,
+            "consumer_status": consumer_status,
             "managed_bytes": initial_managed_bytes,
         })
     );

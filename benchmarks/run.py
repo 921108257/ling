@@ -8,7 +8,12 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import resource
+try:
+    import resource
+except ImportError:
+    # 测量仍要求 Linux；允许在其他平台只运行结果验收测试。
+    # Measurements remain Linux-only; allow result-validation tests on other platforms.
+    resource = None
 import socket
 import subprocess
 import time
