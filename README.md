@@ -4,9 +4,9 @@ ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 �
 
 [官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-当前版本为 **0.1.6 Preview**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
+当前版本为 **0.1.7 Preview**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
-0.1.6 增加 GitHub 构建来源证明、升级验证和恢复机制，已完成五平台托管环境的安装与升级验收；Windows 11、原生 RPM 系统等未执行项见 [版本计划](docs/version/v0.1.6-preview.md)。0.1.5 的可观测性和测量证据保留于 [0.1.5 计划](docs/version/v0.1.5-preview.md)。
+0.1.7 统一三语言会话与断线契约，完善 CLI 事件确认及 Ctrl-C 行为，提供第三方客户端接入文档与共享夹具；范围和验收见 [0.1.7 计划](docs/version/v0.1.7-preview.md)。0.1.6 的构建来源证明、升级验证与恢复机制继续适用；Windows 11、原生 RPM 系统等未执行项见 [0.1.6 计划](docs/version/v0.1.6-preview.md)。0.1.5 的可观测性和测量证据保留于 [0.1.5 计划](docs/version/v0.1.5-preview.md)。
 
 ## 安装
 
@@ -81,7 +81,7 @@ ling update --stable
 
 默认包含预发布版，`--stable` 只选择正式版；指定版本不能降级。Linux / macOS 的系统安装包使用 `sudo ling update` 安装更新，检查更新不需要 sudo。**0.1.2 尚无内置更新，请先手动安装 0.1.3。**
 
-Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。0.1.6 便携更新同时刷新两个程序与许可声明，保留配置；手动启动的进程需自行停止并重新启动。0.1.6 更新器还要求 GitHub CLI 2.97.0+，验证来源证明失败时拒绝安装，独立验证与恢复步骤见 [安装指南](docs/install.md)。
+Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。从 0.1.6 起，便携更新同时刷新两个程序与许可声明，保留配置；手动启动的进程需自行停止并重新启动。0.1.6 及更新版本的更新器还要求 GitHub CLI 2.97.0+，验证来源证明失败时拒绝安装，独立验证与恢复步骤见 [安装指南](docs/install.md)。
 
 ## 配置与认证
 
