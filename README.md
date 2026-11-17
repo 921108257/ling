@@ -4,7 +4,7 @@ ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 �
 
 [官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-当前版本为 **0.1.3 预发布版**。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
+当前版本为 **0.1.4 预发布版**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
 ## 安装
 
@@ -73,7 +73,7 @@ ling-cli --cheatsheet
 ```sh
 ling update --check
 ling update
-ling update --version 0.1.3
+ling update --version 0.1.4
 ling update --stable
 ```
 

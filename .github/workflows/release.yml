@@ -33,6 +33,8 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f'version={version}\n')
           PY
+      - name: Validate changelog entry
+        run: python3 packaging/release-notes.py --version "${{ steps.version.outputs.version }}"
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -63,13 +65,17 @@ jobs:
         run: |
           # dev 依赖图必须含 failpoints，否则下面的发行图检查没有意义。
           # The dev graph must contain failpoints, otherwise the release-graph check below proves nothing.
-          dev_graph=$(cargo tree --locked -p ling-server -e dev,features --target all)
-          grep -q 'feature "failpoints"' <<< "$dev_graph"
-          release_graph=$(cargo tree --locked -p ling-server -p ling-cli -e normal,build,features --target all)
+          dev_graph=$(cargo tree --locked -p ling-server -e dev,features --target all --format '{p} [{f}]')
+          grep -q 'failpoints' <<< "$dev_graph"
+          release_graph=$(cargo tree --locked -p ling-server -p ling-cli -e normal,build,features --target all --format '{p} [{f}]')
           if grep -q 'failpoints' <<< "$release_graph"; then
             echo 'failpoints feature leaked into the release dependency graph' >&2
             exit 1
           fi
+          # 故意启用测试特性，确认上面的检查能够观察真实泄漏。
+          # Enable it deliberately to prove the guard can observe an actual feature leak.
+          leaked_graph=$(cargo tree --locked -p ling-server -p ling-cli -e normal,build,features --target all --format '{p} [{f}]' --features ling-engine/failpoints)
+          grep -q 'failpoints' <<< "$leaked_graph"
       - run: cargo doc --locked --workspace --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
@@ -150,12 +156,24 @@ jobs:
           (cd "$tools_dir" && sha256sum --check --ignore-missing checksums.txt)
           tar -xzf "$tools_dir/nfpm_2.49.0_Linux_${nfpm_arch}.tar.gz" -C "$tools_dir" nfpm
           gh release download 1.9.1 --repo AppImage/appimagetool --pattern "appimagetool-${ARCH}.AppImage" --dir "$tools_dir"
+          # 用真实下载内容演练错误摘要拒绝，再校验仓内固定摘要。
+          # Exercise rejection with the real download before checking the repository-pinned digest.
+          bad_checksum="$RUNNER_TEMP/appimagetool-wrong.sha256"
+          printf '%064d  appimagetool-%s.AppImage\n' 0 "$ARCH" > "$bad_checksum"
+          if (cd "$tools_dir" && sha256sum --check "$bad_checksum"); then
+            echo 'Invalid packaging-tool checksum was accepted' >&2
+            exit 1
+          fi
+          (cd "$tools_dir" && sha256sum --check --ignore-missing "$GITHUB_WORKSPACE/packaging/appimagetool-1.9.1.sha256")
           mv "$tools_dir/appimagetool-${ARCH}.AppImage" "$tools_dir/appimagetool"
           chmod +x "$tools_dir/appimagetool"
           echo "$tools_dir" >> "$GITHUB_PATH"
       - name: Test native Unix contracts
         if: runner.os != 'Windows'
         run: cargo test --locked --workspace
+      - name: Test Linux release target
+        if: runner.os == 'Linux'
+        run: cargo test --locked --target "$TARGET" -p ling-server -p ling-cli
       - name: Test Windows Fast mode and explicit Reliable rejection
         if: runner.os == 'Windows'
         run: cargo test --locked --target "$TARGET" --workspace
@@ -178,6 +196,23 @@ jobs:
         run: |
           ./packaging/windows/build.ps1 -Version $env:VERSION
           ./packaging/windows/verify.ps1 -Version $env:VERSION
+      - name: Smoke-test Unix portable package
+        if: runner.os != 'Windows'
+        run: |
+          portable="$RUNNER_TEMP/ling-portable"
+          mkdir -p "$portable"
+          tar -xzf "dist/ling_${VERSION}_${{ matrix.platform }}_${ARCH}.tar.gz" -C "$portable"
+          binary_dir="$portable/ling"
+          if [ "${{ matrix.platform }}" = macos ]; then binary_dir="$binary_dir/bin"; fi
+          python3 scripts/smoke-package.py --server "$binary_dir/ling" --cli "$binary_dir/ling-cli"
+      - name: Smoke-test Windows portable package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $portable = Join-Path $env:RUNNER_TEMP 'ling-portable'
+          Expand-Archive -LiteralPath "dist/ling_$($env:VERSION)_windows_x86_64.zip" -DestinationPath $portable
+          python scripts/smoke-package.py --server "$portable/ling/bin/ling.exe" --cli "$portable/ling/bin/ling-cli.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'Portable package smoke test failed' }
       - uses: actions/upload-artifact@v4
         with:
           name: ling-${{ matrix.platform }}-${{ matrix.arch }}
@@ -210,4 +245,5 @@ jobs:
           assert len(files) == 14, f'Expected 14 packages, found {len(files)}'
           Path('dist/SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in files))
           PY
-          gh release create "v${VERSION}" dist/* --verify-tag --prerelease --title "v${VERSION} Preview" --notes-file packaging/release-notes.md
+          python3 packaging/release-notes.py --version "$VERSION" --output "$RUNNER_TEMP/release-notes.md"
+          gh release create "v${VERSION}" dist/* --verify-tag --prerelease --title "v${VERSION} Preview" --notes-file "$RUNNER_TEMP/release-notes.md"

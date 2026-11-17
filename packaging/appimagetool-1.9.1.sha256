@@ -1,0 +1,4 @@
+# Official AppImage/appimagetool release 1.9.1; checked against the GitHub asset digests.
+# 官方 1.9.1 发行输入，下载内容须与仓内固定摘要一致。
+f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158  appimagetool-aarch64.AppImage
+ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  appimagetool-x86_64.AppImage

@@ -17,6 +17,8 @@ curl.exe --fail --location --retry 3 --output $wrapper 'https://github.com/winsw
 if ($LASTEXITCODE -ne 0) { throw 'WinSW download failed' }
 $expectedHash = '05B82D46AD331CC16BDC00DE5C6332C1EF818DF8CEEFCD49C726553209B3A0DA'
 if ((Get-FileHash -Algorithm SHA256 -LiteralPath $wrapper).Hash -ne $expectedHash) { throw 'WinSW SHA256 mismatch' }
+python packaging/generate-notices.py --target x86_64-pc-windows-msvc --output "$wrapperDir/THIRD-PARTY-NOTICES.txt"
+if ($LASTEXITCODE -ne 0) { throw 'Dependency license collection failed' }
 & $compiler "/DVersion=$Version" "/DSourceRoot=$root" (Join-Path $PSScriptRoot 'installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
 $stage = Join-Path $root 'target/package-windows/ling'
@@ -24,5 +26,6 @@ New-Item -ItemType Directory -Force "$stage/bin", "$stage/docs" | Out-Null
 Copy-Item target/x86_64-pc-windows-msvc/release/ling.exe, target/x86_64-pc-windows-msvc/release/ling-cli.exe "$stage/bin/"
 Copy-Item packaging/ling.toml "$stage/ling.example.toml"
 Copy-Item README.md $stage
+Copy-Item LICENSE, "$wrapperDir/THIRD-PARTY-NOTICES.txt" $stage
 Copy-Item docs/*.md "$stage/docs/"
 Compress-Archive -Path $stage -DestinationPath "dist/ling_${Version}_windows_x86_64.zip" -Force

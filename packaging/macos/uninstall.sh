@@ -15,7 +15,7 @@ if [ -f /usr/local/share/ling/installed-docs.txt ]; then
         esac
     done < /usr/local/share/ling/installed-docs.txt
 fi
-for file in README.md ling.example.toml ling.service.toml installed-docs.txt; do
+for file in README.md LICENSE THIRD-PARTY-NOTICES.txt ling.example.toml ling.service.toml installed-docs.txt; do
     rm -f "/usr/local/share/ling/$file"
 done
 pkgutil --forget io.ling.pkg

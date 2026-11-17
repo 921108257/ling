@@ -67,6 +67,34 @@ Windows 仍执行 `windows_reliable_rejected_without_creating_directory`，同�
 
 Linux 比 macOS 多一项 `/dev/full` 契约；Windows 未编译上表列明的 Unix 条件测试，不把它们计为通过。Linux 测试使用宿主目标，包构建使用 musl 目标，本次尚未完成版本计划 7.3 的 musl 目标测试。非标签手动运行未执行 Release 发布；CI 包验证也不代替目标部署主机的安装、升级或物理断电验收。
 
+## v0.1.4 发布候选验证
+
+2026-11-17，最新实现提交 `40aa3a8ee4d07ac90a834acf466f4f07b631c525` 已在 Actions `44052477723` 全部通过：Linux x86_64 / aarch64 各 213 项、macOS x86_64 / aarch64 各 212 项、Windows x86_64 197 项；各平台均 0 失败、0 ignored。fmt、严格 clippy/rustdoc、三语言 TCP / 双向 TLS 契约、五个平台构建与原安装包验证通过。这次运行仍使用 0.1.3 元数据，未执行 Release 发布，不是最终 0.1.4 制品。
+
+随后准备的 0.1.4 候选工作区在同一本机通过 `cargo fmt --all -- --check`、`cargo test --locked --workspace --no-fail-fast`（206 项，0 失败、0 ignored，47 个测试目标与文档测试汇总）、`cargo clippy --locked --workspace --all-targets -- -D warnings` 与严格 rustdoc。官网构建和检查通过：18 个生成页面，19 个 HTML、769 个本地链接、192 个搜索条目。日志为本机 `target/v0.1.4-release-tests.log`，未将日志作为发行制品。
+
+新增验证覆盖：增量帧缓冲不按 64 MiB 广告提前分配；跨连接帧许可在完成、错误、取消和超时后归还；许可耗尽的握手前后等待受请求期限约束；命令名处理次数不随参数数增长；单许可下错误 AUTH 及已排队下一帧不会阻挡健康连接 HELLO/PING。已开始的阻塞任务在连接取消后继续持有参数对应许可；每连接只保留一个请求，认证失败比较完成后丢弃口令和许可再异步延迟。
+
+接入故障测试另覆盖真实超限四条连接全部断开、内部拒绝计数为四且限频告警一次、原连接仍可 PING；实例专属指标 accept 故障连续三轮后业务仍可 PING；引擎及事件状态锁中毒触发维护退出。连接 panic 故障点改为实例隔离，所有钩子仅在测试编译。没有对真实内核监听器注入 EMFILE，也未做物理进程断电。
+
+发行输入本机检查已实际运行：两个官方 appimagetool 1.9.1 下载内容的 SHA-256 与仓内固定摘要及 GitHub 资产摘要一致；真实 `sha256sum --check` 拒绝故意置零的摘要；实际 CI 特性守卫确认 dev 图有 failpoints、发行图无、故意启用时可检测。原仅显示依赖边的命令不能显示命令行启用特性，现使用 `{p} [{f}]` 同时检查解析后的特性集合。缺失 0.1.3 CHANGELOG 小节的演练明确失败，恢复后通过。九包 `cargo metadata` 均为 MIT，Windows 目标可生成 152 个依赖和 Rust 标准库的许可原文。
+
+最终候选 Actions 待运行；Linux musl 目标测试、各平台便携烟测、许可制品核对与标签发布的实际结果在完成后回填。
+
+### 生产路径 panic 审阅
+
+审阅排除测试模块及返回 Result 的 CLI 语法匹配方法 `Parser::expect`。可传播的错误在发布前返回：服务端本地参数/版本解析、SDK 已关闭连接、Journal 句柄/组进度/重投状态、MSET、SCAN、TTL/到期分片定位和候选存在性。新增缺失 Journal 句柄的回归确认返回 `ERR_JOURNAL_UNAVAILABLE`，不调用状态发布回调、提交计数及流尾不变。
+
+| 保留的不变量 | 涉及位置与证据 |
+|---|---|
+| 已验证数据库与固定锁集合 | engine 的 transaction、administration；协调器预先取得分片执行权，fsync 后回调不再添加失败点。 |
+| 持锁期间条目与候选仍存在 | engine 的 ttl、expiry、eviction；候选过滤及提交预检后不释放目标锁。 |
+| 固定长度字节切片 | events/journal、protocol/codec；固定数组与已校验头部使切片恒为指定宽度，与字节内容无关。 |
+| 内嵌静态目录、译文及 String 格式化 | cli-help、CLI JSON 字符串与 update 译文表；静态目录/七语契约覆盖，String 写入不发生外部 I/O。 |
+| 已供池的帧必持许可 | protocol/transport 的预算入口固定传 Some，成功结果必定保留取得的许可。 |
+
+历史 `Engine::managed_bytes` 保留 usize 返回接口，rustdoc 明确其预算锁中毒时会 panic；服务端使用可失败的 `memory_usage`，不调用该历史便捷接口。保留处均补充中英双语说明；本次公开文档注释已通过拒绝警告的 rustdoc。
+
 ## 验证原则
 
 优先覆盖用户可观察契约和实际故障边界，不用与实现逐行同构的测试代替行为验证。纯文案改动检查链接和一致性即可；类型、协议、TTL、跨 Shard 与可靠提交是非平凡共享行为，必须有针对性测试。

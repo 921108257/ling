@@ -18,10 +18,13 @@ for binary in ling ling-cli; do
 done
 cp packaging/ling.toml "$portable/ling.example.toml"
 cp README.md "$portable/"
+cp LICENSE "$portable/"
+python3 packaging/generate-notices.py --target "$TARGET" --output "$portable/THIRD-PARTY-NOTICES.txt"
 cp docs/*.md "$portable/docs/"
 cp packaging/ling.toml "$install_root/share/ling/ling.example.toml"
 cp packaging/macos/ling.toml "$install_root/share/ling/ling.service.toml"
 cp README.md "$install_root/share/ling/"
+cp "$portable/LICENSE" "$portable/THIRD-PARTY-NOTICES.txt" "$install_root/share/ling/"
 cp docs/*.md "$install_root/share/ling/docs/"
 install -m 0644 packaging/macos/io.ling.cache.plist "$stage/root/Library/LaunchDaemons/"
 install -m 0755 packaging/macos/uninstall.sh "$install_root/bin/ling-uninstall"

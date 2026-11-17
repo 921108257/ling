@@ -1,6 +1,6 @@
 # 安装、服务与升级
 
-ling 当前为 0.1.3 预发布版本。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
+ling 当前为 0.1.4 预发布版本，项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`。
 
 安装器默认注册并启动后台服务，默认监听 `127.0.0.1:6380`，事件模式为 Fast。服务使用专用工作目录，不读取用户终端当前目录的配置。需要自定义配置或已有实例占用端口时，先跳过自动启动，修改配置后再启动。Reliable 限制见 [architecture.md](architecture.md) 和 [persistence.md](persistence.md)。
 
@@ -17,7 +17,7 @@ ling 当前为 0.1.3 预发布版本。下载 [Releases](https://github.com/9211
 ```sh
 ling update --check
 ling update
-ling update --version 0.1.3
+ling update --version 0.1.4
 ling update --stable --check
 ling help update
 ```

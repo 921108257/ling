@@ -4,6 +4,19 @@
 set -euo pipefail
 : "${VERSION:?VERSION is required}"
 : "${ARCH:?ARCH is required}"
+# 便携包与 AppImage 同样必须携带许可正文，不只验证安装后的副本。
+# Portable archives and AppImages must carry readable texts as well as installed packages.
+tar -xOf "dist/ling_${VERSION}_linux_${ARCH}.tar.gz" ling/LICENSE | cmp LICENSE -
+tar -xOf "dist/ling_${VERSION}_linux_${ARCH}.tar.gz" ling/THIRD-PARTY-NOTICES.txt > target/linux-portable-notices.txt
+grep -q '^ring ' target/linux-portable-notices.txt
+grep -q '^musl C library ' target/linux-portable-notices.txt
+image_dir=$(mktemp -d "$PWD/target/license-appimage.XXXXXX")
+trap 'rm -rf -- "$image_dir"' EXIT
+image="$PWD/dist/ling_${VERSION}_linux_${ARCH}.AppImage"
+(cd "$image_dir" && "$image" --appimage-extract >/dev/null)
+cmp LICENSE "$image_dir/squashfs-root/usr/share/ling/LICENSE"
+test -r "$image_dir/squashfs-root/usr/share/ling/THIRD-PARTY-NOTICES.txt"
+grep -q '^ring ' "$image_dir/squashfs-root/usr/share/ling/THIRD-PARTY-NOTICES.txt"
 wait_for_service() {
     for ((attempt=0; attempt<30; attempt++)); do
         if systemctl is-active --quiet ling.service && /usr/bin/ling-cli --lang en-US -c PING; then
@@ -22,6 +35,11 @@ for package in deb rpm; do
         sudo rpm -i --nodeps "$artifact"
     fi
     wait_for_service
+    cmp LICENSE /usr/share/ling/LICENSE
+    test -r /usr/share/ling/THIRD-PARTY-NOTICES.txt
+    grep -q '^ring ' /usr/share/ling/THIRD-PARTY-NOTICES.txt
+    grep -q '^Rust standard library ' /usr/share/ling/THIRD-PARTY-NOTICES.txt
+    grep -q '^musl C library ' /usr/share/ling/THIRD-PARTY-NOTICES.txt
     sudo sh -c 'printf "\n# preserved during package upgrade\n" >> /etc/ling/ling.toml'
     grep -q '^LimitNOFILE=' /lib/systemd/system/ling.service
     config_hash=$(sudo sha256sum /etc/ling/ling.toml)

@@ -40,6 +40,8 @@ Source: "{#SourceRoot}\packaging\windows\ling-service.xml"; DestDir: "{app}\bin"
 Source: "{#SourceRoot}\packaging\windows\check-service.ps1"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#SourceRoot}\packaging\windows\stop-service.ps1"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "{#SourceRoot}\packaging\windows\WinSW-LICENSE.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "{#SourceRoot}\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceRoot}\target\package-tools\THIRD-PARTY-NOTICES.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceRoot}\packaging\ling.toml"; DestDir: "{app}"; DestName: "ling.example.toml"; Flags: ignoreversion
 Source: "{#SourceRoot}\packaging\ling.toml"; DestDir: "{commonappdata}\ling"; DestName: "ling.toml"; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "{#SourceRoot}\README.md"; DestDir: "{app}"; Flags: ignoreversion

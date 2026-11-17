@@ -3,6 +3,7 @@ name: ling
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${PACKAGE_VERSION}
+license: MIT
 section: database
 priority: optional
 maintainer: 921108257 <921108257@users.noreply.github.com>
@@ -38,6 +39,12 @@ contents:
     expand: true
   - src: ${NFPM_STAGE}/README.md
     dst: /usr/share/ling/README.md
+    expand: true
+  - src: ${NFPM_STAGE}/LICENSE
+    dst: /usr/share/ling/LICENSE
+    expand: true
+  - src: ${NFPM_STAGE}/THIRD-PARTY-NOTICES.txt
+    dst: /usr/share/ling/THIRD-PARTY-NOTICES.txt
     expand: true
   - src: ${NFPM_STAGE}/docs/
     dst: /usr/share/ling/docs/
