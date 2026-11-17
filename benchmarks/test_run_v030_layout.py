@@ -500,6 +500,7 @@ class LayoutTests(unittest.TestCase):
             return "boot-test\n" if str(path).replace("\\", "/").endswith("/kernel/random/boot_id") else original(path, *args, **kwargs)
 
         with patch.object(layout.subprocess, "check_output", side_effect=["head-test\n", " M benchmarks/v030.py\n"]), \
+                patch.object(layout.platform, "platform", return_value="test-platform"), \
                 patch.object(layout.os, "getuid", return_value=0, create=True), \
                 patch.object(layout.os, "sched_getaffinity", return_value=set(range(16)), create=True), \
                 patch.object(Path, "read_text", new=read):
