@@ -865,6 +865,9 @@ def manifest(args, binary):
                                   "all_errors": "gzip JSONL; capacity SET errors use exact deterministic input reference and SHA-256",
                                   "cycles_upper_bound_per_phase": math.ceil(args.seconds * args.workers * args.cycles_per_second)}}
     if sys.platform.startswith("linux"):
+        result["rss_measurement"] = {"source": "proc_smaps_rollup:Rss",
+                                     "auxiliary": "vmrss_approximate_bytes from proc_status:VmRSS",
+                                     "unavailable": "missing or malformed smaps_rollup is not replaced by VmRSS"}
         result["environment"] = {name: capture(ROOT, *command) for name, command in {
             "cpu": ("lscpu",), "devices": ("lsblk", "-o", "NAME,MODEL,SIZE,TYPE,FSTYPE,MOUNTPOINTS"),
             "mounts": ("findmnt", "-J"), "memory": ("cat", "/proc/meminfo"),
@@ -967,6 +970,29 @@ def progress_sample(records, consumers, phase_started):
     return row
 
 
+def native_snapshot(pid):
+    """长测 Linux RSS 使用逐映射汇总，保留近似 VmRSS 但不作为失败回退。
+    Use Linux mapping totals for endurance RSS; retain approximate VmRSS without fallback.
+    """
+    result = dict(process_snapshot(pid))
+    if not sys.platform.startswith("linux"):
+        return result
+    approximate = result.pop("rss_bytes", None)
+    if approximate is not None:
+        result["vmrss_approximate_bytes"] = approximate
+    result["rss_source"] = "proc_smaps_rollup:Rss"
+    try:
+        rows = [line.split() for line in Path(f"/proc/{pid}/smaps_rollup").read_text(encoding="ascii").splitlines()
+                if line.partition(":")[0].strip() == "Rss"]
+        if (len(rows) != 1 or len(rows[0]) != 3 or rows[0][0] != "Rss:"
+                or not rows[0][1].isascii() or not rows[0][1].isdecimal() or rows[0][2] != "kB"):
+            raise ValueError("expected one nonnegative Rss: <integer> kB field")
+        result["rss_bytes"] = int(rows[0][1]) * 1024
+    except (OSError, ValueError) as error:
+        result["rss_unavailable"] = f"{type(error).__name__}: {error}"
+    return result
+
+
 def resource_sample(records, observer, process, elapsed, metrics_port, directory, *,
                     consumers=(), phase_started=None, sample_kind="periodic"):
     """原生资源、INFO、Prometheus 与 Journal 大小一起采样。
@@ -975,7 +1001,7 @@ def resource_sample(records, observer, process, elapsed, metrics_port, directory
     began = time.monotonic()
     phase_started = began-elapsed if phase_started is None else phase_started
     row = {"elapsed_seconds": began-phase_started, "sample_started_elapsed_seconds": began-phase_started,
-           "sample_kind": sample_kind, "native": process_snapshot(process.pid)}
+           "sample_kind": sample_kind, "native": native_snapshot(process.pid)}
     ok, info = records.request(observer, "INFO", ["all"])
     row["info"] = evidence(info) if ok else {"error": info}
     try:

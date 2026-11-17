@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 from v030 import (CappedLog, Client, Consumer, Records, ServerError, Trends, Value, WireError, check_missing,
                   configuration, consumer_acceptance, cpu_set, decode, disk_space, encode, evidence, failed_unchanged,
-                  manifest, observe_expired, packet, parser, pressure_arguments, pressure_cycle,
+                  manifest, native_snapshot, observe_expired, packet, parser, pressure_arguments, pressure_cycle,
                   progress_sample, receive, resource_sample, run_phase, specimen, worker)
 
 
@@ -142,6 +142,68 @@ class FakeClient:
         if isinstance(result, Exception):
             raise result
         return result
+
+
+class NativeResources(unittest.TestCase):
+    """不访问真实 proc 的 RSS 来源与失败契约；Check RSS sources and failures without reading real proc files."""
+    def test_linux_rss_uses_rollup_and_preserves_original_snapshot(self):
+        """精确汇总与近似读数分列，不修改共享 helper 的结果。
+        Separate mapping totals from approximate status without mutating the shared helper result.
+        """
+        original = {"rss_bytes": 999, "cpu_seconds": 1.25, "handles": 7, "threads": 2}
+        for kilobytes in (0, 12345):
+            with self.subTest(kilobytes=kilobytes), patch("v030.sys.platform", "linux"), \
+                 patch("v030.process_snapshot", return_value=original), \
+                 patch("v030.Path.read_text", autospec=True, return_value=f"0000-ffff ---p 00000000 00:00 0 [rollup]\nRss: {kilobytes} kB\nPss: 12 kB\n") as read:
+                result = native_snapshot(123)
+            self.assertEqual(result, {"rss_bytes": kilobytes * 1024, "vmrss_approximate_bytes": 999,
+                                      "rss_source": "proc_smaps_rollup:Rss", "cpu_seconds": 1.25,
+                                      "handles": 7, "threads": 2})
+            self.assertEqual(read.call_args.args, (Path("/proc/123/smaps_rollup"),))
+            self.assertEqual(read.call_args.kwargs, {"encoding": "ascii"})
+            self.assertEqual(original, {"rss_bytes": 999, "cpu_seconds": 1.25, "handles": 7, "threads": 2})
+
+    def test_linux_rejects_missing_duplicate_or_malformed_rollup_rss(self):
+        """单位、符号或重复字段错误不能静默采用 VmRSS。
+        Invalid units, signs and duplicate fields must never fall back to VmRSS.
+        """
+        invalid = ("Pss: 1 kB\n", "Rss: 1 kB\nRss: 2 kB\n", "Rss: 1 kB\nRss: invalid\n",
+                   "Rss: -1 kB\n", "Rss: +1 kB\n", "Rss: 1.5 kB\n", "Rss: 1_000 kB\n",
+                   "Rss: １２ kB\n", "Rss: 1 KB\n", "Rss: 1024 B\n", "Rss: 1\n",
+                   "Rss: 1 kB extra\n", "Rss : 1 kB\n")
+        for content in invalid:
+            with self.subTest(content=content), patch("v030.sys.platform", "linux"), \
+                 patch("v030.process_snapshot", return_value={"rss_bytes": 999, "threads": 2}), \
+                 patch("v030.Path.read_text", autospec=True, return_value=content):
+                result = native_snapshot(123)
+            self.assertNotIn("rss_bytes", result)
+            self.assertEqual(result["vmrss_approximate_bytes"], 999)
+            self.assertEqual(result["threads"], 2)
+            self.assertIn("ValueError", result["rss_unavailable"])
+
+    def test_linux_read_failure_keeps_main_rss_unavailable(self):
+        """缺文件、权限和编码失败保留原因，其他原生指标仍可观察。
+        Missing files, permissions and decoding failures retain causes without dropping other native metrics.
+        """
+        for error in (FileNotFoundError("missing"), PermissionError("denied"),
+                      UnicodeDecodeError("ascii", b"\xff", 0, 1, "invalid")):
+            with self.subTest(error=error), patch("v030.sys.platform", "linux"), \
+                 patch("v030.process_snapshot", return_value={"cpu_seconds": 2, "handles": 3}), \
+                 patch("v030.Path.read_text", autospec=True, side_effect=error):
+                result = native_snapshot(123)
+            self.assertNotIn("rss_bytes", result)
+            self.assertNotIn("vmrss_approximate_bytes", result)
+            self.assertEqual(result["cpu_seconds"], 2)
+            self.assertEqual(result["handles"], 3)
+            self.assertIn(type(error).__name__, result["rss_unavailable"])
+
+    def test_windows_keeps_native_metrics_without_proc_access(self):
+        """Windows 继续使用已有原生 API；Keep existing Windows native APIs without proc access."""
+        original = {"rss_bytes": 123, "cpu_seconds": 2, "handles": 3, "threads": None}
+        with patch("v030.sys.platform", "win32"), patch("v030.process_snapshot", return_value=original), \
+             patch("v030.Path.read_text", autospec=True) as read:
+            self.assertEqual(native_snapshot(123), original)
+        read.assert_not_called()
 
 
 class Acceptance(unittest.TestCase):
@@ -306,7 +368,7 @@ class Acceptance(unittest.TestCase):
         def sample(elapsed):
             """独立模拟可用的资源和指标；Supply independent resource and metric observations."""
             response = io.BytesIO(b"ling_test 1\n")
-            with patch("v030.process_snapshot", return_value={"rss_bytes": 100}), \
+            with patch("v030.native_snapshot", return_value={"rss_bytes": 100}), \
                  patch("v030.urllib.request.urlopen", return_value=response):
                 return resource_sample(self.records, FakeClient([Value(8, {})]),
                                        SimpleNamespace(pid=123), elapsed, 1234, self.directory)
@@ -338,6 +400,10 @@ class Acceptance(unittest.TestCase):
             """模拟原生采样耗时；Simulate native observation latency."""
             clock[0] += 1
             return {"rss_bytes": 100}
+        def rollup(*unused, **options):
+            """逐映射汇总的读取成本也在边界内；Include mapping-total read cost inside the sample boundary."""
+            clock[0] += 1
+            return "Rss: 1 kB\n"
         def consumer_state():
             """在慢读取后完成消费者快照；Complete a consumer snapshot after a slow read."""
             clock[0] += 3
@@ -352,13 +418,16 @@ class Acceptance(unittest.TestCase):
         client.request = info
         consumer = SimpleNamespace(name="slow-db0", snapshot=consumer_state)
         with patch("v030.time.monotonic", side_effect=lambda: clock[0]), \
+             patch("v030.sys.platform", "linux"), \
              patch("v030.process_snapshot", side_effect=native), \
+             patch("v030.Path.read_text", autospec=True, side_effect=rollup), \
              patch("v030.urllib.request.urlopen", return_value=response):
             sample = resource_sample(self.records, client, SimpleNamespace(pid=1), 0, 1, self.directory,
                                      consumers=[consumer], phase_started=90)
         self.assertEqual(sample["sample_started_elapsed_seconds"], 10)
-        self.assertEqual(sample["sample_completed_elapsed_seconds"], 16)
+        self.assertEqual(sample["sample_completed_elapsed_seconds"], 17)
         self.assertEqual(sample["elapsed_seconds"], 10)
+        self.assertEqual(sample["native"]["rss_bytes"], 1024)
         self.assertEqual(sample["consumers"]["slow-db0"]["acks"], 1)
 
     def test_terminal_sample_preserves_stop_boundary_and_budget(self):
@@ -414,7 +483,7 @@ class Acceptance(unittest.TestCase):
         native = {"rss_bytes": 100, "cpu_seconds": 0, "handles": 4, "threads": 2}
         with patch("v030.subprocess.Popen", return_value=process), patch("v030.CappedLog", Logger), \
              patch("v030.Client", return_value=observer), patch("v030.Consumer", FakeConsumer), \
-             patch("v030.threading.Thread", Thread), patch("v030.process_snapshot", return_value=native), \
+             patch("v030.threading.Thread", Thread), patch("v030.native_snapshot", return_value=native), \
              patch("v030.urllib.request.urlopen", side_effect=lambda *a, **k: io.BytesIO(b"ling_test 1\n")), \
              patch("v030.disk_space", return_value={"output_filesystem_free_bytes": 10**12}):
             result = run_phase(args, self.directory / "ling", "fast", "pressure", "noeviction")
