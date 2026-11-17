@@ -1,0 +1,707 @@
+{
+  "miss": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 65057.62385629585,
+        "min": 63203.564027039785,
+        "max": 65600.15037320122
+      },
+      "p50_us": {
+        "median": 57,
+        "min": 57,
+        "max": 57
+      },
+      "p99_us": {
+        "median": 110,
+        "min": 110,
+        "max": 200
+      },
+      "p999_us": {
+        "median": 360,
+        "min": 344,
+        "max": 400
+      },
+      "client_cpu_seconds": {
+        "median": 2.5249759999999997,
+        "min": 2.524439,
+        "max": 2.5337039999999997
+      },
+      "server_cpu_seconds": {
+        "median": 4.84,
+        "min": 4.83,
+        "max": 5.05
+      }
+    }
+  },
+  "fast-slow": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 62924.55066186549,
+        "min": 62158.266319427086,
+        "max": 64681.25494607244
+      },
+      "p50_us": {
+        "median": 59,
+        "min": 58,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 136,
+        "min": 112,
+        "max": 164
+      },
+      "p999_us": {
+        "median": 376,
+        "min": 264,
+        "max": 408
+      },
+      "client_cpu_seconds": {
+        "median": 2.511459,
+        "min": 2.487304,
+        "max": 2.527012
+      },
+      "server_cpu_seconds": {
+        "median": 5.03,
+        "min": 4.9,
+        "max": 5.17
+      }
+    }
+  },
+  "mixed": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 63976.66251663863,
+        "min": 63330.406332908104,
+        "max": 65203.730254261456
+      },
+      "p50_us": {
+        "median": 58,
+        "min": 57,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 114,
+        "min": 110,
+        "max": 128
+      },
+      "p999_us": {
+        "median": 376,
+        "min": 328,
+        "max": 376
+      },
+      "client_cpu_seconds": {
+        "median": 2.511716,
+        "min": 2.509595,
+        "max": 2.519376
+      },
+      "server_cpu_seconds": {
+        "median": 4.99,
+        "min": 4.94,
+        "max": 5.01
+      }
+    }
+  },
+  "get": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 64386.94263960982,
+        "min": 62155.56564941037,
+        "max": 66708.48233293211
+      },
+      "p50_us": {
+        "median": 58,
+        "min": 56,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 110,
+        "min": 108,
+        "max": 176
+      },
+      "p999_us": {
+        "median": 376,
+        "min": 304,
+        "max": 392
+      },
+      "client_cpu_seconds": {
+        "median": 2.506535,
+        "min": 2.504,
+        "max": 2.522181
+      },
+      "server_cpu_seconds": {
+        "median": 4.9,
+        "min": 4.9,
+        "max": 4.96
+      }
+    }
+  },
+  "hot": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 65606.13429175172,
+        "min": 62854.03863999622,
+        "max": 65675.3207625864
+      },
+      "p50_us": {
+        "median": 57,
+        "min": 57,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 112,
+        "min": 108,
+        "max": 116
+      },
+      "p999_us": {
+        "median": 368,
+        "min": 252,
+        "max": 416
+      },
+      "client_cpu_seconds": {
+        "median": 2.524389,
+        "min": 2.5238699999999996,
+        "max": 2.5338279999999997
+      },
+      "server_cpu_seconds": {
+        "median": 4.96,
+        "min": 4.91,
+        "max": 4.98
+      }
+    }
+  },
+  "reliable-consumer": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 7940.279833271547,
+        "min": 7774.170449821893,
+        "max": 8368.062885741614
+      },
+      "p50_us": {
+        "median": 472,
+        "min": 456,
+        "max": 472
+      },
+      "p99_us": {
+        "median": 1248,
+        "min": 1152,
+        "max": 1728
+      },
+      "p999_us": {
+        "median": 1760,
+        "min": 1760,
+        "max": 3840
+      },
+      "client_cpu_seconds": {
+        "median": 0.409415,
+        "min": 0.404003,
+        "max": 0.421033
+      },
+      "server_cpu_seconds": {
+        "median": 1.53,
+        "min": 1.49,
+        "max": 1.6
+      }
+    }
+  },
+  "reliable": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 8465.32104183826,
+        "min": 8445.476387027895,
+        "max": 8494.966439431775
+      },
+      "p50_us": {
+        "median": 456,
+        "min": 456,
+        "max": 456
+      },
+      "p99_us": {
+        "median": 1280,
+        "min": 1152,
+        "max": 1312
+      },
+      "p999_us": {
+        "median": 2176,
+        "min": 1888,
+        "max": 2368
+      },
+      "client_cpu_seconds": {
+        "median": 0.404491,
+        "min": 0.404153,
+        "max": 0.41118499999999997
+      },
+      "server_cpu_seconds": {
+        "median": 1.52,
+        "min": 1.51,
+        "max": 1.52
+      }
+    }
+  },
+  "engine-get": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 2744902.028991093,
+        "min": 2705947.3895908184,
+        "max": 2748140.985678476
+      },
+      "p50_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p99_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p999_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "client_cpu_seconds": {
+        "median": 0.29544499999999996,
+        "min": 0.291882,
+        "max": 0.297559
+      }
+    }
+  },
+  "fast": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 64200.19747836349,
+        "min": 63515.81450551062,
+        "max": 64226.9592388418
+      },
+      "p50_us": {
+        "median": 58,
+        "min": 58,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 116,
+        "min": 114,
+        "max": 144
+      },
+      "p999_us": {
+        "median": 320,
+        "min": 304,
+        "max": 400
+      },
+      "client_cpu_seconds": {
+        "median": 2.4897,
+        "min": 2.482352,
+        "max": 2.5353939999999997
+      },
+      "server_cpu_seconds": {
+        "median": 5.0,
+        "min": 4.94,
+        "max": 5.06
+      }
+    }
+  },
+  "reliable-slow": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 8249.821642225614,
+        "min": 7674.171464932821,
+        "max": 8435.651552663656
+      },
+      "p50_us": {
+        "median": 464,
+        "min": 456,
+        "max": 472
+      },
+      "p99_us": {
+        "median": 1184,
+        "min": 1152,
+        "max": 1952
+      },
+      "p999_us": {
+        "median": 2432,
+        "min": 2176,
+        "max": 4032
+      },
+      "client_cpu_seconds": {
+        "median": 0.410727,
+        "min": 0.398785,
+        "max": 0.41210199999999997
+      },
+      "server_cpu_seconds": {
+        "median": 1.55,
+        "min": 1.46,
+        "max": 1.55
+      }
+    }
+  },
+  "tls": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 65120.09160117779,
+        "min": 64770.56940759411,
+        "max": 65723.28126883927
+      },
+      "p50_us": {
+        "median": 58,
+        "min": 57,
+        "max": 58
+      },
+      "p99_us": {
+        "median": 110,
+        "min": 110,
+        "max": 120
+      },
+      "p999_us": {
+        "median": 252,
+        "min": 216,
+        "max": 312
+      },
+      "client_cpu_seconds": {
+        "median": 2.501845,
+        "min": 2.47572,
+        "max": 2.5186569999999997
+      },
+      "server_cpu_seconds": {
+        "median": 5.27,
+        "min": 5.21,
+        "max": 5.3
+      }
+    }
+  },
+  "fast-consumer": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 64481.794669026036,
+        "min": 64134.81620139112,
+        "max": 65226.31116431513
+      },
+      "p50_us": {
+        "median": 58,
+        "min": 58,
+        "max": 58
+      },
+      "p99_us": {
+        "median": 116,
+        "min": 110,
+        "max": 124
+      },
+      "p999_us": {
+        "median": 320,
+        "min": 252,
+        "max": 352
+      },
+      "client_cpu_seconds": {
+        "median": 2.505808,
+        "min": 2.47339,
+        "max": 2.5177899999999998
+      },
+      "server_cpu_seconds": {
+        "median": 5.01,
+        "min": 5.0,
+        "max": 5.02
+      }
+    }
+  },
+  "engine-mixed": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 1769312.9129852795,
+        "min": 1740885.4668361298,
+        "max": 1799375.1579795156
+      },
+      "p50_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p99_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p999_us": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "client_cpu_seconds": {
+        "median": 0.454495,
+        "min": 0.447107,
+        "max": 0.463173
+      }
+    }
+  },
+  "medium": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 62573.10882398186,
+        "min": 60188.02586486041,
+        "max": 62652.05265948673
+      },
+      "p50_us": {
+        "median": 59,
+        "min": 58,
+        "max": 60
+      },
+      "p99_us": {
+        "median": 118,
+        "min": 112,
+        "max": 152
+      },
+      "p999_us": {
+        "median": 360,
+        "min": 264,
+        "max": 376
+      },
+      "client_cpu_seconds": {
+        "median": 2.797161,
+        "min": 2.782404,
+        "max": 2.7999919999999996
+      },
+      "server_cpu_seconds": {
+        "median": 4.96,
+        "min": 4.95,
+        "max": 5.04
+      }
+    }
+  },
+  "large": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 25629.604795897085,
+        "min": 24877.520010899738,
+        "max": 26548.64934984672
+      },
+      "p50_us": {
+        "median": 108,
+        "min": 106,
+        "max": 112
+      },
+      "p99_us": {
+        "median": 280,
+        "min": 256,
+        "max": 280
+      },
+      "p999_us": {
+        "median": 424,
+        "min": 400,
+        "max": 504
+      },
+      "client_cpu_seconds": {
+        "median": 5.162196,
+        "min": 5.041706,
+        "max": 5.269633000000001
+      },
+      "server_cpu_seconds": {
+        "median": 3.58,
+        "min": 3.54,
+        "max": 3.72
+      }
+    }
+  },
+  "engine-set": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 1347943.2317212613,
+        "min": 1329863.0954815669,
+        "max": 1365648.4495388577
+      },
+      "p50_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p99_us": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "p999_us": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "client_cpu_seconds": {
+        "median": 0.596949,
+        "min": 0.5897969999999999,
+        "max": 0.604092
+      }
+    }
+  },
+  "ttl": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 63093.86264076619,
+        "min": 62881.44772709976,
+        "max": 63126.35048702012
+      },
+      "p50_us": {
+        "median": 59,
+        "min": 59,
+        "max": 59
+      },
+      "p99_us": {
+        "median": 160,
+        "min": 126,
+        "max": 180
+      },
+      "p999_us": {
+        "median": 344,
+        "min": 312,
+        "max": 384
+      },
+      "client_cpu_seconds": {
+        "median": 2.4838039999999997,
+        "min": 2.464012,
+        "max": 2.526726
+      },
+      "server_cpu_seconds": {
+        "median": 4.94,
+        "min": 4.9,
+        "max": 4.99
+      }
+    }
+  },
+  "set": {
+    "runs": 3,
+    "valid_runs": 3,
+    "measurements": {
+      "successes_per_second": {
+        "median": 65254.334360441375,
+        "min": 63426.768138882726,
+        "max": 65642.50456129364
+      },
+      "p50_us": {
+        "median": 57,
+        "min": 57,
+        "max": 58
+      },
+      "p99_us": {
+        "median": 112,
+        "min": 112,
+        "max": 152
+      },
+      "p999_us": {
+        "median": 344,
+        "min": 336,
+        "max": 448
+      },
+      "client_cpu_seconds": {
+        "median": 2.5019299999999998,
+        "min": 2.46713,
+        "max": 2.5356940000000003
+      },
+      "server_cpu_seconds": {
+        "median": 4.96,
+        "min": 4.94,
+        "max": 5.0
+      }
+    }
+  },
+  "soak-fast": {
+    "runs": 1,
+    "valid_runs": 1,
+    "measurements": {
+      "successes_per_second": {
+        "median": 80.00657522688516,
+        "min": 80.00657522688516,
+        "max": 80.00657522688516
+      },
+      "p50_us": {
+        "median": 106,
+        "min": 106,
+        "max": 106
+      },
+      "p99_us": {
+        "median": 344,
+        "min": 344,
+        "max": 344
+      },
+      "p999_us": {
+        "median": 912,
+        "min": 912,
+        "max": 912
+      },
+      "client_cpu_seconds": {
+        "median": 2.177731,
+        "min": 2.177731,
+        "max": 2.177731
+      },
+      "server_cpu_seconds": {
+        "median": 12.57,
+        "min": 12.57,
+        "max": 12.57
+      }
+    }
+  },
+  "soak-reliable": {
+    "runs": 1,
+    "valid_runs": 1,
+    "measurements": {
+      "successes_per_second": {
+        "median": 80.00637229655419,
+        "min": 80.00637229655419,
+        "max": 80.00637229655419
+      },
+      "p50_us": {
+        "median": 472,
+        "min": 472,
+        "max": 472
+      },
+      "p99_us": {
+        "median": 1888,
+        "min": 1888,
+        "max": 1888
+      },
+      "p999_us": {
+        "median": 14336,
+        "min": 14336,
+        "max": 14336
+      },
+      "client_cpu_seconds": {
+        "median": 2.944535,
+        "min": 2.944535,
+        "max": 2.944535
+      },
+      "server_cpu_seconds": {
+        "median": 14.72,
+        "min": 14.72,
+        "max": 14.72
+      }
+    }
+  }
+}

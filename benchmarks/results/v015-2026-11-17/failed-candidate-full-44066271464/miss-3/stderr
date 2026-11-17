@@ -1,0 +1,4 @@
+
+thread 'main' (5256) panicked at crates/server/examples/baseline.rs:293:14:
+internal error: entered unreachable code: INFO returned an unsupported diagnostic type
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

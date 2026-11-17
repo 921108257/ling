@@ -114,7 +114,8 @@ def summary(results):
     groups = {}
     for result in results:
         groups.setdefault(result["name"], []).append(result)
-    return {name: {"runs": len(rows), "valid_runs": sum(r.get("acceptance", {}).get("valid", False) for r in rows),
+    return {name: {"runs": len(rows), "valid_runs": sum(r["acceptance"]["valid"] for r in rows)
+                  if all("acceptance" in r for r in rows) else None,
                    "measurements": {field: {"median": statistics.median(values), "min": min(values), "max": max(values)}
                                     for field in ("successes_per_second", "p50_us", "p99_us", "p999_us",
                                                   "client_cpu_seconds", "server_cpu_seconds")

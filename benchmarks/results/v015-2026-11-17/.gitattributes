@@ -1,0 +1,4 @@
+# 保持归档原字节与空白，避免换行转换破坏已登记的 SHA-256。
+# Preserve raw archive bytes and whitespace so conversion cannot invalidate recorded SHA-256 hashes.
+** -text -whitespace
+.gitattributes text eol=lf whitespace

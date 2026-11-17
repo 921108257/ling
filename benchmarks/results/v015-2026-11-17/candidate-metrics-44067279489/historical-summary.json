@@ -1,0 +1,822 @@
+{
+  "before": {
+    "get": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 18969.52830520553,
+          "min": 18218.29673346333,
+          "max": 19259.22464615367
+        },
+        "p50_us": {
+          "median": 184,
+          "min": 184,
+          "max": 188
+        },
+        "p99_us": {
+          "median": 688,
+          "min": 640,
+          "max": 768
+        },
+        "p999_us": {
+          "median": 1568,
+          "min": 1408,
+          "max": 3008
+        }
+      }
+    },
+    "mixed": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 19059.07516562143,
+          "min": 18515.62887711705,
+          "max": 19247.49454199678
+        },
+        "p50_us": {
+          "median": 188,
+          "min": 184,
+          "max": 188
+        },
+        "p99_us": {
+          "median": 656,
+          "min": 592,
+          "max": 704
+        },
+        "p999_us": {
+          "median": 1248,
+          "min": 1184,
+          "max": 1664
+        }
+      }
+    },
+    "fast": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 18102.62622675972,
+          "min": 15274.622035613842,
+          "max": 19252.25204295656
+        },
+        "p50_us": {
+          "median": 192,
+          "min": 184,
+          "max": 200
+        },
+        "p99_us": {
+          "median": 752,
+          "min": 656,
+          "max": 1280
+        },
+        "p999_us": {
+          "median": 1696,
+          "min": 1312,
+          "max": 3328
+        }
+      }
+    },
+    "reliable": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 3016.958985798963,
+          "min": 2349.3826794098027,
+          "max": 3105.775941345445
+        },
+        "p50_us": {
+          "median": 1184,
+          "min": 1152,
+          "max": 1376
+        },
+        "p99_us": {
+          "median": 3968,
+          "min": 3840,
+          "max": 6528
+        },
+        "p999_us": {
+          "median": 43008,
+          "min": 40960,
+          "max": 90112
+        }
+      }
+    },
+    "fast-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 20441.357192381904,
+          "min": 15477.510018180119,
+          "max": 20637.578554424814
+        },
+        "p50_us": {
+          "median": 176,
+          "min": 172,
+          "max": 196
+        },
+        "p99_us": {
+          "median": 672,
+          "min": 656,
+          "max": 1376
+        },
+        "p999_us": {
+          "median": 1792,
+          "min": 1504,
+          "max": 4736
+        }
+      }
+    },
+    "reliable-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 770.780473817661,
+          "min": 767.9421859024096,
+          "max": 788.3829105743113
+        },
+        "p50_us": {
+          "median": 1824,
+          "min": 1696,
+          "max": 1984
+        },
+        "p99_us": {
+          "median": 34816,
+          "min": 32768,
+          "max": 35840
+        },
+        "p999_us": {
+          "median": 49152,
+          "min": 49152,
+          "max": 71680
+        }
+      }
+    }
+  },
+  "after": {
+    "fast-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 19067.83135833612,
+          "min": 18970.674625683365,
+          "max": 19740.637253364883
+        },
+        "p50_us": {
+          "median": 184,
+          "min": 184,
+          "max": 192
+        },
+        "p99_us": {
+          "median": 624,
+          "min": 544,
+          "max": 752
+        },
+        "p999_us": {
+          "median": 1728,
+          "min": 1408,
+          "max": 2048
+        }
+      }
+    },
+    "reliable-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2495.846045672099,
+          "min": 2362.9278381444656,
+          "max": 2562.9089225952002
+        },
+        "p50_us": {
+          "median": 1376,
+          "min": 1344,
+          "max": 1408
+        },
+        "p99_us": {
+          "median": 5120,
+          "min": 4736,
+          "max": 6016
+        },
+        "p999_us": {
+          "median": 60416,
+          "min": 57344,
+          "max": 62464
+        }
+      }
+    }
+  },
+  "matrix_first": {
+    "engine-get": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2033769.284829556,
+          "min": 1962422.3207013714,
+          "max": 2165973.315143778
+        },
+        "p50_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p99_us": {
+          "median": 2,
+          "min": 2,
+          "max": 3
+        },
+        "p999_us": {
+          "median": 52,
+          "min": 43,
+          "max": 60
+        }
+      }
+    },
+    "engine-set": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 639946.6161652368,
+          "min": 583327.7968233818,
+          "max": 658742.9073398195
+        },
+        "p50_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p99_us": {
+          "median": 59,
+          "min": 57,
+          "max": 94
+        },
+        "p999_us": {
+          "median": 116,
+          "min": 106,
+          "max": 196
+        }
+      }
+    },
+    "engine-mixed": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 1095161.726351507,
+          "min": 1023183.1298793366,
+          "max": 1097567.2441241415
+        },
+        "p50_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p99_us": {
+          "median": 33,
+          "min": 32,
+          "max": 35
+        },
+        "p999_us": {
+          "median": 86,
+          "min": 84,
+          "max": 90
+        }
+      }
+    },
+    "get": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 21640.495980649834,
+          "min": 21556.01706106749,
+          "max": 21836.965340090843
+        },
+        "p50_us": {
+          "median": 172,
+          "min": 172,
+          "max": 172
+        },
+        "p99_us": {
+          "median": 456,
+          "min": 432,
+          "max": 456
+        },
+        "p999_us": {
+          "median": 1216,
+          "min": 1152,
+          "max": 1312
+        }
+      }
+    },
+    "set": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 20926.902528783492,
+          "min": 20723.094672677427,
+          "max": 21645.157261181725
+        },
+        "p50_us": {
+          "median": 176,
+          "min": 172,
+          "max": 176
+        },
+        "p99_us": {
+          "median": 448,
+          "min": 416,
+          "max": 528
+        },
+        "p999_us": {
+          "median": 1504,
+          "min": 1280,
+          "max": 1632
+        }
+      }
+    },
+    "mixed": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 16553.65266997986,
+          "min": 15397.083066922203,
+          "max": 20024.923376937164
+        },
+        "p50_us": {
+          "median": 192,
+          "min": 180,
+          "max": 200
+        },
+        "p99_us": {
+          "median": 1088,
+          "min": 560,
+          "max": 1472
+        },
+        "p999_us": {
+          "median": 3392,
+          "min": 1792,
+          "max": 5632
+        }
+      }
+    },
+    "miss": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 19099.328393189473,
+          "min": 15941.757441097247,
+          "max": 22119.473225725047
+        },
+        "p50_us": {
+          "median": 180,
+          "min": 168,
+          "max": 200
+        },
+        "p99_us": {
+          "median": 832,
+          "min": 464,
+          "max": 1248
+        },
+        "p999_us": {
+          "median": 2816,
+          "min": 1088,
+          "max": 3840
+        }
+      }
+    },
+    "hot": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 19883.81965172821,
+          "min": 19653.39184026474,
+          "max": 20393.20534354789
+        },
+        "p50_us": {
+          "median": 180,
+          "min": 180,
+          "max": 184
+        },
+        "p99_us": {
+          "median": 560,
+          "min": 488,
+          "max": 608
+        },
+        "p999_us": {
+          "median": 1504,
+          "min": 1312,
+          "max": 1728
+        }
+      }
+    },
+    "medium": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 18609.273604948867,
+          "min": 18384.29666275126,
+          "max": 20163.67946801601
+        },
+        "p50_us": {
+          "median": 192,
+          "min": 180,
+          "max": 192
+        },
+        "p99_us": {
+          "median": 576,
+          "min": 496,
+          "max": 640
+        },
+        "p999_us": {
+          "median": 1536,
+          "min": 1248,
+          "max": 1632
+        }
+      }
+    }
+  },
+  "matrix_remaining": {
+    "large": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 9996.045512801782,
+          "min": 9911.703307469805,
+          "max": 10471.412614474522
+        },
+        "p50_us": {
+          "median": 296,
+          "min": 288,
+          "max": 296
+        },
+        "p99_us": {
+          "median": 1120,
+          "min": 1056,
+          "max": 1184
+        },
+        "p999_us": {
+          "median": 2112,
+          "min": 2112,
+          "max": 3008
+        }
+      }
+    },
+    "ttl": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 18410.309564049334,
+          "min": 17974.93303811651,
+          "max": 19044.19234011555
+        },
+        "p50_us": {
+          "median": 192,
+          "min": 188,
+          "max": 196
+        },
+        "p99_us": {
+          "median": 624,
+          "min": 608,
+          "max": 656
+        },
+        "p999_us": {
+          "median": 1952,
+          "min": 1856,
+          "max": 2176
+        }
+      }
+    },
+    "fast": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 12231.599951392569,
+          "min": 11763.877555769048,
+          "max": 17070.688350591805
+        },
+        "p50_us": {
+          "median": 216,
+          "min": 196,
+          "max": 232
+        },
+        "p99_us": {
+          "median": 2112,
+          "min": 816,
+          "max": 3200
+        },
+        "p999_us": {
+          "median": 5760,
+          "min": 3776,
+          "max": 6272
+        }
+      }
+    },
+    "reliable": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2814.960277716731,
+          "min": 2730.4339566025124,
+          "max": 2828.2713194891335
+        },
+        "p50_us": {
+          "median": 1248,
+          "min": 1248,
+          "max": 1312
+        },
+        "p99_us": {
+          "median": 4864,
+          "min": 4736,
+          "max": 5248
+        },
+        "p999_us": {
+          "median": 30720,
+          "min": 28672,
+          "max": 43008
+        }
+      }
+    },
+    "fast-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 20385.230596797275,
+          "min": 17574.02228297567,
+          "max": 20798.615914506736
+        },
+        "p50_us": {
+          "median": 180,
+          "min": 176,
+          "max": 200
+        },
+        "p99_us": {
+          "median": 496,
+          "min": 488,
+          "max": 768
+        },
+        "p999_us": {
+          "median": 1440,
+          "min": 1008,
+          "max": 1760
+        }
+      }
+    },
+    "fast-slow": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 20247.484238584406,
+          "min": 18795.31510154849,
+          "max": 20906.89147480022
+        },
+        "p50_us": {
+          "median": 180,
+          "min": 176,
+          "max": 192
+        },
+        "p99_us": {
+          "median": 528,
+          "min": 496,
+          "max": 560
+        },
+        "p999_us": {
+          "median": 1440,
+          "min": 1312,
+          "max": 1536
+        }
+      }
+    },
+    "reliable-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2623.0854610244146,
+          "min": 2308.5095623004154,
+          "max": 2698.0056584612607
+        },
+        "p50_us": {
+          "median": 1344,
+          "min": 1248,
+          "max": 1440
+        },
+        "p99_us": {
+          "median": 5120,
+          "min": 4608,
+          "max": 6528
+        },
+        "p999_us": {
+          "median": 57344,
+          "min": 47104,
+          "max": 60416
+        }
+      }
+    },
+    "reliable-slow": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2651.3223465747815,
+          "min": 2418.878744326682,
+          "max": 2866.7148691349475
+        },
+        "p50_us": {
+          "median": 1280,
+          "min": 1216,
+          "max": 1376
+        },
+        "p99_us": {
+          "median": 4864,
+          "min": 4480,
+          "max": 6144
+        },
+        "p999_us": {
+          "median": 54272,
+          "min": 49152,
+          "max": 77824
+        }
+      }
+    },
+    "tls": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 19136.118853204487,
+          "min": 18503.9126661317,
+          "max": 19557.381609793232
+        },
+        "p50_us": {
+          "median": 188,
+          "min": 184,
+          "max": 192
+        },
+        "p99_us": {
+          "median": 576,
+          "min": 560,
+          "max": 592
+        },
+        "p999_us": {
+          "median": 1632,
+          "min": 1536,
+          "max": 2112
+        }
+      }
+    }
+  },
+  "soak": {
+    "soak-fast": {
+      "runs": 1,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 80.00635570996424,
+          "min": 80.00635570996424,
+          "max": 80.00635570996424
+        },
+        "p50_us": {
+          "median": 376,
+          "min": 376,
+          "max": 376
+        },
+        "p99_us": {
+          "median": 1888,
+          "min": 1888,
+          "max": 1888
+        },
+        "p999_us": {
+          "median": 5376,
+          "min": 5376,
+          "max": 5376
+        }
+      }
+    },
+    "soak-reliable": {
+      "runs": 1,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 79.9536479592614,
+          "min": 79.9536479592614,
+          "max": 79.9536479592614
+        },
+        "p50_us": {
+          "median": 1216,
+          "min": 1216,
+          "max": 1216
+        },
+        "p99_us": {
+          "median": 294912,
+          "min": 294912,
+          "max": 294912
+        },
+        "p999_us": {
+          "median": 393216,
+          "min": 393216,
+          "max": 393216
+        }
+      }
+    }
+  },
+  "maintenance_matrix": {
+    "reliable": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2904.735089024405,
+          "min": 1971.4588080476149,
+          "max": 2997.2896066769154
+        },
+        "p50_us": {
+          "median": 1280,
+          "min": 1248,
+          "max": 1312
+        },
+        "p99_us": {
+          "median": 4352,
+          "min": 4224,
+          "max": 32256
+        },
+        "p999_us": {
+          "median": 6912,
+          "min": 5760,
+          "max": 102400
+        }
+      }
+    },
+    "reliable-consumer": {
+      "runs": 3,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 2255.8332798911324,
+          "min": 2099.859137724989,
+          "max": 2390.593569910698
+        },
+        "p50_us": {
+          "median": 1536,
+          "min": 1536,
+          "max": 1568
+        },
+        "p99_us": {
+          "median": 6272,
+          "min": 5632,
+          "max": 10752
+        },
+        "p999_us": {
+          "median": 18432,
+          "min": 9216,
+          "max": 23040
+        }
+      }
+    }
+  },
+  "maintenance_soak": {
+    "soak-reliable": {
+      "runs": 1,
+      "valid_runs": 0,
+      "measurements": {
+        "successes_per_second": {
+          "median": 80.00617540021418,
+          "min": 80.00617540021418,
+          "max": 80.00617540021418
+        },
+        "p50_us": {
+          "median": 1152,
+          "min": 1152,
+          "max": 1152
+        },
+        "p99_us": {
+          "median": 3904,
+          "min": 3904,
+          "max": 3904
+        },
+        "p999_us": {
+          "median": 27136,
+          "min": 27136,
+          "max": 27136
+        }
+      }
+    }
+  }
+}

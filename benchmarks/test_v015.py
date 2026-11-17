@@ -77,7 +77,9 @@ class Acceptance(unittest.TestCase):
         for rows in historic.values():
             if not isinstance(rows, list):
                 continue
-            self.assertTrue(summary(rows))
+            summarized = summary(rows)
+            self.assertTrue(summarized)
+            self.assertTrue(all(row["valid_runs"] is None for row in summarized.values()))
             for row in rows:
                 before = copy.deepcopy(row)
                 mode = row.get("event_mode", "off")

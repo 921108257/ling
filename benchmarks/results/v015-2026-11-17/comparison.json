@@ -1,0 +1,1018 @@
+{
+  "methodology": "Parallel display only: stage7 VMware, baseline AMD/Azure and candidate Intel/AWS use different hosts and environments. No version performance causality or significance is inferred. Stage7 combines matrix_first and matrix_remaining without overwriting with later maintenance_matrix reruns.",
+  "sources": {
+    "stage7": "benchmarks/results/stage7-2026-11-15-results.json (matrix_first + matrix_remaining)",
+    "baseline": "baseline-full-44065341888/environment.json",
+    "candidate": "candidate-full-44067271629/environment.json"
+  },
+  "scenarios": {
+    "engine-get": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2033769.284829556,
+          "min": 1962422.3207013714,
+          "max": 2165973.315143778
+        },
+        "p99_us": {
+          "median": 2,
+          "min": 2,
+          "max": 3
+        },
+        "p999_us": {
+          "median": 52,
+          "min": 43,
+          "max": 60
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2744902.028991093,
+          "min": 2705947.3895908184,
+          "max": 2748140.985678476
+        },
+        "p99_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p999_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2616937.16670402,
+          "min": 2403143.306638797,
+          "max": 2672358.273132506
+        },
+        "p99_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p999_us": {
+          "median": 3,
+          "min": 3,
+          "max": 3
+        }
+      }
+    },
+    "engine-set": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 639946.6161652368,
+          "min": 583327.7968233818,
+          "max": 658742.9073398195
+        },
+        "p99_us": {
+          "median": 59,
+          "min": 57,
+          "max": 94
+        },
+        "p999_us": {
+          "median": 116,
+          "min": 106,
+          "max": 196
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 1347943.2317212613,
+          "min": 1329863.0954815669,
+          "max": 1365648.4495388577
+        },
+        "p99_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p999_us": {
+          "median": 8,
+          "min": 8,
+          "max": 8
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 1170458.3636094336,
+          "min": 1169766.0431943305,
+          "max": 1196067.9898748898
+        },
+        "p99_us": {
+          "median": 2,
+          "min": 2,
+          "max": 2
+        },
+        "p999_us": {
+          "median": 10,
+          "min": 9,
+          "max": 10
+        }
+      }
+    },
+    "engine-mixed": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 1095161.726351507,
+          "min": 1023183.1298793366,
+          "max": 1097567.2441241415
+        },
+        "p99_us": {
+          "median": 33,
+          "min": 32,
+          "max": 35
+        },
+        "p999_us": {
+          "median": 86,
+          "min": 84,
+          "max": 90
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 1769312.9129852795,
+          "min": 1740885.4668361298,
+          "max": 1799375.1579795156
+        },
+        "p99_us": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "p999_us": {
+          "median": 2,
+          "min": 2,
+          "max": 2
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 1399132.0561242097,
+          "min": 1369906.616137296,
+          "max": 1548015.3953072294
+        },
+        "p99_us": {
+          "median": 2,
+          "min": 2,
+          "max": 2
+        },
+        "p999_us": {
+          "median": 9,
+          "min": 9,
+          "max": 9
+        }
+      }
+    },
+    "get": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 21640.495980649834,
+          "min": 21556.01706106749,
+          "max": 21836.965340090843
+        },
+        "p99_us": {
+          "median": 456,
+          "min": 432,
+          "max": 456
+        },
+        "p999_us": {
+          "median": 1216,
+          "min": 1152,
+          "max": 1312
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 64386.94263960982,
+          "min": 62155.56564941037,
+          "max": 66708.48233293211
+        },
+        "p99_us": {
+          "median": 110,
+          "min": 108,
+          "max": 176
+        },
+        "p999_us": {
+          "median": 376,
+          "min": 304,
+          "max": 392
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 88204.8007384551,
+          "min": 87627.87209080433,
+          "max": 88346.42435289291
+        },
+        "p99_us": {
+          "median": 84,
+          "min": 84,
+          "max": 86
+        },
+        "p999_us": {
+          "median": 144,
+          "min": 132,
+          "max": 152
+        }
+      }
+    },
+    "set": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 20926.902528783492,
+          "min": 20723.094672677427,
+          "max": 21645.157261181725
+        },
+        "p99_us": {
+          "median": 448,
+          "min": 416,
+          "max": 528
+        },
+        "p999_us": {
+          "median": 1504,
+          "min": 1280,
+          "max": 1632
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 65254.334360441375,
+          "min": 63426.768138882726,
+          "max": 65642.50456129364
+        },
+        "p99_us": {
+          "median": 112,
+          "min": 112,
+          "max": 152
+        },
+        "p999_us": {
+          "median": 344,
+          "min": 336,
+          "max": 448
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 84419.76689176758,
+          "min": 84079.39105912262,
+          "max": 84595.37351040494
+        },
+        "p99_us": {
+          "median": 88,
+          "min": 88,
+          "max": 88
+        },
+        "p999_us": {
+          "median": 132,
+          "min": 128,
+          "max": 180
+        }
+      }
+    },
+    "mixed": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 16553.65266997986,
+          "min": 15397.083066922203,
+          "max": 20024.923376937164
+        },
+        "p99_us": {
+          "median": 1088,
+          "min": 560,
+          "max": 1472
+        },
+        "p999_us": {
+          "median": 3392,
+          "min": 1792,
+          "max": 5632
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 63976.66251663863,
+          "min": 63330.406332908104,
+          "max": 65203.730254261456
+        },
+        "p99_us": {
+          "median": 114,
+          "min": 110,
+          "max": 128
+        },
+        "p999_us": {
+          "median": 376,
+          "min": 328,
+          "max": 376
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 85537.11889579197,
+          "min": 84778.38767767944,
+          "max": 85623.54514790772
+        },
+        "p99_us": {
+          "median": 88,
+          "min": 86,
+          "max": 88
+        },
+        "p999_us": {
+          "median": 140,
+          "min": 136,
+          "max": 164
+        }
+      }
+    },
+    "miss": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 19099.328393189473,
+          "min": 15941.757441097247,
+          "max": 22119.473225725047
+        },
+        "p99_us": {
+          "median": 832,
+          "min": 464,
+          "max": 1248
+        },
+        "p999_us": {
+          "median": 2816,
+          "min": 1088,
+          "max": 3840
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 65057.62385629585,
+          "min": 63203.564027039785,
+          "max": 65600.15037320122
+        },
+        "p99_us": {
+          "median": 110,
+          "min": 110,
+          "max": 200
+        },
+        "p999_us": {
+          "median": 360,
+          "min": 344,
+          "max": 400
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 89417.05429072975,
+          "min": 86287.73534373095,
+          "max": 90136.98595289094
+        },
+        "p99_us": {
+          "median": 84,
+          "min": 84,
+          "max": 96
+        },
+        "p999_us": {
+          "median": 176,
+          "min": 140,
+          "max": 264
+        }
+      }
+    },
+    "hot": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 19883.81965172821,
+          "min": 19653.39184026474,
+          "max": 20393.20534354789
+        },
+        "p99_us": {
+          "median": 560,
+          "min": 488,
+          "max": 608
+        },
+        "p999_us": {
+          "median": 1504,
+          "min": 1312,
+          "max": 1728
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 65606.13429175172,
+          "min": 62854.03863999622,
+          "max": 65675.3207625864
+        },
+        "p99_us": {
+          "median": 112,
+          "min": 108,
+          "max": 116
+        },
+        "p999_us": {
+          "median": 368,
+          "min": 252,
+          "max": 416
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 85840.0432397106,
+          "min": 85773.11218128745,
+          "max": 86212.8197240308
+        },
+        "p99_us": {
+          "median": 86,
+          "min": 86,
+          "max": 88
+        },
+        "p999_us": {
+          "median": 140,
+          "min": 140,
+          "max": 192
+        }
+      }
+    },
+    "medium": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 18609.273604948867,
+          "min": 18384.29666275126,
+          "max": 20163.67946801601
+        },
+        "p99_us": {
+          "median": 576,
+          "min": 496,
+          "max": 640
+        },
+        "p999_us": {
+          "median": 1536,
+          "min": 1248,
+          "max": 1632
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 62573.10882398186,
+          "min": 60188.02586486041,
+          "max": 62652.05265948673
+        },
+        "p99_us": {
+          "median": 118,
+          "min": 112,
+          "max": 152
+        },
+        "p999_us": {
+          "median": 360,
+          "min": 264,
+          "max": 376
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 70210.688008851,
+          "min": 70125.67621705009,
+          "max": 70301.64816007887
+        },
+        "p99_us": {
+          "median": 108,
+          "min": 106,
+          "max": 108
+        },
+        "p999_us": {
+          "median": 200,
+          "min": 172,
+          "max": 228
+        }
+      }
+    },
+    "large": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 9996.045512801782,
+          "min": 9911.703307469805,
+          "max": 10471.412614474522
+        },
+        "p99_us": {
+          "median": 1120,
+          "min": 1056,
+          "max": 1184
+        },
+        "p999_us": {
+          "median": 2112,
+          "min": 2112,
+          "max": 3008
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 25629.604795897085,
+          "min": 24877.520010899738,
+          "max": 26548.64934984672
+        },
+        "p99_us": {
+          "median": 280,
+          "min": 256,
+          "max": 280
+        },
+        "p999_us": {
+          "median": 424,
+          "min": 400,
+          "max": 504
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 23388.647967394456,
+          "min": 22888.127838528206,
+          "max": 23448.73249193554
+        },
+        "p99_us": {
+          "median": 304,
+          "min": 304,
+          "max": 312
+        },
+        "p999_us": {
+          "median": 448,
+          "min": 432,
+          "max": 488
+        }
+      }
+    },
+    "ttl": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 18410.309564049334,
+          "min": 17974.93303811651,
+          "max": 19044.19234011555
+        },
+        "p99_us": {
+          "median": 624,
+          "min": 608,
+          "max": 656
+        },
+        "p999_us": {
+          "median": 1952,
+          "min": 1856,
+          "max": 2176
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 63093.86264076619,
+          "min": 62881.44772709976,
+          "max": 63126.35048702012
+        },
+        "p99_us": {
+          "median": 160,
+          "min": 126,
+          "max": 180
+        },
+        "p999_us": {
+          "median": 344,
+          "min": 312,
+          "max": 384
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 82881.66731726256,
+          "min": 81697.92923149811,
+          "max": 83395.1248726941
+        },
+        "p99_us": {
+          "median": 90,
+          "min": 88,
+          "max": 92
+        },
+        "p999_us": {
+          "median": 144,
+          "min": 136,
+          "max": 176
+        }
+      }
+    },
+    "fast": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 12231.599951392569,
+          "min": 11763.877555769048,
+          "max": 17070.688350591805
+        },
+        "p99_us": {
+          "median": 2112,
+          "min": 816,
+          "max": 3200
+        },
+        "p999_us": {
+          "median": 5760,
+          "min": 3776,
+          "max": 6272
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 64200.19747836349,
+          "min": 63515.81450551062,
+          "max": 64226.9592388418
+        },
+        "p99_us": {
+          "median": 116,
+          "min": 114,
+          "max": 144
+        },
+        "p999_us": {
+          "median": 320,
+          "min": 304,
+          "max": 400
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 83663.06424667095,
+          "min": 83496.90264086625,
+          "max": 83911.82732936386
+        },
+        "p99_us": {
+          "median": 90,
+          "min": 90,
+          "max": 90
+        },
+        "p999_us": {
+          "median": 144,
+          "min": 140,
+          "max": 148
+        }
+      }
+    },
+    "reliable": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2814.960277716731,
+          "min": 2730.4339566025124,
+          "max": 2828.2713194891335
+        },
+        "p99_us": {
+          "median": 4864,
+          "min": 4736,
+          "max": 5248
+        },
+        "p999_us": {
+          "median": 30720,
+          "min": 28672,
+          "max": 43008
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 8465.32104183826,
+          "min": 8445.476387027895,
+          "max": 8494.966439431775
+        },
+        "p99_us": {
+          "median": 1280,
+          "min": 1152,
+          "max": 1312
+        },
+        "p999_us": {
+          "median": 2176,
+          "min": 1888,
+          "max": 2368
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 15839.705623920278,
+          "min": 15611.99355533733,
+          "max": 17105.042761183733
+        },
+        "p99_us": {
+          "median": 576,
+          "min": 512,
+          "max": 592
+        },
+        "p999_us": {
+          "median": 720,
+          "min": 640,
+          "max": 768
+        }
+      }
+    },
+    "fast-consumer": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 20385.230596797275,
+          "min": 17574.02228297567,
+          "max": 20798.615914506736
+        },
+        "p99_us": {
+          "median": 496,
+          "min": 488,
+          "max": 768
+        },
+        "p999_us": {
+          "median": 1440,
+          "min": 1008,
+          "max": 1760
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 64481.794669026036,
+          "min": 64134.81620139112,
+          "max": 65226.31116431513
+        },
+        "p99_us": {
+          "median": 116,
+          "min": 110,
+          "max": 124
+        },
+        "p999_us": {
+          "median": 320,
+          "min": 252,
+          "max": 352
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 83819.57862898677,
+          "min": 83788.19917177976,
+          "max": 83970.59294531071
+        },
+        "p99_us": {
+          "median": 90,
+          "min": 88,
+          "max": 90
+        },
+        "p999_us": {
+          "median": 144,
+          "min": 132,
+          "max": 156
+        }
+      }
+    },
+    "fast-slow": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 20247.484238584406,
+          "min": 18795.31510154849,
+          "max": 20906.89147480022
+        },
+        "p99_us": {
+          "median": 528,
+          "min": 496,
+          "max": 560
+        },
+        "p999_us": {
+          "median": 1440,
+          "min": 1312,
+          "max": 1536
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 62924.55066186549,
+          "min": 62158.266319427086,
+          "max": 64681.25494607244
+        },
+        "p99_us": {
+          "median": 136,
+          "min": 112,
+          "max": 164
+        },
+        "p999_us": {
+          "median": 376,
+          "min": 264,
+          "max": 408
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 83791.23889059034,
+          "min": 83195.0219177125,
+          "max": 83921.29587978857
+        },
+        "p99_us": {
+          "median": 90,
+          "min": 90,
+          "max": 90
+        },
+        "p999_us": {
+          "median": 144,
+          "min": 144,
+          "max": 180
+        }
+      }
+    },
+    "reliable-consumer": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2623.0854610244146,
+          "min": 2308.5095623004154,
+          "max": 2698.0056584612607
+        },
+        "p99_us": {
+          "median": 5120,
+          "min": 4608,
+          "max": 6528
+        },
+        "p999_us": {
+          "median": 57344,
+          "min": 47104,
+          "max": 60416
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 7940.279833271547,
+          "min": 7774.170449821893,
+          "max": 8368.062885741614
+        },
+        "p99_us": {
+          "median": 1248,
+          "min": 1152,
+          "max": 1728
+        },
+        "p999_us": {
+          "median": 1760,
+          "min": 1760,
+          "max": 3840
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 16693.892088418404,
+          "min": 16386.699655297787,
+          "max": 16762.077032173434
+        },
+        "p99_us": {
+          "median": 544,
+          "min": 544,
+          "max": 560
+        },
+        "p999_us": {
+          "median": 704,
+          "min": 688,
+          "max": 720
+        }
+      }
+    },
+    "reliable-slow": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 2651.3223465747815,
+          "min": 2418.878744326682,
+          "max": 2866.7148691349475
+        },
+        "p99_us": {
+          "median": 4864,
+          "min": 4480,
+          "max": 6144
+        },
+        "p999_us": {
+          "median": 54272,
+          "min": 49152,
+          "max": 77824
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 8249.821642225614,
+          "min": 7674.171464932821,
+          "max": 8435.651552663656
+        },
+        "p99_us": {
+          "median": 1184,
+          "min": 1152,
+          "max": 1952
+        },
+        "p999_us": {
+          "median": 2432,
+          "min": 2176,
+          "max": 4032
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 16888.4939066314,
+          "min": 16647.910586246722,
+          "max": 16938.82801291491
+        },
+        "p99_us": {
+          "median": 528,
+          "min": 528,
+          "max": 576
+        },
+        "p999_us": {
+          "median": 672,
+          "min": 656,
+          "max": 752
+        }
+      }
+    },
+    "tls": {
+      "stage7": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 19136.118853204487,
+          "min": 18503.9126661317,
+          "max": 19557.381609793232
+        },
+        "p99_us": {
+          "median": 576,
+          "min": 560,
+          "max": 592
+        },
+        "p999_us": {
+          "median": 1632,
+          "min": 1536,
+          "max": 2112
+        }
+      },
+      "baseline_0_1_4": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 65120.09160117779,
+          "min": 64770.56940759411,
+          "max": 65723.28126883927
+        },
+        "p99_us": {
+          "median": 110,
+          "min": 110,
+          "max": 120
+        },
+        "p999_us": {
+          "median": 252,
+          "min": 216,
+          "max": 312
+        }
+      },
+      "candidate_0_1_5": {
+        "runs": 3,
+        "successes_per_second": {
+          "median": 83264.36342725907,
+          "min": 83250.38914944683,
+          "max": 83726.89589771329
+        },
+        "p99_us": {
+          "median": 90,
+          "min": 88,
+          "max": 90
+        },
+        "p999_us": {
+          "median": 128,
+          "min": 126,
+          "max": 136
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "method": "Ratios pair equal repeat IDs from one shuffled same-host run; they are not simultaneous matched samples. Also preserve ratio-of-medians in metrics-comparison.json.",
+  "workloads": {
+    "get": {
+      "samples": [
+        {
+          "repeat": 1,
+          "successes_per_second": {
+            "disabled": 54363.20132803243,
+            "enabled": 53806.92161633613,
+            "scraped": 53018.81700725935
+          },
+          "collection_change_percent": -1.0232651832618567,
+          "scraping_additional_change_percent": -1.464690016455994
+        },
+        {
+          "repeat": 2,
+          "successes_per_second": {
+            "disabled": 54016.66009936554,
+            "enabled": 53807.69870224524,
+            "scraped": 53860.568544675276
+          },
+          "collection_change_percent": -0.3868462002943329,
+          "scraping_additional_change_percent": 0.09825702214585341
+        },
+        {
+          "repeat": 3,
+          "successes_per_second": {
+            "disabled": 54636.08219645435,
+            "enabled": 53941.44588121156,
+            "scraped": 53454.08149624044
+          },
+          "collection_change_percent": -1.2713874921431834,
+          "scraping_additional_change_percent": -0.9035063428673773
+        }
+      ],
+      "ranges": {
+        "collection_change_percent": {
+          "median": -1.0232651832618567,
+          "min": -1.2713874921431834,
+          "max": -0.3868462002943329
+        },
+        "scraping_additional_change_percent": {
+          "median": -0.9035063428673773,
+          "min": -1.464690016455994,
+          "max": 0.09825702214585341
+        }
+      }
+    },
+    "set": {
+      "samples": [
+        {
+          "repeat": 1,
+          "successes_per_second": {
+            "disabled": 52805.11803747116,
+            "enabled": 52715.811865764044,
+            "scraped": 51869.49043841967
+          },
+          "collection_change_percent": -0.16912408309313065,
+          "scraping_additional_change_percent": -1.6054413228035913
+        },
+        {
+          "repeat": 2,
+          "successes_per_second": {
+            "disabled": 51809.22133041402,
+            "enabled": 52568.613398230365,
+            "scraped": 52444.606209226724
+          },
+          "collection_change_percent": 1.4657469236476484,
+          "scraping_additional_change_percent": -0.23589587205626872
+        },
+        {
+          "repeat": 3,
+          "successes_per_second": {
+            "disabled": 52543.685894585,
+            "enabled": 52582.29825878488,
+            "scraped": 53103.598280187885
+          },
+          "collection_change_percent": 0.07348621160179203,
+          "scraping_additional_change_percent": 0.9913983197109788
+        }
+      ],
+      "ranges": {
+        "collection_change_percent": {
+          "median": 0.07348621160179203,
+          "min": -0.16912408309313065,
+          "max": 1.4657469236476484
+        },
+        "scraping_additional_change_percent": {
+          "median": -0.23589587205626872,
+          "min": -1.6054413228035913,
+          "max": 0.9913983197109788
+        }
+      }
+    },
+    "mixed": {
+      "samples": [
+        {
+          "repeat": 1,
+          "successes_per_second": {
+            "disabled": 53391.231807007425,
+            "enabled": 52151.309044604604,
+            "scraped": 52229.717063035154
+          },
+          "collection_change_percent": -2.3223340620511457,
+          "scraping_additional_change_percent": 0.15034717223203486
+        },
+        {
+          "repeat": 2,
+          "successes_per_second": {
+            "disabled": 52948.51792896593,
+            "enabled": 52769.406231959445,
+            "scraped": 52810.97229125981
+          },
+          "collection_change_percent": -0.33827518505196164,
+          "scraping_additional_change_percent": 0.07876923821665827
+        },
+        {
+          "repeat": 3,
+          "successes_per_second": {
+            "disabled": 52933.75419041597,
+            "enabled": 52483.420427157456,
+            "scraped": 52961.177404214235
+          },
+          "collection_change_percent": -0.8507497156512889,
+          "scraping_additional_change_percent": 0.9103007638762151
+        }
+      ],
+      "ranges": {
+        "collection_change_percent": {
+          "median": -0.8507497156512889,
+          "min": -2.3223340620511457,
+          "max": -0.33827518505196164
+        },
+        "scraping_additional_change_percent": {
+          "median": 0.15034717223203486,
+          "min": 0.07876923821665827,
+          "max": 0.9103007638762151
+        }
+      }
+    }
+  }
+}

@@ -297,20 +297,32 @@ fn observe(value: Value) -> serde_json::Value {
     }
 }
 
-/// INFO 的诊断转换覆盖新内存比率，不将整数先转成浮点。
-/// INFO diagnostics include the new memory ratio without rounding integers through floats.
+/// INFO 的浮点诊断转换保持真实分类，整数不先转成浮点。
+/// INFO floating-point diagnostics preserve real sections without rounding integers through floats.
 #[test]
-fn observe_memory_diagnostics() {
+fn observe_info_diagnostics() {
     let value = Value::Map(BTreeMap::from([
-        ("managed_bytes".into(), Value::UInt(u64::MAX)),
         (
-            "rss_vs_managed_ratio".into(),
-            Value::Float(ling_types::Float::new(1.25).unwrap()),
+            "server".into(),
+            Value::Map(BTreeMap::from([(
+                "process_cpu_seconds".into(),
+                Value::Float(ling_types::Float::new(1.25).unwrap()),
+            )])),
+        ),
+        (
+            "memory".into(),
+            Value::Map(BTreeMap::from([(
+                "managed_bytes".into(),
+                Value::UInt(u64::MAX),
+            )])),
         ),
     ]));
     assert_eq!(
         observe(value),
-        serde_json::json!({"managed_bytes": u64::MAX, "rss_vs_managed_ratio": 1.25})
+        serde_json::json!({
+            "server": {"process_cpu_seconds": 1.25},
+            "memory": {"managed_bytes": u64::MAX}
+        })
     );
 }
 
