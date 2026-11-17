@@ -122,6 +122,41 @@ def summary(results):
             for name, rows in groups.items()}
 
 
+def metrics_comparison(results):
+    """采集开销和抓取开销分别报告，保留极差；Separate collection from scraping cost and retain ranges."""
+    grouped = summary(results)
+    comparisons = {}
+    for workload in ("get", "set", "mixed"):
+        names = [f"metrics-{workload}-{variant}" for variant in ("disabled", "enabled", "scraped")]
+        if not all(name in grouped for name in names):
+            continue
+        variants = {name.rsplit("-", 1)[1]: grouped[name] for name in names}
+        base = variants["disabled"]["measurements"]["successes_per_second"]["median"]
+        enabled = variants["enabled"]["measurements"]["successes_per_second"]["median"]
+        scraped = variants["scraped"]["measurements"]["successes_per_second"]["median"]
+        comparisons[workload] = {"variants": variants,
+                                 "collection_throughput_change_percent": 100 * (enabled / base - 1),
+                                 "scraping_additional_throughput_change_percent": 100 * (scraped / enabled - 1),
+                                 "interpretation": "raw same-host comparison; no significance or improvement claim"}
+    return comparisons
+
+
+def cpu_set(text, available):
+    """校验 taskset 列表，拒绝越界与重叠；Validate taskset lists before checking overlap."""
+    cpus = set()
+    for part in text.split(","):
+        bounds = part.split("-")
+        if not 1 <= len(bounds) <= 2 or any(not value.isdecimal() for value in bounds):
+            raise ValueError("invalid CPU list")
+        low, high = int(bounds[0]), int(bounds[-1])
+        if high < low or high > max(available):
+            raise ValueError("invalid CPU range")
+        cpus.update(range(low, high + 1))
+    if not cpus or not cpus <= set(available):
+        raise ValueError("CPU list is outside allowed affinity")
+    return cpus
+
+
 def free_port():
     """每次使用隔离端口；Use an isolated ephemeral port per run."""
     with socket.socket() as probe:
@@ -336,7 +371,12 @@ def main():
     split = max(1, len(available) // 2)
     args.server_cpus = args.server_cpus or ",".join(map(str, available[:split]))
     args.client_cpus = args.client_cpus or ",".join(map(str, available[split:]))
-    if set(args.server_cpus.split(",")) & set(args.client_cpus.split(",")):
+    try:
+        server_cpus = cpu_set(args.server_cpus, available)
+        client_cpus = cpu_set(args.client_cpus, available)
+    except ValueError as error:
+        parser.error(str(error))
+    if server_cpus & client_cpus:
         parser.error("client/server CPU sets must be disjoint")
     args.output, args.source_root = args.output.resolve(), args.source_root.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
@@ -357,6 +397,8 @@ def main():
         results.append(run_case(args, job, args.soak_seconds if job[0].startswith("soak-") else args.seconds))
         write_json(args.output / "results.json", results)
         write_json(args.output / "summary.json", summary(results))
+        if args.suite == "metrics":
+            write_json(args.output / "metrics-comparison.json", metrics_comparison(results))
     historical = json.loads((TOOLS / "benchmarks/results/stage7-2026-11-15-results.json").read_text())
     write_json(args.output / "historical-summary.json", {key: summary(rows) for key, rows in historical.items() if isinstance(rows, list)})
     if any(not row["acceptance"]["valid"] for row in results):

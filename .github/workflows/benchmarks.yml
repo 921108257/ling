@@ -19,6 +19,24 @@ on:
         type: choice
         options: [full, matrix, soak, metrics]
         default: full
+  workflow_call:
+    inputs:
+      target:
+        description: Source revision to measure
+        type: string
+        default: baseline
+      baseline_revision:
+        description: Clean 0.1.4 source revision
+        type: string
+        default: b1220f4
+      candidate_revision:
+        description: Candidate ref (blank uses this workflow commit)
+        type: string
+        default: ''
+      suite:
+        description: Measurement suite
+        type: string
+        default: full
 
 permissions:
   contents: read
@@ -37,6 +55,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
+          assert os.environ['SELECTED'] in ('baseline', 'candidate', 'both'), 'Invalid measurement target'
           rows = [{'label': name, 'revision': os.environ[name.upper()]}
                   for name in ('baseline', 'candidate')
                   if os.environ['SELECTED'] in (name, 'both')]

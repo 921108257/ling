@@ -6,12 +6,39 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      benchmark_target:
+        description: Run measurements instead of package builds
+        type: choice
+        options: [none, baseline, candidate, both]
+        default: none
+      benchmark_suite:
+        description: Measurement suite
+        type: choice
+        options: [full, matrix, soak, metrics]
+        default: full
+      baseline_revision:
+        description: Clean baseline source revision
+        default: b1220f4
+      candidate_revision:
+        description: Candidate revision (blank uses this commit)
+        default: ''
 
 permissions:
   contents: read
 
 jobs:
+  benchmarks:
+    if: inputs.benchmark_target != '' && inputs.benchmark_target != 'none'
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      target: ${{ inputs.benchmark_target }}
+      suite: ${{ inputs.benchmark_suite }}
+      baseline_revision: ${{ inputs.baseline_revision }}
+      candidate_revision: ${{ inputs.candidate_revision }}
+
   checks:
+    if: inputs.benchmark_target == '' || inputs.benchmark_target == 'none'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     outputs:

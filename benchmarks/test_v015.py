@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-from v015 import CASES, consumer_policy, schedule, summary, validate_result
+from v015 import CASES, consumer_policy, cpu_set, metrics_comparison, schedule, summary, validate_result
 
 
 class Acceptance(unittest.TestCase):
@@ -53,6 +53,19 @@ class Acceptance(unittest.TestCase):
         self.assertEqual(len(schedule(3, 1, metrics=True)), 27)
         with self.assertRaises(ValueError):
             schedule(3, 1, "unknown")
+
+    def test_cpu_affinity_rejects_invalid_ranges(self):
+        self.assertEqual(cpu_set("0-1,3", [0, 1, 2, 3]), {0, 1, 3})
+        for text in ("4", "3-1", "0-1000000", "", "0,unknown"):
+            with self.assertRaises(ValueError):
+                cpu_set(text, [0, 1, 2, 3])
+
+    def test_metrics_costs_are_separate(self):
+        rows = [{"name": f"metrics-get-{variant}", "successes_per_second": rate}
+                for variant, rate in (("disabled", 100), ("enabled", 90), ("scraped", 81))]
+        result = metrics_comparison(rows)["get"]
+        self.assertAlmostEqual(result["collection_throughput_change_percent"], -10)
+        self.assertAlmostEqual(result["scraping_additional_throughput_change_percent"], -10)
 
     def test_existing_stage7_results_keep_raw_errors(self):
         historic = json.loads((Path(__file__).parent / "results/stage7-2026-11-15-results.json").read_text())
