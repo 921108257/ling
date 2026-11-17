@@ -47,6 +47,9 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.value }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: matrix
         env:
           SELECTED: ${{ inputs.target }}
@@ -54,9 +57,19 @@ jobs:
           CANDIDATE: ${{ inputs.candidate_revision || github.sha }}
         run: |
           python3 - <<'PY'
-          import json, os
+          import json, os, subprocess
           assert os.environ['SELECTED'] in ('baseline', 'candidate', 'both'), 'Invalid measurement target'
-          rows = [{'label': name, 'revision': os.environ[name.upper()]}
+          def resolve(ref):
+              # checkout 只识别完整提交摘要；先将短摘要与分支解析为精确输入。
+              # Checkout recognizes full commit hashes; resolve abbreviations and branches first.
+              branch = ref.removeprefix('refs/heads/')
+              for candidate in (ref, 'refs/remotes/origin/' + branch):
+                  result = subprocess.run(['git', 'rev-parse', '--verify', '--end-of-options', candidate + '^{commit}'],
+                                          text=True, capture_output=True)
+                  if result.returncode == 0:
+                      return result.stdout.strip()
+              raise ValueError('Cannot resolve source revision: ' + ref)
+          rows = [{'label': name, 'revision': resolve(os.environ[name.upper()])}
                   for name in ('baseline', 'candidate')
                   if os.environ['SELECTED'] in (name, 'both')]
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:

@@ -48,7 +48,7 @@ def consumer_policy(mode, consumer):
     """逐场景声明允许的消费终止；Declare acceptable consumer termination per case."""
     return {"required": consumer != "none", "must_run_until_stop": mode != "fast",
             "expected_errors": ["ERR_OFFSET_EXPIRED"] if mode == "fast" else [],
-            "lag_allowed": mode == "fast"}
+            "lag_allowed": consumer != "none", "retention_loss_allowed": mode == "fast"}
 
 
 def validate_result(result, mode, require_status=True, expected_consumer=None):

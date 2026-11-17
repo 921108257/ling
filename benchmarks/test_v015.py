@@ -17,6 +17,9 @@ class Acceptance(unittest.TestCase):
 
     def test_continuous_consumer(self):
         row = self.result()
+        policy = consumer_policy("reliable", "slow")
+        self.assertTrue(policy["lag_allowed"])
+        self.assertFalse(policy["retention_loss_allowed"])
         self.assertTrue(validate_result(row, "reliable")["valid"])
         for field, value in (("consumption", None), ("consumer_status", None),
                              ("consumer_status", {"termination": "error"})):
