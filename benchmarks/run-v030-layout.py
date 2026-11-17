@@ -92,6 +92,9 @@ def phase_problem(row, seconds, phase):
         return "phase or server did not complete successfully"
     if not isinstance(row.get("findings"), dict) or row["findings"]:
         return "phase reported findings or omitted findings"
+    problem = runtime_problem(row)
+    if problem:
+        return problem
     criteria = row.get("criteria")
     if not isinstance(criteria, dict) or any(value is False for value in criteria.values()):
         return "phase criteria failed or are missing"
@@ -103,6 +106,20 @@ def phase_problem(row, seconds, phase):
     for name in required:
         if criteria.get(name) is not True:
             return f"required phase criterion is not true: {name}"
+    return None
+
+
+def runtime_problem(row):
+    """本轮容量与消费覆盖门槛严于通用驱动；Enforce this plan's stricter capacity and consumer coverage gates."""
+    if not isinstance(row, dict):
+        return None
+    if isinstance(row.get("server_errors"), dict) and row["server_errors"].get("ERR_JOURNAL_FULL"):
+        return "JournalFull is not acceptable in this endurance plan"
+    consumers = row.get("consumers", {})
+    if isinstance(consumers, dict):
+        for name, state in consumers.items():
+            if isinstance(state, dict) and state.get("termination") in ("expected_fast_lag", "error"):
+                return f"{name}: consumer stopped before full planned coverage"
     return None
 
 
@@ -248,6 +265,9 @@ def monitor_problem(entries):
             progress = read_json(directory / "progress.json")
             if isinstance(progress, dict) and isinstance(progress.get("findings"), dict) and progress["findings"]:
                 return f"{directory.name}: progress reported findings"
+            problem = runtime_problem(progress)
+            if problem:
+                return f"{directory.name}: {problem}"
             if directory in checked:
                 continue
             row = read_json(directory / "result.json")

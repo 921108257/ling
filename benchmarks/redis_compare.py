@@ -194,8 +194,20 @@ class LingClient:
 
     def request(self, command, arguments=()):
         """验证版本、ID、状态及完整负载；Validate version, ID, status and full payload."""
+        arguments = list(arguments)
+        if command == "SET" and len(arguments) == 4 and arguments[2] == "PX":
+            # 时间参数必须是 Int；共享实验编码器的普通整数仍是 HELLO 所需的 UInt。
+            # Time arguments require Int; ordinary helper integers retain HELLO's UInt contract.
+            ttl = arguments[3]
+            if type(ttl) is not int or not 0 < ttl < 2**63:
+                raise WireError("LOCAL_ENCODING: SET PX requires a positive signed Int TTL")
+            encoded_arguments = (b"\x07" + len(arguments).to_bytes(4, "big")
+                                 + b"".join(encode(item) for item in arguments[:-1])
+                                 + b"\x02" + ttl.to_bytes(8, "big", signed=True))
+        else:
+            encoded_arguments = encode(arguments)
         self.request_id += 1
-        self.wire.begin(packet(1, self.request_id, encode(command) + encode(list(arguments))))
+        self.wire.begin(packet(1, self.request_id, encode(command) + encoded_arguments))
         while True:
             magic, version, kind, flags, identity, size = HEADER.unpack(self.wire.take(HEADER.size))
             if magic != b"LG" or version != 1 or flags or size > MAX_REPLY - HEADER.size:

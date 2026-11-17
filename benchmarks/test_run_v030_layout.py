@@ -146,6 +146,20 @@ class LayoutTests(unittest.TestCase):
                             row["criteria"][name] = value
                         self.assertIsNotNone(layout.phase_problem(row, 600, phase))
 
+    def test_endurance_rejects_journal_full_and_early_consumer_exit(self):
+        """通用驱动允许的分类不覆盖本轮硬门槛；Generic expected categories do not waive this plan's hard gates."""
+        for changes in ({"server_errors": {"ERR_JOURNAL_FULL": 1}},
+                        {"consumers": {"slow-db0": {"termination": "expected_fast_lag"}}},
+                        {"consumers": {"fast-db1": {"termination": "error"}}}):
+            with self.subTest(changes=changes):
+                self.assertIsNotNone(layout.phase_problem({**good_result(seconds=600), **changes}, 600, "shadow"))
+                entry = self.entries[0]
+                entry["process"] = Process(1000)
+                directory = layout.phase_paths(entry)[0]
+                directory.mkdir(parents=True, exist_ok=True)
+                layout.save(directory / "progress.json", changes)
+                self.assertIsNotNone(layout.monitor_problem(self.entries))
+
     def test_pressure_accepts_explicitly_inapplicable_shadow_criteria(self):
         """pressure 的两项 shadow null 与资源趋势说明不应误报；Accept explicit inapplicability and trend text."""
         row = good_result(seconds=600, phase="pressure")

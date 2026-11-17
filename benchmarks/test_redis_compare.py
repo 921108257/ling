@@ -127,6 +127,47 @@ class RedisComparisonTests(unittest.TestCase):
         finally:
             peer.close()
 
+    def test_ling_set_and_set_px_have_strict_independent_wire_vectors(self):
+        """普通SET保持类型，PX必须带Int标签；Plain SET retains types and PX uses the signed Int tag."""
+        for value, encoded_value in (("v", b"\x05\0\0\0\x01v"), (b"\0\xff", b"\x06\0\0\0\x02\0\xff")):
+            for operation in ("set", "set-px"):
+                with self.subTest(value=value, operation=operation):
+                    peer = Peer()
+                    client = LingClient.__new__(LingClient)
+                    client.wire, client.request_id = peer.wire, 0
+                    peer.server.sendall(packet(2, 1, b"\x00\x01\x01"))
+                    try:
+                        self.assertGreaterEqual(perform(client, "ling", operation, "k", value, 600000), 0)
+                        expected = (b"\x05\0\0\0\x03SET\x07" + (4 if operation == "set-px" else 2).to_bytes(4, "big")
+                                    + b"\x05\0\0\0\x01k" + encoded_value)
+                        if operation == "set-px":
+                            expected += b"\x05\0\0\0\x02PX\x02\0\0\0\0\0\x09\x27\xc0"
+                        header = HEADER.unpack(exact(peer.server, HEADER.size))
+                        self.assertEqual(header, (b"LG", 1, 1, 0, 1, len(expected)))
+                        self.assertEqual(exact(peer.server, header[-1]), expected)
+                    finally:
+                        peer.close()
+
+    def test_ling_hello_still_uses_uint_and_invalid_px_never_sends(self):
+        """HELLO不能随TTL修复改变标签；TTL fix must not change HELLO or send unrepresentable inputs."""
+        peer = Peer()
+        client = LingClient.__new__(LingClient)
+        client.wire, client.request_id = peer.wire, 0
+        peer.server.sendall(packet(2, 1, b"\x00\x01\x01"))
+        try:
+            self.assertIs(client.request("HELLO", [1]), True)
+            header = HEADER.unpack(exact(peer.server, HEADER.size))
+            self.assertEqual(exact(peer.server, header[-1]),
+                b"\x05\0\0\0\x05HELLO\x07\0\0\0\x01\x03\0\0\0\0\0\0\0\x01")
+            for ttl in (0, -1, 2**63, True):
+                with self.subTest(ttl=ttl), self.assertRaisesRegex(WireError, "LOCAL_ENCODING"):
+                    client.request("SET", ["k", "v", "PX", ttl])
+            peer.server.settimeout(.02)
+            with self.assertRaises(TimeoutError):
+                peer.server.recv(1)
+        finally:
+            peer.close()
+
     def test_ling_heartbeat_and_late_response_do_not_complete_request(self):
         peer = Peer()
         client = LingClient.__new__(LingClient)
