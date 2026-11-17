@@ -773,6 +773,9 @@ def worker(args, records, port, phase, number, stop):
             else:
                 pressure_cycle(records, client, cycle, args.seed, number, args.payload_bytes)
             cycle += 1
+            # 每个 worker 的累计完成量随资源样本保存，不能只用最终合计掩盖停滞。
+            # Retain each worker's cumulative completions in resource samples to expose stalls.
+            records.count(f"worker_{number}_cycles")
             if cycle % args.churn_cycles == 0:
                 client.close()
                 client = Client(port, database)
@@ -953,6 +956,9 @@ def resource_sample(records, observer, process, elapsed, metrics_port, directory
             except FileNotFoundError:
                 row["journal_changed_during_sample"] = True
     row["journal"] = {"bytes": size, "files": min(count, 4096), "truncated": count > 4096}
+    # progress.json 只是最新视图；完整样本必须保留分窗口工作量的原始计数。
+    # progress.json is only the latest view; complete samples retain counters for window analysis.
+    row["workload"] = records.snapshot()
     return row
 
 

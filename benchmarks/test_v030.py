@@ -18,7 +18,7 @@ from unittest.mock import patch
 from v030 import (CappedLog, Client, Consumer, Records, ServerError, Trends, Value, WireError, check_missing,
                   configuration, consumer_acceptance, cpu_set, decode, disk_space, encode, evidence, failed_unchanged,
                   manifest, observe_expired, packet, parser, pressure_arguments, pressure_cycle,
-                  receive, specimen)
+                  receive, resource_sample, specimen, worker)
 
 
 class Protocol(unittest.TestCase):
@@ -285,6 +285,36 @@ class Acceptance(unittest.TestCase):
         for elapsed in (40, 50, 60, 70):
             trends.add(elapsed, {"rss_bytes": 100 + elapsed})
         self.assertAlmostEqual(trends.summary()["rss_bytes"]["slope_per_hour"], 3600)
+
+    def test_resource_history_retains_each_workers_progress(self):
+        """旧采样不随后续计数改变，可核对逐 worker 的停滞窗口。
+        Historical samples stay independent, exposing per-worker stalls between observations.
+        """
+        args = parser().parse_args(["unused", "--server-binary", "ling", "--binary-revision", "test"])
+        stop = threading.Event()
+        client = FakeClient([])
+        client.close = lambda: None
+        def cycle(*unused):
+            """只完成两个周期后请求停机；Request stop after exactly two completed cycles."""
+            self.records.count("pressure_cycles")
+            if self.records.snapshot()["counts"]["pressure_cycles"] == 2:
+                stop.set()
+        with patch("v030.Client", return_value=client), patch("v030.pressure_cycle", side_effect=cycle):
+            worker(args, self.records, 1234, "pressure", 0, stop)
+        self.assertEqual(self.records.snapshot()["counts"]["worker_0_cycles"], 2)
+        def sample(elapsed):
+            """独立模拟可用的资源和指标；Supply independent resource and metric observations."""
+            response = io.BytesIO(b"ling_test 1\n")
+            with patch("v030.process_snapshot", return_value={"rss_bytes": 100}), \
+                 patch("v030.urllib.request.urlopen", return_value=response):
+                return resource_sample(self.records, FakeClient([Value(8, {})]),
+                                       SimpleNamespace(pid=123), elapsed, 1234, self.directory)
+        first = sample(5)
+        self.records.count("worker_1_cycles", 10)
+        second = sample(10)
+        self.assertNotIn("worker_1_cycles", first["workload"]["counts"])
+        self.assertEqual(second["workload"]["counts"]["worker_1_cycles"], 10)
+        self.assertEqual(first["workload"]["counts"]["worker_0_cycles"], 2)
 
     def test_consumer_failure_is_not_hidden_by_successful_production(self):
         rows = {f"{speed}-db{database}": {"received": 10, "acks": 10, "termination": "requested_stop", "errors": {}}
