@@ -79,7 +79,16 @@ Linux 比 macOS 多一项 `/dev/full` 契约；Windows 未编译上表列明的 
 
 发行输入本机检查已实际运行：两个官方 appimagetool 1.9.1 下载内容的 SHA-256 与仓内固定摘要及 GitHub 资产摘要一致；真实 `sha256sum --check` 拒绝故意置零的摘要；实际 CI 特性守卫确认 dev 图有 failpoints、发行图无、故意启用时可检测。原仅显示依赖边的命令不能显示命令行启用特性，现使用 `{p} [{f}]` 同时检查解析后的特性集合。缺失 0.1.3 CHANGELOG 小节的演练明确失败，恢复后通过。九包 `cargo metadata` 均为 MIT，Windows 目标可生成 152 个依赖和 Rust 标准库的许可原文。
 
-最终候选 Actions 待运行；Linux musl 目标测试、各平台便携烟测、许可制品核对与标签发布的实际结果在完成后回填。
+最终候选 `e60427e72b8bc9198a0662c8d641d7078db51985` 已在 Actions [`44056119224`](https://github.com/921108257/ling/actions/runs/44056119224) 全部通过，实际结果如下。工作流手动触发，Release 任务按条件跳过；标签发布另行执行。
+
+| 平台 / 目标 | 测试范围 | 通过 | 失败 / ignored | 测试目标与文档测试汇总 |
+|---|---|---:|---|---:|
+| Linux x86_64 / aarch64，各自原生宿主 | 全 workspace | 各 222 | 均 0 / 0 | 各 47 |
+| Linux x86_64 / aarch64，各自 musl 发行目标 | server / CLI | 各 101 | 均 0 / 0 | 各 18 |
+| macOS x86_64 / aarch64，各自原生目标 | 全 workspace | 各 221 | 均 0 / 0 | 各 47 |
+| Windows x86_64 原生目标 | 全 workspace，Fast 与明确拒绝 Reliable | 206 | 0 / 0 | 47 |
+
+公共检查中的 fmt、严格 clippy / rustdoc、Rust / Java / Go TCP 与双向 TLS 契约全部通过。五个平台实际构建并验证 14 个包，解包后的便携服务均通过 PING、SET、GET、PTTL、SHUTDOWN 烟测；Linux AppImage 另通过统一烟测。两个 Linux 目标均实际拒绝故意错误的 appimagetool 摘要，正确摘要校验后才运行工具。各安装包、便携包与 AppImage 的项目 MIT 许可及第三方声明检查通过：macOS 各收集 151 个 crate、Linux 各 152 个、Windows 152 个，并附 Rust 标准库许可原文；Linux 另附 musl 声明，Windows 保留 WinSW 声明。日志为本机 `target/ci-44056119224.log`。
 
 ### 生产路径 panic 审阅
 
