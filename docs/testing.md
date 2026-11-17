@@ -384,7 +384,7 @@ Actions `44067279489` 在 `e3a76c026592fc5b9c689a58c22c4ba438e2a1c6` 上完成�
 | macOS Intel / ARM64 | 每架构 workspace 233 项 | 各 PKG、tar.gz；原生安装、launchd 服务、配置与状态保留、便携包 TCP 烟测 |
 | Windows x86_64 | workspace 217 项，包含 Fast 与明确拒绝 Reliable | Setup EXE、ZIP；安装、服务、PATH 与配置保留、卸载及便携包 TCP 烟测 |
 
-以上测试均为零失败、零忽略；不同平台的条件编译测试数不相同。共生成 14 个包，本机下载后生成并重读核对 SHA-256 清单，检查五份便携包的 MIT 正文及第三方声明，另对下载的 Windows ZIP 解压后运行 `scripts/smoke-package.py`，真实 PING / SET / GET / PTTL / SHUTDOWN 均通过。制品对应上面的 `e3a76c0`；后续仅修正基准工具的历史验收状态展示与测试样例、归档数据及更新文档，未改服务端或 CLI 实现。当前为开发分支构建，标签发布任务按条件跳过，没有创建 0.1.5 Release。测试也不改变 Windows 不支持 Reliable、安装包未签名以及目标环境尚未验收的边界。
+以上测试均为零失败、零忽略；不同平台的条件编译测试数不相同。共生成 14 个包，本机下载后生成并重读核对 SHA-256 清单，检查五份便携包的 MIT 正文及第三方声明，另对下载的 Windows ZIP 解压后运行 `scripts/smoke-package.py`，真实 PING / SET / GET / PTTL / SHUTDOWN 均通过。制品对应上面的 `e3a76c0`；后续仅修正基准工具的历史验收状态展示与测试样例、归档数据及更新文档，未改服务端或 CLI 实现。该次为开发分支构建，标签发布任务按条件跳过。测试也不改变 Windows 不支持 Reliable、安装包未签名以及目标环境尚未验收的边界。
 
 ## Redis 对比边界
 
