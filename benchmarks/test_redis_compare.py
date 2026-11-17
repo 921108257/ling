@@ -304,6 +304,34 @@ class RedisComparisonTests(unittest.TestCase):
         self.assertEqual(operation.call_count, 2)  # 一次预填充、一次预热；One preload and one warmup.
         self.assertEqual(result["threads_alive"], 0)
 
+    def test_pinned_redis_builtin_is_accepted_and_extra_modules_stop_before_preload(self):
+        """官方内置vectorset允许，额外模块拒绝；Accept the pinned built-in and reject extra modules before writes."""
+        builtin = [b"name", b"vectorset", b"ver", 1, b"path", b"", b"args", []]
+        external = [b"name", b"extra", b"ver", 1, b"path", b"/tmp/extra.so", b"args", []]
+        for modules, reaches_preload in (([builtin], True), ([builtin, external], False), ([], False)):
+            with self.subTest(modules=modules):
+                child, client = Child(), MagicMock()
+                client.request.return_value = b"PONG"
+                metadata = {"config": [b"appendonly", b"no", b"appendfsync", b"always", b"save", b"",
+                                       b"io-threads", b"1", b"maxmemory-policy", b"noeviction",
+                                       b"maxmemory", b"67108864"], "modules": modules, "info": ""}
+                case = dict(mode="fast", kind="bytes", operation="get", repeat=1, system="redis")
+                with tempfile.TemporaryDirectory() as directory, patch("redis_compare.subprocess.Popen", return_value=child), \
+                        patch("redis_compare.free_port", return_value=12345), \
+                        patch("redis_compare.owns_listener", return_value=True), \
+                        patch("redis_compare.RedisClient", return_value=client), \
+                        patch("redis_compare.server_info", return_value=metadata), \
+                        patch("redis_compare.perform", side_effect=WireError("LOCAL_EOF: incomplete response")) as operation:
+                    result = run_case(case_arguments(), case, Path("unused"), Path(directory), None)
+                self.assertEqual(operation.call_count, int(reaches_preload))
+                self.assertEqual(result["effective_configuration"], metadata)
+                self.assertFalse(result["configuration_mismatches"])
+                if reaches_preload:
+                    self.assertTrue(any(error["phase"] == "preload" and error["write_result_may_be_unknown"]
+                                        for error in result["errors"]))
+                else:
+                    self.assertTrue(any("module mismatch" in error["error"] for error in result["errors"]))
+
 
 if __name__ == "__main__":
     unittest.main()

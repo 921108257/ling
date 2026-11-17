@@ -7,6 +7,7 @@ Fast retains ling events while Redis disables persistence. Reliable journals eve
 Redis AOF always persists values and may group parallel commands into one fsync.
 These durability objects are different: report each pair separately, never one ranking.
 The shared Python process, protocol codecs and same-host CPU budget limit this workload.
+Redis core retains its bundled vectorset module; no external modules are accepted.
 """
 import argparse
 from array import array
@@ -47,6 +48,8 @@ REDIS_PIN = {
     "durability_source": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/",
     "protocol_source": "https://redis.io/docs/latest/develop/reference/protocol-spec/",
 }
+# 固定源码默认静态加载此内置模块；The pinned core registers this built-in in moduleLoadInternalModules.
+REDIS_CORE_MODULES = [[b"name", b"vectorset", b"ver", 1, b"path", b"", b"args", []]]
 
 
 def json_value(value):
@@ -416,13 +419,15 @@ def run_case(args, case, binary, root, server_cpus):
                     time.sleep(.02)
             if system == "redis":
                 metadata = server_info(observer, system)
+                result["effective_configuration"] = metadata
                 settings = dict(zip(metadata["config"][::2], metadata["config"][1::2]))
                 wanted = {b"appendonly": b"yes" if case["mode"] == "reliable" else b"no",
                           b"appendfsync": b"always", b"save": b"", b"io-threads": b"1",
                           b"maxmemory-policy": b"noeviction", b"maxmemory": str(args.memory_bytes).encode()}
-                if any(settings.get(key) != value for key, value in wanted.items()) or metadata["modules"]:
+                result["configuration_mismatches"] = {key.decode(): {"expected": value, "actual": settings.get(key)}
+                                                      for key, value in wanted.items() if settings.get(key) != value}
+                if result["configuration_mismatches"] or metadata["modules"] != REDIS_CORE_MODULES:
                     raise RuntimeError("Redis effective configuration or module mismatch")
-                result["effective_configuration"] = metadata
             setup_deadline = time.monotonic() + 60
             for index in range(args.keys):
                 if time.monotonic() >= setup_deadline:
