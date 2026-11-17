@@ -11,6 +11,7 @@ import socket
 import struct
 import tempfile
 import threading
+import time
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -18,7 +19,7 @@ from unittest.mock import patch
 from v030 import (CappedLog, Client, Consumer, Records, ServerError, Trends, Value, WireError, check_missing,
                   configuration, consumer_acceptance, cpu_set, decode, disk_space, encode, evidence, failed_unchanged,
                   manifest, observe_expired, packet, parser, pressure_arguments, pressure_cycle,
-                  receive, resource_sample, specimen, worker)
+                  progress_sample, receive, resource_sample, run_phase, specimen, worker)
 
 
 class Protocol(unittest.TestCase):
@@ -327,6 +328,170 @@ class Acceptance(unittest.TestCase):
         self.assertTrue(consumer_acceptance("fast", rows)["valid"])
         rows["fast-db0"].update(termination="expected_fast_lag", errors={"ERR_OFFSET_EXPIRED": 1})
         self.assertFalse(consumer_acceptance("fast", rows)["valid"])
+
+    def test_resource_times_bracket_slow_info_and_consumer_snapshots(self):
+        """延迟INFO与消费者读数必须全部位于采样区间，不能用采样开始冒充计数时刻。
+        Delayed INFO and consumer reads must lie inside the sample interval, not at its start timestamp.
+        """
+        clock = [100.0]
+        def native(_):
+            """模拟原生采样耗时；Simulate native observation latency."""
+            clock[0] += 1
+            return {"rss_bytes": 100}
+        def consumer_state():
+            """在慢读取后完成消费者快照；Complete a consumer snapshot after a slow read."""
+            clock[0] += 3
+            return {"acks": 1}
+        response = io.BytesIO(b"ling_test 1\n")
+        client = FakeClient([Value(8, {})])
+        original_request = client.request
+        def info(command, arguments):
+            """模拟INFO等待；Simulate INFO latency."""
+            clock[0] += 2
+            return original_request(command, arguments)
+        client.request = info
+        consumer = SimpleNamespace(name="slow-db0", snapshot=consumer_state)
+        with patch("v030.time.monotonic", side_effect=lambda: clock[0]), \
+             patch("v030.process_snapshot", side_effect=native), \
+             patch("v030.urllib.request.urlopen", return_value=response):
+            sample = resource_sample(self.records, client, SimpleNamespace(pid=1), 0, 1, self.directory,
+                                     consumers=[consumer], phase_started=90)
+        self.assertEqual(sample["sample_started_elapsed_seconds"], 10)
+        self.assertEqual(sample["sample_completed_elapsed_seconds"], 16)
+        self.assertEqual(sample["elapsed_seconds"], 10)
+        self.assertEqual(sample["consumers"]["slow-db0"]["acks"], 1)
+
+    def test_terminal_sample_preserves_stop_boundary_and_budget(self):
+        """排空耗时不充作负载时长，末次样本仍保存且不突破既有样本预算。
+        Draining is separate from load duration; the terminal sample is retained within the original sample cap.
+        """
+        args = parser().parse_args([str(self.directory), "--server-binary", "ling", "--binary-revision", "test",
+                                    "--seconds", ".02", "--resource-samples", "1", "--workers", "2",
+                                    "--warmup-seconds", "0"])
+        args.output = self.directory
+        process = SimpleNamespace(pid=123, stdout=io.BytesIO(), returncode=None)
+        process.poll = lambda: process.returncode
+        def wait(timeout):
+            """只模拟自有进程正常退出；Simulate only the owned process's clean exit."""
+            process.returncode = 0
+            return 0
+        process.wait = wait
+        class Thread:
+            """排空时产生后续计数，验证停止前快照不被覆盖。
+            Add late counters while draining to verify the pre-stop snapshot stays independent.
+            """
+            def __init__(self, target=None, args=(), **unused):
+                self.args, self.ident, self.name, self.alive = args, None, "fake", False
+            def start(self):
+                """模拟已开始；Mark the simulated thread as started."""
+                self.ident, self.alive = 1, True
+            def is_alive(self):
+                """显式报告存活；Report simulated liveness."""
+                return self.alive
+            def join(self, timeout):
+                """排空不应计入有效负载边界；Draining must not move the effective load boundary."""
+                if self.args:
+                    self.args[1].count("worker_0_cycles", 100)
+                    self.args[1].count("workers_requested_stop")
+                time.sleep(.003)
+                self.alive = False
+        class FakeConsumer:
+            """固定四组状态，不建立连接；Provide four bounded group states without connections."""
+            def __init__(self, args, records, port, mode, database, slow, stream_id, stop):
+                self.name = f"{'slow' if slow else 'fast'}-db{database}"
+                self.thread = Thread()
+            def snapshot(self):
+                """保存停止状态；Retain the simulated stop state."""
+                return {"received": 1, "acks": 1, "termination": "running" if self.thread.alive else "requested_stop", "errors": {}}
+        class Logger:
+            """保留正常空gzip日志供阶段收尾检查；Retain a valid empty gzip log for phase finalization."""
+            def __init__(self, pipe, directory, records):
+                self.thread, self.total, self.panic_markers = Thread(), 0, 0
+                with gzip.open(directory / "server-complete.log.gz", "wb"):
+                    pass
+        observer = SimpleNamespace(hello=Value(8, {"stream_id": Value(6, b"x" * 16)}), close=lambda: None,
+                                   request=lambda command, arguments: Value(8, {}) if command == "INFO" else Value(1, True))
+        native = {"rss_bytes": 100, "cpu_seconds": 0, "handles": 4, "threads": 2}
+        with patch("v030.subprocess.Popen", return_value=process), patch("v030.CappedLog", Logger), \
+             patch("v030.Client", return_value=observer), patch("v030.Consumer", FakeConsumer), \
+             patch("v030.threading.Thread", Thread), patch("v030.process_snapshot", return_value=native), \
+             patch("v030.urllib.request.urlopen", side_effect=lambda *a, **k: io.BytesIO(b"ling_test 1\n")), \
+             patch("v030.disk_space", return_value={"output_filesystem_free_bytes": 10**12}):
+            result = run_phase(args, self.directory / "ling", "fast", "pressure", "noeviction")
+        with gzip.open(self.directory / "fast-pressure-noeviction/resources.jsonl.gz", "rt", encoding="utf-8") as stream:
+            samples = [json.loads(line) for line in stream]
+        self.assertEqual(len(samples), 1)
+        self.assertEqual(samples[0]["sample_kind"], "terminal")
+        self.assertEqual(result["resource_samples_saved"], 1)
+        self.assertGreater(result["counts"]["resource_samples_omitted"], 0)
+        self.assertNotIn("worker_0_cycles", result["load_stop"]["workload"]["counts"])
+        self.assertEqual(samples[0]["workload"]["counts"]["worker_0_cycles"], 200)
+        self.assertLessEqual(result["load_stop"]["sample_completed_elapsed_seconds"], result["load_stop_requested_elapsed_seconds"])
+        self.assertGreater(samples[0]["sample_started_elapsed_seconds"], result["load_stop_requested_elapsed_seconds"])
+        self.assertEqual(result["native_resources"]["attempts"], 2)
+        for field in ("rss_bytes", "handles", "threads"):
+            self.assertEqual(result["resource_trends"][field]["samples"], 2)
+
+    def test_planned_offline_is_accounted_while_still_disconnected(self):
+        """正在离线的时间立即扣除，完成和重复收尾不会重复累计。
+        Ongoing offline time is deducted immediately; completion and repeated cleanup do not double count it.
+        """
+        args = parser().parse_args(["unused", "--server-binary", "ling", "--binary-revision", "test"])
+        stream_id = b"x" * 16
+        client = FakeClient([True])
+        client.hello, client.subscribe, client.close = {"stream_id": stream_id}, lambda *a: None, lambda: None
+        with patch("v030.EventClient", return_value=client):
+            consumer = Consumer(args, self.records, 1234, "reliable", 0, True, stream_id, threading.Event())
+        consumer.started, consumer.offline_started = 100, 120
+        consumer.state["planned_disconnected_seconds"] = 2
+        with patch("v030.time.monotonic", return_value=130):
+            during = consumer.snapshot()
+        self.assertTrue(during["planned_offline"])
+        self.assertEqual((during["elapsed_seconds"], during["planned_disconnected_seconds"], during["active_seconds"]), (30, 12, 18))
+        consumer.end_planned_disconnect(140, reconnected=True)
+        consumer.end_planned_disconnect(150, reconnected=False)
+        with patch("v030.time.monotonic", return_value=145):
+            after = consumer.snapshot()
+        self.assertFalse(after["planned_offline"])
+        self.assertEqual((after["planned_disconnected_seconds"], after["active_seconds"], after["reconnects"]), (22, 23, 1))
+
+    def test_progress_boundary_keeps_a_conservative_count_snapshot(self):
+        """边界后的完成量不会追写进此前的停止快照。
+        Later completions cannot be written back into an earlier stop-boundary snapshot.
+        """
+        with patch("v030.time.monotonic", side_effect=[100, 102]):
+            boundary = progress_sample(self.records, [], 90)
+        self.records.count("worker_0_cycles", 100)
+        self.assertEqual((boundary["sample_started_elapsed_seconds"], boundary["sample_completed_elapsed_seconds"]), (10, 12))
+        self.assertNotIn("worker_0_cycles", boundary["workload"]["counts"])
+
+    def test_stop_during_planned_disconnect_closes_the_offline_interval(self):
+        """计划离线中请求停止，也记录区间结束且不伪装为已重连。
+        A stop during planned offline time closes its evidence interval without claiming reconnection.
+        """
+        args = parser().parse_args(["unused", "--server-binary", "ling", "--binary-revision", "test",
+                                    "--consumer-reconnect-seconds", "1"])
+        stream_id, stop = b"x" * 16, threading.Event()
+        client = FakeClient([True])
+        client.hello, client.subscribe, client.close = {"stream_id": stream_id}, lambda *a: None, lambda: None
+        with patch("v030.EventClient", return_value=client):
+            consumer = Consumer(args, self.records, 1234, "reliable", 0, True, stream_id, stop)
+        ticks = iter(range(100, 200))
+        with patch("v030.time.monotonic", side_effect=lambda: next(ticks)), \
+             patch.object(stop, "wait", side_effect=lambda seconds: stop.set()):
+            consumer.run()
+            final = consumer.snapshot()
+        self.assertEqual(final["termination"], "requested_stop")
+        self.assertFalse(final["planned_offline"])
+        self.assertGreater(final["planned_disconnected_seconds"], 0)
+        self.assertEqual(final["reconnects"], 0)
+        self.assertEqual(final["active_seconds"] + final["planned_disconnected_seconds"], final["elapsed_seconds"])
+        import zlib
+        raw = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress((self.directory / "errors.jsonl.gz").read_bytes())
+        rows = [json.loads(line) for line in raw.splitlines()]
+        self.assertEqual([row["category"] for row in rows],
+                         ["planned_consumer_disconnect_started", "planned_consumer_disconnect_completed"])
+        self.assertFalse(rows[-1]["reconnected"])
 
     def test_consumer_tracks_wire_names_ack_holes_and_duplicates(self):
         args = parser().parse_args(["unused", "--server-binary", "ling", "--binary-revision", "test"])

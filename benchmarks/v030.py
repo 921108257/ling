@@ -410,6 +410,7 @@ class Consumer:
         self.name = f"{'slow' if slow else 'fast'}-db{database}"
         self.group = "acceptance-" + self.name
         self.started = None
+        self.offline_started = None
         self.lock = threading.Lock()
         self.watermarks, self.holes = {shard: 0 for shard in range(4)}, {shard: set() for shard in range(4)}
         self.state = {"received": 0, "acks": 0, "duplicates": 0, "reconnects": 0,
@@ -483,17 +484,17 @@ class Consumer:
         try:
             while not self.stop.is_set():
                 if self.slow and time.monotonic() >= next_reconnect:
-                    self.client.close()
                     offline = time.monotonic()
+                    with self.lock:
+                        self.offline_started = offline
+                    self.records.event_evidence("planned_consumer_disconnect_started", consumer=self.name,
+                                                monotonic_seconds=offline)
+                    self.client.close()
                     self.stop.wait(self.args.consumer_disconnect_seconds)
                     if self.stop.is_set():
-                        with self.lock:
-                            self.state["planned_disconnected_seconds"] += time.monotonic()-offline
                         break
                     self.client = self.connect()
-                    with self.lock:
-                        self.state["reconnects"] += 1
-                        self.state["planned_disconnected_seconds"] += time.monotonic()-offline
+                    self.end_planned_disconnect(time.monotonic(), reconnected=True)
                     self.records.event_evidence("planned_consumer_reconnect", consumer=self.name)
                     next_reconnect = time.monotonic() + self.args.consumer_reconnect_seconds
                 if self.client.events:
@@ -519,18 +520,42 @@ class Consumer:
                                      last_received_id=self.state.get("last_received_id"),
                                      outcome="any unconfirmed ACK is unknown; no automatic reconnect or replay")
         finally:
+            self.end_planned_disconnect(time.monotonic(), reconnected=False)
             self.client.close()
             with self.lock:
                 self.state["elapsed_seconds"] = time.monotonic()-started
+
+    def end_planned_disconnect(self, now, reconnected):
+        """离线结束只结算一次，失败和停止也保留完整区间。
+        Settle each offline interval once, including reconnect failures and requested stops.
+        """
+        with self.lock:
+            if self.offline_started is None:
+                return
+            offline = self.offline_started
+            self.state["planned_disconnected_seconds"] += now-offline
+            self.state["reconnects"] += int(reconnected)
+            self.offline_started = None
+        self.records.event_evidence("planned_consumer_disconnect_completed", consumer=self.name,
+                                    started_monotonic_seconds=offline, completed_monotonic_seconds=now,
+                                    duration_seconds=now-offline, reconnected=reconnected)
 
     def snapshot(self):
         """复制固定大小状态，避免边读边变更。
         Copy bounded state without racing dictionary updates.
         """
         with self.lock:
-            elapsed = self.state.get("elapsed_seconds", time.monotonic()-self.started if self.started else 0)
+            now = time.monotonic()
+            elapsed = self.state.get("elapsed_seconds", now-self.started if self.started is not None else 0)
+            offline = self.state["planned_disconnected_seconds"]
+            if self.offline_started is not None:
+                offline += max(0, now-self.offline_started)
             return {**self.state, "errors": dict(self.state["errors"]), "elapsed_seconds": elapsed,
-                    "active_seconds": max(0, elapsed-self.state["planned_disconnected_seconds"]),
+                    "started_monotonic_seconds": self.started,
+                    "planned_offline": self.offline_started is not None,
+                    "planned_offline_started_monotonic_seconds": self.offline_started,
+                    "planned_disconnected_seconds": offline,
+                    "active_seconds": max(0, elapsed-offline),
                     "confirmed_watermarks": {str(shard): str(value) for shard, value in self.watermarks.items()},
                     "confirmed_above_watermark": {str(shard): len(pending) for shard, pending in self.holes.items()}}
 
@@ -930,11 +955,27 @@ class Trends:
         return output
 
 
-def resource_sample(records, observer, process, elapsed, metrics_port, directory):
+def progress_sample(records, consumers, phase_started):
+    """用单调起止时间包住各计数快照，窗口分析只取完整位于窗口内的证据。
+    Bracket counter snapshots with monotonic times so window analysis uses only wholly contained evidence.
+    """
+    began = time.monotonic()
+    row = {"sample_started_elapsed_seconds": began-phase_started,
+           "workload": records.snapshot(),
+           "consumers": {consumer.name: consumer.snapshot() for consumer in consumers}}
+    row["sample_completed_elapsed_seconds"] = time.monotonic()-phase_started
+    return row
+
+
+def resource_sample(records, observer, process, elapsed, metrics_port, directory, *,
+                    consumers=(), phase_started=None, sample_kind="periodic"):
     """原生资源、INFO、Prometheus 与 Journal 大小一起采样。
     Sample native resources, INFO, Prometheus and Journal size together.
     """
-    row = {"elapsed_seconds": elapsed, "native": process_snapshot(process.pid)}
+    began = time.monotonic()
+    phase_started = began-elapsed if phase_started is None else phase_started
+    row = {"elapsed_seconds": began-phase_started, "sample_started_elapsed_seconds": began-phase_started,
+           "sample_kind": sample_kind, "native": process_snapshot(process.pid)}
     ok, info = records.request(observer, "INFO", ["all"])
     row["info"] = evidence(info) if ok else {"error": info}
     try:
@@ -958,7 +999,10 @@ def resource_sample(records, observer, process, elapsed, metrics_port, directory
     row["journal"] = {"bytes": size, "files": min(count, 4096), "truncated": count > 4096}
     # progress.json 只是最新视图；完整样本必须保留分窗口工作量的原始计数。
     # progress.json is only the latest view; complete samples retain counters for window analysis.
-    row["workload"] = records.snapshot()
+    row.update(progress_sample(records, consumers, phase_started))
+    # 包围整个采样，而非仅计数读取；INFO、HTTP与文件遍历耗时也属于不确定边界。
+    # Bracket the complete sample, including INFO, HTTP and filesystem traversal latency.
+    row["sample_started_elapsed_seconds"] = began-phase_started
     return row
 
 
@@ -1015,6 +1059,8 @@ def run_phase(args, binary, mode, phase, policy):
         for consumer in consumers:
             consumer.thread.start()
         started = time.monotonic()
+        row["load_started_monotonic_seconds"] = started
+        row["load_start"] = progress_sample(records, consumers, started)
         for number in range(args.workers):
             thread = threading.Thread(target=worker, args=(args, records, port, phase, number, stop), daemon=True)
             threads.append(thread)
@@ -1035,14 +1081,16 @@ def run_phase(args, binary, mode, phase, policy):
                         records.finding("evidence_budget_exhausted", minimum_free_bytes=args.min_free_bytes, **spaces)
                         ending = "evidence_budget_exhausted"
                         break
-                    sample = resource_sample(records, observer, server, now-started, metrics_port, directory)
+                    sample = resource_sample(records, observer, server, now-started, metrics_port, directory,
+                                             consumers=consumers, phase_started=started)
                     sample["disk"] = spaces
                     native_attempts += 1
                     for field in ("cpu_seconds", "rss_bytes", "handles", "threads"):
                         (native_valid if type(sample["native"].get(field)) in (int, float) else native_missing)[field] += 1
-                    sample["consumers"] = {consumer.name: consumer.snapshot() for consumer in consumers}
-                    trends.add(now-started, sample["native"])
-                    if sample_count < args.resource_samples:
+                    trends.add(sample["elapsed_seconds"], sample["native"])
+                    # 为排空后的末次样本保留一个位置，总记录数不突破既有预算。
+                    # Reserve one slot for the post-drain terminal sample without exceeding the existing cap.
+                    if sample_count < args.resource_samples-1:
                         raw.write(json.dumps(sample, ensure_ascii=False, allow_nan=False) + "\n")
                         raw.flush()
                         sample_count += 1
@@ -1067,6 +1115,9 @@ def run_phase(args, binary, mode, phase, policy):
         records.finding("phase_failure", error=str(error))
         row["status"] = "failed"
     finally:
+        if started is not None:
+            row["load_stop"] = progress_sample(records, consumers, started)
+            row["load_stop_requested_elapsed_seconds"] = time.monotonic()-started
         stop.set()
         for thread in threads:
             thread.join(timeout=12)
@@ -1083,10 +1134,27 @@ def run_phase(args, binary, mode, phase, policy):
             row["elapsed_seconds"] = time.monotonic() - started
         if observer is not None and server is not None and server.poll() is None:
             try:
-                ok, final_info = records.request(observer, "INFO", ["all"])
-                row["final_info"] = evidence(final_info) if ok else {"error": final_info}
-            except (OSError, WireError):
-                pass
+                if started is None:
+                    ok, final_info = records.request(observer, "INFO", ["all"])
+                    row["final_info"] = evidence(final_info) if ok else {"error": final_info}
+                else:
+                    spaces = disk_space(directory)
+                    if min(spaces.values()) < args.min_free_bytes:
+                        records.finding("evidence_budget_exhausted", minimum_free_bytes=args.min_free_bytes, **spaces)
+                    terminal = resource_sample(records, observer, server, time.monotonic()-started, metrics_port, directory,
+                                               consumers=consumers, phase_started=started, sample_kind="terminal")
+                    terminal["disk"] = spaces
+                    native_attempts += 1
+                    for field in ("cpu_seconds", "rss_bytes", "handles", "threads"):
+                        (native_valid if type(terminal["native"].get(field)) in (int, float) else native_missing)[field] += 1
+                    trends.add(terminal["elapsed_seconds"], terminal["native"])
+                    with gzip.open(directory / "resources.jsonl.gz", "at", encoding="utf-8") as raw:
+                        raw.write(json.dumps(terminal, ensure_ascii=False, allow_nan=False) + "\n")
+                    sample_count += 1
+                    row["final_info"] = terminal["info"]
+                    row["terminal_sample_completed_elapsed_seconds"] = terminal["sample_completed_elapsed_seconds"]
+            except (OSError, WireError) as error:
+                records.finding("terminal_sample_failed", error=str(error))
         if server is not None:
             if observer is not None and server.poll() is None:
                 try:
