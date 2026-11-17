@@ -4,8 +4,10 @@
 use crate::Config;
 use ling_protocol::{Body, Frame, ReadError, Request, encode_frame, read_frame};
 use ling_types::{DbError, ErrorCode, Value};
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::{sync::Arc, time::Duration};
+use subtle::ConstantTimeEq;
 use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
     sync::{Semaphore, watch},
@@ -33,8 +35,10 @@ pub(crate) async fn serve(
     // 独立有界读任务保存半帧状态；事件推送不会取消正在进行的帧读取。
     // A bounded reader preserves partial-frame state; event pushes never cancel frame reads.
     reading.spawn(async move {
+        let mut first_frame = true;
         loop {
-            let frame = receive(&mut reader, &read_config).await;
+            let frame = receive(&mut reader, &read_config, first_frame).await;
+            first_frame = false;
             let done = !matches!(frame, Ok(Some(_)));
             if frames.send(frame).await.is_err() || done {
                 break;
@@ -46,6 +50,7 @@ pub(crate) async fn serve(
     let mut session = Session {
         hello: false,
         authenticated: !config.auth.enabled,
+        auth_failures: 0,
         db: config.database.default_db,
         last_id: 0,
         scan: ling_engine::ScanState::default(),
@@ -317,6 +322,8 @@ struct Session {
     /// 当前认证状态；失败重认证会清除。
     /// Current authentication state, revoked by failed reauthentication.
     authenticated: bool,
+    /// 连续错误口令次数，成功认证重置；Consecutive wrong passwords, reset by successful authentication.
+    auth_failures: u8,
     /// 当前连接选择的数据库。
     /// Database selected by this connection.
     db: u16,
@@ -521,10 +528,20 @@ impl Session {
                 [Value::String(password)] => {
                     // 重新认证失败后必须撤销已有认证状态。
                     // Failed reauthentication must revoke any prior authenticated state.
-                    self.authenticated = !config.auth.enabled || password == &config.auth.password;
+                    self.authenticated =
+                        !config.auth.enabled || password_matches(password, &config.auth.password);
                     if self.authenticated {
+                        self.auth_failures = 0;
                         Ok(Value::Bool(true))
                     } else {
+                        self.auth_failures = self.auth_failures.saturating_add(1);
+                        close = self.auth_failures >= MAX_AUTH_FAILURES;
+                        if let Some(runtime) = &self.runtime {
+                            runtime.auth_failed();
+                        }
+                        // 等待不持执行许可；关闭只影响当前连接，失败响应字节保持不变。
+                        // Waiting holds no execution permit; only this peer closes, with unchanged failure bytes.
+                        tokio::time::sleep(auth_failure_delay(self.auth_failures, config)).await;
                         Err(DbError::new(ErrorCode::AuthFailed, "Authentication failed"))
                     }
                 }
@@ -609,12 +626,56 @@ impl Session {
     }
 }
 
-/// 分别限制帧间空闲和半帧接收，取消后连接不再复用。
-/// Separately limits inter-frame idle time and partial reads; cancelled streams are never reused.
+/// 连接累计五次失败后关闭，避免持有无限次猜测的会话。
+/// Closes a connection after five consecutive failures to bound guesses per session.
+const MAX_AUTH_FAILURES: u8 = 5;
+
+/// 固定长度摘要交给成熟库比较，不对口令本身做提前终止的比较。
+/// Compares fixed-length digests through an established library without early-exit password comparison.
+fn password_matches(password: &str, expected: &str) -> bool {
+    let supplied = Sha256::digest(password.as_bytes());
+    let expected = Sha256::digest(expected.as_bytes());
+    bool::from(supplied.ct_eq(&expected))
+}
+
+/// 100 ms 起、翻倍至 1600 ms；启用的最小请求/空闲期限再限制为其一半。
+/// Starts at 100 ms, doubles up to 1600 ms, and is capped at half the shortest enabled request/idle timeout.
+fn auth_failure_delay(failures: u8, config: &Config) -> Duration {
+    let delay = Duration::from_millis(100 << failures.saturating_sub(1).min(4));
+    [
+        config.server.request_timeout_ms,
+        config.server.idle_timeout_ms,
+    ]
+    .into_iter()
+    .filter(|millis| *millis != 0)
+    .map(|millis| Duration::from_millis(millis) / 2)
+    .fold(delay, Duration::min)
+}
+
+/// 首帧共用请求期限；后续分别限制帧间空闲和半帧，取消后不复用。
+/// The first frame shares a request deadline; later idle and partial reads have separate limits, without reuse after cancellation.
 async fn receive(
     stream: &mut (impl AsyncRead + Unpin),
     config: &Config,
+    first_frame: bool,
 ) -> Result<Option<Frame>, ReadError> {
+    if first_frame {
+        // 首字节前就开始计时，慢速发送头部也不能延长同一个期限。
+        // Start before the first byte so a slowly sent header cannot extend the deadline.
+        let millis = if config.server.request_timeout_ms != 0 {
+            config.server.request_timeout_ms
+        } else {
+            config.server.idle_timeout_ms
+        };
+        let read = read_frame(stream, config.limits());
+        return if millis == 0 {
+            read.await
+        } else {
+            timeout(Duration::from_millis(millis), read)
+                .await
+                .unwrap_or(Ok(None))
+        };
+    }
     let mut first = [0];
     let start = async { stream.read(&mut first).await };
     let count = if config.server.idle_timeout_ms == 0 {
@@ -697,6 +758,143 @@ impl Drop for ConnectionCount {
 mod tests {
     use super::*;
 
+    /// 用虚拟时钟核对首帧请求期限、禁用后的 idle 回退及 HELLO 后 idle。
+    /// A virtual clock checks the first-frame request deadline, disabled-request idle fallback, and post-HELLO idle.
+    #[tokio::test(start_paused = true)]
+    async fn first_frame_deadline_and_idle_fallback() {
+        for (first, request_ms, idle_ms, expected_ms) in [
+            (true, 100, 10, 100),
+            (true, 0, 20, 20),
+            (false, 100, 20, 20),
+        ] {
+            let mut config = Config::default();
+            config.server.request_timeout_ms = request_ms;
+            config.server.idle_timeout_ms = idle_ms;
+            let (_writer, mut reader) = tokio::io::duplex(32);
+            let start = Instant::now();
+            assert!(
+                receive(&mut reader, &config, first)
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+            assert_eq!(start.elapsed(), Duration::from_millis(expected_ms));
+        }
+        for (request_ms, idle_ms, expected_ms) in [(100, 10, 100), (0, 20, 20)] {
+            let mut config = Config::default();
+            config.server.request_timeout_ms = request_ms;
+            config.server.idle_timeout_ms = idle_ms;
+            let (mut writer, mut reader) = tokio::io::duplex(32);
+            writer.write_all(b"L").await.unwrap();
+            let start = Instant::now();
+            assert!(receive(&mut reader, &config, true).await.unwrap().is_none());
+            assert_eq!(start.elapsed(), Duration::from_millis(expected_ms));
+        }
+    }
+
+    /// 固定长度摘要覆盖相同、不同长度、空值以及 Unicode 口令。
+    /// Fixed-length digest comparison covers equality, different lengths, empty values, and Unicode passwords.
+    #[test]
+    fn password_comparison_boundaries() {
+        for (left, right, expected) in [
+            ("secret", "secret", true),
+            ("secret", "secreu", false),
+            ("secret", "secret-long", false),
+            ("", "secret", false),
+            ("", "", true),
+            ("密钥", "密钥", true),
+            ("密钥", "密码", false),
+        ] {
+            assert_eq!(password_matches(left, right), expected);
+        }
+    }
+
+    /// 延迟递增但严格低于启用的超时；用纯函数检验，不真实等待。
+    /// Delays increase but stay below enabled timeouts, tested without wall-clock sleeps.
+    #[test]
+    fn authentication_delay_is_bounded() {
+        let mut config = Config::default();
+        for (failures, millis) in [(1, 100), (2, 200), (3, 400), (4, 800), (5, 1600)] {
+            assert_eq!(
+                auth_failure_delay(failures, &config),
+                Duration::from_millis(millis)
+            );
+        }
+        config.server.request_timeout_ms = 1;
+        assert_eq!(auth_failure_delay(5, &config), Duration::from_micros(500));
+        config.server.request_timeout_ms = 0;
+        config.server.idle_timeout_ms = 20;
+        assert_eq!(auth_failure_delay(5, &config), Duration::from_millis(10));
+        config.server.idle_timeout_ms = 0;
+        assert_eq!(auth_failure_delay(5, &config), Duration::from_millis(1600));
+    }
+
+    /// 测试会话不接入事件，避免把认证测试绑定到消费存储。
+    /// Test sessions omit event state so authentication tests stay independent of consumer storage.
+    fn session(config: &Config) -> Session {
+        Session {
+            hello: true,
+            authenticated: !config.auth.enabled,
+            auth_failures: 0,
+            db: 0,
+            last_id: 1,
+            scan: ling_engine::ScanState::default(),
+            subscription: None,
+            events: None,
+            runtime: None,
+        }
+    }
+
+    /// 虚拟时钟证明延迟期间不取得执行许可，其他会话的 PING 可以先完成。
+    /// A virtual clock proves delayed authentication holds no execution permit and another session can PING first.
+    #[tokio::test(start_paused = true)]
+    async fn authentication_delay_isolated_and_success_resets_failures() {
+        let mut config = Config::default();
+        config.auth.enabled = true;
+        config.auth.password = "secret".into();
+        let engine =
+            Arc::new(ling_engine::Engine::new(config.engine_config().unwrap(), 1).unwrap());
+        let slots = Arc::new(Semaphore::new(0));
+        let mut bad = session(&config);
+        bad.authenticated = true;
+        let mut other = session(&config);
+        let started = Instant::now();
+        {
+            let delayed = bad.execute(
+                Request::new("AUTH", vec![Value::String("wrong".into())]),
+                &config,
+                &engine,
+                slots.clone(),
+            );
+            tokio::pin!(delayed);
+            tokio::select! {
+                biased;
+                _ = &mut delayed => panic!("Authentication failure was not delayed"),
+                (result, _, _) = other.execute(Request::new("PING", vec![]), &config, &engine, slots.clone()) => {
+                    assert_eq!(result.unwrap(), Value::String("PONG".into()));
+                    assert_eq!(Instant::now(), started);
+                }
+            }
+            let (result, close, fatal) = delayed.await;
+            assert_eq!(result.unwrap_err().code, ErrorCode::AuthFailed.as_str());
+            assert!(!close && !fatal);
+        }
+        assert!(!bad.authenticated);
+        assert_eq!(bad.auth_failures, 1);
+        let (result, close, fatal) = bad
+            .execute(
+                Request::new("AUTH", vec![Value::String("secret".into())]),
+                &config,
+                &engine,
+                slots,
+            )
+            .await;
+        assert_eq!(result.unwrap(), Value::Bool(true));
+        assert!(!close && !fatal);
+        assert!(bad.authenticated);
+        assert_eq!(bad.auth_failures, 0);
+    }
+
     /// 排队超时必须明确尚未执行；许可释放后同一会话可以继续请求。
     /// Queue timeout must precede execution; the same session works after a permit becomes available.
     #[tokio::test]
@@ -711,6 +909,7 @@ mod tests {
         let mut session = Session {
             hello: true,
             authenticated: true,
+            auth_failures: 0,
             db: 0,
             last_id: 1,
             scan: ling_engine::ScanState::default(),

@@ -4,7 +4,9 @@
 use ling_client::{Client, Error, Options, Value};
 use ling_protocol::{Body, Frame, Limits, Request, encode_frame, read_frame, write_frame};
 use ling_server::{Config, Server};
-use std::{path::PathBuf, time::Duration};
+#[cfg(unix)]
+use std::path::PathBuf;
+use std::time::Duration;
 use tokio::{
     io::AsyncWriteExt,
     net::{TcpListener, TcpStream},
@@ -202,7 +204,9 @@ async fn connection_and_frame_budgets_recover() {
 
 /// 测试 Journal 生命周期仅清理本次临时目录。
 /// Journal fixture lifecycle removes only this test's temporary directory.
+#[cfg(unix)]
 struct Directory(PathBuf);
+#[cfg(unix)]
 impl Drop for Directory {
     /// 测试失败时也清理；Cleans up after failed tests too.
     fn drop(&mut self) {
@@ -212,6 +216,7 @@ impl Drop for Directory {
 
 /// 日志容量耗尽保留最后成功值，预留 ACK 可用；慢组窗口保持有界。
 /// Journal exhaustion preserves the last committed value and ACK reserve; slow-group windows stay bounded.
+#[cfg(unix)]
 #[tokio::test]
 async fn journal_full_preserves_state_and_ack_capacity() {
     let dir = Directory(

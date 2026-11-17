@@ -6,7 +6,7 @@
 
 ## 三语言客户端验收
 
-完整 Rust workspace 与下述 Reliable 驱动适用于 Linux / macOS；Windows 当前不支持 Reliable，不在该平台将整套 Journal 测试列为通过。Windows 发行验证运行不依赖 Journal 的类型、协议、网络与 CLI 逻辑契约，以及原生 release 服务端 / CLI 的 Fast TCP 烟测。`cargo test --locked -p ling-server --test config` 验证平台配置边界；Windows 另运行 `cargo test --locked -p ling-events --lib windows_reliable_rejected_without_creating_directory`，验证 Fast 事件提交及 Reliable 在创建目录前明确返回 `ERR_CONFIG_INVALID`。这些是验证入口，只有实际执行成功才计入通过结果。
+完整 Reliable 驱动适用于 Linux / macOS。Windows 发行任务运行 `cargo test --locked --target x86_64-pc-windows-msvc --workspace`，覆盖所有可移植契约；依赖 Reliable 的单项测试以 `cfg(unix)` 排除，清单及实际运行结果见下方。保留 Windows 明确拒绝 Reliable 且不创建目录的正向测试，不将排除的测试计为通过。
 
 在仓库根目录执行：
 
@@ -19,6 +19,41 @@ python3 tests/sdk_contracts.py
 共享的 `values.tsv`、`invalid-values.tsv`、`frames.tsv` 验证字节、类型与错误，`commands.tsv` 验证真实服务端上的 Null / 缺失、最大 UInt、数值溢出不修改及 TTL 哨兵值。Go / Java 还覆盖十种 Value 往返、Batch 逐项错误、SELECT 后订阅数据库、断线重投稳定 ID、显式 ACK、订阅取消、固定库租约与关闭、发送后断线结果未知。Rust 同时消费该命令用例，并通过服务端 TLS 测试覆盖信任错误和主机名错误。
 
 独立运行 Go 测试时，没有 `LINGER_TEST_ADDR` 会跳过真实服务用例；应使用驱动取得完整验收结果。`go vet ./...` 在 `sdks/go` 运行。Java 无 Maven / Gradle 工程，实际构建入口为 JDK；阶段 7 另有资源耗尽、各 10 分钟持续运行和协议突变烟测；未执行持续模糊测试、多日压力或物理断电验证。
+
+## Windows 契约分类（v0.1.4）
+
+Windows 支持 Fast，不提供 Reliable 所需的目录同步与原子替换路径。CI 在 Windows 原生目标运行整个 workspace，包含引擎所有权、TTL、容器、遍历、淘汰、Fast 事件、Rust SDK、服务端 TCP / TLS / 资源 / 运维及 CLI；不按 crate 或整份混合模式文件跳过。六类生命周期和消费可见性均拆为 Fast 与 Reliable 两项，Fast 在 Windows 继续执行。Journal 原始记录的三项只读 / 修尾单元测试直接使用临时文件，可在 Windows 运行；这不表示 Windows 已支持 Reliable。
+
+仅以下测试要求 Unix；表中的名字位于所列文件，不含模块前缀。`crash_recovery.rs` 仅含一个 Reliable 测试，整文件门控；它把子进程 stderr 保存到测试临时文件，退出和就绪超时时连同退出状态输出，避免丢失启动失败原因。
+
+| 测试文件 | Windows 排除的测试 | 原因 |
+|---|---|---|
+| `crates/events/src/tests.rs` | `reliable_recovery_keeps_holes_stream_and_sequences` | 需要恢复 Reliable 日志及持久 ACK 水位。 |
+| 同上 | `sync_failure_is_unknown_and_globally_faults_writes_and_ack` | 注入 Journal fsync 失败并恢复未知提交。 |
+| 同上 | `incomplete_tail_recovers_but_complete_corruption_and_wrong_topology_fail` | EventStore 启动恢复要求 Reliable 目录持久化。 |
+| 同上 | `empty_named_group_is_rejected_during_recovery` | 从 Reliable 控制记录恢复并校验组状态。 |
+| 同上 | `runtime_consumption_and_redelivery_preserve_corrupt_journal` | 在线修改 Reliable 日志，验证运行期读取保留证据。 |
+| 同上 | `retention_compaction_and_capacity_backpressure_preserve_history` | 日志保留压缩需要原子替换与目录同步。 |
+| 同上 | `interrupted_multi_shard_transaction_is_never_partly_recovered` | 从中断的 Reliable 多分片事务恢复。 |
+| 同上 | `complete_duplicate_sequence_is_rejected_even_with_valid_checksum` | 从 Reliable 日志拒绝重复序号。 |
+| 同上 | `ack_sync_failure_and_group_creation_failure_keep_unknown_outcomes` | 注入持久 ACK / 建组同步失败。 |
+| 同上 | `maintenance_never_expires_timestamp_zero_before_retention` | 维护真实 Reliable 日志的保留前缀。 |
+| 同上 | `read_only_journal_refuses_startup` | 使用 Unix 权限位设置只读 Journal，且需 Reliable 启动。 |
+| 同上 | `stats_keep_drop_sync_failures_and_group_progress_separate` | 注入 Journal 同步失败并核对指标。 |
+| 同上 | `reliable_consumer_visibility_waits_for_complete_publication` | Reliable 的发布屏障；对应 Fast 测试跨平台保留。 |
+| 同上 | `sequential_reader_preserves_filtered_siblings_and_compaction_recovery` | 真实 Journal 游标、压缩和恢复。 |
+| 同上 | `control_capacity_compaction_does_not_republish_stale_read_offset` | Journal 控制区容量触发的原子压缩。 |
+| 同上 | `maintenance_only_rewrites_when_retention_can_advance` | 比较 Reliable 保留维护前后的文件并恢复。 |
+| `crates/events/src/journal.rs` | `enospc_faults_the_journal_globally` | 仅 Linux，使用 `/dev/full` 注入内核写入拒绝。 |
+| `crates/engine/tests/events.rs` | `six_kinds_revisions_noops_and_relocation_in_reliable_mode` | 六类生命周期的 Reliable 分支；Fast 分支保留。 |
+| 同上 | `journal_backpressure_preserves_atomic_writes_and_expiry_accounting` | 真实 Journal 填满、清理与到期记账。 |
+| `sdks/rust/tests/subscription.rs` | `reliable_ack_holes_recover_and_cache_starts_empty` | 服务端重启后恢复持久 ACK 空洞。 |
+| `crates/server/tests/crash_recovery.rs` | `kill_preserves_atomic_journal_and_ack_hole_without_restoring_values` | 强制杀死 Reliable 服务进程并恢复。 |
+| `crates/server/tests/resources.rs` | `journal_full_preserves_state_and_ack_capacity` | Reliable 磁盘预算耗尽及持久 ACK 预留。 |
+
+Windows 仍执行 `windows_reliable_rejected_without_creating_directory`，同时检查 Fast 提交可用、Reliable 返回 `ERR_CONFIG_INVALID` 且不创建目录。Linux / macOS CI 保留全部本平台测试；Linux 的 `/dev/full` 契约不计为 macOS 通过项。
+
+2026-11-17 在本机 Windows x86_64、rustc 1.94.0 上执行 `cargo test --locked --workspace --no-fail-fast`：182 项通过、0 失败、0 ignored（47 个测试目标及文档测试汇总）；上述平台条件排除的测试未编译，不计入 182 项。`cargo fmt --all -- --check`、`cargo clippy --locked --workspace --all-targets -- -D warnings`、`RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps` 及 `npm --prefix site run build` / `check` 同机通过。该记录对应 v0.1.4 实现中的未提交工作区，不是 v0.1.3 历史结果，也不代表 GitHub Actions 已执行；Windows CI 原生发行目标及 Linux / macOS 全量结果待实际运行回填。
 
 ## 验证原则
 

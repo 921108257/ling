@@ -69,101 +69,112 @@ fn take(store: &EventStore, sub: &Subscription) -> Event {
 /// 六类事件遵守版本、无变化与移动语义。
 /// All six event kinds obey revision, no-op, and relocation semantics.
 #[test]
-fn six_kinds_revisions_noops_and_relocation_in_both_modes() {
-    for reliable in [false, true] {
-        let dir = Directory::new();
-        let c = Config {
-            databases: 2,
-            shard_count: 2,
-            max_keys: 2,
-            eviction: EvictionPolicy::Lru,
-            ..Config::default()
-        };
-        let events = Arc::new(
-            EventStore::open(
-                ling_events::Config {
-                    reliable,
-                    directory: if reliable {
-                        dir.0.clone()
-                    } else {
-                        PathBuf::new()
-                    },
-                    ..Default::default()
+fn six_kinds_revisions_noops_and_relocation_in_fast_mode() {
+    six_kinds_revisions_noops_and_relocation(false);
+}
+
+/// Reliable 需要平台目录同步与原子替换；Reliable requires platform directory synchronization and atomic replacement.
+#[cfg(unix)]
+#[test]
+fn six_kinds_revisions_noops_and_relocation_in_reliable_mode() {
+    six_kinds_revisions_noops_and_relocation(true);
+}
+
+/// 对两种模式执行相同生命周期契约；Runs the same lifecycle contract in either mode.
+fn six_kinds_revisions_noops_and_relocation(reliable: bool) {
+    let dir = Directory::new();
+    let c = Config {
+        databases: 2,
+        shard_count: 2,
+        max_keys: 2,
+        eviction: EvictionPolicy::Lru,
+        ..Config::default()
+    };
+    let events = Arc::new(
+        EventStore::open(
+            ling_events::Config {
+                reliable,
+                directory: if reliable {
+                    dir.0.clone()
+                } else {
+                    PathBuf::new()
                 },
-                2,
-                2,
-            )
-            .unwrap(),
-        );
-        let clock = TestClock::new();
-        let e = Engine::with_events(c, 7, clock.clone(), Some(events.clone())).unwrap();
-        let sub = events
-            .subscribe(0, vec!["*".into()], Some("contract"))
-            .unwrap();
-        run(
-            &e,
-            "SET",
-            &[s("a"), Value::Int(1), s("PX"), Value::Int(100)],
-        );
-        let created = take(&events, &sub);
-        assert_eq!(created.kind, EventKind::Created);
-        assert_eq!(created.revision, 1);
-        run(&e, "SET", &[s("a"), Value::Int(2)]);
-        let updated = take(&events, &sub);
-        let ttl = take(&events, &sub);
-        assert_eq!(
-            (updated.kind, ttl.kind),
-            (EventKind::Updated, EventKind::TtlChanged)
-        );
-        assert_eq!((updated.revision, ttl.revision), (2, 2));
-        assert_eq!(updated.generation, created.generation);
-        run(&e, "SET", &[s("a"), Value::Int(2)]);
-        run(&e, "SET", &[s("a"), Value::Int(5), s("NX")]);
-        assert!(
-            e.execute(0, "INCRBY", &[s("a"), s("invalid")], 4096)
-                .is_err()
-        );
-        assert!(events.next(&sub, Instant::now()).unwrap().is_none());
-        run(&e, "PEXPIRE", &[s("a"), Value::Int(10)]);
-        assert_eq!(take(&events, &sub).kind, EventKind::TtlChanged);
-        clock.advance(10);
-        assert!(e.execute(0, "GET", &[s("a")], 4096).is_err());
-        assert!(e.managed_bytes() > 0);
-        assert_eq!(e.expire_due(1).unwrap(), 1);
-        let expired = take(&events, &sub);
-        assert_eq!(expired.kind, EventKind::Expired);
-        assert_eq!(expired.revision, 3);
-        run(&e, "SET", &[s("a"), Value::Int(1)]);
-        let recreated = take(&events, &sub);
-        assert_ne!(recreated.generation, created.generation);
-        run(&e, "RENAME", &[s("a"), s("b")]);
-        // 跨分片不承诺全局交付顺序，但两条事实必须完整存在。
-        // Cross-shard delivery has no global ordering, but both facts must exist.
-        let a = take(&events, &sub);
-        let b = take(&events, &sub);
-        assert!(matches!(
-            (a.kind, b.kind),
-            (EventKind::Deleted, EventKind::Created) | (EventKind::Created, EventKind::Deleted)
-        ));
-        run(&e, "DEL", &[s("b")]);
-        assert_eq!(take(&events, &sub).kind, EventKind::Deleted);
-        run(&e, "SET", &[s("a"), Value::Null]);
-        take(&events, &sub);
-        run(&e, "SET", &[s("b"), Value::Null]);
-        take(&events, &sub);
-        run(&e, "SET", &[s("c"), Value::Null]);
-        let a = take(&events, &sub);
-        let b = take(&events, &sub);
-        assert!(matches!(
-            (a.kind, b.kind),
-            (EventKind::Evicted, EventKind::Created) | (EventKind::Created, EventKind::Evicted)
-        ));
-        assert_eq!(events.stats().unwrap().committed, 13);
-    }
+                ..Default::default()
+            },
+            2,
+            2,
+        )
+        .unwrap(),
+    );
+    let clock = TestClock::new();
+    let e = Engine::with_events(c, 7, clock.clone(), Some(events.clone())).unwrap();
+    let sub = events
+        .subscribe(0, vec!["*".into()], Some("contract"))
+        .unwrap();
+    run(
+        &e,
+        "SET",
+        &[s("a"), Value::Int(1), s("PX"), Value::Int(100)],
+    );
+    let created = take(&events, &sub);
+    assert_eq!(created.kind, EventKind::Created);
+    assert_eq!(created.revision, 1);
+    run(&e, "SET", &[s("a"), Value::Int(2)]);
+    let updated = take(&events, &sub);
+    let ttl = take(&events, &sub);
+    assert_eq!(
+        (updated.kind, ttl.kind),
+        (EventKind::Updated, EventKind::TtlChanged)
+    );
+    assert_eq!((updated.revision, ttl.revision), (2, 2));
+    assert_eq!(updated.generation, created.generation);
+    run(&e, "SET", &[s("a"), Value::Int(2)]);
+    run(&e, "SET", &[s("a"), Value::Int(5), s("NX")]);
+    assert!(
+        e.execute(0, "INCRBY", &[s("a"), s("invalid")], 4096)
+            .is_err()
+    );
+    assert!(events.next(&sub, Instant::now()).unwrap().is_none());
+    run(&e, "PEXPIRE", &[s("a"), Value::Int(10)]);
+    assert_eq!(take(&events, &sub).kind, EventKind::TtlChanged);
+    clock.advance(10);
+    assert!(e.execute(0, "GET", &[s("a")], 4096).is_err());
+    assert!(e.managed_bytes() > 0);
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    let expired = take(&events, &sub);
+    assert_eq!(expired.kind, EventKind::Expired);
+    assert_eq!(expired.revision, 3);
+    run(&e, "SET", &[s("a"), Value::Int(1)]);
+    let recreated = take(&events, &sub);
+    assert_ne!(recreated.generation, created.generation);
+    run(&e, "RENAME", &[s("a"), s("b")]);
+    // 跨分片不承诺全局交付顺序，但两条事实必须完整存在。
+    // Cross-shard delivery has no global ordering, but both facts must exist.
+    let a = take(&events, &sub);
+    let b = take(&events, &sub);
+    assert!(matches!(
+        (a.kind, b.kind),
+        (EventKind::Deleted, EventKind::Created) | (EventKind::Created, EventKind::Deleted)
+    ));
+    run(&e, "DEL", &[s("b")]);
+    assert_eq!(take(&events, &sub).kind, EventKind::Deleted);
+    run(&e, "SET", &[s("a"), Value::Null]);
+    take(&events, &sub);
+    run(&e, "SET", &[s("b"), Value::Null]);
+    take(&events, &sub);
+    run(&e, "SET", &[s("c"), Value::Null]);
+    let a = take(&events, &sub);
+    let b = take(&events, &sub);
+    assert!(matches!(
+        (a.kind, b.kind),
+        (EventKind::Evicted, EventKind::Created) | (EventKind::Created, EventKind::Evicted)
+    ));
+    assert_eq!(events.stats().unwrap().committed, 13);
 }
 
 /// 容量拒绝保留原子数据与待记账到期信息。
 /// Capacity rejection preserves atomic data and pending expiry accounting.
+#[cfg(unix)]
 #[test]
 fn journal_backpressure_preserves_atomic_writes_and_expiry_accounting() {
     let dir = Directory::new();

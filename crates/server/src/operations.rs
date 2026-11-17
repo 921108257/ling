@@ -36,6 +36,8 @@ pub(crate) struct Runtime {
     errors: AtomicU64,
     /// 当前业务连接；Current business connections.
     pub clients: AtomicU64,
+    /// 认证失败告警每实例至多每分钟一次；Authentication warnings occur at most once per minute per instance.
+    last_auth_warning: Mutex<Option<Instant>>,
     /// 请求时延固定桶，无 Key 或命令标签；Fixed latency buckets without key or command labels.
     latency: [AtomicU64; 6],
     /// 总延迟微秒用于 histogram sum；Total latency microseconds for histogram sum.
@@ -53,6 +55,7 @@ impl Runtime {
             requests: AtomicU64::new(0),
             errors: AtomicU64::new(0),
             clients: AtomicU64::new(0),
+            last_auth_warning: Mutex::new(None),
             latency: std::array::from_fn(|_| AtomicU64::new(0)),
             latency_micros: AtomicU64::new(0),
         }
@@ -71,6 +74,23 @@ impl Runtime {
             .position(|n| micros <= *n)
             .unwrap_or(5);
         self.latency[bucket].fetch_add(1, Ordering::Relaxed);
+    }
+    /// 限频日志不记录源地址、口令或业务参数，也不新增对外指标。
+    /// Rate-limited logs omit source addresses, passwords, and business arguments without adding public metrics.
+    pub fn auth_failed(&self) {
+        let Ok(mut last) = self.last_auth_warning.lock() else {
+            return;
+        };
+        let now = Instant::now();
+        if last.is_some_and(|previous| now.duration_since(previous).as_secs() < 60) {
+            return;
+        }
+        *last = Some(now);
+        drop(last);
+        self.log(
+            "warn",
+            "ERR_AUTH_FAILED: authentication rejected; warning limited to once per minute",
+        );
     }
     /// 日志消息由调用点固定提供，不能包含请求内容。
     /// Call sites provide fixed messages that must not contain request contents.

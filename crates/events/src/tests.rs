@@ -188,6 +188,7 @@ fn lease_redelivery_and_late_ack_use_original_id() {
 
 /// 恢复确认空洞并延续流身份和序号。
 /// Recovery preserves ACK holes and continues stream identity and sequences.
+#[cfg(unix)]
 #[test]
 fn reliable_recovery_keeps_holes_stream_and_sequences() {
     let dir = Directory::new();
@@ -224,6 +225,7 @@ fn reliable_recovery_keeps_holes_stream_and_sequences() {
 
 /// 模拟同步失败时不发布回调，禁止后续日志和 ACK。
 /// Simulated sync failure prevents publication and faults subsequent Journal writes and ACKs.
+#[cfg(unix)]
 #[test]
 fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
     let dir = Directory::new();
@@ -254,8 +256,9 @@ fn sync_failure_is_unknown_and_globally_faults_writes_and_ack() {
     assert_eq!(store.next(&sub, Instant::now()).unwrap().unwrap().key, "b");
 }
 
-/// 仅不完整尾部可修复，完整损坏、目录锁与拓扑冲突明确失败。
-/// Only incomplete tails are repaired; corruption, locks, and topology conflicts fail explicitly.
+/// 仅确认的短尾可修复；可疑长度、完整损坏、目录锁与拓扑冲突明确失败。
+/// Only identifiable short tails are repaired; ambiguous lengths, corruption, locks, and topology conflicts fail.
+#[cfg(unix)]
 #[test]
 fn incomplete_tail_recovers_but_complete_corruption_and_wrong_topology_fail() {
     let dir = Directory::new();
@@ -265,27 +268,48 @@ fn incomplete_tail_recovers_but_complete_corruption_and_wrong_topology_fail() {
     drop(store);
     let path = dir.0.join("journal.lgj");
     let valid = fs::read(&path).unwrap();
-    for tail in [vec![0, 0], vec![0, 0, 0, 20, 0, 0, 0, 0, 1, 2]] {
+    let payload = b"uncommitted";
+    let mut short_commit = (payload.len() as u32).to_be_bytes().to_vec();
+    short_commit.extend(crc32fast::hash(payload).to_be_bytes());
+    short_commit.extend(payload);
+    short_commit.extend(b"LGCMT");
+    for tail in [vec![0, 0], short_commit] {
         let mut bytes = valid.clone();
         bytes.extend(tail);
         fs::write(&path, bytes).unwrap();
         drop(EventStore::open(dir.config(), 1, 1).unwrap());
         assert_eq!(fs::read(&path).unwrap(), valid);
     }
+    // 长度头可能已损坏，不能仅凭载荷不足删除原件。
+    // A corrupted length header can also overrun the file, so insufficient payload alone cannot justify truncation.
+    let mut ambiguous = valid.clone();
+    ambiguous.extend([0, 0, 0, 20, 0, 0, 0, 0, 1, 2]);
+    fs::write(&path, &ambiguous).unwrap();
+    let error = EventStore::open(dir.config(), 1, 1).err().unwrap();
+    assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+    assert!(
+        error
+            .message
+            .contains(&format!("byte offset {}", valid.len()))
+    );
+    assert_eq!(fs::read(&path).unwrap(), ambiguous);
+    fs::write(&path, &valid).unwrap();
     code(
         EventStore::open(dir.config(), 2, 1).map(|_| ()),
         ErrorCode::ConfigInvalid,
     );
     let mut corrupt = valid;
     corrupt[48] ^= 1;
-    fs::write(&path, corrupt).unwrap();
+    fs::write(&path, &corrupt).unwrap();
     let error = EventStore::open(dir.config(), 1, 1).err().unwrap();
     assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
     assert!(error.message.contains("byte offset 40"));
+    assert_eq!(fs::read(&path).unwrap(), corrupt);
 }
 
 /// 完整且校验正确的空组名仍不符合恢复契约。
 /// A complete checksummed record with an empty group name still violates recovery contracts.
+#[cfg(unix)]
 #[test]
 fn empty_named_group_is_rejected_during_recovery() {
     let dir = Directory::new();
@@ -298,14 +322,61 @@ fn empty_named_group_is_rejected_during_recovery() {
     let (mut journal, _) = journal::Journal::open(&dir.config(), 1, 1).unwrap();
     journal.append(&codec::group("n:", &group), true).unwrap();
     drop(journal);
+    let path = dir.0.join("journal.lgj");
+    let mut invalid = fs::read(&path).unwrap();
+    invalid.extend([0, 0]);
+    fs::write(&path, &invalid).unwrap();
     code(
         EventStore::open(dir.config(), 1, 1).map(|_| ()),
         ErrorCode::JournalUnavailable,
     );
+    // 全局语义校验也须先完成，不能先修尾再发现组状态非法。
+    // Global semantic validation must also finish before tail repair can discard evidence.
+    assert_eq!(fs::read(path).unwrap(), invalid);
+}
+
+/// 消费续读短尾与重投按 ID 查找坏记录均只报错，保持原始磁盘证据。
+/// Consumption at a short tail and redelivery lookup of a corrupt record report faults without altering disk evidence.
+#[cfg(unix)]
+#[test]
+fn runtime_consumption_and_redelivery_preserve_corrupt_journal() {
+    for redeliver in [false, true] {
+        let dir = Directory::new();
+        let store = EventStore::open(dir.config(), 1, 1).unwrap();
+        let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
+        store.commit(&[change("key", 0)], || ()).unwrap();
+        let now = Instant::now();
+        let event = store.next(&sub, now).unwrap().unwrap();
+        if !redeliver {
+            store.ack(&sub, event.id).unwrap();
+            assert!(store.next(&sub, now).unwrap().is_none());
+        }
+        let path = dir.0.join("journal.lgj");
+        let mut damaged = fs::read(&path).unwrap();
+        let offset = if redeliver {
+            let mut at = 40;
+            while damaged[at + 8] != codec::EVENTS {
+                let n = u32::from_be_bytes(damaged[at..at + 4].try_into().unwrap()) as usize;
+                at += n + 16;
+            }
+            damaged[at + 8] ^= 1;
+            at
+        } else {
+            let at = damaged.len();
+            damaged.extend([0, 0]);
+            at
+        };
+        fs::write(&path, &damaged).unwrap();
+        let error = store.next(&sub, now + Duration::from_secs(60)).unwrap_err();
+        assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+        assert!(error.message.contains(&format!("byte offset {offset}")));
+        assert_eq!(fs::read(path).unwrap(), damaged);
+    }
 }
 
 /// 容量背压不缩短保留，检查点继续序号并标记过期组。
 /// Capacity backpressure preserves retention; checkpoints continue sequences and expire lagging groups.
+#[cfg(unix)]
 #[test]
 fn retention_compaction_and_capacity_backpressure_preserve_history() {
     let dir = Directory::new();
@@ -370,6 +441,7 @@ fn fast_drops_are_counted_and_offsets_expire() {
 
 /// 中断多分片记录不会恢复其中一半。
 /// Interrupted multi-shard records never recover partially.
+#[cfg(unix)]
 #[test]
 fn interrupted_multi_shard_transaction_is_never_partly_recovered() {
     let dir = Directory::new();
@@ -398,8 +470,22 @@ fn interrupted_multi_shard_transaction_is_never_partly_recovered() {
         at += len + 16;
     }
     assert!(transaction > 40);
-    // 中断在第二个事件之前，完整事务都应被截断；Interrupt before the second event and discard the complete transaction.
-    fs::write(&path, &bytes[..transaction + 8 + 5 + 64]).unwrap();
+    // 中断在第二个事件前证据不足，拒绝启动且保留原件，不恢复第一项。
+    // An interruption before the second event is ambiguous: reject startup, preserve evidence, and expose no partial transaction.
+    let partial = &bytes[..transaction + 8 + 5 + 64];
+    fs::write(&path, partial).unwrap();
+    let error = EventStore::open(dir.config(), 1, 2).err().unwrap();
+    assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+    assert!(
+        error
+            .message
+            .contains(&format!("byte offset {transaction}"))
+    );
+    assert_eq!(fs::read(&path).unwrap(), partial);
+    // 完整载荷与正确 CRC 加提交尾标前缀能识别未提交事务，全部丢弃而非恢复一半。
+    // A complete payload, correct CRC, and commit-trailer prefix identify an uncommitted transaction to discard atomically.
+    let len = u32::from_be_bytes(bytes[transaction..transaction + 4].try_into().unwrap()) as usize;
+    fs::write(&path, &bytes[..transaction + 8 + len + 3]).unwrap();
     let store = EventStore::open(dir.config(), 1, 2).unwrap();
     let sub = store
         .subscribe(0, vec!["*".into()], Some("atomic"))
@@ -419,6 +505,7 @@ fn interrupted_multi_shard_transaction_is_never_partly_recovered() {
 
 /// 正确 CRC 不能让重复流序号合法化。
 /// A valid CRC cannot legitimize duplicate stream sequences.
+#[cfg(unix)]
 #[test]
 fn complete_duplicate_sequence_is_rejected_even_with_valid_checksum() {
     let dir = Directory::new();
@@ -434,6 +521,7 @@ fn complete_duplicate_sequence_is_rejected_even_with_valid_checksum() {
 
 /// 组创建和 ACK 的同步失败也必须暴露结果未知。
 /// Sync failures during group creation and ACK must also expose unknown outcomes.
+#[cfg(unix)]
 #[test]
 fn ack_sync_failure_and_group_creation_failure_keep_unknown_outcomes() {
     let dir = Directory::new();
@@ -505,6 +593,7 @@ fn disconnected_lease_and_group_growth_do_not_silently_drop_fast_events() {
 
 /// 保留维护不把零时间误判为已超期。
 /// Retention maintenance never mistakes timestamp zero for expired history.
+#[cfg(unix)]
 #[test]
 fn maintenance_never_expires_timestamp_zero_before_retention() {
     let dir = Directory::new();
@@ -540,6 +629,7 @@ fn read_only_journal_refuses_startup() {
 }
 
 /// 可观测计数与消费水位不含业务内容；Observable counts and consumer watermarks contain no business contents.
+#[cfg(unix)]
 #[test]
 fn stats_keep_drop_sync_failures_and_group_progress_separate() {
     let dir = Directory::new();
@@ -564,9 +654,22 @@ fn stats_keep_drop_sync_failures_and_group_progress_separate() {
 /// Consumers cannot observe an event until its transaction publication callback finishes.
 #[test]
 fn consumer_visibility_waits_for_complete_publication() {
-    use std::sync::{Arc, mpsc};
+    consumer_visibility(Config::default());
+}
+
+/// Reliable 的同步事务也不能提前发布；Reliable synchronized transactions cannot publish early either.
+#[cfg(unix)]
+#[test]
+fn reliable_consumer_visibility_waits_for_complete_publication() {
     let dir = Directory::new();
-    let store = Arc::new(EventStore::open(dir.config(), 1, 2).unwrap());
+    consumer_visibility(dir.config());
+}
+
+/// 在提交回调处阻塞写入，同时观察独立消费线程。
+/// Blocks the publication callback while observing an independent consumer thread.
+fn consumer_visibility(config: Config) {
+    use std::sync::{Arc, mpsc};
+    let store = Arc::new(EventStore::open(config, 1, 2).unwrap());
     let sub = store.subscribe(0, vec!["*".into()], Some("g")).unwrap();
     let (started, ready) = mpsc::channel();
     let (release, wait) = mpsc::channel();
@@ -598,6 +701,7 @@ fn consumer_visibility_waits_for_complete_publication() {
 
 /// 物理读游标不能跳过同事务后继；压缩及重启仍由逻辑水位恢复。
 /// Physical read cursors never skip transaction siblings; compaction and restart use logical watermarks.
+#[cfg(unix)]
 #[test]
 fn sequential_reader_preserves_filtered_siblings_and_compaction_recovery() {
     let dir = Directory::new();
@@ -641,6 +745,7 @@ fn sequential_reader_preserves_filtered_siblings_and_compaction_recovery() {
 
 /// ACK 空间触发的压缩同样重置尚未发布候选的物理游标。
 /// Compaction triggered by ACK space also resets unpublished candidates' physical cursors.
+#[cfg(unix)]
 #[test]
 fn control_capacity_compaction_does_not_republish_stale_read_offset() {
     let dir = Directory::new();
@@ -665,6 +770,7 @@ fn control_capacity_compaction_does_not_republish_stale_read_offset() {
 
 /// 未达到保留期限的维护不改写日志；到期后仍压缩并保留后继事件。
 /// Maintenance leaves unexpired journals untouched, then compacts due prefixes while retaining successors.
+#[cfg(unix)]
 #[test]
 fn maintenance_only_rewrites_when_retention_can_advance() {
     let dir = Directory::new();

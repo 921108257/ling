@@ -32,12 +32,23 @@ impl Transaction<'_> {
         }
         match name {
             "SET" => {
-                let (condition, deadline) = crate::ttl::set_options(args, time)?;
+                let (condition, deadline, absolute) = crate::ttl::set_options(args, time)?;
                 let key = self.key(&args[0])?;
-                let exists = self.entry(db, key, now).is_ok();
-                if condition.is_some_and(|required| required != exists) {
+                let active = self.entry(db, key, now).ok();
+                if condition.is_some_and(|required| required != active.is_some()) {
                     return Ok(Effect::read(Value::Bool(false)));
                 }
+                let deadline = deadline.map(|deadline| {
+                    if absolute {
+                        crate::ttl::stable_absolute_deadline(
+                            active.and_then(|entry| entry.metadata.deadline),
+                            deadline,
+                            time,
+                        )
+                    } else {
+                        deadline
+                    }
+                });
                 let mut effect = Effect::put(Value::Bool(true), key, args[1].clone(), false);
                 effect.changes[0].policy = Mutation::Deadline(deadline);
                 Ok(effect)

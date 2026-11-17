@@ -121,6 +121,9 @@ impl Server {
         ));
         let (closing, receiver) = watch::channel(false);
         let runtime = Arc::new(operations::Runtime::new(self.config.clone()));
+        for warning in config::exposure_warnings(&self.config) {
+            runtime.log("warn", warning);
+        }
         let mut background = JoinSet::new();
         background.spawn(maintenance::run(
             self.engine.clone(),

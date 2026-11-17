@@ -46,16 +46,39 @@ fn time_overflow() -> DbError {
     error(ErrorCode::Overflow, "TTL exceeds representable time range")
 }
 
+/// 相同绝对毫秒忽略不足一毫秒的期限差；到期与差值达一毫秒的变化使用新期限。
+/// Equal absolute milliseconds ignore deadline differences below one millisecond; expiry and differences of at least one millisecond use the new deadline.
+pub(crate) fn stable_absolute_deadline(
+    old: Option<Deadline>,
+    new: Deadline,
+    time: TimeSnapshot,
+) -> Deadline {
+    match old {
+        Some(old)
+            if old.unix_ms == new.unix_ms
+                && old.monotonic > time.monotonic
+                && new.monotonic > time.monotonic
+                && old.monotonic.saturating_duration_since(new.monotonic)
+                    < Duration::from_millis(1)
+                && new.monotonic.saturating_duration_since(old.monotonic)
+                    < Duration::from_millis(1) =>
+        {
+            old
+        }
+        _ => new,
+    }
+}
+
 /// SET 选项无论条件是否满足均先验证；每组最多一个，顺序任意。
 /// SET validates all options before evaluating conditions; each group appears once, in either order.
 pub(crate) fn set_options(
     args: &[Value],
     time: TimeSnapshot,
-) -> Result<(Option<bool>, Option<Deadline>), DbError> {
+) -> Result<(Option<bool>, Option<Deadline>, bool), DbError> {
     if args.len() < 2 {
         return Err(argument_error());
     }
-    let (mut condition, mut deadline, mut pos) = (None, None, 2);
+    let (mut condition, mut deadline, mut absolute, mut pos) = (None, None, false, 2);
     while pos < args.len() {
         let option = text(&args[pos])?.to_ascii_uppercase();
         match option.as_str() {
@@ -65,12 +88,13 @@ pub(crate) fn set_options(
             }
             "EX" | "PX" | "EXAT" | "PXAT" if deadline.is_none() && pos + 1 < args.len() => {
                 deadline = Some(expiration(&option, &args[pos + 1], time, true)?);
+                absolute = matches!(option.as_str(), "EXAT" | "PXAT");
                 pos += 2;
             }
             _ => return Err(argument_error()),
         }
     }
-    Ok((condition, deadline))
+    Ok((condition, deadline, absolute))
 }
 
 impl Transaction<'_> {
@@ -120,6 +144,13 @@ impl Transaction<'_> {
         let Some(entry) = active else {
             return Ok(result);
         };
+        let deadline = deadline.map(|deadline| {
+            if matches!(name, "EXPIREAT" | "PEXPIREAT") {
+                stable_absolute_deadline(entry.metadata.deadline, deadline, time)
+            } else {
+                deadline
+            }
+        });
         if entry.metadata.deadline == deadline {
             return Ok(result);
         }

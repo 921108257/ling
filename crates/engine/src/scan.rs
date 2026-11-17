@@ -2,7 +2,7 @@
 //! Byte globs, database queries, and bounded cursors; progress never depends on mutable array offsets.
 
 use crate::{Engine, Transaction, support::*};
-use ling_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, Value, key_pattern_matches};
 use rand::seq::IteratorRandom;
 use std::{
     collections::BTreeMap,
@@ -60,40 +60,6 @@ pub(crate) fn validate_pattern(pattern: &str) -> Result<(), DbError> {
     } else {
         Ok(())
     }
-}
-
-/// 使用星号回溯位置按 UTF-8 原始字节匹配，额外内存为常数。
-/// Matches raw UTF-8 bytes with star backtracking and constant extra memory.
-pub(crate) fn matches(pattern: &str, key: &str) -> bool {
-    let (p, k) = (pattern.as_bytes(), key.as_bytes());
-    let (mut pi, mut ki, mut star, mut retry) = (0, 0, None, 0);
-    while ki < k.len() {
-        if pi < p.len() && p[pi] == b'*' {
-            star = Some(pi + 1);
-            pi += 1;
-            retry = ki;
-        } else {
-            let (literal, advance) = if pi < p.len() && p[pi] == b'\\' && pi + 1 < p.len() {
-                (Some(p[pi + 1]), 2)
-            } else {
-                (p.get(pi).copied(), 1)
-            };
-            if literal == Some(k[ki]) || (pi < p.len() && p[pi] == b'?' && advance == 1) {
-                pi += advance;
-                ki += 1;
-            } else if let Some(after_star) = star {
-                retry += 1;
-                ki = retry;
-                pi = after_star;
-            } else {
-                return false;
-            }
-        }
-    }
-    while pi < p.len() && p[pi] == b'*' {
-        pi += 1;
-    }
-    pi == p.len()
 }
 
 /// 解析筛选参数；重复项、未知类型和零 COUNT 均明确拒绝。
@@ -196,7 +162,7 @@ impl Engine {
                 && filters
                     .pattern
                     .as_deref()
-                    .is_none_or(|pattern| matches(pattern, key))
+                    .is_none_or(|pattern| key_pattern_matches(pattern, key))
             {
                 let next_bytes = bytes.checked_add(5 + key.len()).ok_or_else(limit_error)?;
                 if next_bytes > response_bytes || next_bytes > 64 * 1024 * 1024 {
@@ -276,7 +242,9 @@ impl Transaction<'_> {
         let mut memory = 0usize;
         let mut keys = Vec::new();
         for (key, entry) in self.entries(db) {
-            if entry.metadata.deadline.is_none_or(|d| now < d.monotonic) && matches(pattern, key) {
+            if entry.metadata.deadline.is_none_or(|d| now < d.monotonic)
+                && key_pattern_matches(pattern, key)
+            {
                 bytes = bytes
                     .checked_add(5 + key.len())
                     .filter(|n| *n <= cap && *n <= 64 * 1024 * 1024)

@@ -392,6 +392,22 @@ fn invalid(message: &'static str) -> DbError {
     DbError::new(ErrorCode::ConfigInvalid, message)
 }
 
+/// 暴露面只生成启动告警，不替代配置校验或拒绝合法监听设置。
+/// Exposure checks generate startup warnings without rejecting valid listener settings.
+pub(crate) fn exposure_warnings(config: &Config) -> Vec<&'static str> {
+    let mut warnings = Vec::new();
+    if !config.server.host.is_loopback() && !config.auth.enabled {
+        warnings.push("Business listener is not loopback and authentication is disabled");
+    }
+    if config.auth.enabled && !config.tls.enabled {
+        warnings.push("Authentication is enabled without TLS; passwords travel in plaintext");
+    }
+    if config.metrics.enabled && !config.metrics.host.is_loopback() {
+        warnings.push("Prometheus listener is not loopback and has no authentication or TLS");
+    }
+    warnings
+}
+
 impl Config {
     /// 加载 UTF-8 TOML 并校验；错误隐藏可能包含密码的原文。
     /// Loads UTF-8 TOML and validates it; errors omit source text that could contain passwords.
@@ -584,5 +600,40 @@ impl Config {
                 max_key_bytes: self.engine.max_key_bytes,
             },
         })
+    }
+}
+
+#[cfg(test)]
+mod exposure_tests {
+    use super::*;
+
+    /// 各个告警仅由对应的暴露组合决定，返回内容不包含真实口令。
+    /// Each warning follows its exposure combination and never includes the configured password.
+    #[test]
+    fn exposure_combinations_and_redaction() {
+        for (host, auth, tls, metrics, metrics_host, expected) in [
+            ("127.0.0.1", false, false, false, "0.0.0.0", vec![]),
+            ("::1", false, false, true, "::1", vec![]),
+            ("0.0.0.0", false, false, false, "127.0.0.1", vec![0]),
+            ("127.0.0.1", true, false, false, "127.0.0.1", vec![1]),
+            ("::", true, true, true, "::", vec![2]),
+            ("0.0.0.0", false, false, true, "0.0.0.0", vec![0, 2]),
+            ("0.0.0.0", true, false, true, "0.0.0.0", vec![1, 2]),
+        ] {
+            let mut config = Config::default();
+            config.server.host = host.parse().unwrap();
+            config.auth.enabled = auth;
+            config.auth.password = "never-log-this-secret".into();
+            config.tls.enabled = tls;
+            config.metrics.enabled = metrics;
+            config.metrics.host = metrics_host.parse().unwrap();
+            let warnings = exposure_warnings(&config);
+            let prefixes = ["Business", "Authentication", "Prometheus"];
+            assert_eq!(warnings.len(), expected.len());
+            for (warning, index) in warnings.iter().zip(expected) {
+                assert!(warning.starts_with(prefixes[index]), "{warning}");
+                assert!(!warning.contains(&config.auth.password));
+            }
+        }
     }
 }

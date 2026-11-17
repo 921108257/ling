@@ -321,6 +321,70 @@ async fn partial_frame_deadline_and_connection_limit() {
     task.await.unwrap();
 }
 
+/// HELLO 前不发送任何字节也受请求期限约束；关闭后连接槽可重新使用。
+/// A silent peer before HELLO is bounded by the request deadline and releases its connection slot.
+#[tokio::test]
+async fn silent_peer_before_hello_releases_connection_slot() {
+    let mut config = Config::default();
+    config.server.max_connections = 1;
+    config.server.request_timeout_ms = 50;
+    let (addr, stop, task) = start(config).await;
+    let mut silent = TcpStream::connect(addr).await.unwrap();
+    assert_closed(&mut silent).await;
+    let mut healthy = TcpStream::connect(addr).await.unwrap();
+    call(&mut healthy, 1, "HELLO", vec![Value::UInt(1)]).await;
+    assert_eq!(
+        call(&mut healthy, 2, "PING", vec![]).await,
+        Body::Response(Ok(Value::String("PONG".into())))
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
+/// 连续认证失败保留原错误帧，第五次失败后关闭；其他连接仍可请求。
+/// Consecutive authentication failures retain response framing and close after five attempts; other peers still work.
+#[tokio::test]
+async fn repeated_authentication_failures_close_only_the_offending_connection() {
+    let mut config = Config::default();
+    config.auth.enabled = true;
+    config.auth.password = "secret".into();
+    let (addr, stop, task) = start(config).await;
+    let mut rejected = TcpStream::connect(addr).await.unwrap();
+    call(&mut rejected, 1, "HELLO", vec![Value::UInt(1)]).await;
+    for id in 2..=6 {
+        assert_error(
+            call(
+                &mut rejected,
+                id,
+                "AUTH",
+                vec![Value::String("wrong".into())],
+            )
+            .await,
+            "ERR_AUTH_FAILED",
+            false,
+        );
+    }
+    assert_closed(&mut rejected).await;
+    let mut healthy = TcpStream::connect(addr).await.unwrap();
+    call(&mut healthy, 1, "HELLO", vec![Value::UInt(1)]).await;
+    assert_eq!(
+        call(
+            &mut healthy,
+            2,
+            "AUTH",
+            vec![Value::String("secret".into())]
+        )
+        .await,
+        Body::Response(Ok(Value::Bool(true)))
+    );
+    assert_eq!(
+        call(&mut healthy, 3, "PING", vec![]).await,
+        Body::Response(Ok(Value::String("PONG".into())))
+    );
+    stop.send(()).unwrap();
+    task.await.unwrap();
+}
+
 /// 多连接只能看到 MSET 整体状态，竞争自增不丢更新。
 /// Multiple connections observe whole MSET states and increments lose no updates.
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

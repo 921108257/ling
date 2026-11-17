@@ -115,7 +115,7 @@ impl Journal {
             }
             stream
         };
-        let mut journal = Self {
+        let journal = Self {
             _lock: lock,
             file,
             dir: config.directory.clone(),
@@ -134,11 +134,29 @@ impl Journal {
             fs::remove_file(temporary).map_err(|_| unavailable())?;
             journal.sync_dir()?;
         }
-        journal.visit(|_| Ok(()))?;
         Ok((journal, stream))
     }
-    /// 流式校验记录，末尾不完整才允许截断；完整坏记录必须拒绝。
-    /// Validates records as a stream; only incomplete tails may truncate, never complete corrupt records.
+    /// 启动回放完整记录并返回有效前缀，全部语义检查通过前不修改原件。
+    /// Replays startup records and returns the valid prefix without mutating before all semantic checks pass.
+    pub fn recover(
+        &mut self,
+        mut apply: impl FnMut(&[u8]) -> Result<(), DbError>,
+    ) -> Result<usize, DbError> {
+        self.scan_from(HEADER, true, |record| {
+            apply(record)?;
+            Ok(true)
+        })
+    }
+    /// 仅在启动的全部验证成功后，持久化删除已确认未提交的后缀。
+    /// Persists removal of a confirmed uncommitted suffix only after every startup check succeeds.
+    pub fn finish_recovery(&mut self, end: usize) -> Result<(), DbError> {
+        if end < self.bytes {
+            self.truncate(end)?;
+        }
+        Ok(())
+    }
+    /// 只读校验完整记录；异常保留原件并报告偏移，不修复运行中的日志。
+    /// Validates complete records without mutation; faults preserve the original and report their offset.
     pub fn visit(
         &mut self,
         mut apply: impl FnMut(&[u8]) -> Result<(), DbError>,
@@ -149,11 +167,21 @@ impl Journal {
         })?;
         Ok(())
     }
-    /// 从已验证的记录边界继续，false 保留当前记录位置供下次重访。
-    /// Resumes at a validated record boundary; false retains that record for the next visit.
+    /// 从已验证的边界只读续访，false 保留当前记录位置，短尾也报告错误。
+    /// Resumes read-only at a validated boundary; false retains that record and incomplete tails fail.
     pub fn visit_from(
         &mut self,
         start: usize,
+        apply: impl FnMut(&[u8]) -> Result<bool, DbError>,
+    ) -> Result<usize, DbError> {
+        self.scan_from(start, false, apply)
+    }
+    /// 仅启动入口允许识别短尾；所有扫描都只读，确认修复另行提交。
+    /// Only startup tolerates identifiable short tails; every scan is read-only until repair is finalized.
+    fn scan_from(
+        &mut self,
+        start: usize,
+        allow_tail: bool,
         mut apply: impl FnMut(&[u8]) -> Result<bool, DbError>,
     ) -> Result<usize, DbError> {
         self.file
@@ -162,12 +190,14 @@ impl Journal {
         let total = self.file.metadata().map_err(|_| unavailable())?.len() as usize;
         let mut pos = start;
         if start < HEADER || start > total {
-            return Err(codec::corrupt());
+            return Err(at_offset(codec::corrupt(), start));
         }
         while pos < total {
             if total - pos < 8 {
-                self.truncate(pos)?;
-                break;
+                if allow_tail {
+                    return Ok(pos);
+                }
+                return Err(at_offset(codec::corrupt(), pos));
             }
             let mut h = [0; 8];
             self.file.read_exact(&mut h).map_err(|_| unavailable())?;
@@ -175,21 +205,32 @@ impl Journal {
             if n == 0 || n > self.record_limit {
                 return Err(at_offset(codec::corrupt(), pos));
             }
-            if n + 16 > total - pos {
-                self.truncate(pos)?;
-                break;
+            // v1 的长度字段无独立校验，超出余量可能是已提交记录的长度损坏。
+            // The v1 length has no independent checksum; overrun may be a damaged committed record.
+            if n + 8 > total - pos {
+                return Err(at_offset(codec::corrupt(), pos));
             }
             let mut payload = vec![0; n];
             self.file
                 .read_exact(&mut payload)
                 .map_err(|_| unavailable())?;
+            if crc32fast::hash(&payload) != u32::from_be_bytes(h[4..].try_into().unwrap()) {
+                return Err(at_offset(codec::corrupt(), pos));
+            }
+            let trailer_len = (total - pos - n - 8).min(8);
             let mut trailer = [0; 8];
             self.file
-                .read_exact(&mut trailer)
+                .read_exact(&mut trailer[..trailer_len])
                 .map_err(|_| unavailable())?;
-            if &trailer != COMMIT
-                || crc32fast::hash(&payload) != u32::from_be_bytes(h[4..].try_into().unwrap())
-            {
+            if trailer[..trailer_len] != COMMIT[..trailer_len] {
+                return Err(at_offset(codec::corrupt(), pos));
+            }
+            if trailer_len < 8 {
+                // 完整载荷及 CRC 确认边界，且现有尾标是正确前缀，才可作为未提交短尾。
+                // A complete payload, valid CRC, and matching trailer prefix identify an incomplete commit.
+                if allow_tail {
+                    return Ok(pos);
+                }
                 return Err(at_offset(codec::corrupt(), pos));
             }
             if !apply(&payload).map_err(|error| at_offset(error, pos))? {
@@ -386,13 +427,181 @@ fn create_directory(path: &std::path::Path) -> Result<(), DbError> {
     Ok(())
 }
 
-/// 真实 ENOSPC 设备只用于测试边界，不替代目录恢复测试。
-/// A real ENOSPC device exercises the I/O boundary without replacing directory recovery tests.
-#[cfg(all(test, target_os = "linux"))]
+/// 原始记录夹具在各平台验证读写边界；真实目录恢复另由 Unix 契约覆盖。
+/// Raw record fixtures check I/O boundaries on every platform; Unix contracts cover directory recovery.
+#[cfg(test)]
 mod tests {
     use super::*;
+
+    /// 直接构造已打开文件，避免把 Windows 不支持目录同步误算作读取测试失败。
+    /// Constructs an open file directly so Windows directory-sync limits do not mask read tests.
+    fn fixture(bytes: &[u8]) -> Journal {
+        let dir = std::env::temp_dir().join(format!("ling-record-{:032x}", rand::random::<u128>()));
+        fs::create_dir(&dir).unwrap();
+        let path = dir.join("journal.lgj");
+        fs::write(&path, bytes).unwrap();
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(path)
+            .unwrap();
+        Journal {
+            _lock: file.try_clone().unwrap(),
+            file,
+            dir,
+            header: bytes[..HEADER].to_vec(),
+            bytes: bytes.len(),
+            max: 1024 * 1024,
+            failed: false,
+            record_limit: 4096,
+            fail_sync: false,
+        }
+    }
+
+    /// 关闭句柄后删除夹具，兼容 Windows 的打开文件删除规则。
+    /// Closes handles before fixture cleanup, respecting Windows open-file deletion rules.
+    fn cleanup(journal: Journal) {
+        let dir = journal.dir.clone();
+        drop(journal);
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    /// 独立拼出记录字节；不使用被测写入器产生预期边界。
+    /// Builds record bytes independently of the writer under test.
+    fn record(payload: &[u8]) -> Vec<u8> {
+        let mut bytes = (payload.len() as u32).to_be_bytes().to_vec();
+        bytes.extend(crc32fast::hash(payload).to_be_bytes());
+        bytes.extend(payload);
+        bytes.extend(b"LGCMT001");
+        bytes
+    }
+
+    /// 运行期完整与续读遍历遇到任何短尾都必须保留原件。
+    /// Full and resumed runtime scans must leave every incomplete tail untouched.
+    #[test]
+    fn runtime_reads_preserve_incomplete_and_corrupt_files() {
+        let complete = record(b"committed");
+        let mut invalid_checksum = record(b"bad");
+        invalid_checksum[4] ^= 1;
+        for tail in [
+            vec![0, 0],
+            vec![0, 0, 0, 20, 0, 0, 0, 0, 1, 2],
+            record(b"partial")[..18].to_vec(),
+            invalid_checksum,
+        ] {
+            let mut bytes = vec![0; HEADER];
+            bytes.extend(&complete);
+            let offset = bytes.len();
+            bytes.extend(tail);
+            let mut journal = fixture(&bytes);
+            for resumed in [false, true] {
+                let error = if resumed {
+                    journal.visit_from(offset, |_| Ok(true)).unwrap_err()
+                } else {
+                    journal.visit(|_| Ok(())).unwrap_err()
+                };
+                assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+                assert!(error.message.contains(&format!("byte offset {offset}")));
+                assert_eq!(fs::read(journal.dir.join("journal.lgj")).unwrap(), bytes);
+                assert_eq!(journal.bytes, bytes.len());
+            }
+            cleanup(journal);
+        }
+    }
+
+    /// 正常记录不改写；确认短尾只有完成全部恢复检查后才截断。
+    /// Valid records remain unchanged; identifiable short tails truncate only after every recovery check.
+    #[test]
+    fn startup_recognizes_short_tails_and_defers_repair() {
+        let mut complete = vec![0; HEADER];
+        complete.extend(record(b"committed"));
+        let partial = record(b"partial");
+        let mut tails = vec![vec![], vec![0], vec![0, 0, 0, 7, 1, 2, 3]];
+        for trailer_len in 0..8 {
+            tails.push(partial[..8 + b"partial".len() + trailer_len].to_vec());
+        }
+        for tail in tails {
+            let mut bytes = complete.clone();
+            bytes.extend(tail);
+            let mut journal = fixture(&bytes);
+            let mut records = Vec::new();
+            let end = journal
+                .recover(|payload| {
+                    records.push(payload.to_vec());
+                    Ok(())
+                })
+                .unwrap();
+            assert_eq!(records, [b"committed"]);
+            assert_eq!(end, complete.len());
+            assert_eq!(fs::read(journal.dir.join("journal.lgj")).unwrap(), bytes);
+            journal.finish_recovery(end).unwrap();
+            assert_eq!(fs::read(journal.dir.join("journal.lgj")).unwrap(), complete);
+            assert_eq!(journal.bytes, complete.len());
+            let mut replayed = Vec::new();
+            journal
+                .visit(|payload| {
+                    replayed.push(payload.to_vec());
+                    Ok(())
+                })
+                .unwrap();
+            assert_eq!(replayed, records);
+            cleanup(journal);
+        }
+    }
+
+    /// 长度越界、CRC、尾标或回放语义错误都必须保留原件，不猜测可疑记录是否提交。
+    /// Length overruns, CRC, trailer, and replay-semantic faults preserve the original without guessing commit state.
+    #[test]
+    fn startup_preserves_ambiguous_corrupt_and_semantically_invalid_records() {
+        let mut valid = vec![0; HEADER];
+        valid.extend(record(b"committed"));
+        let mut bad_crc = record(b"bad");
+        bad_crc[4] ^= 1;
+        let mut bad_prefix = record(b"bad");
+        bad_prefix.truncate(12);
+        bad_prefix[11] ^= 1;
+        let mut bad_trailer = record(b"bad");
+        *bad_trailer.last_mut().unwrap() ^= 1;
+        let mut inflated = record(b"first");
+        inflated[..4].copy_from_slice(&4096_u32.to_be_bytes());
+        inflated.extend(record(b"later"));
+        let mut semantic = record(b"semantically invalid");
+        semantic.extend([0, 0]);
+        for (tail, semantic_error) in [
+            (vec![0, 0, 0, 20, 0, 0, 0, 0, 1, 2], false),
+            (bad_crc, false),
+            (bad_prefix, false),
+            (bad_trailer, false),
+            (inflated, false),
+            (semantic, true),
+        ] {
+            let mut bytes = valid.clone();
+            bytes.extend(tail);
+            let mut journal = fixture(&bytes);
+            let error = journal
+                .recover(|payload| {
+                    if semantic_error && payload != b"committed" {
+                        Err(codec::corrupt())
+                    } else {
+                        Ok(())
+                    }
+                })
+                .unwrap_err();
+            assert_eq!(error.code, ErrorCode::JournalUnavailable.as_str());
+            assert!(
+                error
+                    .message
+                    .contains(&format!("byte offset {}", valid.len()))
+            );
+            assert_eq!(fs::read(journal.dir.join("journal.lgj")).unwrap(), bytes);
+            assert_eq!(journal.bytes, bytes.len());
+            cleanup(journal);
+        }
+    }
+
     /// 内核拒绝写入后必须报告未知并禁止重试追加。
     /// Kernel write rejection must report unknown outcome and forbid subsequent appends.
+    #[cfg(target_os = "linux")]
     #[test]
     fn enospc_faults_the_journal_globally() {
         let directory =

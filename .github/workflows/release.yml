@@ -147,18 +147,7 @@ jobs:
         run: cargo test --locked --workspace
       - name: Test Windows Fast mode and explicit Reliable rejection
         if: runner.os == 'Windows'
-        run: |
-          cargo test --locked --target "$TARGET" -p ling-types -p ling-protocol -p ling-network
-          cargo test --locked --target "$TARGET" -p ling-cli --test grammar
-          cargo test --locked --target "$TARGET" -p ling-cli --test end_to_end
-          cargo test --locked --target "$TARGET" -p ling-cli --test help
-          cargo test --locked --target "$TARGET" -p ling-cli --test diagnostics
-          cargo test --locked --target "$TARGET" -p ling-server --test help
-          cargo test --locked --target "$TARGET" -p ling-server --test diagnostics
-          cargo test --locked --target "$TARGET" -p ling-server --bin ling
-          cargo test --locked --target "$TARGET" -p ling-cli-help
-          cargo test --locked --target "$TARGET" -p ling-server --test config
-          cargo test --locked --target "$TARGET" -p ling-events --lib windows_reliable_rejected_without_creating_directory
+        run: cargo test --locked --target "$TARGET" --workspace
       - name: Build server and CLI
         run: cargo build --locked --release --target "$TARGET" -p ling-server -p ling-cli
       - name: Build and verify Linux packages

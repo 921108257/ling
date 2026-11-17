@@ -1,6 +1,10 @@
 //! 强制终止真实服务进程后恢复事件与 ACK；不使用优雅关闭替代崩溃。
 //! Recovers events and ACKs after forcibly killing a real server, rather than substituting graceful shutdown.
 
+// 本文件仅验证 Reliable，要求目录同步和原子替换，Windows 明确拒绝该模式。
+// This file exclusively verifies Reliable, which needs directory sync and atomic replacement and is rejected on Windows.
+#![cfg(unix)]
+
 use ling_client::{Client, Options, Value};
 use std::{
     fs,
@@ -10,7 +14,7 @@ use std::{
 };
 
 /// 测试拥有的服务进程，失败时也终止回收；Test-owned server reaped even on test failures.
-struct Process(Child);
+struct Process(Child, PathBuf);
 impl Drop for Process {
     /// 不遗留后台服务；Leaves no background server.
     fn drop(&mut self) {
@@ -28,21 +32,26 @@ impl Drop for Directory {
 }
 /// 启动真实二进制，并轮询确认完成恢复和监听；Starts the real binary and polls recovery/listening readiness.
 async fn start(path: &std::path::Path, address: std::net::SocketAddr) -> Process {
+    // 使用文件避免未消费的 stderr 管道填满，并在退出或超时时保留诊断。
+    // A file prevents an unread stderr pipe from filling while retaining exit and timeout diagnostics.
+    let stderr = path.with_extension(format!("{:032x}.stderr", rand::random::<u128>()));
     let child = Command::new(env!("CARGO_BIN_EXE_ling"))
         .arg("--config")
         .arg(path)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(fs::File::create(&stderr).unwrap())
         .spawn()
         .unwrap();
-    let mut process = Process(child);
+    let mut process = Process(child, stderr);
     tokio::time::timeout(Duration::from_secs(5), async {
         loop {
-            assert!(
-                process.0.try_wait().unwrap().is_none(),
-                "Server exited during recovery"
-            );
+            if let Some(status) = process.0.try_wait().unwrap() {
+                panic!(
+                    "Server exited during recovery with {status}; stderr:\n{}",
+                    fs::read_to_string(&process.1).unwrap_or_default()
+                );
+            }
             if let Ok(mut client) = Client::connect(address, None, 0, Options::default()).await {
                 client.close().await.unwrap();
                 break;
@@ -51,7 +60,12 @@ async fn start(path: &std::path::Path, address: std::net::SocketAddr) -> Process
         }
     })
     .await
-    .unwrap();
+    .unwrap_or_else(|error| {
+        panic!(
+            "Server recovery timed out: {error}; stderr:\n{}",
+            fs::read_to_string(&process.1).unwrap_or_default()
+        )
+    });
     process
 }
 /// 建立经过握手的普通连接；Creates an initialized ordinary connection.

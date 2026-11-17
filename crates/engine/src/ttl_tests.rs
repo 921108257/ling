@@ -2,7 +2,7 @@
 //! Lifecycle contracts with a controllable dual clock, independent of real sleeps or background runtimes.
 
 use crate::{Clock, Config, Deadline, Engine, TimeSnapshot};
-use ling_types::{DbError, ErrorCode, Value};
+use ling_types::{DbError, ErrorCode, EventKind, Value};
 use std::{
     sync::{Arc, Mutex},
     time::{Duration, Instant},
@@ -58,6 +58,199 @@ fn engine() -> (Engine, Arc<TestClock>) {
 /// 使用标准预算执行命令；Executes with the standard test response budget.
 fn run(e: &Engine, name: &str, args: &[Value]) -> Value {
     e.execute(0, name, args, 4096).unwrap()
+}
+
+/// 使用 Fast 事件统计验证期限提交，两个入口均不依赖磁盘平台。
+/// Uses Fast event counters to verify deadline commits on both entry paths without disk dependencies.
+fn event_engine() -> (Engine, Arc<TestClock>, Arc<ling_events::EventStore>) {
+    let clock = TestClock::new();
+    let config = Config {
+        databases: 1,
+        shard_count: 2,
+        ..Config::default()
+    };
+    let events = Arc::new(ling_events::EventStore::open(Default::default(), 1, 2).unwrap());
+    let engine = Engine::with_events(config, 1, clock.clone(), Some(events.clone())).unwrap();
+    (engine, clock, events)
+}
+
+/// 对秒与毫秒两种单位复用 SET 和独立绝对期限命令。
+/// Exercises SET and standalone absolute deadline commands in seconds and milliseconds.
+fn set_absolute(e: &Engine, option: &str, target_ms: i64, value: Value) {
+    let target = if matches!(option, "EXAT" | "EXPIREAT") {
+        target_ms / 1000
+    } else {
+        target_ms
+    };
+    if matches!(option, "PXAT" | "EXAT") {
+        run(e, "SET", &[s("k"), value, s(option), Value::Int(target)]);
+    } else {
+        run(e, option, &[s("k"), Value::Int(target)]);
+    }
+}
+
+/// 毫秒取整的正负亚毫秒抖动不得移动期限、增加修订或多发事件。
+/// Positive and negative submillisecond rounding jitter must not move deadlines, revisions, or events.
+#[test]
+fn absolute_deadline_rounding_preserves_metadata_and_events() {
+    for option in ["PEXPIREAT", "EXPIREAT", "PXAT", "EXAT"] {
+        let (e, clock, events) = event_engine();
+        let target = clock.now().unwrap().unix_ms + 5000;
+        clock.0.lock().unwrap().monotonic += Duration::from_micros(750);
+        run(&e, "SET", &[s("k"), Value::Int(7)]);
+        set_absolute(&e, option, target, Value::Int(7));
+        let before = e.metadata(0, "k").unwrap();
+        let committed = events.stats().unwrap().committed;
+        let ttl_events = events.stats().unwrap().by_kind[EventKind::TtlChanged as usize - 1];
+        let start = clock.now().unwrap();
+        // 混合相位下墙钟加 1 ms、单调仅加 250 µs，期限差 -750 µs 仍在容差内。
+        // A 1 ms wall advance with only 250 µs monotonic advance gives a tolerated -750 µs deadline difference.
+        for (micros, wall_ms) in [(250, 0), (250, 1), (750, 1)] {
+            {
+                let mut time = clock.0.lock().unwrap();
+                time.monotonic = start.monotonic + Duration::from_micros(micros);
+                time.unix_ms = start.unix_ms + wall_ms;
+            }
+            set_absolute(&e, option, target, Value::Int(7));
+            assert_eq!(e.metadata(0, "k").unwrap(), before, "{option}");
+        }
+        assert_eq!(events.stats().unwrap().committed, committed, "{option}");
+        assert_eq!(
+            events.stats().unwrap().by_kind[EventKind::TtlChanged as usize - 1],
+            ttl_events
+        );
+        assert_eq!(e.scheduled_expirations().unwrap(), 1);
+    }
+}
+
+/// 真实期限或墙钟变化仍提交一次；同期限改值仅生成值事件，相对续期不被归并。
+/// Real deadline or wall-clock changes still commit once; same-deadline writes emit only value events and relative renewals stay distinct.
+#[test]
+fn absolute_deadline_changes_wall_corrections_and_relative_renewals_commit() {
+    for (option, correction) in ["PEXPIREAT", "EXPIREAT", "PXAT", "EXAT"]
+        .into_iter()
+        .flat_map(|option| [1, -1].map(|correction| (option, correction)))
+    {
+        let (e, clock, events) = event_engine();
+        let wall = clock.now().unwrap().unix_ms;
+        let target = wall + 5000;
+        run(&e, "SET", &[s("k"), Value::Int(7)]);
+        set_absolute(&e, option, target, Value::Int(7));
+        let before = e.metadata(0, "k").unwrap();
+        let committed = events.stats().unwrap().committed;
+        clock.wall(wall + correction);
+        set_absolute(&e, option, target, Value::Int(7));
+        let corrected = e.metadata(0, "k").unwrap();
+        assert_eq!(corrected.revision, before.revision + 1, "{option}");
+        let expected = if correction > 0 {
+            before.deadline.unwrap().monotonic - Duration::from_millis(1)
+        } else {
+            before.deadline.unwrap().monotonic + Duration::from_millis(1)
+        };
+        assert_eq!(corrected.deadline.unwrap().monotonic, expected, "{option}");
+        assert_eq!(events.stats().unwrap().committed, committed + 1);
+        set_absolute(&e, option, target + 1000, Value::Int(7));
+        let changed = e.metadata(0, "k").unwrap();
+        assert_eq!(changed.revision, corrected.revision + 1);
+        assert_eq!(events.stats().unwrap().committed, committed + 2);
+        let ttl_events = events.stats().unwrap().by_kind[EventKind::TtlChanged as usize - 1];
+        if matches!(option, "PXAT" | "EXAT") {
+            clock.0.lock().unwrap().monotonic += Duration::from_micros(250);
+            set_absolute(&e, option, target + 1000, Value::Int(8));
+            let value_changed = e.metadata(0, "k").unwrap();
+            assert_eq!(value_changed.deadline, changed.deadline);
+            assert_eq!(value_changed.revision, changed.revision + 1);
+            assert_eq!(events.stats().unwrap().committed, committed + 3);
+            assert_eq!(
+                events.stats().unwrap().by_kind[EventKind::TtlChanged as usize - 1],
+                ttl_events
+            );
+            assert_eq!(
+                events.stats().unwrap().by_kind[EventKind::Updated as usize - 1],
+                1
+            );
+        }
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(100)]);
+        let relative = e.metadata(0, "k").unwrap();
+        clock.0.lock().unwrap().monotonic += Duration::from_micros(250);
+        let relative_committed = events.stats().unwrap().committed;
+        run(&e, "PEXPIRE", &[s("k"), Value::Int(100)]);
+        let renewed = e.metadata(0, "k").unwrap();
+        assert_eq!(renewed.revision, relative.revision + 1);
+        assert_eq!(
+            renewed.deadline.unwrap().monotonic,
+            relative.deadline.unwrap().monotonic + Duration::from_micros(250)
+        );
+        assert_eq!(events.stats().unwrap().committed, relative_committed + 1);
+        // 相同 Unix 值也必须先判断立即到期，不能复用原来的未来单调期限。
+        // Even equal Unix values must expire immediately instead of retaining a future monotonic deadline.
+        clock.wall(renewed.deadline.unwrap().unix_ms);
+        run(
+            &e,
+            "PEXPIREAT",
+            &[s("k"), Value::Int(clock.now().unwrap().unix_ms)],
+        );
+        assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-2));
+        assert_eq!(events.stats().unwrap().committed, relative_committed + 2);
+        assert_eq!(e.scheduled_expirations().unwrap(), 0);
+    }
+}
+
+/// 到期换算即使与原期限相差不足一毫秒也不得去重，已过期条目不能复活。
+/// Immediate expiry must not deduplicate even within one millisecond, and expired entries cannot revive.
+#[test]
+fn absolute_deadline_rounding_never_hides_immediate_expiry_or_revives_keys() {
+    let (e, clock, events) = event_engine();
+    let target = clock.now().unwrap().unix_ms + 1;
+    set_absolute(&e, "PXAT", target, Value::Null);
+    clock.0.lock().unwrap().monotonic += Duration::from_micros(750);
+    clock.wall(target);
+    let before = e.metadata(0, "k").unwrap();
+    assert_eq!(
+        e.execute(
+            0,
+            "SET",
+            &[s("k"), Value::Int(9), s("PXAT"), Value::Int(target)],
+            4096
+        )
+        .unwrap_err()
+        .code,
+        ErrorCode::InvalidArgument.as_str()
+    );
+    assert_eq!(e.metadata(0, "k").unwrap(), before);
+    run(&e, "PEXPIREAT", &[s("k"), Value::Int(target)]);
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-2));
+    assert_eq!(
+        events.stats().unwrap().by_kind[EventKind::Expired as usize - 1],
+        1
+    );
+    assert_eq!(
+        events.stats().unwrap().by_kind[EventKind::TtlChanged as usize - 1],
+        0
+    );
+    run(&e, "SET", &[s("k"), Value::Null, s("PX"), Value::Int(1)]);
+    clock.advance(1);
+    assert_eq!(
+        run(&e, "PEXPIREAT", &[s("k"), Value::Int(target + 10)]),
+        Value::Bool(false)
+    );
+    assert_eq!(
+        run(
+            &e,
+            "SET",
+            &[
+                s("k"),
+                Value::Null,
+                s("XX"),
+                s("PXAT"),
+                Value::Int(target + 10)
+            ]
+        ),
+        Value::Bool(false)
+    );
+    assert_eq!(run(&e, "PTTL", &[s("k")]), Value::Int(-2));
+    assert_eq!(e.expire_due(1).unwrap(), 1);
+    assert_eq!(e.scheduled_expirations().unwrap(), 0);
 }
 
 /// 到期边界只由单调时钟决定，墙钟前跳或回拨不会使原值复活。

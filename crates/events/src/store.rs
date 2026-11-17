@@ -7,7 +7,7 @@ use crate::{
     err,
     journal::Journal,
 };
-use ling_types::{DbError, ErrorCode, Event, EventId};
+use ling_types::{DbError, ErrorCode, Event, EventId, key_pattern_matches as matches};
 use std::{
     collections::{BTreeMap, VecDeque},
     sync::Mutex,
@@ -172,7 +172,7 @@ pub struct EventStore {
 }
 impl EventStore {
     /// 测试提交未知路径；Exercises unknown commit outcomes in tests.
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub(crate) fn fail_next_sync(&self) {
         self.state
             .lock()
@@ -223,8 +223,9 @@ impl EventStore {
         let mut replay = Positions::new();
         let mut baseline = Positions::new();
         let mut records = 0;
+        let mut recovered_end = None;
         if let Some(j) = journal.as_mut() {
-            j.visit(|record| {
+            recovered_end = Some(j.recover(|record| {
                 match record.first() {
                     Some(&codec::EVENTS) => {
                         for e in codec::read_events(record, stream)? {
@@ -252,6 +253,16 @@ impl EventStore {
                         if u32::from(g.db) >= dbs
                             || g.progress.len() != shards as usize
                             || g.pending.len() > config.max_pending
+                            || !name.starts_with("n:")
+                            || name.len() <= 2
+                            || name.len() > 130
+                            || g.patterns.windows(2).any(|p| p[0] >= p[1])
+                            || g.patterns.iter().any(|p| validate_pattern(p).is_err())
+                            || g.progress.iter().any(|(&shard, p)| {
+                                shard >= shards
+                                    || p.cursor
+                                        > state.tails.get(&(g.db, shard)).copied().unwrap_or(0)
+                            })
                         {
                             return Err(codec::corrupt());
                         }
@@ -290,27 +301,18 @@ impl EventStore {
                     ));
                 }
                 Ok(())
-            })?;
+            })?);
         }
         if baseline
             .iter()
             .any(|(key, seq)| replay.get(key).copied().unwrap_or(0) < *seq)
         {
-            return Err(codec::corrupt());
-        }
-        for (name, g) in &state.groups {
-            if !name.starts_with("n:")
-                || name.len() <= 2
-                || name.len() > 130
-                || g.patterns.windows(2).any(|p| p[0] >= p[1])
-                || g.patterns.iter().any(|p| validate_pattern(p).is_err())
-                || g.progress.iter().any(|(&shard, p)| {
-                    shard >= shards
-                        || p.cursor > state.tails.get(&(g.db, shard)).copied().unwrap_or(0)
-                })
-            {
-                return Err(codec::corrupt());
-            }
+            // 检查点只能位于首记录；缺失其承诺的后继时保留该记录的定位信息。
+            // Checkpoints are the first record; missing promised successors retain that record's location.
+            return Err(DbError::new(
+                ErrorCode::JournalUnavailable,
+                "Corrupt event Journal at byte offset 40",
+            ));
         }
         if config.reliable
             && state
@@ -324,6 +326,9 @@ impl EventStore {
                 ErrorCode::ConfigInvalid,
                 "Recovered groups exceed checkpoint reserve",
             ));
+        }
+        if let (Some(j), Some(end)) = (journal.as_mut(), recovered_end) {
+            j.finish_recovery(end)?;
         }
         state.journal = journal;
         Ok(Self {
@@ -971,37 +976,6 @@ fn compact(s: &mut State, c: &Config, now: u64) -> Result<(), DbError> {
     s.floors = floors;
     s.groups = groups;
     Ok(())
-}
-/// 相同 SCAN 字节通配契约；Same byte-glob contract as SCAN.
-pub(crate) fn matches(pattern: &str, key: &str) -> bool {
-    let (p, k) = (pattern.as_bytes(), key.as_bytes());
-    let (mut pi, mut ki, mut star, mut retry) = (0, 0, None, 0);
-    while ki < k.len() {
-        if pi < p.len() && p[pi] == b'*' {
-            star = Some(pi + 1);
-            pi += 1;
-        } else {
-            let (literal, step) = if pi < p.len() && p[pi] == b'\\' && pi + 1 < p.len() {
-                (Some(p[pi + 1]), 2)
-            } else {
-                (p.get(pi).copied(), 1)
-            };
-            if literal == Some(k[ki]) || (pi < p.len() && p[pi] == b'?' && step == 1) {
-                pi += step;
-                ki += 1
-            } else if let Some(after) = star {
-                retry += 1;
-                ki = retry;
-                pi = after
-            } else {
-                return false;
-            }
-        }
-    }
-    while pi < p.len() && p[pi] == b'*' {
-        pi += 1
-    }
-    pi == p.len()
 }
 /// 拒绝末尾转义；Rejects dangling escapes.
 fn validate_pattern(p: &str) -> Result<(), DbError> {

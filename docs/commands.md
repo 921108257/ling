@@ -208,6 +208,8 @@ CLI 以 `-c 'SUBSCRIBE ...'` 进入订阅模式，默认逐条从 stdin 读取 A
 
 ## 遍历与匹配
 
+`KEYS`、`SCAN MATCH` 与 `SUBSCRIBE` 使用同一匹配规则。多个字面片段按顺序匹配，不重叠复用字节；例如 `*xy*yz` 不匹配 `xyz`，匹配 `xyyz`。连续星号等价于一个星号，空 pattern 只匹配空字节串，因此不匹配合法的非空 Key。
+
 pattern 使用 UTF-8 字节匹配：`*` 匹配任意字节序列，`?` 匹配一个字节，`\` 转义下一字节。无正则、无字符组。末尾单独反斜杠为非法 pattern。对非 ASCII 文本需要注意一个字符可能占多个字节。
 
 SCAN cursor 是不透明 UInt，初始输入 0，返回 0 表示完成。cursor 绑定当前连接、数据库及 MATCH / TYPE 过滤；非法、重连后的或已失效 cursor 返回 `ERR_INVALID_CURSOR`。每连接最多一条扫描，新的 cursor=0 替换旧扫描，断线释放。

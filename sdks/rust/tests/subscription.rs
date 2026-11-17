@@ -1,13 +1,19 @@
 //! 真实 TCP 订阅、ACK 恢复与取消契约；缓存冷启动始终为空。
 //! Real TCP subscriptions, ACK recovery, and cancellation contracts; cold caches always start empty.
 
-use ling_client::{Client, Event, EventKind, Options, Value};
+#[cfg(unix)]
+use ling_client::EventKind;
+use ling_client::{Client, Event, Options, Value};
 use ling_server::{Config, Server};
-use std::{fs, path::PathBuf, time::Duration};
+use std::time::Duration;
+#[cfg(unix)]
+use std::{fs, path::PathBuf};
 use tokio::{net::TcpListener, sync::oneshot};
 
 /// 临时持久目录；Temporary persistence directory.
+#[cfg(unix)]
 struct Directory(PathBuf);
+#[cfg(unix)]
 impl Directory {
     /// 并行测试隔离；Parallel-test isolation.
     fn new() -> Self {
@@ -18,6 +24,7 @@ impl Directory {
         )))
     }
 }
+#[cfg(unix)]
 impl Drop for Directory {
     /// 只清理测试自建目录；Only cleans the test-created directory.
     fn drop(&mut self) {
@@ -62,6 +69,7 @@ async fn next(sub: &mut ling_client::Subscriber) -> Event {
 
 /// 真实重启恢复 ACK 空洞但不恢复缓存。
 /// Real restarts recover ACK holes without restoring cached values.
+#[cfg(unix)]
 #[tokio::test]
 async fn reliable_ack_holes_recover_and_cache_starts_empty() {
     let dir = Directory::new();

@@ -4,9 +4,11 @@
 mod error;
 mod event;
 pub use event::{Event, EventKind};
+mod pattern;
 mod value;
 
 pub use error::{DbError, ErrorCode};
+pub use pattern::key_pattern_matches;
 pub use value::{Float, Scalar, Value, ValueLimits};
 
 /// 标记命令签名中的业务值位置，名称和选项另有限制。
