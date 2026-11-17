@@ -1,0 +1,869 @@
+{
+  "redis_first_failure": {
+    "run_id": "redis-full-20261118-0450",
+    "controller_exit": 1,
+    "valid": false,
+    "planned_cases": 72,
+    "executed_cases": 1,
+    "measured_comparison_available": false,
+    "failed_case": {
+      "system": "ling",
+      "mode": "reliable",
+      "kind": "string",
+      "operation": "set-px",
+      "repeat": 3,
+      "config": "ling.toml",
+      "errors": [
+        {
+          "worker": 2,
+          "error": "WireError('ERR_INVALID_ARGUMENT: Invalid command arguments')",
+          "phase": "warmup",
+          "iteration": 0,
+          "key_index": 2,
+          "monotonic_ns": 9211212504,
+          "write_result_may_be_unknown": false
+        },
+        {
+          "phase": "controller",
+          "error": "BrokenBarrierError()"
+        },
+        {
+          "worker": 0,
+          "error": "WireError('ERR_INVALID_ARGUMENT: Invalid command arguments')",
+          "phase": "warmup",
+          "iteration": 0,
+          "key_index": 0,
+          "monotonic_ns": 9212082226,
+          "write_result_may_be_unknown": false
+        },
+        {
+          "worker": 1,
+          "error": "RuntimeError('warmup cancelled after another worker failed')",
+          "phase": "warmup",
+          "iteration": 0,
+          "key_index": null,
+          "monotonic_ns": 9212685610,
+          "write_result_may_be_unknown": false
+        },
+        {
+          "worker": 3,
+          "error": "RuntimeError('warmup cancelled after another worker failed')",
+          "phase": "warmup",
+          "iteration": 0,
+          "key_index": null,
+          "monotonic_ns": 9213913059,
+          "write_result_may_be_unknown": false
+        }
+      ],
+      "valid": false,
+      "pipeline": 1,
+      "connections": 4,
+      "server_command": [
+        "taskset",
+        "-c",
+        "0,1",
+        "/root/ling-acceptance/redis-full-20261118-0450/inputs/ling-ling",
+        "--config",
+        "/root/ling-acceptance/redis-full-20261118-0450/reliable-string-set-px-3-ling/ling.toml"
+      ],
+      "server_exit_after_cleanup": 0,
+      "threads_alive": 0
+    },
+    "ling_revision_operator_asserted": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+    "tool_checkout_head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stdout": "32ad7de6c26516619c8b97d361444f804e8bf04c",
+      "stderr": ""
+    },
+    "tool_checkout_status": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "inputs": {
+      "controller": {
+        "original": "/root/ling-acceptance/v030-source/benchmarks/redis_compare.py",
+        "copy": "inputs/controller-redis_compare.py",
+        "sha256": "3b652a92d16c9a6cbecb6f7dfb47e550667f735d4bbed4ba2a166779623922f9"
+      },
+      "protocol_helper": {
+        "original": "/root/ling-acceptance/v030-source/benchmarks/v020.py",
+        "copy": "inputs/protocol_helper-v020.py",
+        "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+      },
+      "tests": {
+        "original": "/root/ling-acceptance/v030-source/benchmarks/test_redis_compare.py",
+        "copy": "inputs/tests-test_redis_compare.py",
+        "sha256": "0957f4139864926618067a6706bfb10bc2735b42273e9281081cfd2b4beb44c9"
+      },
+      "ling": {
+        "original": "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+        "copy": "inputs/ling-ling",
+        "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285"
+      },
+      "redis": {
+        "original": "/root/ling-acceptance/redis-8.10.3/src/redis-server",
+        "copy": "inputs/redis-redis-server",
+        "sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a"
+      },
+      "redis_source_archive": {
+        "original": "/root/ling-acceptance/redis-8.10.3/.acceptance-evidence/redis-8.10.3.tar.gz",
+        "copy": "inputs/redis_source_archive-redis-8.10.3.tar.gz",
+        "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02"
+      }
+    },
+    "redis_pin": {
+      "version": "8.10.3",
+      "checked_date": "2026-11-18",
+      "released_utc": "2026-10-26T11:56:24Z",
+      "commit": "1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f",
+      "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+      "archive": "https://download.redis.io/releases/redis-8.10.3.tar.gz",
+      "release": "https://github.com/redis/redis/releases/tag/8.10.3",
+      "hash_source": "https://raw.githubusercontent.com/redis/redis-hashes/master/README",
+      "tag_source": "https://api.github.com/repos/redis/redis/git/ref/tags/8.10.3",
+      "durability_source": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/",
+      "protocol_source": "https://redis.io/docs/latest/develop/reference/protocol-spec/"
+    },
+    "diagnosis": "Recorded follow-up test-tool diagnosis: SET PX TTL used the generic UInt encoding instead of the required signed Int. Commit 5c60eec corrected the benchmark encoder; original failure evidence is preserved here.",
+    "limitations": [
+      "Only the first ling Reliable/string/SET PX warmup case ran; no Redis case and no valid comparison pair completed.",
+      "Two ERR_INVALID_ARGUMENT responses, worker cancellations and BrokenBarrierError are retained; no measured throughput or latency is claimed.",
+      "This is a test-tool encoding failure record, not evidence of a product performance regression."
+    ]
+  },
+  "layout_smoke": {
+    "run_id": "layout-smoke-20261118-0454",
+    "controller_exit": 0,
+    "orchestration_passed": true,
+    "profile": {
+      "scope": "Linux orchestration smoke only, neither calibration nor endurance",
+      "shadow_seconds": 90,
+      "pressure_seconds_each": 10,
+      "harness_sha256": "a0bf591cd1e73dae0666ab3c4f28b14eb012ff4bc0ab1a259d42afb1218cd77e"
+    },
+    "provenance": {
+      "created_utc": "2026-11-17T20:52:33.130340+00:00",
+      "script_and_tool_sha256": {
+        "/root/ling-acceptance/v030-source/benchmarks/run-v030-layout.py": "ceb825ad70b6f36537b86bb98a291df5c0036f03010d95f7f602f667bb1ef8a2",
+        "/root/ling-acceptance/v030-source/benchmarks/test_run_v030_layout.py": "43a50d4bb282045d7a45ea82d2de8722b0ee2e4e632f5fa99cb769283a2df83c",
+        "/root/ling-acceptance/v030-source/benchmarks/v030.py": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+        "/root/ling-acceptance/v030-source/benchmarks/v020.py": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da"
+      },
+      "source_head": "82e0d304f250d4d27f44f83af10218c40bae54b8",
+      "source_status": "",
+      "binary_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "binary_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+      "platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+      "python": "3.14.4 (main, Jun 18 2026, 14:25:02) [GCC 15.2.0]",
+      "uid": 0,
+      "cpu_count": 16,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "boot_id": "ed06b815-f870-42c0-8589-e9b81049ba29",
+      "commands": [
+        {
+          "name": "fast-shadow",
+          "command": [
+            "/usr/bin/python3",
+            "-u",
+            "-B",
+            "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+            "--server-binary",
+            "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+            "--binary-revision",
+            "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+            "--stage",
+            "pre-release",
+            "--workers",
+            "2",
+            "--cycles-per-second",
+            "5",
+            "--churn-cycles",
+            "100",
+            "--journal-bytes",
+            "4294967296",
+            "--sample-seconds",
+            "5",
+            "--warmup-seconds",
+            "3600",
+            "--slow-consumer-delay",
+            "0.05",
+            "--consumer-reconnect-seconds",
+            "120",
+            "--consumer-disconnect-seconds",
+            "0.2",
+            "--resource-samples",
+            "100000",
+            "--finding-examples",
+            "200",
+            "--min-free-bytes",
+            "10737418240",
+            "/root/ling-acceptance/layout-smoke-20261118-0454/fast-shadow",
+            "--event-mode",
+            "fast",
+            "--phase",
+            "shadow",
+            "--seconds",
+            "90",
+            "--seed",
+            "3002026",
+            "--server-cpus",
+            "0,1",
+            "--client-cpus",
+            "2,3"
+          ]
+        },
+        {
+          "name": "reliable-shadow",
+          "command": [
+            "/usr/bin/python3",
+            "-u",
+            "-B",
+            "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+            "--server-binary",
+            "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+            "--binary-revision",
+            "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+            "--stage",
+            "pre-release",
+            "--workers",
+            "2",
+            "--cycles-per-second",
+            "5",
+            "--churn-cycles",
+            "100",
+            "--journal-bytes",
+            "4294967296",
+            "--sample-seconds",
+            "5",
+            "--warmup-seconds",
+            "3600",
+            "--slow-consumer-delay",
+            "0.05",
+            "--consumer-reconnect-seconds",
+            "120",
+            "--consumer-disconnect-seconds",
+            "0.2",
+            "--resource-samples",
+            "100000",
+            "--finding-examples",
+            "200",
+            "--min-free-bytes",
+            "10737418240",
+            "/root/ling-acceptance/layout-smoke-20261118-0454/reliable-shadow",
+            "--event-mode",
+            "reliable",
+            "--phase",
+            "shadow",
+            "--seconds",
+            "90",
+            "--seed",
+            "3002028",
+            "--server-cpus",
+            "8,9",
+            "--client-cpus",
+            "10,11"
+          ]
+        },
+        {
+          "name": "fast-pressure",
+          "command": [
+            "/usr/bin/python3",
+            "-u",
+            "-B",
+            "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+            "--server-binary",
+            "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+            "--binary-revision",
+            "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+            "--stage",
+            "pre-release",
+            "--workers",
+            "2",
+            "--cycles-per-second",
+            "5",
+            "--churn-cycles",
+            "100",
+            "--journal-bytes",
+            "4294967296",
+            "--sample-seconds",
+            "5",
+            "--warmup-seconds",
+            "3600",
+            "--slow-consumer-delay",
+            "0.05",
+            "--consumer-reconnect-seconds",
+            "120",
+            "--consumer-disconnect-seconds",
+            "0.2",
+            "--resource-samples",
+            "100000",
+            "--finding-examples",
+            "200",
+            "--min-free-bytes",
+            "10737418240",
+            "/root/ling-acceptance/layout-smoke-20261118-0454/fast-pressure",
+            "--event-mode",
+            "fast",
+            "--phase",
+            "pressure",
+            "--seconds",
+            "10",
+            "--seed",
+            "3002027",
+            "--server-cpus",
+            "4,5",
+            "--client-cpus",
+            "6,7",
+            "--policy",
+            "all",
+            "--payload-bytes",
+            "32768",
+            "--memory-bytes",
+            "1048576",
+            "--max-keys",
+            "16"
+          ]
+        },
+        {
+          "name": "reliable-pressure",
+          "command": [
+            "/usr/bin/python3",
+            "-u",
+            "-B",
+            "/root/ling-acceptance/v030-source/benchmarks/v030.py",
+            "--server-binary",
+            "/root/ling-acceptance/v020-public-441ffc7/ling/ling",
+            "--binary-revision",
+            "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+            "--stage",
+            "pre-release",
+            "--workers",
+            "2",
+            "--cycles-per-second",
+            "5",
+            "--churn-cycles",
+            "100",
+            "--journal-bytes",
+            "4294967296",
+            "--sample-seconds",
+            "5",
+            "--warmup-seconds",
+            "3600",
+            "--slow-consumer-delay",
+            "0.05",
+            "--consumer-reconnect-seconds",
+            "120",
+            "--consumer-disconnect-seconds",
+            "0.2",
+            "--resource-samples",
+            "100000",
+            "--finding-examples",
+            "200",
+            "--min-free-bytes",
+            "10737418240",
+            "/root/ling-acceptance/layout-smoke-20261118-0454/reliable-pressure",
+            "--event-mode",
+            "reliable",
+            "--phase",
+            "pressure",
+            "--seconds",
+            "10",
+            "--seed",
+            "3002029",
+            "--server-cpus",
+            "12,13",
+            "--client-cpus",
+            "14,15",
+            "--policy",
+            "all",
+            "--payload-bytes",
+            "32768",
+            "--memory-bytes",
+            "1048576",
+            "--max-keys",
+            "16"
+          ]
+        }
+      ],
+      "coverage_contract": "two shadows' common actual load interval must contain all ten pressure intervals",
+      "scope": "orchestration and coverage only; phase and resource acceptance remain separate"
+    },
+    "driver_exits": [
+      {
+        "name": "fast-shadow",
+        "pid": 444,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 317.446525697
+      },
+      {
+        "name": "reliable-shadow",
+        "pid": 445,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 317.446897904
+      },
+      {
+        "name": "fast-pressure",
+        "pid": 541,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 282.993934597
+      },
+      {
+        "name": "reliable-pressure",
+        "pid": 542,
+        "exit_code": 0,
+        "observed_monotonic_seconds": 283.599119266
+      }
+    ],
+    "remaining_processes": [],
+    "common_actual_shadow_interval": {
+      "start": 227.335145158,
+      "end": 317.291907938
+    },
+    "all_ten_pressure_intervals_covered": true,
+    "phases": [
+      {
+        "name": "fast-pressure-lfu",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000208119000007,
+        "load_start_monotonic_seconds": 252.68031554,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "fast-pressure-lru",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000317929000005,
+        "load_start_monotonic_seconds": 242.647718272,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "fast-pressure-noeviction",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000244692999985,
+        "load_start_monotonic_seconds": 232.614673412,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "fast-pressure-random",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000272491000032,
+        "load_start_monotonic_seconds": 262.71247286,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "fast-pressure-ttl-first",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000241887000016,
+        "load_start_monotonic_seconds": 272.74496217,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "fast-shadow-noeviction",
+        "phase": "shadow",
+        "requested_seconds": 90.0,
+        "actual_load_seconds": 90.00045225300002,
+        "load_start_monotonic_seconds": 227.291455685,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-pressure-lfu",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000259287000034,
+        "load_start_monotonic_seconds": 252.99048577,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-pressure-lru",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.00028483700001,
+        "load_start_monotonic_seconds": 242.854368444,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-pressure-noeviction",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000229396999998,
+        "load_start_monotonic_seconds": 232.660631257,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-pressure-random",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000225632000024,
+        "load_start_monotonic_seconds": 263.171038927,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-pressure-ttl-first",
+        "phase": "pressure",
+        "requested_seconds": 10.0,
+        "actual_load_seconds": 10.000202097999988,
+        "load_start_monotonic_seconds": 273.364288394,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": null,
+          "shadow_writes_not_capacity_limited": null,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-shadow-noeviction",
+        "phase": "shadow",
+        "requested_seconds": 90.0,
+        "actual_load_seconds": 90.00041197400003,
+        "load_start_monotonic_seconds": 227.335145158,
+        "status": "duration_reached",
+        "server_exit_code": 0,
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": true,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      }
+    ],
+    "limitations": [
+      "This is a 90-second shadow / 10-second-per-policy Linux orchestration smoke test, neither 3300-second calibration nor 72-hour endurance acceptance.",
+      "Normal completion emitted no cleanup signals; this run did not exercise forced-stop or failure cleanup paths.",
+      "The smoke run does not establish long-run resource trends, slow-consumer reconnect cycles, restart recovery, physical power-loss safety, or production readiness.",
+      "The tested binary is the released 0.2.0 artifact, not a released 0.3.0 artifact."
+    ],
+    "cleanup_events": [],
+    "cleanup_signals_observed": 0
+  },
+  "archive_scope": "Original preflight failure and Linux orchestration smoke; no new workload was executed while archiving. Windows copies do not establish original Linux mode/owner metadata.",
+  "cleanup_smoke": {
+    "run_id": "layout-cleanup-smoke-20261118-0504",
+    "check": {
+      "passed": true,
+      "scope": "intentional controller failure, two owned drivers; not performance/calibration/endurance",
+      "orchestrator_exit": 1
+    },
+    "controller_exit": 0,
+    "orchestration_passed": false,
+    "orchestrator_exit": 1,
+    "errors": [
+      "RuntimeError: intentional cleanup smoke after worker progress",
+      "fast-shadow: final driver exit 130",
+      "reliable-shadow: final driver exit 130"
+    ],
+    "coverage": {
+      "passed": false,
+      "common_shadow_interval": null,
+      "intervals": [],
+      "errors": [
+        "fast-shadow-noeviction: missing clock or load ended before requested duration",
+        "reliable-shadow-noeviction: missing clock or load ended before requested duration",
+        "fast-pressure-noeviction: missing or malformed phase result",
+        "fast-pressure-lru: missing or malformed phase result",
+        "fast-pressure-lfu: missing or malformed phase result",
+        "fast-pressure-random: missing or malformed phase result",
+        "fast-pressure-ttl-first: missing or malformed phase result",
+        "reliable-pressure-noeviction: missing or malformed phase result",
+        "reliable-pressure-lru: missing or malformed phase result",
+        "reliable-pressure-lfu: missing or malformed phase result",
+        "reliable-pressure-random: missing or malformed phase result",
+        "reliable-pressure-ttl-first: missing or malformed phase result",
+        "need two complete shadows and all ten complete pressure phases"
+      ]
+    },
+    "cleanup_events": [
+      {
+        "action": "signal",
+        "signal": 2,
+        "pid": 426,
+        "pgrp": 426,
+        "session": 426,
+        "start_ticks": 58013
+      },
+      {
+        "action": "signal",
+        "signal": 2,
+        "pid": 427,
+        "pgrp": 427,
+        "session": 427,
+        "start_ticks": 58013
+      }
+    ],
+    "driver_exits": [
+      {
+        "name": "fast-shadow",
+        "pid": 426,
+        "exit_code": 130,
+        "observed_monotonic_seconds": 585.76597869
+      },
+      {
+        "name": "reliable-shadow",
+        "pid": 427,
+        "exit_code": 130,
+        "observed_monotonic_seconds": 585.766163728
+      }
+    ],
+    "owned_process_identities": [
+      {
+        "name": "fast-shadow",
+        "driver": {
+          "pid": 426,
+          "pgrp": 426,
+          "session": 426,
+          "start_ticks": 58013
+        },
+        "pid_start_ticks": {
+          "426": 58013,
+          "489": 58036
+        }
+      },
+      {
+        "name": "reliable-shadow",
+        "driver": {
+          "pid": 427,
+          "pgrp": 427,
+          "session": 427,
+          "start_ticks": 58013
+        },
+        "pid_start_ticks": {
+          "427": 58013,
+          "488": 58036
+        }
+      }
+    ],
+    "remaining_processes": [],
+    "phases": [
+      {
+        "name": "fast-shadow-noeviction",
+        "status": "interrupted",
+        "server_exit_code": 0,
+        "actual_load_seconds": 5.1918408949999275,
+        "worker_cycles_at_last_progress": [
+          26,
+          26
+        ],
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": false,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      },
+      {
+        "name": "reliable-shadow-noeviction",
+        "status": "interrupted",
+        "server_exit_code": 0,
+        "actual_load_seconds": 5.127721279999946,
+        "worker_cycles_at_last_progress": [
+          25,
+          25
+        ],
+        "findings": {},
+        "criteria": {
+          "no_findings": true,
+          "full_duration": false,
+          "all_workers_completed": true,
+          "all_ten_types_checked": true,
+          "shadow_writes_not_capacity_limited": true,
+          "consumers_valid": true,
+          "native_resources_available": true,
+          "resource_trends": "recorded; compare against the separately committed acceptance plan"
+        }
+      }
+    ],
+    "historical_offline_test_logs": [
+      {
+        "archive_path": "execution/redis-corrected-wsl-tests.log",
+        "reported_test_count": 20,
+        "reported_result": "OK",
+        "sha256": "467a2cf02df0b3b9e9609ff6af5d2a350f7c36770f6dafaee02ce3ff2fc3024c",
+        "executed_by_this_archiver": false,
+        "scope": "pre-existing WSL offline test log; raw mixed-encoding wrapper output retained"
+      },
+      {
+        "archive_path": "execution/layout-wsl-tests.log",
+        "reported_test_count": 27,
+        "reported_result": "OK",
+        "sha256": "29cd5a61556d06dd5ce2e58802b9cacb4d67d45e415ce4d090e022aac2a3f794",
+        "executed_by_this_archiver": false,
+        "scope": "pre-existing WSL offline test log; raw mixed-encoding wrapper output retained"
+      }
+    ],
+    "scope": "Intentional controller failure after two owned shadows started. Two verified pidfd SIGINT signals; both drivers exit 130 and both servers exit 0, with no remaining processes.",
+    "limitations": [
+      "passed=true means only the intentional-failure cleanup check passed. The original orchestration and coverage results remain false.",
+      "Neither pressure driver started; this is not workload completion, calibration or endurance acceptance.",
+      "This run exercised cooperative SIGINT cleanup, not the SIGKILL escalation path or physical power failure.",
+      "The WSL offline test logs predate archiving. No tests, WSL, services or load were started by this append operation."
+    ]
+  }
+}

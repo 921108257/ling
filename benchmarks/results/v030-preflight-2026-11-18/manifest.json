@@ -1,0 +1,51 @@
+{
+  "archived_utc": "2026-11-17T20:58:17.658463+00:00",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 55,
+      "sha256": "c1fe800367b02bf9ed7719589656482b72c2055d9f8cffdfd1ea13c2c7fe29a6"
+    },
+    {
+      "path": "append-v030-cleanup-evidence.py",
+      "bytes": 12032,
+      "sha256": "06d755e97d4f9f8508a2021d0cf4c3a921a5311285a6a8c75aacd22192d33250"
+    },
+    {
+      "path": "archive-v030-preflight.py",
+      "bytes": 12771,
+      "sha256": "be72f7d52dd88c84479435fd311166121336244d7d3909c475a01f2d0573cf75"
+    },
+    {
+      "path": "archive-verification.json",
+      "bytes": 1951,
+      "sha256": "afb13d32a07ba611b47deec94153ee13676e2f5673a46e49dcf442ff021a859b"
+    },
+    {
+      "path": "cleanup-smoke.tar.gz",
+      "bytes": 7792532,
+      "sha256": "858490f0da8e43521d6e3e62f19cd14a0137e775b1722e1c0d2cff6d00aaf1d8"
+    },
+    {
+      "path": "evidence-files.manifest.json",
+      "bytes": 84958,
+      "sha256": "d4a6b4743ce554f040f035150df809ec04f32c50ee0078017294fdd76d850179"
+    },
+    {
+      "path": "layout-smoke.tar.gz",
+      "bytes": 15828423,
+      "sha256": "868a9abca418763159240f1b923cd9eabf11e59aab70910492c52ec63c70a1da"
+    },
+    {
+      "path": "redis-first-failure.tar.gz",
+      "bytes": 34821961,
+      "sha256": "b620cb2d48fca33936bd7b7fbdcaad4046884bf65f8b9918d12617dd5e445113"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 30948,
+      "sha256": "fe49942405faec456444f808ba8bbc29e5e663b3f6832455a4a294de2dcec4c7"
+    }
+  ],
+  "updated_utc": "2026-11-17T21:02:35.598663+00:00"
+}

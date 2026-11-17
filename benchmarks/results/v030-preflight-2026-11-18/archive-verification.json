@@ -1,0 +1,70 @@
+{
+  "method": "temporary extraction, exact SHA256/size, full archive and nested gzip EOF, source rehash",
+  "archives": [
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "members": 18,
+      "source_bytes": 53492688,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 2,
+      "source_unchanged": true
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "members": 156,
+      "source_bytes": 40326516,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 48,
+      "source_unchanged": true
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "members": 46,
+      "source_bytes": 19098518,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 8,
+      "source_unchanged": true
+    }
+  ],
+  "second_independent_read": [
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "members": 18,
+      "independent_streaming_size_sha256_match": true
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "members": 156,
+      "independent_streaming_size_sha256_match": true
+    }
+  ],
+  "append_all_archive_verification": [
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "members": 18,
+      "source_bytes": 53492688,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 2
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "members": 156,
+      "source_bytes": 40326516,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 48
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "members": 46,
+      "source_bytes": 19098518,
+      "extracted_sha256_size_match": true,
+      "gzip_read_to_eof": true,
+      "nested_gzip_read_to_eof": 8
+    }
+  ]
+}

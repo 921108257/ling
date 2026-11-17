@@ -1,0 +1,1764 @@
+{
+  "files": [
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/environment.json",
+      "source_path": "target\\redis-full-20261118-0450\\environment.json",
+      "bytes": 11988,
+      "sha256": "a26d445bde84006c65f9c120e562e58cc45f4dfeb36106cca3c7a2cd427beb4e",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/controller-redis_compare.py",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\controller-redis_compare.py",
+      "bytes": 38340,
+      "sha256": "3b652a92d16c9a6cbecb6f7dfb47e550667f735d4bbed4ba2a166779623922f9",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/ling-ling",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\ling-ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/protocol_helper-v020.py",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\protocol_helper-v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/redis-redis-server",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\redis-redis-server",
+      "bytes": 22514760,
+      "sha256": "1ea6a05a0108e60c7a4656592138714da2c21888f72b2937301eed487f6b778a",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/redis_source_archive-redis-8.10.3.tar.gz",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\redis_source_archive-redis-8.10.3.tar.gz",
+      "bytes": 21647086,
+      "sha256": "edde778f6bdee7581e42fc139ca9e07e2822212092f7501f99989656e3629d02",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/inputs/tests-test_redis_compare.py",
+      "source_path": "target\\redis-full-20261118-0450\\inputs\\tests-test_redis_compare.py",
+      "bytes": 18505,
+      "sha256": "0957f4139864926618067a6706bfb10bc2735b42273e9281081cfd2b4beb44c9",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/journal/journal.lgj",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\journal\\journal.lgj",
+      "bytes": 96040,
+      "sha256": "7bbeaede6adecc9e62ebbd837dc6bffcb6a5083e6358b0101686226119b2086d",
+      "source_mtime_ns": 1794948535000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/journal/LOCK",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/latencies-ns.json.gz",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\latencies-ns.json.gz",
+      "bytes": 47,
+      "sha256": "2ea1e5e15a371effe97c210d7f9490e22377ef4cf4b038bacb3666e6b7585a20",
+      "source_mtime_ns": 1794948535000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/ling.toml",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\ling.toml",
+      "bytes": 382,
+      "sha256": "575bc1621ad40d57a32943776732816a7db81e6e2af53d26d33c3223c6389041",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/result.json",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\result.json",
+      "bytes": 1616,
+      "sha256": "e8ced165de10fd347755bdec8e6c04c9742b4829bbcd8494252f0c0d5d715a95",
+      "source_mtime_ns": 1794948535000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/reliable-string-set-px-3-ling/server.log",
+      "source_path": "target\\redis-full-20261118-0450\\reliable-string-set-px-3-ling\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/results.json",
+      "source_path": "target\\redis-full-20261118-0450\\results.json",
+      "bytes": 1746,
+      "sha256": "bb46decba9001a147e46a540e915a12599df34011d2adf7b38ed08fba7e7fb40",
+      "source_mtime_ns": 1794948535000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/schedule.json",
+      "source_path": "target\\redis-full-20261118-0450\\schedule.json",
+      "bytes": 8355,
+      "sha256": "02c538e4bcdcaf0fb104fd96576ec52bd8d41ab6f5f6cc48962a629e1c1c2523",
+      "source_mtime_ns": 1794948529000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "raw/summary.json",
+      "source_path": "target\\redis-full-20261118-0450\\summary.json",
+      "bytes": 3093,
+      "sha256": "5d6e272efc99f87514fa30cb3c06e945442fbf6169b3f515b865c54fdad91d8c",
+      "source_mtime_ns": 1794948535000000000
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "execution/redis-full-20261118-0450-controller.log",
+      "source_path": "target\\redis-full-20261118-0450-controller.log",
+      "bytes": 208,
+      "sha256": "49a6173175d32e846cbee97017dd7eb4b808d27705d1447dd87843220a58d9c7",
+      "source_mtime_ns": 1794948535543265100
+    },
+    {
+      "archive": "redis-first-failure.tar.gz",
+      "path": "execution/redis-full-20261118-0450-exit.txt",
+      "source_path": "target\\redis-full-20261118-0450-exit.txt",
+      "bytes": 1,
+      "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+      "source_mtime_ns": 1794948535570990500
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/driver-exits.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\driver-exits.json",
+      "bytes": 495,
+      "sha256": "00ce7463281681ac3c0c076c2c6c40841bdd48705ab074ec8bdf5458c91c965a",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/environment.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\environment.json",
+      "bytes": 100234,
+      "sha256": "069ebf83c4e71f095ef9628bb7a854e402395321d4742f0c4855e014c47d8b9d",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\consumer-events.jsonl.gz",
+      "bytes": 294,
+      "sha256": "df165952991502a9497cf6644e35b8dce701e0387c0a3562ceea62089f10d170",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\errors.jsonl.gz",
+      "bytes": 38,
+      "sha256": "2fb1acbed5c5b4f444aaac6eca94c786e01f61121c8fc84f3352d80c82c2da92",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\ling.toml",
+      "bytes": 446,
+      "sha256": "d5242ad032832675c82dfdfc44d3ae955932d66a5de56a7e9a6a3e3e03db68e2",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\progress.json",
+      "bytes": 8250,
+      "sha256": "be10f01a9b3e9fd309aef37cd08e58a36f64c60d5621a29df5033bb52c516497",
+      "source_mtime_ns": 1794948784000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\resources.jsonl.gz",
+      "bytes": 5651,
+      "sha256": "ff61fdcb29c00b4750fbcb14ce5f5174bb77e4ea143b72affc2b1100dd9b7be8",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\result.json",
+      "bytes": 40502,
+      "sha256": "6409572fa95e54880281f834fa51293a1c2b788fdcd3a7f276eb5b6d2a7fccad",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "5448f71ed546034b7cd526d298ff2d105bf8a706a74f4050a5b5c540e2e51c90",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lfu/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lfu\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\consumer-events.jsonl.gz",
+      "bytes": 304,
+      "sha256": "8fb0fdddd11473427189657c0d5ceffd4b3cc0f757a63e9b75e02cd8ca0ca679",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\errors.jsonl.gz",
+      "bytes": 38,
+      "sha256": "07cc7b54364ce9c6e49e544249c1078c58d37363eb8175dcebe78a352cc4107e",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\ling.toml",
+      "bytes": 446,
+      "sha256": "2a7dae1e78a9ec445eb43278b9ede4a39051a12402b08c9bf020c3c68ba0f998",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\progress.json",
+      "bytes": 8259,
+      "sha256": "8b2da0ebe8af452f6919e88f01541d6faf1ca715ebf93be75831e77d38a54544",
+      "source_mtime_ns": 1794948773000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\resources.jsonl.gz",
+      "bytes": 5607,
+      "sha256": "262df6fd635102f67b8076756215ac110816b150bafe3d27b0086887fed1d266",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\result.json",
+      "bytes": 40514,
+      "sha256": "eb7fd4081f73a91488bf527cfc5613811e57a83bfea5696919ab56a5608b183f",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "8021d2b65c5f47ce902628b15c54666733affb96942ccb19e8bca9ad6546f6a4",
+      "source_mtime_ns": 1794948778000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-lru/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-lru\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 305,
+      "sha256": "352b34200efd43aefab5d5adbe7b71c7349e6c62763c6d830ad602f24b57203b",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\errors.jsonl.gz",
+      "bytes": 2488,
+      "sha256": "a14eacdbc5ebd43f27d273d64e034d46ddc627e64cd9db0b234eec6f7c9a6529",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\ling.toml",
+      "bytes": 453,
+      "sha256": "48e65e7a958a6bf64fc9938b5fa362887cfed2821e5b5f8af11bccdb78bb5591",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\progress.json",
+      "bytes": 8325,
+      "sha256": "8da56eb950b577076f4fb6f790443e440975603eb5bc645f54d009a567b7eb61",
+      "source_mtime_ns": 1794948763000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\resources.jsonl.gz",
+      "bytes": 5719,
+      "sha256": "3ed3841ebc59be6b3a2874f75a90d9d69a76ddd661817a019cac66cce5a3986c",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\result.json",
+      "bytes": 40655,
+      "sha256": "9017950cc47e039b41f04034a2322faf3cd6ac05b1a518ee0ee6703682329e4a",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "f09e623fa9673d11f8819cfd1a2fe03279b9ffe7a368d3a0e8cb48cfd57be7c1",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-noeviction/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\consumer-events.jsonl.gz",
+      "bytes": 295,
+      "sha256": "9b6023a0bfa8f7501208dd83ee58c18ab84e139be06cf1975685e2d73c7ac573",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\errors.jsonl.gz",
+      "bytes": 280,
+      "sha256": "0ff7b1845f19808ca70b3cb60be1010a2c3881598e18aa2496a7775dd43f608a",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948788000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\ling.toml",
+      "bytes": 449,
+      "sha256": "50d37824ad8fe3277842b5591923d567761503057bd775136342654f1ee778cd",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\progress.json",
+      "bytes": 8362,
+      "sha256": "e0811dcbaf0aad82cd6b21fb5f7df7e7efc74f46a96fd9a297a2e13101eff416",
+      "source_mtime_ns": 1794948794000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\resources.jsonl.gz",
+      "bytes": 5730,
+      "sha256": "8f0f45d292008c714fa0e23e123ff2216fe2a253b2cbcad004f93a0ec47a605a",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\result.json",
+      "bytes": 40716,
+      "sha256": "0789906f2e316052fc40a2387c02edc39736bb2095e43739ffc481df109ebc31",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "d4e414178d86d466ffa3ae0c12192d27e73bbfffb7598e212588f9d07ae95ae2",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-random/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-random\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\consumer-events.jsonl.gz",
+      "bytes": 300,
+      "sha256": "dbb6303fa72696f4b67160fa60195ae3717696384db831e8362295923f363986",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\errors.jsonl.gz",
+      "bytes": 3234,
+      "sha256": "2dea78c33d51ce6f85731027f7ccdfbbbe5125dd36fb01a6e58b1f5c4d5888da",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\ling.toml",
+      "bytes": 452,
+      "sha256": "306c215189a14e0a506f2ebbffa02bf7a26c18026b69f57e9d11e65ebe2d0931",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\progress.json",
+      "bytes": 8269,
+      "sha256": "da771b7b99029474115ce243cee2f047f05be4762d1c64094bd08e6915559a1f",
+      "source_mtime_ns": 1794948804000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\resources.jsonl.gz",
+      "bytes": 5669,
+      "sha256": "2cc4cdfc96213332c67486accbc69f402704836f14a7924d2ff587ace731738d",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\result.json",
+      "bytes": 40634,
+      "sha256": "0b5f0ed176e7f2ea5ea8d6bff6f5d8e6bc59227517b9be64036725ed9a72bd72",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "a0e124091e3e7242729495e2d2ca2fefb13b6b066c3257cf590770caced30aac",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/fast-pressure-ttl-first/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\fast-pressure-ttl-first\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/ling",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/summary.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\summary.json",
+      "bytes": 232736,
+      "sha256": "8abb879f99fb49871b61b06e9c02f88b295e8eeade47982aa01e843c56bb0523",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/tool_source/v020.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure/tool_source/v030.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-pressure-driver.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-pressure-driver.log",
+      "bytes": 551,
+      "sha256": "4997a7c4ce9943b3f0777f16fab821e6dac2823e315915dcf601df105646a9a1",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/environment.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\environment.json",
+      "bytes": 100226,
+      "sha256": "f78cc4f0ad4ba7ccc51fd26920a9ea59f9419f065ef8942323f0c5dc53a4c379",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 720,
+      "sha256": "ebdbd1488b3053b6bfbd5f8bc0b9f05e1534375eb0763405c3b65be434e648bf",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 17645,
+      "sha256": "00b799feac7585121e01cd5b8a8f6133f000909d678bd4e73cf40e9c98f3bf1c",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\ling.toml",
+      "bytes": 456,
+      "sha256": "b7f2cf922ff601d5909ac15aea8fcf6f5bff015ced2909c1cd3ed0522ea4780d",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\progress.json",
+      "bytes": 8828,
+      "sha256": "0c2359b8e17fb26e3001f76307994ab10ad3aafd4a93c39bd7343f34f4f2591a",
+      "source_mtime_ns": 1794948838000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 18279,
+      "sha256": "b0e2bc54abd958be50b592b0572b518897591a573fd35ff779ee82d35e8a98f8",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\result.json",
+      "bytes": 41712,
+      "sha256": "8fab94cb12ad977256fbe9338ca5e090a3f2fb1f5596152f039ca354b5058cd1",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "e7e6a68f8b0924a818d119a475cbfeb74570a3dd69ba2105208c6cfe6e13113e",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\fast-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/ling",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/summary.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\summary.json",
+      "bytes": 47879,
+      "sha256": "cff1ba1792beaa08f1af09602bb9547ab561251038a5d9a23640a5ee96f13e6f",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/tool_source/v020.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow/tool_source/v030.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/fast-shadow-driver.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\fast-shadow-driver.log",
+      "bytes": 112,
+      "sha256": "0e461eb9f6fc968a5a03d615c35b5c4a3e2ee4dce7a0e3156ddd26ece944f7c1",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/layout-result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\layout-result.json",
+      "bytes": 3916,
+      "sha256": "fb44db29c310f729f865e445fc6fdcf74511a376e956870a8e2737c645787af3",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/layout.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\layout.json",
+      "bytes": 6853,
+      "sha256": "fefad2711982c1630a8a84e5526c37f4f3b16dba8157550b60bfbc5bd859a081",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/environment.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\environment.json",
+      "bytes": 100258,
+      "sha256": "d690977f6e3c5efe2ef14a7d5b607f599b9669d82c0580579032043e31a2f482",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/ling",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\consumer-events.jsonl.gz",
+      "bytes": 303,
+      "sha256": "301f369c062da407c45ce2e718e4ae0bc71e2cdb78f6d9b2a780cdd4897df4f0",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\errors.jsonl.gz",
+      "bytes": 38,
+      "sha256": "8afef8034dbb1846ee4b8ff3741d15e236127edd7d9f7f551d7fe7ea5fec2251",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\journal\\journal.lgj",
+      "bytes": 148547,
+      "sha256": "291273f2ac782cd58a0fd74aff5935477b927f2dadd12d683014b2e0b3e2fb18",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\ling.toml",
+      "bytes": 501,
+      "sha256": "55c9da4942ed01bb3cfd89750037dbe18e99bc536fc88c134056a5706add798d",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\progress.json",
+      "bytes": 8330,
+      "sha256": "38b21021521272e107ddd5b4edab5e796bdd6fa7dda31ea38e4e967f708dec1c",
+      "source_mtime_ns": 1794948784000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\resources.jsonl.gz",
+      "bytes": 6020,
+      "sha256": "92d2120f59f34cdbfa7f1f5f7360844659a6926a9f6958df2e099edc83c1111e",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\result.json",
+      "bytes": 40724,
+      "sha256": "f5fda90ac13f3757a363ddc395b7271a1c50ae6456659acdae4f482d0074ffa4",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "bd4ca9f874a1c060f0a9e46c0a37b09d7bac0263a1dae91a5b4631d5b7582350",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lfu/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lfu\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\consumer-events.jsonl.gz",
+      "bytes": 302,
+      "sha256": "558b67625c66681f03b4cebcc4a40739ebe2eb072fee0b2051b4e300b55d9536",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\errors.jsonl.gz",
+      "bytes": 38,
+      "sha256": "a5486ab1f9a589a8f35226643641e3b06b01d2d7ff0b61c834cb8cec0619ead2",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\journal\\journal.lgj",
+      "bytes": 158158,
+      "sha256": "dd616debebc3906963b49ffc637580e34a3c1bb7a8164af3f702e0a67ebe7bc1",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\ling.toml",
+      "bytes": 501,
+      "sha256": "ae87fa4ea948c3b1304edddfae65e46f270c437ad2c0ef9823a8f73cd9009451",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\progress.json",
+      "bytes": 8303,
+      "sha256": "f686c05e8684d3d8f701c934adb5db831bab1a4fb6ca400a0de2edeef3d6313b",
+      "source_mtime_ns": 1794948774000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\resources.jsonl.gz",
+      "bytes": 6033,
+      "sha256": "6ff901263b8127ea4ef50f9eb6099d16d552d0420cbb986936636e8708bca027",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\result.json",
+      "bytes": 40715,
+      "sha256": "c62875f719264ac1b7d97608b9d4a2fa366d4863b1a3e756e5d4e4408bab71d3",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "751a8ddb712595803a71782eff2e875e7dff5de2ae7972dea1fe42b3d17c562a",
+      "source_mtime_ns": 1794948779000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-lru/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-lru\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 305,
+      "sha256": "db9d33b81491b5d46948c5f480f9459ca4add20e05186f58354077f0b0e56ec5",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\errors.jsonl.gz",
+      "bytes": 2827,
+      "sha256": "8181b15a6e097a7c37e0a550e2e9bb75e243d139ad356580cee76a78e113c8b6",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\journal\\journal.lgj",
+      "bytes": 92910,
+      "sha256": "35d60094784d561461bb0d448a679d689d53db8f645ef17e3c91c2616a9b1d5e",
+      "source_mtime_ns": 1794948768000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\ling.toml",
+      "bytes": 508,
+      "sha256": "36cf6b07fc16d745f03ec179c74453b5ad1edad4380cae6ccbf424dbdd04cfdb",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\progress.json",
+      "bytes": 8367,
+      "sha256": "a5f914307f6c3b213caa96eb6ca66d8a7e5daf8bbc3307d05dda51ebea5c3c85",
+      "source_mtime_ns": 1794948764000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\resources.jsonl.gz",
+      "bytes": 6019,
+      "sha256": "c0d0ab8af655404b88d9a1875f855d4c08895c08d594b9da8ee65983ccea53a1",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\result.json",
+      "bytes": 40762,
+      "sha256": "81c6ead96a54382a006295e2930ef3c357e3a796d07a0156ac6c0cdf8606e68f",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "f09e623fa9673d11f8819cfd1a2fe03279b9ffe7a368d3a0e8cb48cfd57be7c1",
+      "source_mtime_ns": 1794948769000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-noeviction/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\consumer-events.jsonl.gz",
+      "bytes": 302,
+      "sha256": "d89628554dd9cfbf1ea52852446c9d04e70a2b52fe7d3843361f6c9469e48510",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\errors.jsonl.gz",
+      "bytes": 38,
+      "sha256": "a81113edb1b5369fd093155fa4ec8c69f45ac1a89019cb5120622dfec4e43503",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\journal\\journal.lgj",
+      "bytes": 159562,
+      "sha256": "5af0f6b4300de7b8a941164c7e4cd24df1ff7070235b4ba2d4e09bcd382d203c",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\ling.toml",
+      "bytes": 504,
+      "sha256": "429eddcefc0e8447997742cab0cf9e3b7bb9643a1304a069849af35bda096a72",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\progress.json",
+      "bytes": 8289,
+      "sha256": "4df46146eca6b86e269856763b71c2e8b558677af12d1150bb202957ddc43fa5",
+      "source_mtime_ns": 1794948794000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\resources.jsonl.gz",
+      "bytes": 6055,
+      "sha256": "33446bd14479c6f6c125335b06e016322dbdf0833834d5759b577f123bbed047",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\result.json",
+      "bytes": 40707,
+      "sha256": "e08b9c4c6c81dce5bbe4f5b7f5da715db1a69b1dbf6cae9b4dceb95d8d8d1261",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "d4e414178d86d466ffa3ae0c12192d27e73bbfffb7598e212588f9d07ae95ae2",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-random/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-random\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948789000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\consumer-events.jsonl.gz",
+      "bytes": 300,
+      "sha256": "10f464b8a54f3dc1d1a61323125fec814170f2342a464d296cf3f57f1f8d5c03",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\errors.jsonl.gz",
+      "bytes": 2923,
+      "sha256": "3d54b1caed9c93c9ac2e971f9e301b5f6034e10c77dd6b16ddcbfd03a7fe35b5",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\journal\\journal.lgj",
+      "bytes": 91393,
+      "sha256": "6e537f3ad75dcaee264aa29c209d6fe296a050a0418b5010449101eed81afbef",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\ling.toml",
+      "bytes": 507,
+      "sha256": "a4e7ffe4cc5ac698cac827ac8e229d37fafc33d4ecf38c3e685869b3c33fef77",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\progress.json",
+      "bytes": 8312,
+      "sha256": "242ec6339fd4a7a4ff7536f2f00be3d07be2f35c8e9223b7a813a199032c31ed",
+      "source_mtime_ns": 1794948804000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\resources.jsonl.gz",
+      "bytes": 6041,
+      "sha256": "31360bd7f7ffc2b7892df16ef64678abc480a022d5583affd67030f06b083bce",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\result.json",
+      "bytes": 41026,
+      "sha256": "7afa96cf3939efddd99044d40ef12f54b1a375345de0e60d6867b13ed74333d4",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "a0e124091e3e7242729495e2d2ca2fefb13b6b066c3257cf590770caced30aac",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/reliable-pressure-ttl-first/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\reliable-pressure-ttl-first\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948799000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/summary.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\summary.json",
+      "bytes": 233733,
+      "sha256": "05ab23514a374f4a96cdeb18ac4a7e886920be5664aa196c69f62c2461fa466c",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/tool_source/v020.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure/tool_source/v030.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-pressure-driver.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-pressure-driver.log",
+      "bytes": 571,
+      "sha256": "289a0670f727843f1660c7b84a31a32991e761b35cd26b7f470ecf73549d9ac6",
+      "source_mtime_ns": 1794948809000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/environment.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\environment.json",
+      "bytes": 100246,
+      "sha256": "b821aa5e3df66cfcc044f1bbe1b30e1330eed3fff08919e36056de14cea27daf",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/ling",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 738,
+      "sha256": "0214d2cb0c5d7d029ba8730ef419fbe07f7e64c98fb7f53339002af41d8b011c",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 17843,
+      "sha256": "6fc565282ca2855ff08d310202ef8c8536387eb21cc7c53c6edcc069991bc13e",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/findings.jsonl",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/journal.lgj",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\journal\\journal.lgj",
+      "bytes": 894204,
+      "sha256": "d0130227550a3849fec1cf859c13a5963146fd751a3c51a2202013f64763f0a8",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/LOCK",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/ling.toml",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\ling.toml",
+      "bytes": 511,
+      "sha256": "e4267bb8d1745229c6fe4c05a4b809492e35cf393d6c18457574c04c281e349b",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/progress.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\progress.json",
+      "bytes": 9037,
+      "sha256": "c3de78b061ab27686092718bc50b34f0f68882bf7ca85cf0069c12273a62dae5",
+      "source_mtime_ns": 1794948839000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 21703,
+      "sha256": "bdb7202f61051421cca4d0d2c9b8942d0ef5f38d8b4553f215266d634f370ce3",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/result.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\result.json",
+      "bytes": 42218,
+      "sha256": "b82f855c2c794b4357ddf44b9716eabdcbb6f390c9419ef7a389e8d3a4a10f96",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "e7e6a68f8b0924a818d119a475cbfeb74570a3dd69ba2105208c6cfe6e13113e",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\reliable-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/summary.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\summary.json",
+      "bytes": 48449,
+      "sha256": "9a0e13197f37d7bd43b85bf98e400deec471ec5500a7fb83cf4686c52f598bd6",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/tool_source/v020.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow/tool_source/v030.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/reliable-shadow-driver.log",
+      "source_path": "target\\layout-smoke-20261118-0454\\reliable-shadow-driver.log",
+      "bytes": 116,
+      "sha256": "d18c7e5ad2938ee1a33a6d0990a45b71ea224381212628f37f9bdaa9c62667ae",
+      "source_mtime_ns": 1794948843000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/shadow-ready.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\shadow-ready.json",
+      "bytes": 20371,
+      "sha256": "bb8f54b18c8da14c8c642453b2685fa5e0ac72b533c41b77afe1362691499562",
+      "source_mtime_ns": 1794948758000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/smoke-profile.json",
+      "source_path": "target\\layout-smoke-20261118-0454\\smoke-profile.json",
+      "bytes": 226,
+      "sha256": "7918510ed97ad084e63ebcab5bcd84c6592e0ede2ffcdb600185082baf2b1725",
+      "source_mtime_ns": 1794948753000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/tool_source/run-v030-layout.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\tool_source\\run-v030-layout.py",
+      "bytes": 24647,
+      "sha256": "ceb825ad70b6f36537b86bb98a291df5c0036f03010d95f7f602f667bb1ef8a2",
+      "source_mtime_ns": 1794948751000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/tool_source/test_run_v030_layout.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\tool_source\\test_run_v030_layout.py",
+      "bytes": 28358,
+      "sha256": "43a50d4bb282045d7a45ea82d2de8722b0ee2e4e632f5fa99cb769283a2df83c",
+      "source_mtime_ns": 1794948751000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/tool_source/v020.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "raw/tool_source/v030.py",
+      "source_path": "target\\layout-smoke-20261118-0454\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "execution/layout-smoke-20261118-0454-controller.log",
+      "source_path": "target\\layout-smoke-20261118-0454-controller.log",
+      "bytes": 557,
+      "sha256": "655a55be6d1cf2f48142f706c478f5d4f068238f3238826f52a3b895ea57cdbc",
+      "source_mtime_ns": 1794948843776947900
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "execution/layout-smoke-20261118-0454-exit.txt",
+      "source_path": "target\\layout-smoke-20261118-0454-exit.txt",
+      "bytes": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_mtime_ns": 1794948843802785900
+    },
+    {
+      "archive": "layout-smoke.tar.gz",
+      "path": "execution/smoke-v030-layout.py",
+      "source_path": "target\\smoke-v030-layout.py",
+      "bytes": 1501,
+      "sha256": "a0bf591cd1e73dae0666ab3c4f28b14eb012ff4bc0ab1a259d42afb1218cd77e",
+      "source_mtime_ns": 1794948668126510400
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/cleanup-smoke-result.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\cleanup-smoke-result.json",
+      "bytes": 150,
+      "sha256": "3de2a6f9aef6265b1826563ca0c79b544a7f3f1fefdf97fc1d4c334b13a66f97",
+      "source_mtime_ns": 1794949112000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/driver-exits.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\driver-exits.json",
+      "bytes": 250,
+      "sha256": "83bf91e1a0d7cc93ac034e691ca93f5ae2c16d0e006939cf306645d64e589089",
+      "source_mtime_ns": 1794949112000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/environment.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\environment.json",
+      "bytes": 100254,
+      "sha256": "19b3f3686fcd7279fd62637b17119cf3e982c9c33c26a0a7cddabb24a6751be2",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 304,
+      "sha256": "3c021d222d871b1365c601fc73dd36ae8d6e27575ec9acc295f0a2f1948e575c",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 1599,
+      "sha256": "dcbdd04c75fe2153b8bde0b5c6ad096e1a2f612db7c8c2b42c769517f4de02bd",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/findings.jsonl",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/ling.toml",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\ling.toml",
+      "bytes": 456,
+      "sha256": "fd5260e440e7de30e64c3162478129fc744b00c2469461c9c5cf47651d4987dc",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/progress.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\progress.json",
+      "bytes": 8709,
+      "sha256": "ed19080f7f13e2bf3f8246a8dea77dd41c18e90cc692173df2978aaec1e25f0d",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 6060,
+      "sha256": "8223592d7095867456f1682543e00592e2e5ca05ac32050528528a01d7514426",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/result.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\result.json",
+      "bytes": 41428,
+      "sha256": "a328db52fa4e99321675b6ab9755c2fa45fc27848dbf8d869e9cadfcc8a0e53a",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "224cb9aacf09a9a08b09f734c5fc684cafd12ece3f0f2d31eed6800f3ca9981b",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/fast-shadow-noeviction/server.log",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\fast-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/ling",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/summary.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\summary.json",
+      "bytes": 47579,
+      "sha256": "345ec0a8f155692458475633bf3cf6ce23c75987cebaa4467cc1677d3b21d91e",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/tool_source/v020.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow/tool_source/v030.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/fast-shadow-driver.log",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\fast-shadow-driver.log",
+      "bytes": 107,
+      "sha256": "4e00d69751ea64ce18a0b3ad2e7470196dbe57319d5a8c7b57308d02f89637cb",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/layout-result.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\layout-result.json",
+      "bytes": 2508,
+      "sha256": "adf849d590e1090690580535052ee5840186a79a4c62ef432c4af8488a6cb48a",
+      "source_mtime_ns": 1794949112000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/layout.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\layout.json",
+      "bytes": 6891,
+      "sha256": "fc1d8ccb6d051301d8deb2aa91f835f9ec3cdbe014d632c0a9a3406f3ae29b81",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/environment.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\environment.json",
+      "bytes": 100274,
+      "sha256": "5e8cf8f05c384a56b14157ae12423d8fbf8650de5256bc36d16588dbbd607ddd",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/ling",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\ling",
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "source_mtime_ns": 1794943442000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/consumer-events.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\consumer-events.jsonl.gz",
+      "bytes": 299,
+      "sha256": "bc47956a15fe9d4955f8d020428933e249ee13d98050b256f5176f1143c60da8",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/errors.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\errors.jsonl.gz",
+      "bytes": 1608,
+      "sha256": "512e1202af983fd540977bfca29bd1ef7141ef57e673d86c51cccbb9b367c6af",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/findings.jsonl",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\findings.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/journal.lgj",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\journal\\journal.lgj",
+      "bytes": 72932,
+      "sha256": "d44ec76aa9494ee0fc3e2453ff2ece9e207ca7ce36beb1b9eb37b07bef12b912",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/journal/LOCK",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\journal\\LOCK",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/ling.toml",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\ling.toml",
+      "bytes": 511,
+      "sha256": "29b96eeeee11a85b6b310818eb1e90834edf9843a846ab125fdada5d3d25a599",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/progress.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\progress.json",
+      "bytes": 8769,
+      "sha256": "c9572410f0a0c0b5691faab0cc78867935765019db9ed4b9d703fdc6dc21c28b",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/resources.jsonl.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\resources.jsonl.gz",
+      "bytes": 6388,
+      "sha256": "b8f8f30ff119e0e8762833a00484c4af1b12ac30099b3268a7fbd4f2b3caf195",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/result.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\result.json",
+      "bytes": 41593,
+      "sha256": "6b252b9bf974c9eef0ae31f7c84c67018e90fd0c202e9304973321cfe2736e8b",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server-complete.log.gz",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\server-complete.log.gz",
+      "bytes": 40,
+      "sha256": "224cb9aacf09a9a08b09f734c5fc684cafd12ece3f0f2d31eed6800f3ca9981b",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/reliable-shadow-noeviction/server.log",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\reliable-shadow-noeviction\\server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_mtime_ns": 1794949106000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/summary.json",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\summary.json",
+      "bytes": 47760,
+      "sha256": "fa0d540b3241d4b765d7d7ae8630a91b90dc91aa5e46aa0e92d022c76e7b13a6",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/tool_source/v020.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow/tool_source/v030.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/reliable-shadow-driver.log",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\reliable-shadow-driver.log",
+      "bytes": 111,
+      "sha256": "d88fd4e57d50ab43436d65b6b197ce8a55855775e8819c51f396dd23c890046b",
+      "source_mtime_ns": 1794949111000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/smoke-v030-cleanup.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\smoke-v030-cleanup.py",
+      "bytes": 2241,
+      "sha256": "66623073bb791b024064db7ca849cd93611336b7f5f47ca0551c577a88f80e38",
+      "source_mtime_ns": 1794949105000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/tool_source/run-v030-layout.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\tool_source\\run-v030-layout.py",
+      "bytes": 25552,
+      "sha256": "14ed1afb7a3adb5aac6f675c09b913608f651c156ca64de52f3078fd5f67472c",
+      "source_mtime_ns": 1794948999000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/tool_source/test_run_v030_layout.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\tool_source\\test_run_v030_layout.py",
+      "bytes": 29408,
+      "sha256": "50139f1ed85617f5243c2caf4f7e83b431d8f0b35fdefd2b240dcaade4361f6f",
+      "source_mtime_ns": 1794949070000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/tool_source/v020.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\tool_source\\v020.py",
+      "bytes": 29233,
+      "sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+      "source_mtime_ns": 1794942393000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "raw/tool_source/v030.py",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504\\tool_source\\v030.py",
+      "bytes": 69987,
+      "sha256": "bb3f1458c46e6da55ccb2481425bd825a97d310a526794fd874d609bdaff832e",
+      "source_mtime_ns": 1794946467000000000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "execution/smoke-v030-cleanup.py",
+      "source_path": "target\\smoke-v030-cleanup.py",
+      "bytes": 2241,
+      "sha256": "66623073bb791b024064db7ca849cd93611336b7f5f47ca0551c577a88f80e38",
+      "source_mtime_ns": 1794949103838417000
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "execution/layout-cleanup-smoke-20261118-0504-controller.log",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504-controller.log",
+      "bytes": 356,
+      "sha256": "6f27aa92f4c917a478a40496877e6b86cfea89029c0f4d5574bb5be61f0672ad",
+      "source_mtime_ns": 1794949112095193800
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "execution/layout-cleanup-smoke-20261118-0504-exit.txt",
+      "source_path": "target\\layout-cleanup-smoke-20261118-0504-exit.txt",
+      "bytes": 1,
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_mtime_ns": 1794949112122638400
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "execution/redis-corrected-wsl-tests.log",
+      "source_path": "target\\redis-corrected-wsl-tests.log",
+      "bytes": 563,
+      "sha256": "467a2cf02df0b3b9e9609ff6af5d2a350f7c36770f6dafaee02ce3ff2fc3024c",
+      "source_mtime_ns": 1794949124124329900
+    },
+    {
+      "archive": "cleanup-smoke.tar.gz",
+      "path": "execution/layout-wsl-tests.log",
+      "source_path": "target\\layout-wsl-tests.log",
+      "bytes": 1300,
+      "sha256": "29cd5a61556d06dd5ce2e58802b9cacb4d67d45e415ce4d090e022aac2a3f794",
+      "source_mtime_ns": 1794949124712113800
+    }
+  ]
+}
