@@ -4,9 +4,9 @@ ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 �
 
 [官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-当前源码为 **0.1.6 开发版**，已发布版本为 **0.1.5 Preview**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
+当前版本为 **0.1.6 Preview**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
-0.1.6 正在实现来源证明、升级验证和原生安装验收，范围与结果见 [版本计划](docs/version/v0.1.6-preview.md)。已发布 0.1.5 的可观测性和测量证据保留于 [0.1.5 计划](docs/version/v0.1.5-preview.md)。
+0.1.6 增加 GitHub 构建来源证明、升级验证和恢复机制，已完成五平台托管环境的安装与升级验收；Windows 11、原生 RPM 系统等未执行项见 [版本计划](docs/version/v0.1.6-preview.md)。0.1.5 的可观测性和测量证据保留于 [0.1.5 计划](docs/version/v0.1.5-preview.md)。
 
 ## 安装
 
