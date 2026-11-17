@@ -1,6 +1,21 @@
-# CLI 与官方 SDK
+# 客户端接入、CLI 与仓内 SDK
 
 ling 提供 Rust、Java、Go 原生客户端和 CLI，支持固定数据库连接池、TLS、普通 Batch 与专用订阅。单连接串行执行，并发请求通过多个连接提供。
+
+## 第三方客户端从哪里开始
+
+不需要安装官方 SDK、链接 Rust 引擎，或等项目发布语言包。可以用任意语言直接实现线协议；只实现命令客户端也可以，不必实现连接池、自动重连或订阅。请声明支持的协议版本和能力。仓内客户端是可运行的参考，不是规范：有差异时以[协议](protocol.md)、[命令](commands.md)与[数据模型](data-model.md)为准。独立实现自行维护和发布；若复制本项目代码、文档或夹具，需遵守这些材料适用的授权。
+
+| 步骤 | 实现与自查 |
+|---|---|
+| 1. 字节和类型 | 从[合法 Value](../tests/fixtures/protocol/values.tsv)、[非法 Value](../tests/fixtures/protocol/invalid-values.tsv)和[完整帧](../tests/fixtures/protocol/frames.tsv)开始，逐字节比较预期，不只做自己的编码器/解码器往返。保留 String/Bytes、Int/UInt/Float 标签与完整 64 位整数。 |
+| 2. 第一次真实连接 | TLS 如启用先验证身份；首帧 HELLO 带 `UInt(1)`、ID 从 1 开始。核对返回的协议版本及能力，再按配置依次完成 AUTH、SELECT，每步等响应。在空的隔离测试库按文件顺序执行[命令夹具](../tests/fixtures/protocol/commands.tsv)：GET 已存 Null 应成功，GET 缺失应是错误，溢出后旧值不变。 |
+| 3. 会话与断线 | REQUEST/ACK 按连接共用 ID 序列。已结束的非零 ID 的迟到 RESPONSE 丢弃，零或未发送 ID 的 RESPONSE 表示失步；**ERROR 可以用 ID=0**，保留服务端错误码并关闭。发送后超时、取消或断线不能宣称写入未执行，默认不重放。见[排错手册](operations.md)。 |
+| 4. 自选能力 | Batch 按输入顺序逐项返回，不是事务；支持订阅时用选好库的专用连接，在等待 ACK 响应时也要能收 EVENT。按完整 event_id 显式确认；流身份变化或 Offset 超期应交应用处理，不能跳过。见[事件规范](events.md)。 |
+
+[测试说明](testing.md)区分离线字节、真实 TCP 和双向 TLS；报告用例通过、失败及跳过的数量，未执行不算通过。下文介绍的是已有实现，不要求第三方使用相同 API 或包名。
+
+## Rust 与 CLI 入口
 
 `sdks/rust` 提供 Tokio 异步 `Client::connect / execute / batch / ping / select / close`，连接时依次完成 HELLO、可选 AUTH、SELECT。每个 Client 由调用方独占，使用 `&mut self` 串行请求。`Client::subscribe` 消耗普通连接，返回固定数据库的 `Subscriber`，提供 `next_event / ack / ping / close`；交错事件进入有界队列，不隐式丢弃或确认。空闲读取发送 HEARTBEAT，取消等待关闭连接，命名组由调用方显式重连。重连后先调用 `Client::require_event_stream(expected)` 校验保存的流身份；变化时关闭连接并报告 ERR_STREAM_MISMATCH，不创建替代组。`Options.tls` 使用 `ClientTls` 设置服务端名称、可选 CA 及成对客户端身份。`Pool::new / acquire / execute / close` 和 `PoolOptions` 提供有界容量与排队期限，`PooledClient` 持有固定库租约。
 
