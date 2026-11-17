@@ -1,0 +1,3 @@
+*.json -text whitespace=cr-at-eol
+*.gz -text -diff
+*.bin -text -diff

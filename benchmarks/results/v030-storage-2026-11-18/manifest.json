@@ -1,0 +1,46 @@
+{
+  "archived_utc": "2026-11-17T20:15:05.664836+00:00",
+  "run_id": "05428e9d26fa4bf084d8eac72e2fa42f",
+  "release_revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+  "release_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+  "suite_exit_code": 1,
+  "disposition": "Two startup corruption cases safely reject and preserve Journal bytes, but omit the required byte offset from the public diagnostic. Accepted as a P2 diagnostic limitation for this Preview; repair deferred. Raw failures remain unchanged.",
+  "scope": "Dedicated WSL software/filesystem faults; not physical power loss, forced fsync EIO, or cross-version upgrade/rollback.",
+  "files": [
+    {
+      "path": "evidence-files.manifest.json",
+      "bytes": 28740,
+      "sha256": "aa48af214f2f7b03dd1567333466187d9ed49bc22ad5817fcd383c2c6341c1d7"
+    },
+    {
+      "path": "execution-evidence.tar.gz",
+      "bytes": 63294,
+      "sha256": "2c093de38ce9ff3c69b781ba484be34512bdc8cf9fccc0e6301d9d6254b39af9"
+    },
+    {
+      "path": "raw-evidence.tar.gz",
+      "bytes": 3899158,
+      "sha256": "5e546c36bfe9b6b48db2a20c94e19b256e2414a7e9026662d5f15dd819c2f25d"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 3422,
+      "sha256": "60d8ff187e3657845ddfd70b38e4c682127323089e4bb97729b21d41110364fd"
+    },
+    {
+      "path": "windows-offline-tests.json",
+      "bytes": 295,
+      "sha256": "e5bf0ed9cdae6b70ac42f1db5af9862176b53d6674dd444573cae053b5693c18"
+    },
+    {
+      "path": "windows-offline-tests.stderr.bin",
+      "bytes": 122,
+      "sha256": "212dcf81911c0fea66e8f251030407aea1e868dba3446c6a8d7a3fa6468c2a11"
+    },
+    {
+      "path": "windows-offline-tests.stdout.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

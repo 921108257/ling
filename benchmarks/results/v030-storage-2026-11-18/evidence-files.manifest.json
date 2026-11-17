@@ -1,0 +1,985 @@
+{
+  "scope": "All regular evidence files, excluding this self-describing manifest",
+  "files": {
+    ".storage-acceptance": {
+      "bytes": 27,
+      "sha256": "0838352a44711677513c101462046f95bc38cae7ae44a5c627f43a370bdf6598",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "actions.jsonl": {
+      "bytes": 640561,
+      "sha256": "2e91c75e61fda5053cda9469117205575e50a8365c8f12416d3a4273817b38fd",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/disk.ext4": {
+      "bytes": 67108864,
+      "sha256": "16dc34d7b5b7312040aff8558697a5419db77773a4dc08d40d9ca0c4e918dd7d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/failed-io.strace": {
+      "bytes": 98,
+      "sha256": "bfd6dd3a651de5066eefbcc4edb63e7811ccbb260006642ba89fc4eb4edeff1d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/fault-info.json": {
+      "bytes": 1690,
+      "sha256": "38383dc0876093b207050f3c1fc9e7780f98d4e00667df990b1db65b056f1484",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/faulted-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/faulted-journal/journal.lgj": {
+      "bytes": 69632,
+      "sha256": "765e5350b6e4d80c7846445e66f786bd73e800a62c845c2d56f04893edd13f12",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/faulted-journal-scan.json": {
+      "bytes": 83645,
+      "sha256": "69a994f3220db671689844aae7aa70d625996dd5243396464f0370c9cd78016f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/faulted-journal.manifest.json": {
+      "bytes": 672,
+      "sha256": "c88b75212c4852f5158782467ba47b924875347e0282e59535bc63c3f8b5ab4c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/outcomes.json": {
+      "bytes": 514,
+      "sha256": "81a078a49cfd403c8f120fcda5b69d14850826afea6ca313252190695ed1bea9",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/pre-fault-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/pre-fault-journal/journal.lgj": {
+      "bytes": 1278,
+      "sha256": "ab37c2ea2b747d9dad2b245f2cf1adfa57da6f0cb18ea09dcbbbab951328595c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/pre-fault-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "16d1415f9d60193d3bf83b2ced8e1c52e5782aaa531e0d1d22a4cd4fae58e7fe",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/after-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/after-journal/journal.lgj": {
+      "bytes": 69632,
+      "sha256": "765e5350b6e4d80c7846445e66f786bd73e800a62c845c2d56f04893edd13f12",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/after-journal.manifest.json": {
+      "bytes": 672,
+      "sha256": "c88b75212c4852f5158782467ba47b924875347e0282e59535bc63c3f8b5ab4c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/journal/journal.lgj": {
+      "bytes": 69632,
+      "sha256": "765e5350b6e4d80c7846445e66f786bd73e800a62c845c2d56f04893edd13f12",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/server.log": {
+      "bytes": 279,
+      "sha256": "a6a4c2162d058f5de14ac19d4f72d0c13ad280dfce21a15b8e5ad888b0c26abb",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/recovery/server.toml": {
+      "bytes": 627,
+      "sha256": "92c3ee657812b2b6736cd134534ade840cfc69dc6737aa0fbe085dcaa53fa074",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/server/server.log": {
+      "bytes": 79,
+      "sha256": "70364f852e471c5427745696e1df3de96ee4d3e3bbd91a4433afd8e994ffeffe",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/server/server.toml": {
+      "bytes": 630,
+      "sha256": "28d1d0fd1201c802e4f769b58d4b133ffe72d3bcb53f7496c56633d2ee7f767d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc/strace.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "enospc-worker.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "environment.json": {
+      "bytes": 950,
+      "sha256": "6afd0e44ee9cdca576823ca2311f1d9c29cb0a6fb5f157fa16115806732dce43",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "inputs/ling": {
+      "bytes": 9121288,
+      "sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "inputs/storage_acceptance.py": {
+      "bytes": 57826,
+      "sha256": "c120d9112ff7b71d592641f8f1a173286bf09c95dd2ac3ba2f708cf0edcef2c7",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "plan.json": {
+      "bytes": 782,
+      "sha256": "4634820f1dbc29a9e05d7f198b3a5cb3aa6ac24e4bedde9348a0f14f0664999b",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "progress.json": {
+      "bytes": 604,
+      "sha256": "271c6db793146642f0db421ac3d5beca55e910195f0d5fdc35d24ac8826d96a6",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/full-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/full-journal/journal.lgj": {
+      "bytes": 393190,
+      "sha256": "ef10a6012066ea817153f25162549285e01587d6a8b2a2599732e24d6b1fbd91",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/full-journal.manifest.json": {
+      "bytes": 673,
+      "sha256": "8694bb3c06fd4562df6397a0c62a4357f7fc17589bf4c367cf4b22699d2b18c2",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/journal/journal.lgj": {
+      "bytes": 393190,
+      "sha256": "ef10a6012066ea817153f25162549285e01587d6a8b2a2599732e24d6b1fbd91",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/after-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/after-journal/journal.lgj": {
+      "bytes": 394266,
+      "sha256": "552c1e88be02e42328c78c018fad253d7dacd0256648de0e7ae8ce1c4b955a12",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/after-journal.manifest.json": {
+      "bytes": 673,
+      "sha256": "676565c24ed6f179836d1cb106c2110cec280d875be1b0d76dcf55b0e9e3dc1a",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/journal/journal.lgj": {
+      "bytes": 394266,
+      "sha256": "552c1e88be02e42328c78c018fad253d7dacd0256648de0e7ae8ce1c4b955a12",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/server.log": {
+      "bytes": 122,
+      "sha256": "91fcdc29dd37bb70bbcb3500533cf4510e58c9fe890b25d4f8b8a707b1d23c01",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/larger-budget/server.toml": {
+      "bytes": 629,
+      "sha256": "e2ba403ecd84f895783f6c1b89ee6f482ac3b6f972f64ecd11d13a25d50bb90d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/server.log": {
+      "bytes": 122,
+      "sha256": "ac48f0fd572d6f2832dce2d1d3a07dbf05b5d49fc1fbfcd60c0f9f4bbb8557dc",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "quota/server.toml": {
+      "bytes": 621,
+      "sha256": "d4bedea02d99c5ad8a77d9d93633d68a19cb29fd135638148f57485027451f85",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/baseline/server.log": {
+      "bytes": 122,
+      "sha256": "16c3443f884700ea87b7deef631b42d4ee9351552e250ff1ace58aa558c1fc55",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/baseline/server.toml": {
+      "bytes": 619,
+      "sha256": "7b05bdab9bac5f2573cd826702bd12995dc410f1b4cdc81372a5c10c4e729b86",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/denied/server.log": {
+      "bytes": 279,
+      "sha256": "a6a4c2162d058f5de14ac19d4f72d0c13ad280dfce21a15b8e5ad888b0c26abb",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/denied/server.toml": {
+      "bytes": 619,
+      "sha256": "366a67265d19cfaadf68be9c953a996440647b928bd0c8b8b806e63d5eaa959b",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/denied-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/denied-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 256
+    },
+    "readonly/denied-journal.manifest.json": {
+      "bytes": 687,
+      "sha256": "3c25633e364ea9ea85b62658f1ba8f8e5c528d7650b43b35b1643e1011679d97",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 60003,
+      "gid": 60003,
+      "mode": 420
+    },
+    "readonly/journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 60003,
+      "gid": 60003,
+      "mode": 384
+    },
+    "readonly/restored-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/restored-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 384
+    },
+    "readonly/restored-journal.manifest.json": {
+      "bytes": 687,
+      "sha256": "07fc5ef1369321492ca468a654aa6e647c18a60ee4ea92df249f6c53dfd407a5",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/restored-permission/server.log": {
+      "bytes": 122,
+      "sha256": "14c807127e24dae54942aa858b9df6113402637bac3d80fd3fe8a68d505bb7d4",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "readonly/restored-permission/server.toml": {
+      "bytes": 619,
+      "sha256": "12342b8fd34c538894d8f92ff02ef3f0e1679898e502f94939d7822e45736cea",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/after-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/after-journal/journal.lgj": {
+      "bytes": 1914,
+      "sha256": "5460752c19359caf17d5a4e44dd3202fe895ee7ef8ec3c953234f71ce3cd422a",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/after-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "0f26fdc32212d6051c67fd6864404a81a890187b5867dd4381be7787531be7fd",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/journal/journal.lgj": {
+      "bytes": 1914,
+      "sha256": "5460752c19359caf17d5a4e44dd3202fe895ee7ef8ec3c953234f71ce3cd422a",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/second-owner/server.log": {
+      "bytes": 279,
+      "sha256": "a6a4c2162d058f5de14ac19d4f72d0c13ad280dfce21a15b8e5ad888b0c26abb",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/second-owner/server.toml": {
+      "bytes": 618,
+      "sha256": "a0eb13ce03871de01345a78693139f294d2cbb148436cc97015be079e0119fae",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/server.log": {
+      "bytes": 122,
+      "sha256": "873c197a4d11940899b1607b4af881a428b25fd31dd4fc3ee425a82cfcb53ea1",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/server.toml": {
+      "bytes": 624,
+      "sha256": "8b8133022f0ab4fe4e81ab51aded62985fb97683e0cbac4b2b7fc246dfa403b5",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/rejected-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/rejected-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/rejected-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "d6492cce8aac2822b71385a0b447c40c9877fa685320c3374f605c3f5d37aa15",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/server.log": {
+      "bytes": 271,
+      "sha256": "8b39b2d8a153b62454251eed00aa1eb57a92ba3b13079730df8caa2903bfa2f5",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "restore/wrong-topology/server.toml": {
+      "bytes": 633,
+      "sha256": "a575defda48644953950e5f7ab672d91da93a0eae556d72993500d072dfd001c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/fault-info.json": {
+      "bytes": 2025,
+      "sha256": "0a9925ddd7e988667ed4da5443ffc6dfcaf194324d16576acfa0b6a0873c4770",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/faulted-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/faulted-journal/journal.lgj": {
+      "bytes": 680,
+      "sha256": "d399a6410838ec53f1b877b11d8edf500fd952862b1b1fcb9d392ad18db78728",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/faulted-journal.manifest.json": {
+      "bytes": 670,
+      "sha256": "cad67ccb39cf53a2bf0607d4055a464f9764c1ccda5fa8e3cb91bff8f2e9d46f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/journal/journal.lgj": {
+      "bytes": 680,
+      "sha256": "d399a6410838ec53f1b877b11d8edf500fd952862b1b1fcb9d392ad18db78728",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/pre-injection-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/pre-injection-journal/journal.lgj": {
+      "bytes": 678,
+      "sha256": "b0e7b5bd80210494317213df673c29af6b40f140c88ffdd4a1b33d5fbae276af",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/pre-injection-journal.manifest.json": {
+      "bytes": 670,
+      "sha256": "314ae0bd0e9860ba1857cc22f6bfbd71b4fa9e1ba62395fe8ac8cd25c0d4afd6",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/server.log": {
+      "bytes": 79,
+      "sha256": "7fb14825658af89bd3657fc39bb11990ca03e49122428e23eb5e007b2e970a62",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/middle-crc/server.toml": {
+      "bytes": 629,
+      "sha256": "c0612afc01d7c003dc402404ce722d35dd1755047ea583cd6fe5449940e747e2",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/fault-info.json": {
+      "bytes": 2026,
+      "sha256": "fe725c55c0cd1d4c1d2a2897cdbc1d4a6610d388a60828b58cec9bd98a06414c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/faulted-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/faulted-journal/journal.lgj": {
+      "bytes": 785,
+      "sha256": "987684a406ad484ae1dbd9c09d68bc6439ef3253b0e3d4ba20d111f5520056a2",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/faulted-journal.manifest.json": {
+      "bytes": 670,
+      "sha256": "8576a2a20cae455abbe6a2f3a3425d06b1c9933c8abc6edcd29f49eff5cb926c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/journal/journal.lgj": {
+      "bytes": 785,
+      "sha256": "987684a406ad484ae1dbd9c09d68bc6439ef3253b0e3d4ba20d111f5520056a2",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/pre-injection-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/pre-injection-journal/journal.lgj": {
+      "bytes": 783,
+      "sha256": "3463029d7d488209bae265e1d5fea139380e852e4ab03cdc9963b6877e1f0715",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/pre-injection-journal.manifest.json": {
+      "bytes": 670,
+      "sha256": "78ba40ddedc3615ac8d8286451aa10cc19fe71a03ada5334c8da278ca5055347",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/server.log": {
+      "bytes": 79,
+      "sha256": "cce9145d8030c6d50fa9f1986cfbc149ef42b791a82f38214984b1e98c649363",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "runtime/short-header/server.toml": {
+      "bytes": 631,
+      "sha256": "5a707c0ef9276539093aafcd0f374e0bc87dfd3b2342f0a0a7509e6eaef35460",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/before-stop-info.json": {
+      "bytes": 3207,
+      "sha256": "42e58b6c5c09158e666cbaafeade903c1de909dd672162cd61b4a91f897f1fe2",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/journal-scan.json": {
+      "bytes": 2202,
+      "sha256": "bc6c1969c6506d437eae05a3ba30a7856d2822a7e63634078e50e24efab325f4",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/sealed-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/sealed-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/sealed-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "d6492cce8aac2822b71385a0b447c40c9877fa685320c3374f605c3f5d37aa15",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/seed.json": {
+      "bytes": 2211,
+      "sha256": "0b7707380c578c5d9adbcd213ddd2a8448bfd960d36db885104654c2e0d90c5d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/server.log": {
+      "bytes": 122,
+      "sha256": "9b726d7657965667fdf222a3056d783bc8dfdbb40446c332878a0903c8281fba",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "seed/server.toml": {
+      "bytes": 621,
+      "sha256": "1526f3a6dfe859d507d897a33c9e44c4bd27a06e93d34cbab1752ae4d30aeeff",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/injected-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/injected-journal/journal.lgj": {
+      "bytes": 1249,
+      "sha256": "4a83e38640a61e3617e862b79b536fdc0cc4ff0de00eaf86aea44767542b5733",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/injected-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "71b709347c2271cbc9707dc97a80517bfe826b41078f05d809f085d4d44b51f5",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/journal/journal.lgj": {
+      "bytes": 1249,
+      "sha256": "4a83e38640a61e3617e862b79b536fdc0cc4ff0de00eaf86aea44767542b5733",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/server.log": {
+      "bytes": 279,
+      "sha256": "a6a4c2162d058f5de14ac19d4f72d0c13ad280dfce21a15b8e5ad888b0c26abb",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/ambiguous-payload/server.toml": {
+      "bytes": 636,
+      "sha256": "35d55e1ac4b9b914b1bde4ea82e5eeb1c746f7bb2d7d567e43a4271eff51c15f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/injected-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/injected-journal/journal.lgj": {
+      "bytes": 1332,
+      "sha256": "1d731cb67a08eb3790032d3d0535bfef75395a4b140ebc7cc1e45463c658a172",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/injected-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "2406ddac71a0bf71d53a7af0b47237f9be2261aa70ea2ba10804979eb0912bd4",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/journal/journal.lgj": {
+      "bytes": 1332,
+      "sha256": "1d731cb67a08eb3790032d3d0535bfef75395a4b140ebc7cc1e45463c658a172",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/server.log": {
+      "bytes": 279,
+      "sha256": "a6a4c2162d058f5de14ac19d4f72d0c13ad280dfce21a15b8e5ad888b0c26abb",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/middle-crc/server.toml": {
+      "bytes": 629,
+      "sha256": "a228bb8eba0ec78a9e62fd58f71273dd1a2ce567596402c99abf915e564eb785",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/after-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/after-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/after-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "d6492cce8aac2822b71385a0b447c40c9877fa685320c3374f605c3f5d37aa15",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/injected-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/injected-journal/journal.lgj": {
+      "bytes": 1332,
+      "sha256": "d00c233263a775f9912cd13d2585eb9a9f3e2fafaca2303dd45818a00f5c049f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/injected-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "bbb913d271db953fb8b704e0fa1d30863250453fc368946461dec59b4c628699",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/server.log": {
+      "bytes": 122,
+      "sha256": "0a267126680ddca3376efe06c3749c900b2e9950f1812dd01d4abd9c59dbb7fc",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-header/server.toml": {
+      "bytes": 631,
+      "sha256": "31c2bb79cd64d2977e70cd043c2f0e21e205d47887bf75302e270dfc237c4a3f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/after-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/after-journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/after-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "d6492cce8aac2822b71385a0b447c40c9877fa685320c3374f605c3f5d37aa15",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/injected-journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/injected-journal/journal.lgj": {
+      "bytes": 1416,
+      "sha256": "372516917780ada49fcc7df1d3872d0a04be40ffe430046d430fa77c29e246ce",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/injected-journal.manifest.json": {
+      "bytes": 671,
+      "sha256": "a6cfd99f971ce5a745e68264092dc5b8fd884ea892286a2fb9d533fea2c4af18",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/journal/LOCK": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/journal/journal.lgj": {
+      "bytes": 1330,
+      "sha256": "4edab000f39d3a73931eef02b8d86226648512878b86bcc36ffe555a51353b7c",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/server.log": {
+      "bytes": 122,
+      "sha256": "0ff6656635df992c24706eb1f107ab24971eb656b2e61676ca7b5c11645ad885",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "startup/short-trailer/server.toml": {
+      "bytes": 632,
+      "sha256": "de9f8c73c10fa6d7d5dd06390bba33e9766bcd500d23ab35455e6d37183799f0",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    "summary.json": {
+      "bytes": 3422,
+      "sha256": "60d8ff187e3657845ddfd70b38e4c682127323089e4bb97729b21d41110364fd",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    }
+  }
+}

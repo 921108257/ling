@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "target/storage-acceptance",
+    "-p",
+    "test_storage_acceptance.py"
+  ],
+  "exit_code": 0,
+  "duration_seconds": 0.4468648,
+  "completed_utc": "2026-11-17T20:23:12.724798+00:00"
+}

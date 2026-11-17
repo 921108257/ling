@@ -1,0 +1,144 @@
+{
+  "passed": false,
+  "results": [
+    {
+      "case": "restore_topology_and_lock",
+      "passed": true
+    },
+    {
+      "case": "readonly",
+      "passed": true
+    },
+    {
+      "case": "quota",
+      "passed": true
+    },
+    {
+      "case": "runtime_read",
+      "passed": true
+    },
+    {
+      "case": "startup_recovery",
+      "passed": false,
+      "error": "RuntimeError('startup_recovery subcases failed: [{\\'case\\': \\'ambiguous-payload\\', \\'error\\': \"RuntimeError(\\'corruption offset missing from startup diagnostic\\')\"}, {\\'case\\': \\'middle-crc\\', \\'error\\': \"RuntimeError(\\'corruption offset missing from startup diagnostic\\')\"}]')"
+    },
+    {
+      "case": "enospc",
+      "passed": true,
+      "worker_exit": 0
+    }
+  ],
+  "seed": {
+    "stream_id": "ecdcdfeaf6dd20281807767d453023a5",
+    "events": [
+      {
+        "event_id": {
+          "db": 0,
+          "sequence": 1,
+          "shard": 0,
+          "stream_id": {
+            "bytes_hex": "ecdcdfeaf6dd20281807767d453023a5"
+          }
+        },
+        "event_type": "KEY_CREATED",
+        "generation": {
+          "counter": 1,
+          "epoch": {
+            "bytes_hex": "04fde53556809a4710e203114e37231d"
+          }
+        },
+        "key": "seed-key",
+        "revision": 1,
+        "timestamp_ms": 1794946042983
+      },
+      {
+        "event_id": {
+          "db": 0,
+          "sequence": 2,
+          "shard": 0,
+          "stream_id": {
+            "bytes_hex": "ecdcdfeaf6dd20281807767d453023a5"
+          }
+        },
+        "event_type": "KEY_UPDATED",
+        "generation": {
+          "counter": 1,
+          "epoch": {
+            "bytes_hex": "04fde53556809a4710e203114e37231d"
+          }
+        },
+        "key": "seed-key",
+        "revision": 2,
+        "timestamp_ms": 1794946042995
+      },
+      {
+        "event_id": {
+          "db": 0,
+          "sequence": 3,
+          "shard": 0,
+          "stream_id": {
+            "bytes_hex": "ecdcdfeaf6dd20281807767d453023a5"
+          }
+        },
+        "event_type": "KEY_UPDATED",
+        "generation": {
+          "counter": 1,
+          "epoch": {
+            "bytes_hex": "04fde53556809a4710e203114e37231d"
+          }
+        },
+        "key": "seed-key",
+        "revision": 3,
+        "timestamp_ms": 1794946043007
+      },
+      {
+        "event_id": {
+          "db": 0,
+          "sequence": 4,
+          "shard": 0,
+          "stream_id": {
+            "bytes_hex": "ecdcdfeaf6dd20281807767d453023a5"
+          }
+        },
+        "event_type": "KEY_UPDATED",
+        "generation": {
+          "counter": 1,
+          "epoch": {
+            "bytes_hex": "04fde53556809a4710e203114e37231d"
+          }
+        },
+        "key": "seed-key",
+        "revision": 4,
+        "timestamp_ms": 1794946043020
+      }
+    ],
+    "acked": [
+      "ecdcdfeaf6dd20281807767d453023a5",
+      0,
+      0,
+      2
+    ],
+    "replay": [
+      [
+        "ecdcdfeaf6dd20281807767d453023a5",
+        0,
+        0,
+        1
+      ],
+      [
+        "ecdcdfeaf6dd20281807767d453023a5",
+        0,
+        0,
+        3
+      ],
+      [
+        "ecdcdfeaf6dd20281807767d453023a5",
+        0,
+        0,
+        4
+      ]
+    ]
+  },
+  "scope": "verified 0.2.0 release; isolated WSL filesystem/software faults; not physical power-loss proof",
+  "evidence_policy": "All original and injected Journals retained; failures recorded, no product fixes"
+}
