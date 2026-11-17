@@ -1,0 +1,26 @@
+{
+  "seed": 3002030,
+  "planned_cycles": 30,
+  "passed_cycles": 30,
+  "revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+  "binary_sha256": "70b209554df2f236c6c4c30d6bbae5ec001a3b2754761038265483f659a0f285",
+  "archive_files_verified": 577,
+  "files": [
+    {
+      "path": "raw-evidence.tar.gz",
+      "bytes": 1970658,
+      "sha256": "ca50026a13c63ad256088d2ada55d6ae6df0fb37d4e5fb55f924e6f4c7660a13"
+    },
+    {
+      "path": "run.json",
+      "bytes": 29844,
+      "sha256": "7ba2790d73ec101536a17435bb9c7a3329eefb97b16b27a5fdb368e562dce982"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 66454,
+      "sha256": "2b78c644997f5d8b56a44fcbad794aaa64715f2028353151bc64d6266295eb27"
+    }
+  ],
+  "scope": "WSL crash recovery, not physical power-loss durability"
+}

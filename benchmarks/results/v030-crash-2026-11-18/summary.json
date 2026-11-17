@@ -1,0 +1,2320 @@
+{
+  "planned_cycles": 30,
+  "completed_cycles": 30,
+  "statuses": {
+    "passed": 30
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-001",
+      "port": 50190,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "5112e8ce6643c76533aacff73c929c68"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.28326531080260164,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 9,
+        "successes": 8,
+        "monotonic_ns": 113263286046900
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 18,
+        "successes": 17,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113263728236000
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113263731280600
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "5112e8ce6643c76533aacff73c929c68"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:18",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 144,
+        "confirmed_acks": 24,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 2,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-002",
+      "port": 50243,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "5d267d962fd9a86ae2284225a156aaec"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.057970957723143,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 25,
+        "successes": 24,
+        "monotonic_ns": 113287049969300
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 33,
+        "successes": 32,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113287445942800
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113287450831100
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "5d267d962fd9a86ae2284225a156aaec"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:33",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 264,
+        "confirmed_acks": 48,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 3,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-003",
+      "port": 50319,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "91cc7ea2f7d065e2044f45cc1bb9f7c8"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.4999824451138726,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 32,
+        "successes": 32,
+        "monotonic_ns": 113314278235800
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 42,
+        "successes": 41,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113314700407900
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113314724797700
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "91cc7ea2f7d065e2044f45cc1bb9f7c8"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:42",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 336,
+        "confirmed_acks": 73,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 4,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-004",
+      "port": 52213,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "c847ad9ea5044faa602700de1370a92c"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.4374572902328426,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 33,
+        "successes": 32,
+        "monotonic_ns": 113344252335000
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 43,
+        "successes": 42,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113344726536400
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113344732994100
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "c847ad9ea5044faa602700de1370a92c"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:43",
+            "recovered": 8,
+            "total": 8
+          }
+        ],
+        "committed_events": 352,
+        "confirmed_acks": 69,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 5,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-005",
+      "port": 57294,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "7790ce680c4565c3bc07b1db38823aa4"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.5386567287787812,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 13,
+        "successes": 13,
+        "monotonic_ns": 113374269937700
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 23,
+        "successes": 22,
+        "worker_errors": [
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113374723796400
+          },
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113374730287400
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "7790ce680c4565c3bc07b1db38823aa4"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:23",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 184,
+        "confirmed_acks": 32,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 6,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-006",
+      "port": 55464,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "08a59ae7fa54960986c774fb29d64e9e"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.2570446565344905,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 8,
+        "successes": 7,
+        "monotonic_ns": 113398025981100
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 16,
+        "successes": 15,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113398407829000
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113398419352000
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "08a59ae7fa54960986c774fb29d64e9e"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:16",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 128,
+        "confirmed_acks": 23,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 7,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-007",
+      "port": 58775,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "7bfb403a1d125e7521be9ddf055f04a7"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.6797408418988509,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 17,
+        "successes": 16,
+        "monotonic_ns": 113420341183800
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 25,
+        "successes": 24,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113420801254600
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113420807535500
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "7bfb403a1d125e7521be9ddf055f04a7"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:25",
+            "recovered": 8,
+            "total": 8
+          }
+        ],
+        "committed_events": 208,
+        "confirmed_acks": 36,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 8,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-008",
+      "port": 63409,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f56ac60b227689b5702e4cb687aa9a2d"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.4516519447977071,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 12,
+        "successes": 12,
+        "monotonic_ns": 113445492707700
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 21,
+        "successes": 20,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113445897877100
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113445919727800
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f56ac60b227689b5702e4cb687aa9a2d"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:21",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 168,
+        "confirmed_acks": 30,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 9,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-009",
+      "port": 63471,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "c5bd6b96f2b6b15219afcb96987f9e08"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.373117149500549,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 31,
+        "successes": 31,
+        "monotonic_ns": 113469121987100
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 41,
+        "successes": 40,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113469532825200
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113469550001200
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "c5bd6b96f2b6b15219afcb96987f9e08"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:41",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 328,
+        "confirmed_acks": 67,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 10,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-010",
+      "port": 63553,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "59b309b84d5ddcc8ca9c696f26d1cab8"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.5887786288460471,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 15,
+        "successes": 14,
+        "monotonic_ns": 113498650637000
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 25,
+        "successes": 24,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113499109433400
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113499120667600
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "59b309b84d5ddcc8ca9c696f26d1cab8"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:25",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 200,
+        "confirmed_acks": 33,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 11,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-011",
+      "port": 63609,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "240f98cd91d8b610a117e3d6846eba7f"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.5448656351409777,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 15,
+        "successes": 14,
+        "monotonic_ns": 113523633588000
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 25,
+        "successes": 24,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113524099734100
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113524114568600
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "240f98cd91d8b610a117e3d6846eba7f"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:25",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 200,
+        "confirmed_acks": 33,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 12,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-012",
+      "port": 61138,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f9c2da15d38e7be37d7834576e669452"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.4347571695918733,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 31,
+        "successes": 31,
+        "monotonic_ns": 113549114216800
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 41,
+        "successes": 40,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113549561798500
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113549574121600
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f9c2da15d38e7be37d7834576e669452"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:41",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 328,
+        "confirmed_acks": 69,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 13,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-013",
+      "port": 64174,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "d5214324db50f981ca41eeb04653f3e4"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.0585193034207427,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 24,
+        "successes": 24,
+        "monotonic_ns": 113579080800800
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 34,
+        "successes": 33,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113579506008300
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113579523748200
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "d5214324db50f981ca41eeb04653f3e4"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:34",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 272,
+        "confirmed_acks": 49,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 14,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-014",
+      "port": 64249,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "60b7fdda425d3e12a4cf2919bd5f80e5"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.0718163215520906,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 25,
+        "successes": 25,
+        "monotonic_ns": 113607010185600
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 34,
+        "successes": 33,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113607428942300
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113607445345100
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "60b7fdda425d3e12a4cf2919bd5f80e5"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:34",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 272,
+        "confirmed_acks": 46,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 15,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-015",
+      "port": 64313,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a399755552b9ebb1120c9960d54568fb"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.0672061167382505,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 24,
+        "successes": 24,
+        "monotonic_ns": 113635050856600
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 34,
+        "successes": 33,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113635476981400
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113635502853700
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a399755552b9ebb1120c9960d54568fb"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:34",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 272,
+        "confirmed_acks": 47,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 16,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-016",
+      "port": 64380,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "07517c0be64494a5a4a68d2c2fc3bcbc"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.437059661548025,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 32,
+        "successes": 32,
+        "monotonic_ns": 113663295990600
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 42,
+        "successes": 41,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113663724088800
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113663729243300
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "07517c0be64494a5a4a68d2c2fc3bcbc"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:42",
+            "recovered": 8,
+            "total": 8
+          }
+        ],
+        "committed_events": 344,
+        "confirmed_acks": 69,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 17,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-017",
+      "port": 64470,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "03bf7219557d4f232c54ad42460abce4"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.4461691054004129,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 31,
+        "successes": 30,
+        "monotonic_ns": 113694112950300
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 41,
+        "successes": 40,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113694609359500
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113694614850800
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "03bf7219557d4f232c54ad42460abce4"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:41",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 328,
+        "confirmed_acks": 68,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 18,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-018",
+      "port": 64547,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "261efbcb49c7d79cc924b5f5a1d1142b"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.5886607856886434,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 14,
+        "successes": 14,
+        "monotonic_ns": 113723464702900
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 25,
+        "successes": 24,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113723938424200
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113723960235000
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "261efbcb49c7d79cc924b5f5a1d1142b"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:25",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 200,
+        "confirmed_acks": 35,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 19,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-019",
+      "port": 55464,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "6861523874c472dd6e5cc89c17b55f46"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.3393687139223982,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 9,
+        "successes": 9,
+        "monotonic_ns": 113747167834900
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 19,
+        "successes": 18,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113747584125000
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113747608524300
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "6861523874c472dd6e5cc89c17b55f46"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:19",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 152,
+        "confirmed_acks": 25,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 20,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-020",
+      "port": 55649,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "166cf5259c1f3077b61a118bc6eff58d"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.4587442679612055,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 13,
+        "successes": 12,
+        "monotonic_ns": 113770127582300
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 23,
+        "successes": 22,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113770635463900
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113770642406000
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "166cf5259c1f3077b61a118bc6eff58d"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:23",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 184,
+        "confirmed_acks": 36,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 21,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-021",
+      "port": 52896,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "b525e4146a01140a3cd86cb89688eafb"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.42586686633160276,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 11,
+        "successes": 11,
+        "monotonic_ns": 113793297407400
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 20,
+        "successes": 19,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113793725937500
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113793728978600
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "b525e4146a01140a3cd86cb89688eafb"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:20",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 160,
+        "confirmed_acks": 29,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 22,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-022",
+      "port": 52954,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "69fe287220e9824b3b0ea1a94475b42d"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.8360286823483639,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 20,
+        "successes": 19,
+        "monotonic_ns": 113816777824700
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 30,
+        "successes": 29,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113817236747900
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113817266064300
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "69fe287220e9824b3b0ea1a94475b42d"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:30",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 240,
+        "confirmed_acks": 37,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 23,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-023",
+      "port": 58744,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "6e04f18547d2a4044a395a1c5fcc904e"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.7143023782911695,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 18,
+        "successes": 18,
+        "monotonic_ns": 113842841214000
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 28,
+        "successes": 27,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113843327496400
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113843333496000
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "6e04f18547d2a4044a395a1c5fcc904e"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:28",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 224,
+        "confirmed_acks": 36,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 24,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-024",
+      "port": 58816,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "e614d098df69f008bfaf48ee04146612"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.46081837488574906,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 11,
+        "successes": 11,
+        "monotonic_ns": 113867481464300
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 20,
+        "successes": 19,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113867914005700
+          },
+          {
+            "worker": "writer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113867920245800
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "e614d098df69f008bfaf48ee04146612"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:20",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 160,
+        "confirmed_acks": 29,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 25,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-025",
+      "port": 58886,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a7f028f7e9f9c651a41b66a7b2546e0a"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.45033902057223857,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 12,
+        "successes": 11,
+        "monotonic_ns": 113890424657300
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 21,
+        "successes": 20,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113890832628900
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113890845489800
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a7f028f7e9f9c651a41b66a7b2546e0a"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:21",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 168,
+        "confirmed_acks": 28,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 26,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-026",
+      "port": 51905,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "246031c7f8c076d2953ac7c5da31d38e"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.2061071679895858,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 26,
+        "successes": 26,
+        "monotonic_ns": 113915315195000
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 36,
+        "successes": 35,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113915749150500
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113915778252400
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "246031c7f8c076d2953ac7c5da31d38e"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:36",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 288,
+        "confirmed_acks": 52,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 27,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-027",
+      "port": 64808,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "56e93c73aadc4bc716291cc5e9e1dd8a"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.4098047118484536,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 31,
+        "successes": 30,
+        "monotonic_ns": 113944170189200
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 41,
+        "successes": 40,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113944649889200
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113944671611200
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "56e93c73aadc4bc716291cc5e9e1dd8a"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:41",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 328,
+        "confirmed_acks": 66,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 28,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-028",
+      "port": 64906,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "809152db99866cd19f1cf95545fe365b"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 0.74495561304635,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 18,
+        "successes": 17,
+        "monotonic_ns": 113973436109500
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 28,
+        "successes": 27,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113973889495400
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113973909114100
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "809152db99866cd19f1cf95545fe365b"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:28",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 224,
+        "confirmed_acks": 37,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 29,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-029",
+      "port": 64970,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a245e1a1775a944b79ed0fa2a1f68615"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.150638151158619,
+        "writer_running": true,
+        "in_flight_at_request": true,
+        "attempts": 25,
+        "successes": 24,
+        "monotonic_ns": 113999163159200
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 34,
+        "successes": 33,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 113999552077800
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 113999581486100
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "a245e1a1775a944b79ed0fa2a1f68615"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:34",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 272,
+        "confirmed_acks": 48,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    },
+    {
+      "cycle": 30,
+      "linux_path": "/root/ling-acceptance/crash-runs/20261117T194529Z-e9159ce559a1/cycle-030",
+      "port": 65053,
+      "status": "passed",
+      "failures": [],
+      "limitations": [
+        "WSL VM/process crash, not physical power loss",
+        "host/WSL scheduling cannot prove the kernel's exact in-flight instruction"
+      ],
+      "hello_before": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f8b69e71fac012462d38bdc02d61feaf"
+        }
+      },
+      "termination_boundary": {
+        "random_delay_seconds": 1.2247870503076974,
+        "writer_running": true,
+        "in_flight_at_request": false,
+        "attempts": 27,
+        "successes": 27,
+        "monotonic_ns": 114027197113800
+      },
+      "terminate": {
+        "returncode": 0,
+        "stdout_hex": "cd645c4f10629f528c5b1062023020000d000a00",
+        "stderr_hex": ""
+      },
+      "crashed_launcher_returncode": 1,
+      "load": {
+        "attempts": 36,
+        "successes": 35,
+        "worker_errors": [
+          {
+            "worker": "consumer",
+            "error": "LOCAL_EOF: connection closed before complete frame",
+            "monotonic_ns": 114027608434900
+          },
+          {
+            "worker": "writer",
+            "error": "[WinError 10053] 你的主机中的软件中止了一个已建立的连接。",
+            "monotonic_ns": 114027629304500
+          }
+        ],
+        "in_flight": false
+      },
+      "hello_after": {
+        "events": true,
+        "protocol": 1,
+        "reliable_events": true,
+        "server_version": "0.2.0",
+        "stream_id": {
+          "hex": "f8b69e71fac012462d38bdc02d61feaf"
+        }
+      },
+      "recovery": {
+        "valid": true,
+        "failures": [],
+        "unknown_commits": [
+          {
+            "batch": "before:36",
+            "recovered": 0,
+            "total": 8
+          }
+        ],
+        "committed_events": 288,
+        "confirmed_acks": 54,
+        "unknown_acks": 1,
+        "audit_duplicates": 0,
+        "work_duplicates": 0
+      },
+      "recovery_semantics_verified": true
+    }
+  ],
+  "all_passed": true
+}
