@@ -530,6 +530,35 @@ Windows 补测使用相同干净源码及固定二进制，保留原电源计划
 
 后续 `main` 的 Linux 测试改为 `/dev/full` 确定产生写错误，其他平台保留原管道检查，继续验证输出失败不得 ACK；只修改测试，不改变 `v0.2.0` 标签或产品代码。修改后的本机 Windows 10 项、WSL Linux 11 项 CLI 端到端测试通过。首次失败与后续标签重跑的结果分别保留，重跑通过不能当成已证明首次失败根因。
 
+### 0.2.0 标签发布与公开制品核验
+
+2026-11-18，标签 `v0.2.0` 始终固定于 `441ffc7dbb2bf48d6257c0ca3b831f099554af1a`。Actions [`44154274480`](https://github.com/921108257/ling/actions/runs/44154274480) 首轮 Linux x86_64 契约失败，macOS ARM64 因未获得托管运行器而被平台取消，其余七个已执行任务成功。仅执行一次失败任务重跑；第二次尝试复用首轮成功结果，最终 14 个必需任务成功，benchmarks 按条件跳过。03:36:59（Asia/Shanghai）发布 [v0.2.0 Preview](https://github.com/921108257/ling/releases/tag/v0.2.0)，非草稿、预发布，共 31 个附件。首轮 macOS ARM64 没有获得 runner 或执行步骤，不能归为产品测试失败；Linux 失败及夹具边界保留在上文。
+
+下表是测试执行次数，不合并视为唯一测试数；首轮 Linux 失败前的 19 通过、1 失败（其中 CLI 10 通过、1 失败）单独保留。
+
+| 步骤 | 通过 | 失败 / 忽略 |
+|---|---:|---:|
+| Linux x86_64 workspace，重跑 | 266 | 0 / 0 |
+| Linux x86_64 musl server / CLI | 132 | 0 / 0 |
+| Linux ARM64 workspace | 266 | 0 / 0 |
+| Linux ARM64 musl server / CLI | 132 | 0 / 0 |
+| macOS Intel workspace | 265 | 0 / 0 |
+| macOS ARM64 workspace，重跑 | 265 | 0 / 0 |
+| Windows workspace | 242 | 0 / 0 |
+| checks，关闭 updater workspace | 248 | 0 / 0 |
+| SDK 脚本内 Rust 测试 | 1 | 0 / 0 |
+| 三系统真实 provenance 测试 | 各 1 | 0 / 0 |
+
+Python 发行工具回归 23 项通过。Rust、Go、Java 的共享用例分别完成 local-peer 41 项、真实 TCP 105 项及双向 TLS 105 项，均无失败、跳过或缺失。五个平台 native acceptance 日志均为退出码 0，覆盖原生安装、安装器升级与卸载；CI 内实际 `ling update` 原生升级均明确未执行，需要已发布的 `UPDATE_VERSION`，不能以安装器升级或证明验证代替实际自更新验收。
+
+三个操作系统分别独立验证 30 个来源证明 subject，并通过六类反向检查；Rust 更新器调用真实 GitHub CLI 的验证测试也均通过。供给链与发布步骤核对了 14 个包、14 份 SBOM、审计报告、校验文件及来源证明。发布后本机重新下载全部 31 个附件，固定名称集合、上传状态、大小、GitHub SHA-256 与 `SHA256SUMS` 一致；14 份 SBOM 通过 CycloneDX 1.6 官方 schema 及 SPDX 表达式校验，五份便携包的 MIT 正文与第三方声明核对通过。本机再次完成 30 个 subject 的离线验签、六类反例及 Rust 更新器真实验证测试；公开 Windows ZIP 与 Linux x86_64 便携包均通过 PING / SET / GET / PTTL / SHUTDOWN 烟测。
+
+锁定依赖审计包含 212 个依赖、1,527 条公告，公告库固定提交 `233155b4025b854c68a4b199c0e32d7fd53291a2`，报告漏洞数为 0，并保留 `rustls-pemfile 2.2.0` 未维护提示 `RUSTSEC-2025-0134`。原始日志另有 21 项依赖因索引未找到 crate 而无法查询撤回状态，因此撤回状态检查不完整。
+
+同一 Linux GNU runner、同一干净源码的两个独立 target 构建中，服务端均为 9,319,904 字节，CLI 均为 4,694,872 字节，各自 SHA-256 一致；这只证明本次同 runner 结果，不外推跨主机可复现。默认与关闭 updater 的依赖计数分别为 161 和 84，关闭 updater 的服务端为 6,433,072 字节。
+
+两次尝试的完整日志 ZIP、API 元数据、取消注释、公开核验日志与资产证明见[发行证据清单](../benchmarks/results/v020-release-2026-11-18/manifest.json)。完整下载保留于 `target/release-v0.2.0/`，展开日志位于 `target/ci-44154274480/`。后续文档或夹具提交不改变已发布标签。实际内置升级至 0.2.0、Windows 11 管理员安装、原生 RPM 发行版、交互 UAC、签名 / 公证、Windows Reliable、多日压力和物理断电均不在本次已通过清单。
+
 ## Redis 对比边界
 
 只比较语义可比的String/Bytes GET/SET等工作负载。相同数据量、连接、流水线、TTL与持久性条件下运行；自定义类型、命令差异和额外事件成本单列说明。

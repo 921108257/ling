@@ -1,0 +1,130 @@
+{
+  "tag": "v0.2.0",
+  "revision": "441ffc7dbb2bf48d6257c0ca3b831f099554af1a",
+  "published_at": "2026-11-17T19:36:59Z",
+  "workflow_run_id": 44154274480,
+  "release_asset_count": 31,
+  "files": [
+    {
+      "path": "ci-attempt-1.zip",
+      "source": "target/ci-44154274480/logs-attempt-1.zip",
+      "bytes": 394637,
+      "sha256": "97c67e3f0829106a930d9539a156721dff44732336e41ccdcb33b33a491bf490"
+    },
+    {
+      "path": "ci-attempt-2.zip",
+      "source": "target/ci-44154274480/attempt-2/logs.zip",
+      "bytes": 247804,
+      "sha256": "9fa45bf89e48a239f9355fd35f5fedc4929513c410cd628ac033b845d9dea0d0"
+    },
+    {
+      "path": "run-attempt-1-api.json",
+      "source": "target/ci-44154274480/run-attempt-1-api.json",
+      "bytes": 11991,
+      "sha256": "587bc2e385ff595f920f92fb0cf166c31ed7cad397aeefdac67ae401bbecc70f"
+    },
+    {
+      "path": "run-attempt-2-api.json",
+      "source": "target/ci-44154274480/attempt-2/run-final-api.json",
+      "bytes": 12068,
+      "sha256": "992ef59e1a2b7ce1903e0c517322753f84426bca99ab21aa9f471ee4a7ed46f8"
+    },
+    {
+      "path": "macos-arm-attempt-1-job.json",
+      "source": "target/ci-44154274480/macos-arm-attempt-1-job.json",
+      "bytes": 843,
+      "sha256": "1c7d402afbf6741db249643cf6d9f4ed704f55743615e02af5efedbedbeb15af"
+    },
+    {
+      "path": "macos-arm-attempt-1-annotations.json",
+      "source": "target/ci-44154274480/macos-arm-attempt-1-annotations.json",
+      "bytes": 1400,
+      "sha256": "0443d3a22666770fbe1babbd5fc78649a935a909410a667979f88331bd448ba9"
+    },
+    {
+      "path": "rerun-trigger.json",
+      "source": "target/ci-44154274480/attempt-2/rerun-trigger.json",
+      "bytes": 145,
+      "sha256": "851cf7d4be253726e42376c87af335f4e4d9e2cceab146f7ea3f18f4038599c2"
+    },
+    {
+      "path": "workflow.yml",
+      "source": "target/ci-44154274480/workflow.yml",
+      "bytes": 19027,
+      "sha256": "de455d2b7e62e191b80493f011d7e3a47af3a7feb2ce238e06c36636784f4e29"
+    },
+    {
+      "path": "dependency-audit.json",
+      "source": "target/release-v0.2.0/dependency-audit.json",
+      "bytes": 1797,
+      "sha256": "3020ba07346d1f7af6ce0b47ac627a940afb8311c3702afdb508189936d5f965"
+    },
+    {
+      "path": "SHA256SUMS",
+      "source": "target/release-v0.2.0/SHA256SUMS",
+      "bytes": 2922,
+      "sha256": "478af9fffa97e0a3b441932fe0440c0fa69183c3272ddaa64f2698bfda80d3b8"
+    },
+    {
+      "path": "PROVENANCE.sigstore.json",
+      "source": "target/release-v0.2.0/PROVENANCE.sigstore.json",
+      "bytes": 15555,
+      "sha256": "1868d2b4afc92d3bff747d217e3e0d8c587560603cc3054f22147bc6fc51cf4e"
+    },
+    {
+      "path": "linux-portable-smoke.log",
+      "source": "target\\release-v0.2.0-evidence\\linux-portable-smoke.log",
+      "bytes": 209,
+      "sha256": "0aded4cd76fb451f9e8a5136b98402e6b601a9f69b282424064bc889efcf6d27"
+    },
+    {
+      "path": "provenance.log",
+      "source": "target\\release-v0.2.0-evidence\\provenance.log",
+      "bytes": 76,
+      "sha256": "28d1ada46995e9ef71d2c921021e261082832489cb97cd71de13dd5395b611ee"
+    },
+    {
+      "path": "public-assets.log",
+      "source": "target\\release-v0.2.0-evidence\\public-assets.log",
+      "bytes": 509,
+      "sha256": "d2ebe1a4601087779dda54884d50ae7fafb46d18e67e82fb580d35082e3f6ceb"
+    },
+    {
+      "path": "public-release.json",
+      "source": "target\\release-v0.2.0-evidence\\public-release.json",
+      "bytes": 55859,
+      "sha256": "45c039af1226483a744114847f39fdd87968b4c479f050710a65030ca11f672d"
+    },
+    {
+      "path": "release-assets.log",
+      "source": "target\\release-v0.2.0-evidence\\release-assets.log",
+      "bytes": 76,
+      "sha256": "e34dce597abbcf503586c6d1a29dc1b82514c4b65c1c40a763d787388af6d3c8"
+    },
+    {
+      "path": "rust-real-provenance.log",
+      "source": "target\\release-v0.2.0-evidence\\rust-real-provenance.log",
+      "bytes": 352,
+      "sha256": "6643dd358f2daf35c641036a628db549d9a416444d9e834957fb4e0958479517"
+    },
+    {
+      "path": "sbom-schema.log",
+      "source": "target\\release-v0.2.0-evidence\\sbom-schema.log",
+      "bytes": 1232,
+      "sha256": "6d9195bb0f1a6d5309cef212cff59c45bfaabbe4c004f5623ea6baadb1a749fa"
+    },
+    {
+      "path": "windows-portable-smoke.log",
+      "source": "target\\release-v0.2.0-evidence\\windows-portable-smoke.log",
+      "bytes": 56,
+      "sha256": "ff5373c6fedd29f6e2bc0e3eae60a9fba958bec3542f4ec820d6f75d98d222fd"
+    },
+    {
+      "path": "wsl-import.log",
+      "source": "target\\release-v0.2.0-evidence\\wsl-import.log",
+      "bytes": 890,
+      "sha256": "d08a9c56beda21ddb415f75750ce6daf55ede3139a3d34ee4ab4a9794675c7dc"
+    }
+  ],
+  "scope": "Original CI logs and public release checks; full package downloads remain under target/release-v0.2.0"
+}

@@ -4,9 +4,9 @@ ling 是独立部署的内存缓存数据库，使用 Rust 编写，支持 10 �
 
 [官网](https://921108257.github.io/ling/) · [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与服务](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/) · [命令速查](https://921108257.github.io/ling/commands/)
 
-当前准备版本为 **0.2.0 Preview（待发布）**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
+当前发行版本为 **[0.2.0 Preview](https://github.com/921108257/ling/releases/tag/v0.2.0)**，项目自有代码采用 [MIT 许可证](LICENSE)。缓存值与 TTL 只保存在内存中，重启后为空。Reliable 保存的是事件及消费进度；Windows 支持 Fast 模式，Linux / macOS 可使用 Reliable。
 
-0.2.0 增加可回退的订阅通知、Journal 读故障广播和明文 TCP 有界拒绝，沿用 TLS 握手回收期限并启用 `TCP_NODELAY`；协议与 Journal 仍为 v1，组提交和连接内流水线未实施。范围与验证进度见 [0.2.0 计划](docs/version/v0.2.0-preview.md)，标签构建与发布验收尚待完成，[0.3.0 多日压力验收](docs/version/v0.3.0-preview.md)尚未开始。0.1.6 的构建来源证明、升级验证与恢复机制继续适用，未执行的安装环境见 [0.1.6 计划](docs/version/v0.1.6-preview.md)。
+0.2.0 增加可回退的订阅通知、Journal 读故障广播和明文 TCP 有界拒绝，沿用 TLS 握手回收期限并启用 `TCP_NODELAY`；协议与 Journal 仍为 v1，组提交和连接内流水线未实施。范围见 [0.2.0 计划](docs/version/v0.2.0-preview.md)，标签发行和公开制品核验已完成，详见[发布验收](docs/testing.md#020-标签发布与公开制品核验)。[0.3.0](docs/version/v0.3.0-preview.md)正在准备验收，72 小时正式压力计时尚未开始。0.1.6 的构建来源证明、升级验证与恢复机制继续适用，未执行的安装环境见 [0.1.6 计划](docs/version/v0.1.6-preview.md)。
 
 通知的性能取舍见[实际对照](docs/testing.md#020-修复后对照与发布取舍)：本机 Windows Fast 的 100 空闲订阅场景尾延迟上升，可设置 `events.notification_enabled=false` 选择原派发路径。
 
@@ -83,7 +83,7 @@ ling update --stable
 
 默认包含预发布版，`--stable` 只选择正式版；指定版本不能降级。Linux / macOS 的系统安装包使用 `sudo ling update` 安装更新，检查更新不需要 sudo。**0.1.2 尚无内置更新，请先手动安装 0.1.3。**
 
-指定 0.2.0 的示例需在该版本正式提供下载后使用。
+0.2.0 已提供公开下载；本版原生安装包升级和内置更新器实际升级的验收范围分别见[发布验收](docs/testing.md#020-标签发布与公开制品核验)。
 
 Windows 会退出当前命令并交给后台更新进程，终端显示的 `result.json` 路径仅表示已安排更新；查看该文件的完成结果，再运行 `ling --version` 确认版本。从 0.1.6 起，便携更新同时刷新两个程序与许可声明，保留配置；手动启动的进程需自行停止并重新启动。0.1.6 及更新版本的更新器还要求 GitHub CLI 2.97.0+，验证来源证明失败时拒绝安装，独立验证与恢复步骤见 [安装指南](docs/install.md)。
 

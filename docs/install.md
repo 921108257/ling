@@ -1,6 +1,6 @@
 # 安装、服务与升级
 
-本页按 0.2.0 Preview 准备，标签构建与发布验收尚待完成；指定版本的示例需在该版本提供下载后使用。项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`；来源证明验证步骤见下文。
+本页对应已发布的 [0.2.0 Preview](https://github.com/921108257/ling/releases/tag/v0.2.0)，标签构建与公开制品核验范围见[发布验收](testing.md#020-标签发布与公开制品核验)。项目自有代码采用 [MIT 许可证](../LICENSE)，发行包附带项目许可和第三方声明。下载 [Releases](https://github.com/921108257/ling/releases) 中与系统、CPU 架构匹配的包，并对照同页 `SHA256SUMS` 校验。Windows 使用 `Get-FileHash <文件> -Algorithm SHA256`，Linux 使用 `sha256sum`，macOS 使用 `shasum -a 256`；来源证明验证步骤见下文。
 
 安装器默认注册并启动后台服务，默认监听 `127.0.0.1:6380`，事件模式为 Fast。服务使用专用工作目录，不读取用户终端当前目录的配置。需要自定义配置或已有实例占用端口时，先跳过自动启动，修改配置后再启动。Reliable 限制见 [architecture.md](architecture.md) 和 [persistence.md](persistence.md)。
 

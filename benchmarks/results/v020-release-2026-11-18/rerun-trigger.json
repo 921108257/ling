@@ -1,0 +1,6 @@
+{
+  "triggeredAtUtc": "2026-11-17T19:21:39.7097233Z",
+  "command": "gh run rerun 44154274480 --failed",
+  "exit_code": 0,
+  "output": ""
+}

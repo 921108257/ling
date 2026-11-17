@@ -1,0 +1,3 @@
+# 原始发行证据逐字节保留；Preserve original release evidence byte for byte.
+** -text -whitespace
+.gitattributes text eol=lf whitespace
