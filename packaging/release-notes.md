@@ -4,6 +4,6 @@
 
 Windows 仅支持 Fast。Linux / macOS 的 Reliable 在保留窗口内恢复已提交事件和消费元数据；缓存值与 TTL 在重启后为空。升级可能重启服务。协议 v1、类型标签与 Journal v1 保持不变。
 
-CI 验证不能替代目标部署环境评估；尚未执行多日压力、物理断电、Redis 8 对比和签名/公证验收。每版的实现与未完成项如下。
+CI 验证不能替代目标部署环境评估。每版实际运行的压力、故障恢复与 Redis 8 测量、失败结果及未完成项以下列版本记录和[测试记录](https://921108257.github.io/ling/docs/testing/)为准；WSL 崩溃恢复不能替代物理断电，平台签名与 macOS 公证尚未验收。
 
 [快速上手](https://921108257.github.io/ling/docs/quickstart/) · [安装与更新](https://921108257.github.io/ling/docs/install/) · [CLI 指南](https://921108257.github.io/ling/docs/cli/)

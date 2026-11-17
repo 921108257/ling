@@ -1,0 +1,4 @@
+# 冻结计划引用这些工具的原始摘要，检出时保持字节。
+# Frozen plans bind these tools by raw digest; preserve checkout bytes.
+evaluate-v030-acceptance.py -text
+generate-v030-acceptance-plan.py -text
