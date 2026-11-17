@@ -1,0 +1,14 @@
+{
+  "output": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v020-baseline-frozen-20261118",
+  "source_root": "C:\\Users\\92110\\Desktop\\Linger\\ling",
+  "server_binary": "target\\v020-baseline-89076a4\\ling.exe",
+  "notification_mode": "legacy",
+  "event_mode": "both",
+  "only": null,
+  "seconds": 5.0,
+  "repeats": 3,
+  "warmup": 50,
+  "backlog_events": 20000,
+  "seed": 20261118,
+  "allow_dirty": true
+}

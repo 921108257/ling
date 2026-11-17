@@ -1,0 +1,45 @@
+{
+  "jobs": [
+    [
+      "fast",
+      "idle-1",
+      1
+    ],
+    [
+      "fast",
+      "idle-0",
+      1
+    ],
+    [
+      "reliable",
+      "idle-1",
+      1
+    ],
+    [
+      "fast",
+      "idle-100",
+      1
+    ],
+    [
+      "fast",
+      "backlog",
+      1
+    ],
+    [
+      "reliable",
+      "idle-100",
+      1
+    ],
+    [
+      "reliable",
+      "idle-0",
+      1
+    ],
+    [
+      "reliable",
+      "backlog",
+      1
+    ]
+  ],
+  "skipped": []
+}

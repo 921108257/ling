@@ -1,0 +1,30 @@
+{
+  "jobs": [
+    [
+      "fast",
+      "idle-0",
+      1
+    ],
+    [
+      "fast",
+      "idle-100",
+      1
+    ],
+    [
+      "fast",
+      "backlog",
+      1
+    ],
+    [
+      "fast",
+      "idle-1",
+      1
+    ]
+  ],
+  "skipped": [
+    {
+      "event_mode": "reliable",
+      "reason": "Windows Reliable is explicitly unsupported"
+    }
+  ]
+}

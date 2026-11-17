@@ -1,0 +1,31 @@
+{
+  "seed": 20261118,
+  "jobs": [
+    [
+      "on",
+      2
+    ],
+    [
+      "on",
+      1
+    ],
+    [
+      "off",
+      1
+    ],
+    [
+      "off",
+      3
+    ],
+    [
+      "off",
+      2
+    ],
+    [
+      "on",
+      3
+    ]
+  ],
+  "binary_product_revision": "2b9503f",
+  "baseline_frozen": "../v020-baseline-frozen-20261118"
+}

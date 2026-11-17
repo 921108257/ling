@@ -1,0 +1,14 @@
+{
+  "output": "/home/runner/work/_temp/subscriptions/on-3",
+  "source_root": "/home/runner/work/ling/ling/candidate",
+  "server_binary": "/home/runner/work/ling/ling/candidate/target/release/ling",
+  "notification_mode": "on",
+  "event_mode": "both",
+  "only": null,
+  "seconds": 5.0,
+  "repeats": 1,
+  "warmup": 50,
+  "backlog_events": 20000,
+  "seed": 20261121,
+  "allow_dirty": false
+}

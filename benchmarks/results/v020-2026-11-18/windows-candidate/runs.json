@@ -1,0 +1,32 @@
+[
+  {
+    "variant": "on",
+    "repeat": 2,
+    "exit_code": 0
+  },
+  {
+    "variant": "on",
+    "repeat": 1,
+    "exit_code": 0
+  },
+  {
+    "variant": "off",
+    "repeat": 1,
+    "exit_code": 0
+  },
+  {
+    "variant": "off",
+    "repeat": 3,
+    "exit_code": 0
+  },
+  {
+    "variant": "off",
+    "repeat": 2,
+    "exit_code": 0
+  },
+  {
+    "variant": "on",
+    "repeat": 3,
+    "exit_code": 0
+  }
+]

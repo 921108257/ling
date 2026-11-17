@@ -1,0 +1,14 @@
+{
+  "output": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v020-candidate-frozen-20261118\\off-1",
+  "source_root": "C:\\Users\\92110\\Desktop\\Linger\\ling",
+  "server_binary": "C:\\Users\\92110\\Desktop\\Linger\\ling\\target\\v020-candidate-2b9503f-bin\\ling.exe",
+  "notification_mode": "off",
+  "event_mode": "both",
+  "only": null,
+  "seconds": 5.0,
+  "repeats": 1,
+  "warmup": 50,
+  "backlog_events": 20000,
+  "seed": 20261119,
+  "allow_dirty": true
+}

@@ -1,0 +1,189 @@
+{
+  "date_utc": "2026-11-17T18:18:36.989410+00:00",
+  "revision": {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "stdout": "2b9503f9289303c8d916f1b32268fa5b22b912bd",
+    "stderr": ""
+  },
+  "working_tree": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "logical_cpus": 4,
+  "binding": {
+    "server_cpus": [
+      0,
+      1
+    ],
+    "client_cpus": [
+      2,
+      3
+    ]
+  },
+  "binary_sha256": "9f16bf989a468a6c38d4c42ca85865464ea648ac0dc8b874eb83b98c729e3f6d",
+  "binary_origin": "/home/runner/work/ling/ling/candidate/target/release/ling",
+  "binary_version": {
+    "command": [
+      "/home/runner/work/_temp/subscriptions/off-1/bin/ling",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "ling 0.1.7",
+    "stderr": ""
+  },
+  "script_sha256": "96ceb49da5b5393e52998bf7da9e305e72fe255a87a136dc4024949f235fc2da",
+  "source_sha256": {
+    "crates/engine/Cargo.toml": "ac64e1a00d8abb3ceb922a71b4484cedb816db48c75514c7a9ead2bcc6623e74",
+    "crates/events/Cargo.toml": "79e591cc4a24a4d0310f52d53d1a33eb8b70c70e1aa0eb85b89d2156f4d7eb9c",
+    "crates/cli/Cargo.toml": "b2b9ded7fd808f0f311efb61837d2d370425548182f27cc6e385866ffc4dc07e",
+    "crates/protocol/Cargo.toml": "0b22430db962d854baaa5f04fd21e50dd3b2df03ca68723b377ac21bac9ee263",
+    "crates/cli-help/Cargo.toml": "f599a32aa9f4f6c716b2886a9cde2a52910f402f650679537fa3d13a2768fae9",
+    "crates/types/Cargo.toml": "4f4c64ba0d2b9265ebc8629ebbf49c9310ce8f4390bd8f4b892c672f820956f5",
+    "crates/network/Cargo.toml": "f677911e2e9a5c56231de53231ef974e33417ddf3f8efbba468732c474f5adf9",
+    "crates/server/Cargo.toml": "35b4d89a2180301ebfe06afeefa6f599fe4596cd26ccda4202b37bcba81df4c8",
+    "crates/engine/tests/contracts.rs": "84858ac3043b71d101a2162555e654a9ed571e5f812314c1bb87078bcb5e3795",
+    "crates/engine/tests/administration.rs": "7e1a50f4576072927e44cb01c64cca7a19d535485cfa93ab7db9cc0c93bd7987",
+    "crates/engine/tests/eviction.rs": "2ce174c4da7d2f56300f8e4287390c1b5f25eaf746a95c83bd96be72e6c6db29",
+    "crates/engine/tests/model.rs": "969826bd3e5e2acc02484603fd2013f2501d1f1873f23ca2ffaf03bc1dab051a",
+    "crates/engine/tests/glob.rs": "c7d4f14cab55df199d4bd39c14edfd4206d42ab7f82ad8dbdcbb9d18af81e9d6",
+    "crates/engine/tests/scan.rs": "23f144531fb30a1ec76d2864a35f48a7e4b089e8bed754aaad17cd7b5af4bdb7",
+    "crates/engine/tests/events.rs": "1c6d27aacf13ee15db899eceb410be15898ef6801d5494500e4b0d45e21f2681",
+    "crates/engine/src/numeric.rs": "5b7adc366dde30ff2e2c41a3812de00e2cd469ac473d76c3efa2ab7338d02c13",
+    "crates/engine/src/expiry.rs": "6053b7c28b9a71745c27621f40bfeb7f6fe47e6314a91a77b39622fea0d2c9c2",
+    "crates/engine/src/lib.rs": "b95f08a9b6532f05df80ac83f3e362c67fc8cf1e403bf420378915c2683eda4b",
+    "crates/engine/src/administration.rs": "e55a7c57d11b4faec68212f60f3d0fac66636bf5c2411357987a67361f907125",
+    "crates/engine/src/eviction.rs": "f9a46157ad9e88dafe83d4003dfae7bb0e70b37467971e6eb371e14514389691",
+    "crates/engine/src/containers.rs": "646897780d1c82f1f801c3208eabca4cabb54ec1948e92f5a5381989c1efd776",
+    "crates/engine/src/transaction.rs": "1acb2afec8d58198c3603626460b86675fe53b2a5f452a5cf53e966d5ad8c07e",
+    "crates/engine/src/scan.rs": "a76fa883f93259cf204cc6bf0fb72568b78396a0713114a36204e4d030fca56b",
+    "crates/engine/src/clock.rs": "7ed9a13ce4b1a3d5799c5a58fd20e2ebed53f53e58500f76d7f9d396745bb698",
+    "crates/engine/src/support.rs": "fea6e34f2f8b2efb5489fb169c757c5c3c6f6e528c46df1cefb383951b9cfe00",
+    "crates/engine/src/ttl.rs": "a68f6c744ca44889528f8c1e0226ac37476f96d2306b83104a7df328e927ccdf",
+    "crates/engine/src/events.rs": "bb1256e9bf9e0a9d4440ed2f5d82926ddc60a9b3b69047b3cd7cf88570f1a6f3",
+    "crates/engine/src/ownership_tests.rs": "e122b05405bcdfd98ecf8e0aa0841d9f00ec24298024c851a5aa2c3e7a99933f",
+    "crates/engine/src/generic.rs": "37456fe156dbe715920b4cc98330c2d68ed1d7dc81c49708400ccf33eee46647",
+    "crates/engine/src/ttl_tests.rs": "2e80aabf90738ac3bdb1d6989956f9ac85a316785e522c04bac499bb8de4850c",
+    "crates/engine/src/containers/maps.rs": "891e0127071f48cdf3e81a861bfcfd72c48f2472409b13687f850886fd06509a",
+    "crates/engine/src/containers/sets.rs": "19b418705299d800c72ea1de3b689d76922ef9e0410475717c2f15e2188a61bd",
+    "crates/engine/src/containers/lists.rs": "b5578571937ffcd9f1f1a32e7a717eaa8eb491f090704090ce7b3dbaeeb29572",
+    "crates/events/src/lib.rs": "b56c2cd7bb98bf7f5cbe00d3a74bb600593ef4960e065cc60775f420a8a785fe",
+    "crates/events/src/journal.rs": "ca3e7aa76af8832b93da73adb2f3c8d23291c30a9fae4b2dd1f37267e148d094",
+    "crates/events/src/codec.rs": "22cf173748ede6f546ade090ee195ce05636b2f262428e152cd6b73a38b110f4",
+    "crates/events/src/tests.rs": "78b2b5478867d870b9e95d8522983c490f0d199b432832fbc82df2f6d6acf4e9",
+    "crates/events/src/store.rs": "28ae3b5fb065ae226cc9360aa30421dba5f165ee0b4790c636f1ab3eb09ce621",
+    "crates/cli/tests/grammar.rs": "57b299a5f5eb8c693c54ef586015130fd76af2be0f394af812dba5af318d02a4",
+    "crates/cli/tests/diagnostics.rs": "d70a94e11f4265a71be46f11992896a8531c57f7617a69be4fc0ddae702125e9",
+    "crates/cli/tests/help.rs": "3bf7600d91c5097fd16efee94522619d85308d9b0343a244402a09131b6dac6d",
+    "crates/cli/tests/end_to_end.rs": "6b81628d2913e1f536e32fd13db205da88568da433609219dc193cddec33641a",
+    "crates/cli/src/lib.rs": "c9df5e818e155d16c193c17054de60136ef152769a7ded5f507e0feead81b57d",
+    "crates/cli/src/main.rs": "23823e3a3472998aee13f9e7e94a18a9c58f333df6291b984f80578054676edd",
+    "crates/protocol/tests/contracts.rs": "0b61a8b816614b5beb597912390e9011e4ee84905129ec52de745c6e6e8f3694",
+    "crates/protocol/src/lib.rs": "2219cbfc39dba3b7225387f1026f6ad4fb38a8af3c809ef9fb21e77f7eef0b4c",
+    "crates/protocol/src/codec.rs": "97d9d76d94a3fdba1e14c68a4529017fd445058e172542444b230446af42d19e",
+    "crates/protocol/src/transport.rs": "633a759140577017ae3be80788aed10ea92d09fdc6ace1fa051928d9fbf2fc36",
+    "crates/cli-help/tests/diagnostics.rs": "dda327df5823c7f2b78dc469b16eb336550bd454c5de53dcf122d3e5f4d2e435",
+    "crates/cli-help/tests/reference.rs": "b06749db59070775f79e93b3eaa9f7acb64eaaf43a5e66a550c46cabc1de4526",
+    "crates/cli-help/tests/layout.rs": "0a284f99077bcbe9f45ca46f52f0ff711d44f130fd7c72ad69e50cce1bd44ba6",
+    "crates/cli-help/src/diagnostics.rs": "575a86695d34221daa54ff1c7df0ef4d31ca88960cace959e01be46ca3267a49",
+    "crates/cli-help/src/lib.rs": "363f9c3c543c11a74c715c571d7c31eb0530da412f695d36cbf84a0b70246373",
+    "crates/cli-help/src/layout.rs": "a04c2fc648f4d51d428837987eee7ceaa783a0e12534e0163854b0d3262ed3b0",
+    "crates/types/tests/contracts.rs": "a6adf8b49eb3a462a33351feedb970f2d347160ac031d906e1277789a453d603",
+    "crates/types/src/error.rs": "b0bc8f99dd4ac9bd9611078b1894a5c35662f0165ab1537b7d0df728223bdef8",
+    "crates/types/src/event.rs": "5dedf23478df811b7c83c0c158c63ea4c9503a9f65a018994ca18efc09d9161d",
+    "crates/types/src/lib.rs": "7aa4186bb48e5cb07ceb6dbd5909598f222a5c216386cb0e7f9b9e4624b59a1a",
+    "crates/types/src/metrics.rs": "4ee7f10c5690c891d95ff66cf523c0600de2fcac46dd1cd9a63d68aab08ce791",
+    "crates/types/src/value.rs": "d34d7546ffa64ee2ba807868937cb20949dbc64514208e8e6419b02dc88e4938",
+    "crates/types/src/pattern.rs": "fb0d68b5faa530b088b0833592a19d01a2073e8487287f1fd5dc5ff4031c15de",
+    "crates/network/src/lib.rs": "68e0e616c1ad107fdf2dbd9d3a544c109f002ba2f53d721bb14a424607f5fc3a",
+    "crates/server/tests/tls.rs": "e315c032eebe21e0b7ac06f4817054ef27a96e8c732660320e2742cee904420e",
+    "crates/server/tests/diagnostics.rs": "c8882b4af1bc58207d8887f1dd37dfd562aeeb79b8714d6bb47360b08f0d5268",
+    "crates/server/tests/subscription_notifications.rs": "40258db09651419da601ec64a7d06c5ee66435399e879aa3edb709484dca284c",
+    "crates/server/tests/help.rs": "5590eed1efc2cd1535b086e6b646b984b9a4c2a48c64696272619631bff3cfd7",
+    "crates/server/tests/crash_recovery.rs": "54ac85b37620df9ea27b321cc8d05a4d2948580bd2d3569c5e27050ece2f7600",
+    "crates/server/tests/network.rs": "73f5a0c2cdcb38f830083b22a2a4ee9001b58cf6f095ed69e51b36227d89ee30",
+    "crates/server/tests/operations.rs": "6de7e6f516e52502122e2cdcc0f57e206cf5ac40408a0c26cd5b6388e486a603",
+    "crates/server/tests/config.rs": "d65f82bcf4e7d9223f07dd578cc890014c6c7a0df77fe8311544f1b2632ffc91",
+    "crates/server/tests/resources.rs": "17c699699e0a1ec4c7c27ed31fd0e0d382cf55eed4074d9e5af29fc108fe4036",
+    "crates/server/examples/lifecycle.rs": "0360a8164331dee96eb9afad98610bc635bb505963c1734e3497f393ee203a7c",
+    "crates/server/examples/baseline.rs": "2c4a04eb88473c534fe0fc5f60060e3a7710e639d50d309828e75945cf565eb3",
+    "crates/server/src/connection.rs": "5327bf7bd3b2f171d9c521a8810e203429844eacb35697b90aebe143e43f11c5",
+    "crates/server/src/lib.rs": "1a4c409c5c2c73b6b1b8dcde8be882e67656a24a78ba9960b5ea26e709d048a6",
+    "crates/server/src/update_disabled.rs": "223780bfefb2f3882568d13e3976c7c6733e9cc74d25e767e809f0def7771e68",
+    "crates/server/src/batch.rs": "98245381e36fa71e64565b3f454570494d7b80e409757d2fe9e263eb01ef2413",
+    "crates/server/src/accept.rs": "2fe12c15a4a14438520c338c1320edc0bbfb7840c33edecdcf6c3740ac0912ad",
+    "crates/server/src/update.rs": "b9ba1f4229f3b410ed170574672e6f6dce5bb6e7b52e3d9006ca7e156b0834fe",
+    "crates/server/src/maintenance.rs": "50c88abb5d67f11ec9b11b4d71076bbf4b9c367e235402a9cf995a9419d96e25",
+    "crates/server/src/telemetry.rs": "a2d670ed3c98854bf223a5ffadc50b9d5fa5fc7044422f04ea5d614845de6a69",
+    "crates/server/src/operations.rs": "72421e8af69d48a284dbb6d14ffeab79b8eaa585d9dfce7d239fc1e9a23d6e3a",
+    "crates/server/src/main.rs": "99c83b6907951b8503a0f6f30738f63d1fca3d244699a1c1f748d13a72921338",
+    "crates/server/src/config.rs": "46099c2504e82a68ddf91b551c868f6372e35b7253dbc9008bcbec61b8bd2034",
+    "crates/server/src/update/windows.rs": "774b39d2cdadda79c3a1b71d727916d28a92ca91ce50bb043be4238eb15ce804",
+    "crates/server/src/update/provenance.rs": "e6f208f67aac93252aca88e6a2072d62d5ba4cc664186161678e8e6d89bdcc77",
+    "sdks/rust/Cargo.toml": "e052bb662bd323254867967846c1a96112404e096790c21b59b2203719f1173c",
+    "sdks/rust/tests/client.rs": "9ae8511b74db4a172764dd6bcb6dbba3769c7e0e05bba0ec7d7f550913cb7896",
+    "sdks/rust/tests/pool.rs": "9ee4357cefb8596b5c4fc0e9c52bc9205fdb3b943c48ec1c4f9eef3d735463ee",
+    "sdks/rust/tests/subscription.rs": "413f2f8ab279047f780624366b45166a5cf9ea7351475306394b30635ec88e26",
+    "sdks/rust/tests/shared.rs": "720cf3af2a1d538a76a28ac94694afce47a1ad975ad628dd4785309969d414bc",
+    "sdks/rust/tests/sessions.rs": "b7a7a0ef44e393e8cbed9dc6945b9c0bbc00088feb99d803aee412d5a03e448a",
+    "sdks/rust/examples/contracts.rs": "1ad3f675581ffe53f36f373f4ab441377632a6f4ff151fc12d9beabb5717e7fc",
+    "sdks/rust/src/pool.rs": "a9f9d14b05d66095c51be2fbdda5cbbc12bb60bee4ba4b576ef46b5cde4b5c99",
+    "sdks/rust/src/lib.rs": "b1890a7eeae47b709a354257e3c4e2e395348a05150b75ad54e61e8679d3c44c",
+    "sdks/rust/src/subscriber.rs": "05dc93da3504136dadb4cb248215b07f86437ad5374b7960eb450f57b539c27f"
+  },
+  "cargo_lock_sha256": "a04d6c83c06fa07fdc08c11b442165d5570e94b586da390ee4a12a32982c36e4",
+  "topology": "same-host loopback; Python serial client; TCP_NODELAY; pipeline=1",
+  "cpu_scope": "process CPU delta during measurement only; server endpoints exclude INFO queries",
+  "limits": "3-second samples by default; no physical power-loss or target-environment claim",
+  "hardware": {
+    "cpu": {
+      "command": [
+        "lscpu"
+      ],
+      "returncode": 0,
+      "stdout": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Xeon(R) 6975P-C\nCPU family:                              6\nModel:                                   173\nThread(s) per core:                      2\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                1\nBogoMIPS:                                5400.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat vnmi avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid bus_lock_detect cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               96 KiB (2 instances)\nL1i cache:                               128 KiB (2 instances)\nL2 cache:                                4 MiB (2 instances)\nL3 cache:                                480 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected",
+      "stderr": ""
+    },
+    "storage": {
+      "command": [
+        "lsblk",
+        "-o",
+        "NAME,TYPE,SIZE,ROTA,MODEL"
+      ],
+      "returncode": 0,
+      "stdout": "NAME         TYPE   SIZE ROTA MODEL\nloop0        loop    74M    0 \nloop1        loop  32.5M    0 \nzram0        disk     3G    0 \nnvme0n1      disk   150G    0 Amazon Elastic Block Store\n├─nvme0n1p1  part   149G    0 \n│ └─cow-root dm     149G    0 \n├─nvme0n1p14 part     4M    0 \n├─nvme0n1p15 part   106M    0 \n└─nvme0n1p16 part   913M    0 \nnvme1n1      disk 220.7G    0 Amazon EC2 NVMe Instance Storage\n└─cow-root   dm     149G    0",
+      "stderr": ""
+    },
+    "filesystem": {
+      "command": [
+        "findmnt",
+        "-T",
+        "/home/runner/work/_temp/subscriptions/off-1"
+      ],
+      "returncode": 0,
+      "stdout": "TARGET SOURCE               FSTYPE OPTIONS\n/      /dev/mapper/cow-root ext4   rw,relatime,discard,journal_async_commit,nobarrier,errors=remount-ro,commit=30,data=writeback",
+      "stderr": ""
+    },
+    "memory": {
+      "command": [
+        "cat",
+        "/proc/meminfo"
+      ],
+      "returncode": 0,
+      "stdout": "MemTotal:       16078424 kB\nMemFree:        12538956 kB\nMemAvailable:   15079444 kB\nBuffers:          121964 kB\nCached:          2670640 kB\nSwapCached:            0 kB\nActive:          1026448 kB\nInactive:        2053192 kB\nActive(anon):     345872 kB\nInactive(anon):        0 kB\nActive(file):     680576 kB\nInactive(file):  2053192 kB\nUnevictable:       45476 kB\nMlocked:           43600 kB\nSwapTotal:       3145724 kB\nSwapFree:        3145724 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:             12028 kB\nWriteback:             0 kB\nAnonPages:        332556 kB\nMapped:           365624 kB\nShmem:             50280 kB\nKReclaimable:     117436 kB\nSlab:             202484 kB\nSReclaimable:     117436 kB\nSUnreclaim:        85048 kB\nKernelStack:        4576 kB\nPageTables:         6852 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    11184936 kB\nCommitted_AS:    2301064 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       38788 kB\nVmallocChunk:          0 kB\nPercpu:             2448 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:    579584 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:         1771520 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nGPUActive:             0 kB\nGPUReclaim:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      143792 kB\nDirectMap2M:     4800512 kB\nDirectMap1G:    11534336 kB",
+      "stderr": ""
+    }
+  }
+}
