@@ -11,6 +11,7 @@ ExecStart=/usr/bin/ling --config /etc/ling/ling.toml
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=15
+LimitNOFILE=65536
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectHome=true

@@ -408,6 +408,36 @@ pub(crate) fn exposure_warnings(config: &Config) -> Vec<&'static str> {
     warnings
 }
 
+/// 为监听器、指标端点、Journal 文件与日志预留的句柄余量，位于连接上限之外。
+/// Descriptor headroom for listeners, the metrics endpoint, journal files and logs beyond the connection limit.
+#[cfg(any(target_os = "linux", test))]
+const DESCRIPTOR_RESERVE: u64 = 128;
+
+/// 从 `/proc/self/limits` 文本取出 "Max open files" 的软上限；`unlimited` 记为 `u64::MAX`，无法解析时返回 None。
+/// Extracts the soft "Max open files" limit from `/proc/self/limits` text; `unlimited` maps to `u64::MAX` and unparsable input yields None.
+#[cfg(any(target_os = "linux", test))]
+pub(crate) fn open_files_soft_limit(text: &str) -> Option<u64> {
+    let line = text
+        .lines()
+        .find(|line| line.starts_with("Max open files"))?;
+    match line.split_whitespace().nth(3)? {
+        "unlimited" => Some(u64::MAX),
+        value => value.parse().ok(),
+    }
+}
+
+/// 软上限低于连接上限加预留量时给出告警；只告警，不拒绝启动。
+/// Warns when the soft limit is below the connection limit plus reserve; warns only and never rejects startup.
+#[cfg(any(target_os = "linux", test))]
+pub(crate) fn descriptor_limit_warning(soft_limit: u64, max_connections: usize) -> Option<String> {
+    let needed = (max_connections as u64).saturating_add(DESCRIPTOR_RESERVE);
+    (soft_limit < needed).then(|| {
+        format!(
+            "Open file limit {soft_limit} is below max_connections plus reserve {needed}; accept may fail with EMFILE"
+        )
+    })
+}
+
 impl Config {
     /// 加载 UTF-8 TOML 并校验；错误隐藏可能包含密码的原文。
     /// Loads UTF-8 TOML and validates it; errors omit source text that could contain passwords.
@@ -600,6 +630,70 @@ impl Config {
                 max_key_bytes: self.engine.max_key_bytes,
             },
         })
+    }
+}
+
+#[cfg(test)]
+mod descriptor_tests {
+    use super::*;
+
+    /// 典型 `/proc/self/limits` 头部与相邻行，用于解析样例。
+    /// Typical `/proc/self/limits` header and neighbouring rows used as parsing samples.
+    fn sample(open_files: &str) -> String {
+        format!(
+            "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \n{open_files}\nMax locked memory         8388608              8388608              bytes     \n"
+        )
+    }
+
+    /// 软上限取第二列数值；`unlimited`、缺行与损坏数值分别映射为最大值、None、None。
+    /// The soft limit is the first numeric column; `unlimited`, a missing row and a corrupt value map to the maximum, None and None.
+    #[test]
+    fn soft_limit_parsing() {
+        for (row, expected) in [
+            (
+                "Max open files            1024                 524288               files     ",
+                Some(1024),
+            ),
+            (
+                "Max open files            65536                65536                files     ",
+                Some(65536),
+            ),
+            (
+                "Max open files            unlimited            unlimited            files     ",
+                Some(u64::MAX),
+            ),
+            (
+                "Max open files            lots                 524288               files     ",
+                None,
+            ),
+            ("Max open files", None),
+            (
+                "Max processes             1024                 1024                 processes ",
+                None,
+            ),
+        ] {
+            assert_eq!(open_files_soft_limit(&sample(row)), expected, "{row}");
+        }
+        assert_eq!(open_files_soft_limit(""), None);
+    }
+
+    /// 阈值为连接上限加预留量：恰好等于不告警，少一个单位告警；`unlimited` 不告警；消息不含 Key 或口令。
+    /// The threshold is the connection limit plus reserve: equality is silent, one below warns; unlimited is silent; messages carry no keys or passwords.
+    #[test]
+    fn warning_threshold() {
+        let connections = 10_000usize;
+        let needed = connections as u64 + DESCRIPTOR_RESERVE;
+        assert!(descriptor_limit_warning(1024, connections).is_some());
+        assert!(descriptor_limit_warning(needed - 1, connections).is_some());
+        assert!(descriptor_limit_warning(needed, connections).is_none());
+        assert!(descriptor_limit_warning(65536, connections).is_none());
+        assert!(descriptor_limit_warning(u64::MAX, connections).is_none());
+        assert!(descriptor_limit_warning(1024, 1).is_none());
+        let message = descriptor_limit_warning(1024, connections).unwrap();
+        assert!(
+            message.contains("1024") && message.contains("EMFILE"),
+            "{message}"
+        );
     }
 }
 

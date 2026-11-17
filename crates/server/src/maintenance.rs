@@ -31,11 +31,22 @@ pub(crate) async fn run(
         if *closing.borrow() {
             return Ok(());
         }
-        let engine = engine.clone();
         let compact = maintenance.elapsed() >= Duration::from_secs(1);
         if compact {
             maintenance = std::time::Instant::now();
+            // 中毒不可恢复：按故障策略记录稳定错误码后退出，交给服务管理器重启；与保留维护同为每秒一次，检测延迟至多约一秒。
+            // Poison is unrecoverable: per the failure policy, log the stable code and exit so the supervisor restarts us; checked once per second like retention, so detection lags by about a second at most.
+            if let Some(error) = poisoned(&engine) {
+                if let Some(runtime) = &runtime {
+                    runtime.log(
+                        "error",
+                        &format!("{error}; exiting so the supervisor can restart"),
+                    );
+                }
+                return Err(io::Error::other(error));
+            }
         }
+        let engine = engine.clone();
         let result = tokio::task::spawn_blocking(move || {
             let _permit = permit;
             // 即使到期记账遇到容量限制，保留清理仍可让后续重试恢复。
@@ -81,6 +92,24 @@ pub(crate) async fn run(
     }
 }
 
+/// 引擎（预算锁或任一分片锁）或事件状态锁中毒即不可恢复；返回应记录并导致退出的稳定错误码。
+/// Poison in the engine (budget lock or any shard lock) or the event state lock is unrecoverable; returns the stable error to log before exiting.
+fn poisoned(engine: &Engine) -> Option<ling_types::DbError> {
+    if engine.is_poisoned() {
+        return Some(ling_types::DbError::new(
+            ling_types::ErrorCode::Busy,
+            "Data engine lock poisoned; unrecoverable",
+        ));
+    }
+    if engine.events().is_some_and(|events| events.is_poisoned()) {
+        return Some(ling_types::DbError::new(
+            ling_types::ErrorCode::JournalUnavailable,
+            "Event state lock poisoned; unrecoverable",
+        ));
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,6 +152,33 @@ mod tests {
         assert_eq!(engine.scheduled_expirations().unwrap(), 0);
         closing.send_replace(true);
         task.await.unwrap().unwrap();
+    }
+
+    /// 分片锁中毒后维护循环返回带稳定错误码的错误，交给服务管理器重启；
+    /// 耗时接近一秒说明退出来自每秒一次的中毒检测，而不是更早的到期回收错误。
+    /// After a shard lock is poisoned the maintenance loop returns an error with a stable code so the supervisor restarts the process;
+    /// an elapsed time near one second shows the exit came from the once-per-second poison check rather than an earlier expiry error.
+    #[tokio::test]
+    async fn poisoned_shard_stops_maintenance() {
+        let engine = Arc::new(Engine::new(ling_engine::Config::default(), 1).unwrap());
+        assert!(!engine.is_poisoned());
+        engine.poison_shard_for_test();
+        assert!(engine.is_poisoned());
+        let (_closing, receiver) = watch::channel(false);
+        let started = std::time::Instant::now();
+        let result = tokio::time::timeout(
+            Duration::from_secs(5),
+            run(engine, Arc::new(Semaphore::new(1)), 1, receiver, None),
+        )
+        .await
+        .expect("maintenance did not stop after poison");
+        let error = result.unwrap_err();
+        assert!(error.to_string().contains("ERR_BUSY"), "{error}");
+        assert!(
+            started.elapsed() >= Duration::from_millis(900),
+            "{:?}",
+            started.elapsed()
+        );
     }
 
     /// 许可被请求占用时，关闭通知仍可取消排队的维护。

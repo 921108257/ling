@@ -278,6 +278,29 @@ impl Engine {
         self.memory_usage().expect("engine budget lock poisoned")
     }
 
+    /// 预算锁或任一分片锁已中毒时为真；中毒不可恢复，此方法只供服务端决定是否 fail-stop，不加锁、不改状态。
+    /// True when the budget lock or any shard lock is poisoned; poison is unrecoverable and this only lets the server decide to fail-stop, without locking or changing state.
+    pub fn is_poisoned(&self) -> bool {
+        self.budget.is_poisoned() || self.shards.iter().any(|shard| shard.is_poisoned())
+    }
+
+    /// 测试专用故障点：让第一个分片锁中毒，用于验证 fail-stop；仅在 `failpoints` 特性下编译，发行构建不含。
+    /// Test-only failpoint: poisons the first shard lock to verify fail-stop; compiled only under the `failpoints` feature and absent from release builds.
+    #[cfg(feature = "failpoints")]
+    pub fn poison_shard_for_test(&self) {
+        let shard = &self.shards[0];
+        // 在独立线程里持锁 panic 并回收该线程，锁因此中毒而调用线程不受影响。
+        // Panic while holding the lock on a separate thread and join it, so the lock is poisoned without affecting the caller.
+        let _ = std::thread::scope(|scope| {
+            scope
+                .spawn(|| {
+                    let _guard = shard.lock();
+                    panic!("failpoint: poisoning shard lock");
+                })
+                .join()
+        });
+    }
+
     /// 当前可选事件句柄；不允许运行时切换模式。
     /// Current optional event handle; mode cannot change at runtime.
     pub fn events(&self) -> Option<&Arc<ling_events::EventStore>> {

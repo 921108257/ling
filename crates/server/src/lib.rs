@@ -1,6 +1,7 @@
 //! TCP 服务装配：分片所有权属于引擎，阻塞执行任务数量受控。
 //! TCP service assembly: the engine owns shards and blocking execution tasks are bounded.
 
+mod accept;
 mod batch;
 mod config;
 mod connection;
@@ -124,6 +125,20 @@ impl Server {
         for warning in config::exposure_warnings(&self.config) {
             runtime.log("warn", warning);
         }
+        // 仅 Linux 暴露 /proc；读取或解析失败时静默跳过，自检不影响启动。
+        // Only Linux exposes /proc; read or parse failures are skipped silently so the check never affects startup.
+        #[cfg(target_os = "linux")]
+        {
+            if let Some(warning) = std::fs::read_to_string("/proc/self/limits")
+                .ok()
+                .and_then(|text| config::open_files_soft_limit(&text))
+                .and_then(|limit| {
+                    config::descriptor_limit_warning(limit, self.config.server.max_connections)
+                })
+            {
+                runtime.log("warn", &warning);
+            }
+        }
         let mut background = JoinSet::new();
         background.spawn(maintenance::run(
             self.engine.clone(),
@@ -161,6 +176,9 @@ impl Server {
             ));
         }
         let mut connections = JoinSet::new();
+        // 接入退避状态跨循环保留，成功接受后复位。
+        // Accept backoff state persists across iterations and resets after a successful accept.
+        let mut backoff = None;
         tokio::pin!(shutdown);
         let result = loop {
             tokio::select! {
@@ -174,11 +192,23 @@ impl Server {
                     };
                 }
                 Some(result) = connections.join_next(), if !connections.is_empty() => {
-                    if let Err(e) = result { break Err(io::Error::other(format!("Connection task failed: {e}"))); }
+                    // 连接任务 panic 只终止该连接，计数并限频告警；其他连接与监听不受影响。
+                    // A connection task panic ends only that connection with a counted, rate-limited warning; other connections and the listener are unaffected.
+                    if result.is_err() {
+                        runtime.accept.panicked(std::time::Instant::now(), |m| runtime.log("error", m));
+                    }
                 }
-                accepted = self.listener.accept() => {
+                accepted = accept::recover(
+                    || self.listener.accept(),
+                    &mut backoff,
+                    |error| runtime.accept.failed(false, error, std::time::Instant::now(), |m| runtime.log("warn", m)),
+                ) => {
                     let (stream, _) = match accepted { Ok(value) => value, Err(e) => break Err(e) };
-                    let Ok(permit) = semaphore.clone().try_acquire_owned() else { drop(stream); continue; };
+                    let Ok(permit) = semaphore.clone().try_acquire_owned() else {
+                        drop(stream);
+                        runtime.accept.rejected(std::time::Instant::now(), |m| runtime.log("warn", m));
+                        continue;
+                    };
                     let config = self.config.clone(); let receiver = receiver.clone(); let engine = self.engine.clone(); let slots = slots.clone();
                     let tls = self.tls.clone();
                     let runtime = runtime.clone();
@@ -232,4 +262,89 @@ fn make_tls(config: &Config) -> Result<Option<tokio_rustls::TlsAcceptor>, ling_t
         &config.tls.min_version,
     )
     .map(Some)
+}
+
+#[cfg(test)]
+mod failure_policy_tests {
+    use super::*;
+
+    /// 分片锁中毒属不可恢复故障：`run` 在约一秒内返回带稳定错误码的错误，而不是长期返回 ERR_BUSY。
+    /// A poisoned shard lock is unrecoverable: `run` returns an error carrying a stable code within about a second instead of answering ERR_BUSY indefinitely.
+    #[tokio::test]
+    async fn poisoned_engine_stops_the_server() {
+        let mut config = Config::default();
+        config.events.enabled = false;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let server = Server::from_listener(listener, config).unwrap();
+        server.engine.poison_shard_for_test();
+        let result = tokio::time::timeout(
+            Duration::from_secs(5),
+            server.run(std::future::pending::<()>()),
+        )
+        .await
+        .expect("server kept running after an unrecoverable poison");
+        let error = result.unwrap_err();
+        assert!(error.to_string().contains("ERR_BUSY"), "{error}");
+    }
+
+    /// 测试专用故障点：让下一个被接受连接的任务 panic，仅在单元测试构建中存在。
+    /// Test-only failpoint: makes the next accepted connection's task panic; present only in unit-test builds.
+    pub(crate) static PANIC_NEXT_CONNECTION: std::sync::atomic::AtomicBool =
+        std::sync::atomic::AtomicBool::new(false);
+
+    /// 连接任务 panic 只终止该连接：出事连接被关闭，随后的新连接仍能握手并执行 PING，服务可正常关闭。
+    /// A connection task panic ends only that connection: it is closed, a later connection can still handshake and PING, and the server shuts down cleanly.
+    #[tokio::test]
+    async fn connection_panic_leaves_other_connections_alive() {
+        use ling_protocol::{Body, Frame, Limits, Request, read_frame, write_frame};
+        use std::sync::atomic::Ordering;
+        use tokio::net::TcpStream;
+
+        let mut config = Config::default();
+        config.events.enabled = false;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let server = Server::from_listener(listener, config).unwrap();
+        let address = server.local_addr().unwrap();
+        let (stop, stopped) = tokio::sync::oneshot::channel::<()>();
+        let task = tokio::spawn(server.run(async move {
+            let _ = stopped.await;
+        }));
+
+        PANIC_NEXT_CONNECTION.store(true, Ordering::SeqCst);
+        let mut doomed = TcpStream::connect(address).await.unwrap();
+        let closed = tokio::time::timeout(
+            Duration::from_secs(2),
+            read_frame(&mut doomed, Limits::default()),
+        )
+        .await
+        .expect("panicked connection was not closed");
+        assert!(matches!(closed, Ok(None) | Err(_)), "{closed:?}");
+        assert!(!PANIC_NEXT_CONNECTION.load(Ordering::SeqCst));
+
+        let mut healthy = TcpStream::connect(address).await.unwrap();
+        for (id, name, args) in [
+            (1u64, "HELLO", vec![ling_types::Value::UInt(1)]),
+            (2, "PING", vec![]),
+        ] {
+            let frame = Frame {
+                request_id: id,
+                body: Body::Request(Request::new(name, args)),
+            };
+            write_frame(&mut healthy, &frame, Limits::default())
+                .await
+                .unwrap();
+            let reply = read_frame(&mut healthy, Limits::default())
+                .await
+                .unwrap()
+                .unwrap();
+            assert_eq!(reply.request_id, id);
+            assert!(
+                matches!(reply.body, Body::Response(Ok(_))),
+                "{:?}",
+                reply.body
+            );
+        }
+        let _ = stop.send(());
+        task.await.unwrap().unwrap();
+    }
 }

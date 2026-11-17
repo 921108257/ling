@@ -28,6 +28,16 @@ pub(crate) async fn serve(
         .clients
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let _connection = ConnectionCount(runtime.clone());
+    // 测试专用故障点，只存在于单元测试构建；发行构建不含。
+    // Test-only failpoint present only in unit-test builds and absent from release builds.
+    #[cfg(test)]
+    {
+        if crate::failure_policy_tests::PANIC_NEXT_CONNECTION
+            .swap(false, std::sync::atomic::Ordering::SeqCst)
+        {
+            panic!("failpoint: connection task panic");
+        }
+    }
     let (mut reader, mut stream) = tokio::io::split(stream);
     let (frames, mut incoming) = tokio::sync::mpsc::channel(1);
     let read_config = config.clone();

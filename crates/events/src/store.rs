@@ -758,6 +758,12 @@ impl EventStore {
             .collect())
     }
 
+    /// 状态锁是否已中毒；只读取标志，不加锁，供服务端决定是否 fail-stop。
+    /// Whether the state lock is poisoned; reads the flag only, without locking, so the server can decide whether to fail-stop.
+    pub fn is_poisoned(&self) -> bool {
+        self.state.is_poisoned()
+    }
+
     /// 锁损坏明确失败；Poisoned ownership fails explicitly.
     fn lock(&self) -> Result<std::sync::MutexGuard<'_, State>, DbError> {
         self.state

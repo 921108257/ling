@@ -23,6 +23,7 @@ for package in deb rpm; do
     fi
     wait_for_service
     sudo sh -c 'printf "\n# preserved during package upgrade\n" >> /etc/ling/ling.toml'
+    grep -q '^LimitNOFILE=' /lib/systemd/system/ling.service
     config_hash=$(sudo sha256sum /etc/ling/ling.toml)
     sudo touch /var/lib/ling/preserve-me
     if [ "$package" = deb ]; then

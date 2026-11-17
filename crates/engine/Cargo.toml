@@ -11,5 +11,10 @@ ling-types.workspace = true
 ling-events.workspace = true
 rand.workspace = true
 
+[features]
+# 仅供测试注入故障；发行构建不得启用，由 CI 断言。
+# Test-only fault injection; release builds must not enable it, which CI asserts.
+failpoints = []
+
 [lints]
 workspace = true

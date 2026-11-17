@@ -38,6 +38,9 @@ pub(crate) struct Runtime {
     pub clients: AtomicU64,
     /// 认证失败告警每实例至多每分钟一次；Authentication warnings occur at most once per minute per instance.
     last_auth_warning: Mutex<Option<Instant>>,
+    /// 接入层内部计数与限频告警；对外指标放到 0.1.5。
+    /// Internal accept-side counters and rate-limited warnings; public metrics arrive in 0.1.5.
+    pub accept: crate::accept::AcceptStats,
     /// 请求时延固定桶，无 Key 或命令标签；Fixed latency buckets without key or command labels.
     latency: [AtomicU64; 6],
     /// 总延迟微秒用于 histogram sum；Total latency microseconds for histogram sum.
@@ -56,6 +59,7 @@ impl Runtime {
             errors: AtomicU64::new(0),
             clients: AtomicU64::new(0),
             last_auth_warning: Mutex::new(None),
+            accept: crate::accept::AcceptStats::new(),
             latency: std::array::from_fn(|_| AtomicU64::new(0)),
             latency_micros: AtomicU64::new(0),
         }
@@ -456,12 +460,32 @@ pub(crate) async fn serve_metrics(
 ) -> std::io::Result<()> {
     let capacity = Arc::new(Semaphore::new(16));
     let mut tasks = JoinSet::new();
+    let mut backoff = None;
+    // 计数与限频告警统一经接入层统计，指标端口与业务端口互不抑制。
+    // Counting and rate-limited warnings go through the accept-side stats; the metrics and business ports never suppress each other.
+    let note = |error: &std::io::Error| {
+        runtime
+            .accept
+            .failed(true, error, Instant::now(), |m| runtime.log("warn", m));
+    };
     loop {
         tokio::select! {
             _=closing.changed()=>break,
             Some(_)=tasks.join_next(),if !tasks.is_empty()=>{},
-            accepted=listener.accept()=>{
-                let (mut socket,_)=accepted?;
+            accepted=crate::accept::recover(||listener.accept(),&mut backoff,&note)=>{
+                let (mut socket,_)=match accepted {
+                    Ok(value)=>value,
+                    Err(error)=>{
+                        // 指标端点的未知错误同样只记录并延后重试，不得带停数据服务。
+                        // Unknown metrics errors are likewise only recorded and retried later; they must not stop the data service.
+                        note(&error);
+                        tokio::select! {
+                            _=closing.changed()=>break,
+                            _=tokio::time::sleep(Duration::from_secs(1))=>{}
+                        }
+                        continue;
+                    }
+                };
                 let Ok(permit)=capacity.clone().try_acquire_owned() else {continue;};
                 let runtime=runtime.clone();let engine=engine.clone();
                 tasks.spawn(async move {

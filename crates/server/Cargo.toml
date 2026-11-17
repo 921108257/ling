@@ -34,6 +34,9 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [dev-dependencies]
 ling-client.workspace = true
+# 测试专用故障点只经 dev-dependency 启用，不进入发行构建。
+# Test-only failpoints are enabled through a dev-dependency and never reach release builds.
+ling-engine = { workspace = true, features = ["failpoints"] }
 tokio = { workspace = true, features = ["test-util"] }
 
 [lints]

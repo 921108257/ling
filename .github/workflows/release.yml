@@ -59,6 +59,17 @@ jobs:
           ET.parse('packaging/windows/ling-service.xml')
           PY
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - name: Assert test-only failpoints stay out of release builds
+        run: |
+          # dev 依赖图必须含 failpoints，否则下面的发行图检查没有意义。
+          # The dev graph must contain failpoints, otherwise the release-graph check below proves nothing.
+          dev_graph=$(cargo tree --locked -p ling-server -e dev,features --target all)
+          grep -q 'feature "failpoints"' <<< "$dev_graph"
+          release_graph=$(cargo tree --locked -p ling-server -p ling-cli -e normal,build,features --target all)
+          if grep -q 'failpoints' <<< "$release_graph"; then
+            echo 'failpoints feature leaked into the release dependency graph' >&2
+            exit 1
+          fi
       - run: cargo doc --locked --workspace --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
