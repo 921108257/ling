@@ -303,8 +303,8 @@ async fn response_budget_and_shutdown_with_live_connection() {
     assert_closed(&mut stream).await;
 }
 
-/// 连接满载拒绝新连接，半帧超时释放已有连接。
-/// Full connection capacity rejects newcomers and partial-frame timeouts release existing connections.
+/// 连接满载发送连接级错误后关闭，半帧超时释放已有连接。
+/// Full connection capacity sends a connection-level error before closing; partial-frame timeouts release existing connections.
 #[tokio::test]
 async fn partial_frame_deadline_and_connection_limit() {
     let mut config = Config::default();
@@ -314,6 +314,16 @@ async fn partial_frame_deadline_and_connection_limit() {
     let mut first = TcpStream::connect(addr).await.unwrap();
     call(&mut first, 1, "HELLO", vec![Value::UInt(1)]).await;
     let mut second = TcpStream::connect(addr).await.unwrap();
+    let refusal = tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        read_frame(&mut second, Limits::default()),
+    )
+    .await
+    .unwrap()
+    .unwrap()
+    .unwrap();
+    assert_eq!(refusal.request_id, 0);
+    assert_error(refusal.body, "ERR_BUSY", true);
     assert_closed(&mut second).await;
     first.write_all(b"L").await.unwrap();
     assert_closed(&mut first).await;
