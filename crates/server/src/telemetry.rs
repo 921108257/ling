@@ -119,9 +119,20 @@ impl Telemetry {
 
 /// 累计计数饱和而不回绕；Cumulative counters saturate instead of wrapping.
 pub(crate) fn add(counter: &AtomicU64, value: u64) {
-    let _ = counter.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
-        Some(current.saturating_add(value))
-    });
+    // 显式 CAS 同时兼容最低 Rust 版本和弃用旧更新名称的新工具链。
+    // Explicit CAS supports both the minimum Rust version and newer toolchains deprecating the old update name.
+    let mut current = counter.load(Ordering::Relaxed);
+    loop {
+        match counter.compare_exchange_weak(
+            current,
+            current.saturating_add(value),
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+        ) {
+            Ok(_) => return,
+            Err(observed) => current = observed,
+        }
+    }
 }
 
 /// 队列等待的取消安全清理；Cancellation-safe cleanup of a queue wait.

@@ -285,6 +285,9 @@ fn observe(value: Value) -> serde_json::Value {
         Value::Bool(v) => v.into(),
         Value::UInt(v) => v.into(),
         Value::Int(v) => v.into(),
+        Value::Float(v) => serde_json::Number::from_f64(v.get())
+            .expect("INFO diagnostic floats must be finite")
+            .into(),
         Value::String(v) => v.into(),
         Value::Map(v) => {
             serde_json::Value::Object(v.into_iter().map(|(k, v)| (k, observe(v))).collect())
@@ -292,6 +295,23 @@ fn observe(value: Value) -> serde_json::Value {
         Value::List(v) => serde_json::Value::Array(v.into_iter().map(observe).collect()),
         _ => unreachable!("INFO returned an unsupported diagnostic type"),
     }
+}
+
+/// INFO 的诊断转换覆盖新内存比率，不将整数先转成浮点。
+/// INFO diagnostics include the new memory ratio without rounding integers through floats.
+#[test]
+fn observe_memory_diagnostics() {
+    let value = Value::Map(BTreeMap::from([
+        ("managed_bytes".into(), Value::UInt(u64::MAX)),
+        (
+            "rss_vs_managed_ratio".into(),
+            Value::Float(ling_types::Float::new(1.25).unwrap()),
+        ),
+    ]));
+    assert_eq!(
+        observe(value),
+        serde_json::json!({"managed_bytes": u64::MAX, "rss_vs_managed_ratio": 1.25})
+    );
 }
 
 /// 验证实验资源规模，在计时前准备数据、连接与工作线程。
