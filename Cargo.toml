@@ -22,7 +22,7 @@ rustls-pemfile = "2"
 webpki-roots = "1"
 fs2 = "0.4"
 crc32fast = "1"
-rand = "0.9"
+rand = "0.10"
 tokio = { version = "1.48", features = ["io-util", "net", "rt-multi-thread", "macros", "signal", "sync", "time"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
