@@ -158,7 +158,7 @@ jobs:
           git -C "$RUNNER_TEMP/advisory-db" checkout 233155b4025b854c68a4b199c0e32d7fd53291a2
           mkdir -p dist
           cargo audit --db "$RUNNER_TEMP/advisory-db" --no-fetch --json > dist/dependency-audit.json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: dependency-audit
@@ -179,7 +179,7 @@ jobs:
         run: python3 scripts/measure-update-deps.py --build > "$RUNNER_TEMP/update-measurement-summary.log"
       - name: Compare two independent builds of the same commit
         run: python3 scripts/reproducible-build.py --output "$RUNNER_TEMP/ling-reproducibility" --remap-root /ling
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: build-measurements
@@ -336,14 +336,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Portable package smoke test failed' }
       - name: Generate per-package CycloneDX inventories
         run: python3 packaging/generate-sbom.py --version "$VERSION" --target "$TARGET"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: native-acceptance-${{ matrix.platform }}-${{ matrix.arch }}
           path: target/native-acceptance/*
           if-no-files-found: warn
           retention-days: 14
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ling-${{ matrix.platform }}-${{ matrix.arch }}
           path: dist/*
@@ -383,7 +383,7 @@ jobs:
         run: |
           cp "$BUNDLE" dist/PROVENANCE.sigstore.json
           python3 packaging/release-assets.py --version "${{ needs.checks.outputs.version }}" --final
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: verified-release
           path: dist/*
